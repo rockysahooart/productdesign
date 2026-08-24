@@ -1449,12 +1449,29 @@ em,
   /* Room, not compression. The skills came back to this card and the answer
      is a taller card, not smaller type: every size in here is the size it was,
      and the gaps went up rather than down. */
+  /* ONE CONTENT COLUMN. Every block in this card starts and ends on the same
+     two lines: the portrait, the name, the contact list, the dividers, the
+     skills and the button. Nothing shrink-wraps to its own text and nothing
+     stops short of the right edge, because a block that ends 30px early reads
+     as the card being off-centre rather than as that block being narrow.
+
+     `align-items: stretch` is what does it — the two that were hugging their
+     content (the name, and the portrait under its 190px cap) now share the
+     column with everything else.
+
+     26px between blocks against 9-12px inside them: more air between groups
+     than within, which is what gives the card a rhythm rather than a list. */
   .hero-card .hero-tile--profile {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 24px;
+    align-items: stretch;
+    gap: 26px;
   }
+
+  /* The circle is the content column wide. Capped at 190 it left 13px of
+     nothing on its right at 1440 and 29px at 1920, and the eye read that as
+     the whole card leaning left. */
+  .hero-card .hero-tile--profile > .hero__portrait { width: 100%; }
 
   /* Two-class selectors: the base rule that hides this lives further down the
      file, and coming later is not the same as winning. */
@@ -1534,6 +1551,72 @@ em,
   }
 
   .hero-card .hero-tile--profile .hero__skills li::after { content: none; }
+
+  /* --- the one button -------------------------------------------------
+
+     Every other clickable thing in this composition is set as type. This one
+     is not: it is the action a recruiter who has read the card wants, and an
+     underline in a column of underlines is not where you put that.
+
+     Full width of the card's content, so its edges are the card's edges rather
+     than a third alignment nobody asked for. 32px above it — the column's own
+     24px gap plus 8 — so it is clearly after the skills rather than the last
+     item in them, and a few pixels under it so the card's padding comes to
+     about the same on the other side. */
+  .hero-card .hero-tile--profile .hero__book {
+    display: block;
+    align-self: stretch;
+    margin-top: 8px;
+    /* The card's own padding is 21-33px depending on width; this brings the
+       air under the button up into the same band as the air above it. Past
+       about 1600 the card is taller than its content — it is matched to the
+       project browser beside it — and the extra room falls below this, which
+       is slack in the card rather than padding under the button. */
+    margin-bottom: 8px;
+    /* A height rather than a fixed one: the label is five words and the column
+       is 186px of content at its narrowest, so it is allowed to take a second
+       line rather than being clipped or set at a size nobody can read. Block
+       rather than flex, so when it does wrap the arrow stays attached to the
+       last word instead of being a second flex item on its own line. */
+    min-height: 42px;
+    padding: 11px 14px;
+    border: 1px solid var(--ink);
+    border-radius: var(--r-btn);
+    background: var(--ink);
+
+    font-family: var(--font-sans);
+    font-size: 11.5px;
+    font-weight: 620;
+    letter-spacing: 0.05em;
+    line-height: 1.35;
+    text-align: center;
+    text-transform: uppercase;
+    color: var(--surface);
+
+    transition: background-color var(--dur-fast) var(--ease),
+                border-color var(--dur-fast) var(--ease);
+  }
+
+  /* Restrained: the surface shifts a shade and the arrow moves two pixels. */
+  .hero-card .hero-tile--profile .hero__book .cta__arrow {
+    display: inline-block;
+    margin-left: 5px;
+    transition: transform 160ms var(--ease);
+  }
+
+  .hero-card .hero-tile--profile .hero__book:hover {
+    background: var(--ink-secondary);
+    border-color: var(--ink-secondary);
+  }
+
+  .hero-card .hero-tile--profile .hero__book:hover .cta__arrow {
+    transform: translate(2px, -2px);
+  }
+
+  .hero-card .hero-tile--profile .hero__book:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
 
   /* --- experience ------------------------------------------------------
 
@@ -2284,6 +2367,11 @@ em,
    the name. Everywhere else it closes the card after the introduction has
    already made the point, and a label would be captioning the obvious. */
 .clients__label { display: none; }
+
+/* The scheduling button belongs to the desktop profile card, which is the only
+   place the skills it follows exist. Below 960 the hero is one card and ends
+   on its own action. */
+.hero__book { display: none; }
 
 /* --------------------------------------------------------------------------
    Credentials, below the work
@@ -3650,7 +3738,11 @@ em,
   --hx-line: 1px solid var(--border);
   /* The avatar badge and the reaction chips are the same object at the same
      size, at every width. */
-  --hx-avatar: clamp(32px, 1.25vw + 22px, 40px);
+  /* THE AVATAR IS A FIXED COMPONENT. It used to scale with the viewport, and
+     the badge on a phone was 28px against 40 on a desktop — the same object at
+     two sizes, which is what a decoration does, not what a component does. One
+     size at every width; what responds is the space around it. */
+  --hx-avatar: 36px;
 
   display: block;
   /* One size for every message — the thread has no hierarchy of its own. */
@@ -3671,13 +3763,8 @@ em,
 }
 
 .msg {
-  display: grid;
-  grid-template-columns: var(--hx-avatar) minmax(0, 1fr);
-  /* Centred to each other, not top-aligned. A one-line bubble and a three-line
-     bubble both read as one object beside their avatar this way; aligning to
-     the top left the badge stranded above the middle of a tall message. */
-  align-items: center;
-  gap: 0 var(--hx-2);
+  display: block;
+  min-width: 0;
 }
 
 .msg + .msg { margin-top: 36px; }
@@ -3690,7 +3777,6 @@ em,
    full height from the first paint, which is why nothing below the hero can
    shift as the thread builds. Opacity rather than visibility so the arrival
    can carry the one quick crossfade the composition allows. */
-.msg > .msg__from,
 .msg > .msg__bubble {
   opacity: 1;
   transition: opacity 130ms linear;
@@ -3745,26 +3831,13 @@ em,
   background: var(--surface-raised);
 }
 
-/* The tail: a rotated square wearing two of the bubble's own borders, so it
-   reads as part of the bubble rather than as a shape stuck to it. */
-.msg__bubble::before {
-  content: "";
-  position: absolute;
-  left: -6px;
-  /* Centred, because the avatar beside it is. The tail used to sit a fixed
-     distance from the bubble's top, which pointed at nothing once a message
-     ran to three lines. */
-  top: 50%;
-  width: 10px;
-  height: 10px;
-  background: var(--surface-raised);
-  border-left: var(--hx-line);
-  border-bottom: var(--hx-line);
-  transform: translateY(-50%) rotate(45deg);
-}
-
-/* The loading bubble's tail wears the loading bubble's surface. */
-.msg[data-state="loading"] > .msg__bubble::before { background: var(--surface); }
+/* THE TAIL IS GONE. It was a notch pointing at the avatar beside each bubble,
+   and there is no avatar beside each bubble any more — there is one at the top
+   of the group. Pinning it to the first message instead would have been worse:
+   the first VISIBLE message changes as the window scrolls, so the notch would
+   have scrolled away from the avatar it was pointing at. A sender group does
+   not need one; the avatar's adjacency is the relationship, which is how every
+   messaging client draws it. */
 
 .msg__text { display: block; }
 
@@ -3791,12 +3864,23 @@ em,
 }
 
 /* The loading bubble is the same object as a message — same border, same
-   radius, same surface — just smaller and quieter. It is sized rather than
-   shrink-wrapped, so it never reads as a pill floating between two large
-   bubbles, and the dots sit centred with room on every side. */
+   surface — but it is a FIXED COMPONENT, not a proportion of the message
+   column. Every number here is a constant: the height, both paddings, the
+   radius and the dots. It is the same indicator at 320px and at 1920, the way
+   a typing indicator is the same object in every Slack window ever opened; a
+   component that gets smaller when the column does is a decoration.
+
+   What responds is the space around it. The message column reflows, the
+   bubbles beside it grow and shrink with their measure, and this stays put. */
 .msg[data-state="loading"] > .msg__bubble {
-  min-width: calc(var(--hx-avatar) * 2.1);
-  padding: calc(var(--hx-pad) * 0.62) var(--hx-padx);
+  box-sizing: border-box;
+  width: 74px;
+  min-width: 0;
+  height: 38px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-lg);
   background: var(--surface);
 }
 
@@ -3809,6 +3893,7 @@ em,
 .msg__dots i {
   width: 6px;
   height: 6px;
+  flex: 0 0 auto;
   border-radius: 50%;
   background: var(--ink-muted);
   opacity: 0.35;
@@ -3856,7 +3941,36 @@ em,
    nothing outside the box ever changes size.
    -------------------------------------------------------------------------- */
 
+/* --------------------------------------------------------------------------
+   One sender, one group
+
+   The thread is a sender group now rather than a stack of rows that each
+   carry their own badge: the avatar sits in its own column at the top, the
+   messages run down the column beside it, and every bubble starts on the same
+   left edge.
+
+   The avatar is a sibling of the track, not a child of it. That is the whole
+   reason it can be still: the track is what moves when the oldest message
+   retires, and an avatar inside it would slide up and out of the box along
+   with everything else. Out here it is anchored to the top of the group and
+   nothing in the sequence — arrivals, retirements, the reset, a role change —
+   can move it.
+
+   `align-items: start` puts it level with the first message's top edge, which
+   is where a sender's avatar sits in every messaging client anyone has used.
+   -------------------------------------------------------------------------- */
+
 .hero__thread.is-windowed { overflow: hidden; }
+
+.hero__thread {
+  display: grid;
+  grid-template-columns: var(--hx-avatar) minmax(0, 1fr);
+  align-items: start;
+  gap: 0 var(--hx-2);
+}
+
+.hero__thread > .msg__from { grid-column: 1; align-self: start; }
+.hero__thread > .msg-track { grid-column: 2; min-width: 0; }
 
 /* A row the current role does not use. Out of flow entirely, so it is not
    measured, not stepped through and not part of any window. */
@@ -10947,6 +11061,13 @@ em,
   .artifact--signature { min-height: 190px; }
 }
 
+/* The narrowest phones lose one more chip. At 320 the bubble is 186px wide and
+   six of these need 184 of the 174 the tray actually has — one over, which is
+   one chip riding up onto the message. Five is still a pile. */
+@media (max-width: 359px) {
+  .rx:nth-child(n + 5) { display: none; }
+}
+
 @media (max-width: 460px) {
   .sig { grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto; }
   .steps--stacked { flex-direction: row; flex-wrap: wrap; align-self: stretch; }
@@ -11430,8 +11551,8 @@ em,
   /* Bubbles take the width the phone actually has, the badge steps down, and
      the gap between rows comes in — three tall bubbles with 36px between them
      is most of a screen spent on nothing. */
-  .hero__thread { --hx-avatar: 28px; }
-  .msg { grid-template-columns: var(--hx-avatar) minmax(0, 1fr); gap: 0 10px; }
+  /* The avatar keeps its size; only the gutter beside it comes in. */
+  .hero__thread { gap: 0 10px; }
   .msg + .msg { margin-top: 16px; }
   .msg__bubble { width: 100%; }
 
@@ -11449,10 +11570,24 @@ em,
     box-shadow: var(--shadow-card);
   }
 
+  /* Six chips, not eight. A 256px bubble has about 230px of tray once the
+     corner inset is taken off, and eight of these at a readable size need 254
+     — so the eighth wrapped onto a second row and sat on top of the message's
+     last line, because the tray hangs off the bubble's corner rather than
+     sitting in the flow beneath it.
+
+     Six at a size you can see beats eight you cannot. The joke is the pile,
+     and six is still a pile. */
+  .rx:nth-child(n + 7) { display: none; }
+
+
+  .msg__reactions { gap: 5px; }
+
   .rx {
     min-width: 0;
     height: 26px;
-    padding: 0 6px;
+    padding: 0 5px;
+    gap: 2px;
     border: 0;
     background: none;
     box-shadow: none;
@@ -11460,7 +11595,8 @@ em,
     translate: none;
   }
 
-  .rx__e { font-size: 17px; }
+  .rx__e { font-size: 15px; }
+  .rx__n { font-size: 10px; }
   .rx.is-on { background: var(--surface-sunken); border-radius: 999px; }
 
   .msg__bubble--reacted { padding-bottom: calc(var(--hx-pad) + 10px); }
@@ -11942,6 +12078,11 @@ em,
               </ul>
             </details>
 
+            
+            <a class="hero__book" href="#" data-placeholder-link>
+              Schedule a Call With Me <span class="cta__arrow" aria-hidden="true">&#8599;</span>
+            </a>
+
           </div>
 
 
@@ -11967,33 +12108,31 @@ em,
 
             <h1 class="t-hero hero__name hero__thread" id="hero-name" data-thread>
               
+              
+              <span class="msg__from" aria-hidden="true">SS</span>
+
               <span class="msg-track" data-track>
               <span class="msg" data-msg>
-                <span class="msg__from" aria-hidden="true">S</span>
-                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">Hello 👋</span></span>
+                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">Namaskar 👋🏽 Nice to meet you.</span></span>
               </span>
               <span class="msg" data-msg>
-                <span class="msg__from" aria-hidden="true">S</span>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
                   <em>Sarthak Sahoo</em>, a Product Designer based in Austin, TX</span></span>
               </span>
               <span class="msg" data-msg>
-                <span class="msg__from" aria-hidden="true">S</span>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I design products
                   that make complex things feel simple.</span></span>
               </span>
               <span class="msg" data-msg>
-                <span class="msg__from" aria-hidden="true">S</span>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;ve worked across
-                  healthcare, fintech, and enterprise systems.</span></span>
+                  healthcare, biotechnology, financial services,
+                  and enterprise systems.</span></span>
               </span>
               <span class="msg" data-msg>
-                <span class="msg__from" aria-hidden="true">S</span>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I design for the workflow,
                   not just the screen.</span></span>
               </span>
               <span class="msg" data-msg>
-                <span class="msg__from" aria-hidden="true">S</span>
                 <span class="msg__bubble msg__bubble--reacted"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I could keep explaining,
                   but hiring me is faster.</span><span class="msg__reactions"><button type="button" class="rx" aria-label="React with fire"><span class="rx__e" aria-hidden="true">🔥</span><span class="rx__n" aria-hidden="true">3</span></button><button type="button" class="rx" aria-label="React with hundred"><span class="rx__e" aria-hidden="true">💯</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" aria-label="React with clap"><span class="rx__e" aria-hidden="true">👏</span><span class="rx__n" aria-hidden="true">2</span></button><button type="button" class="rx" aria-label="React with raised hands"><span class="rx__e" aria-hidden="true">🙌</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" aria-label="React with rocket"><span class="rx__e" aria-hidden="true">🚀</span><span class="rx__n" aria-hidden="true">4</span></button><button type="button" class="rx" aria-label="React with star"><span class="rx__e" aria-hidden="true">⭐</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" aria-label="React with heart"><span class="rx__e" aria-hidden="true">❤️</span><span class="rx__n" aria-hidden="true">2</span></button><button type="button" class="rx" aria-label="React with check"><span class="rx__e" aria-hidden="true">✅</span><span class="rx__n" aria-hidden="true"></span></button></span></span>
               </span>
@@ -16452,7 +16591,7 @@ em,
   <section class="section" id="work" aria-labelledby="work-title">
     <header class="section__head">
       <h2 class="t-section section__title" id="work-title"><em>selected</em> work</h2>
-      <p class="t-meta">Five projects &middot; AI, healthcare, fintech</p>
+      <p class="t-meta">Five projects &middot; healthcare, biotechnology, financial services</p>
     </header>
 
     <div class="bento">
@@ -20888,21 +21027,22 @@ window.PF = window.PF || {};
   'use strict';
 
   /* One sequence per discipline. The first line is shared: whichever role you
-     pick, he says hello the same way. Only the two lines after it change, so
+     pick, he says hello the same way, and the greeting is the same object on
+     screen across a role change rather than a message that gets rewritten. Only the two lines after it change, so
      the layout, the timing and the reactions are identical across all three
      and nothing below the thread moves when you switch. */
   var ROLES = {
     design: [
-      [{ t: 'Hello \uD83D\uDC4B' }],
+      [{ t: 'Namaskar \uD83D\uDC4B\uD83C\uDFFD Nice to meet you.' }],
       [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true },
        { t: ', a Product Designer based in Austin, TX' }],
       [{ t: 'I design products that make complex things feel simple.' }],
-      [{ t: 'I\u2019ve worked across healthcare, fintech, and enterprise systems.' }],
+      [{ t: 'I\u2019ve worked across healthcare, biotechnology, financial services, and enterprise systems.' }],
       [{ t: 'I design for the workflow, not just the screen.' }],
       [{ t: 'I could keep explaining, but hiring me is faster.' }]
     ],
     illustration: [
-      [{ t: 'Hello \uD83D\uDC4B' }],
+      [{ t: 'Namaskar \uD83D\uDC4B\uD83C\uDFFD Nice to meet you.' }],
       [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true },
        { t: ', and I draw as much as I design.' }],
       [{ t: 'Illustration is where I work an idea out before it becomes an interface.' }],
@@ -20910,7 +21050,7 @@ window.PF = window.PF || {};
       [{ t: 'Drawing is where I find the idea, not where I decorate it.' }]
     ],
     music: [
-      [{ t: 'Hello \uD83D\uDC4B' }],
+      [{ t: 'Namaskar \uD83D\uDC4B\uD83C\uDFFD Nice to meet you.' }],
       [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true },
        { t: ', and off the clock I make house music.' }],
       [{ t: 'Same instinct as design: build the arrangement, then take things out.' }],
