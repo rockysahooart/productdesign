@@ -824,6 +824,18 @@ em,
 
 .section + .section { margin-top: var(--section-gap); }
 
+/* The one exception, and it is an exception on purpose.
+
+   The hero's last card is Worked With, and the three cards under it — where
+   I've been, how I work, about me — are the same bento continuing. At the full
+   section gap the band between them came to nearly 170px of empty wall once
+   both cards' own padding was counted, and the three read as a separate page
+   rather than as the rest of the introduction.
+
+   Roughly half the rhythm. Still clearly a section change, no longer a hole.
+   Everything else on the page keeps --section-gap. */
+.section--hero + #background { margin-top: clamp(26px, 3vw, 44px); }
+
 .section__head {
   display: flex;
   align-items: baseline;
@@ -1865,6 +1877,18 @@ em,
   .pv__embed--carry   { --pv-w: 390px;  --pv-h: 760px; }
   .pv__embed--tagging { --pv-w: 1000px; --pv-h: 720px; }
   .pv__embed--pnc     { --pv-w: 640px;  --pv-h: 1000px; }
+
+  /* The audit is the one preview authored for this column rather than fitted
+     into it, so it is not scaled at all: the frame fills the stage and the
+     document inside lays itself out at 1:1. Nothing to measure, nothing to
+     divide, and its 10px type is 10px on screen. */
+  .pv__frame--fluid {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: none;
+  }
 
   /* Cryptography is a second live instance of the component itself rather than
      a framed document — encryption.js initialises and gates each root from its
@@ -3763,11 +3787,28 @@ em,
 }
 
 .msg {
-  display: block;
+  display: grid;
+  /* The badge's column exists on every row. On the second message of a cluster
+     it is simply empty — which is the whole trick: the bubbles line up because
+     the column is still there, not because anything is being indented. */
+  grid-template-columns: var(--hx-avatar) minmax(0, 1fr);
+  align-items: start;
+  /* Compact. The avatar sits just outside the bubble's left edge and reads as
+     part of the message rather than as a marker parked at the far left. */
+  gap: 0 10px;
   min-width: 0;
 }
 
-.msg + .msg { margin-top: 36px; }
+/* The bubble is ALWAYS in the second column. Without this, a row that carries
+   no badge — the second message of a cluster — auto-places its bubble in the
+   badge's 36px column and wraps its text into it. */
+.msg > .msg__from { grid-column: 1; }
+.msg > .msg__bubble { grid-column: 2; }
+
+/* Inside a cluster the messages sit close; a new cluster gets about twice
+   that. Enough to read as a new thought, not enough to be a gap. */
+.msg + .msg { margin-top: 13px; }
+.msg + .msg[data-cluster] { margin-top: 26px; }
 
 /* The loading row sits on the same rhythm as a message row, so the sequence
    does not tighten and loosen as it plays. */
@@ -3777,6 +3818,7 @@ em,
    full height from the first paint, which is why nothing below the hero can
    shift as the thread builds. Opacity rather than visibility so the arrival
    can carry the one quick crossfade the composition allows. */
+.msg > .msg__from,
 .msg > .msg__bubble {
   opacity: 1;
   transition: opacity 130ms linear;
@@ -3846,6 +3888,119 @@ em,
   font-style: italic;
   font-variation-settings: var(--wonk-on);
   color: var(--statement-em);
+}
+
+/* --------------------------------------------------------------------------
+   The keywords
+
+   Five words in the thread carry a gradient inside the letterforms. The word
+   is the mask: the fill moves, the type does not. Nothing here touches a
+   metric — no weight, no tracking, no size, no padding — so the sentence
+   wraps exactly where it wrapped before, which is the only reason a moving
+   fill is safe inside a thread whose height is measured once and then held.
+
+   ONE SYSTEM, FIVE VOICES. Every word runs the same five-stop ramp
+   (a → b → c → b → a) drifting across a background wider than the word, and
+   differs only in angle, span and duration. The symmetry plus `alternate`
+   is what keeps it seamless: the fill sweeps out and comes back rather than
+   snapping at the end of a cycle, so there is no seam to hide and no need
+   for a shimmer to hide it with.
+
+   COMPLEX AND SIMPLE ARE THE PAIR THAT MATTERS. complex is the densest thing
+   in the sentence — burgundy into plum into deep violet, the darkest values
+   on the page, on the slowest and steepest drift. simple is the lightest —
+   sage into mint into teal, a wider span moving a little quicker, so it
+   reads as air. In dark the roles hold by the same logic inverted: complex
+   keeps the dimmest values of the five, simple the brightest.
+
+   Contrast is measured against the bubble, not the page: every stop clears
+   3:1 on --surface-raised in both themes, and the thread is display type, so
+   3:1 is the bar it has to clear.
+   -------------------------------------------------------------------------- */
+
+.kw {
+  /* Inline, so it inherits the line box entirely. */
+  background-image: linear-gradient(var(--kw-angle, 100deg),
+                     var(--kw-a) 0%, var(--kw-b) 28%, var(--kw-c) 50%,
+                     var(--kw-b) 72%, var(--kw-a) 100%);
+  background-size: var(--kw-span, 260%) 100%;
+  background-position: 0% 50%;
+  background-repeat: no-repeat;
+  color: var(--kw-a);   /* what shows if the clip is not supported */
+}
+
+/* The paint only becomes a mask where the browser can actually clip it to the
+   glyphs; everywhere else the word stays a solid colour rather than a hole. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .kw {
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: kw-drift var(--kw-dur, 11s)
+               cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+  }
+}
+
+/* Background position only. No transform, no filter, no opacity — nothing
+   that could cost a layer or move a pixel of the layout. */
+@keyframes kw-drift {
+  from { background-position: 0% 50%; }
+  to   { background-position: 100% 50%; }
+}
+
+/* saffron → amber → warm gold */
+.kw--namaskar {
+  --kw-a: #D2570F; --kw-b: #C86A0A; --kw-c: #A8710B;
+  --kw-angle: 100deg; --kw-span: 250%; --kw-dur: 9.5s;
+}
+
+/* indigo → cobalt → violet */
+.kw--craft {
+  --kw-a: #3A34B8; --kw-b: #1F5AD1; --kw-c: #6D3BD6;
+  --kw-angle: 92deg; --kw-span: 240%; --kw-dur: 12s;
+}
+
+/* burgundy → plum → deep violet: the darkest, densest, slowest of the five */
+.kw--complex {
+  --kw-a: #6B1030; --kw-b: #55184F; --kw-c: #331262;
+  --kw-angle: 108deg; --kw-span: 200%; --kw-dur: 14s;
+}
+
+/* sage → mint → teal: a wider ramp, moving a little more freely */
+.kw--simple {
+  --kw-a: #4E8F68; --kw-b: #2F8F78; --kw-c: #17807F;
+  --kw-angle: 95deg; --kw-span: 300%; --kw-dur: 10.5s;
+}
+
+/* coral → orange-red → warm pink: the quickest, because it is the line about
+   not waiting */
+.kw--faster {
+  --kw-a: #DE5045; --kw-b: #CE4033; --kw-c: #C43C6F;
+  --kw-angle: 104deg; --kw-span: 260%; --kw-dur: 8s;
+}
+
+/* Dark: the same five ramps lifted off a #303030 bubble. The order of value
+   between complex and simple is preserved by inverting it — complex stays the
+   heaviest thing in the sentence by being the dimmest. */
+[data-theme="dark"] .kw--namaskar { --kw-a: #F7A64B; --kw-b: #FFC163; --kw-c: #F2CE72; }
+[data-theme="dark"] .kw--craft    { --kw-a: #9E9CFF; --kw-b: #7FB4FF; --kw-c: #BC9CFF; }
+[data-theme="dark"] .kw--complex  { --kw-a: #D4708F; --kw-b: #B77FD8; --kw-c: #9B8CF0; }
+[data-theme="dark"] .kw--simple   { --kw-a: #9FD9B4; --kw-b: #7FE3C4; --kw-c: #6FDAD6; }
+[data-theme="dark"] .kw--faster   { --kw-a: #FF8A7A; --kw-b: #FF7455; --kw-c: #FF8FB4; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .kw--namaskar { --kw-a: #F7A64B; --kw-b: #FFC163; --kw-c: #F2CE72; }
+  :root:not([data-theme="light"]) .kw--craft    { --kw-a: #9E9CFF; --kw-b: #7FB4FF; --kw-c: #BC9CFF; }
+  :root:not([data-theme="light"]) .kw--complex  { --kw-a: #D4708F; --kw-b: #B77FD8; --kw-c: #9B8CF0; }
+  :root:not([data-theme="light"]) .kw--simple   { --kw-a: #9FD9B4; --kw-b: #7FE3C4; --kw-c: #6FDAD6; }
+  :root:not([data-theme="light"]) .kw--faster   { --kw-a: #FF8A7A; --kw-b: #FF7455; --kw-c: #FF8FB4; }
+}
+
+/* Reduced motion keeps the colour and drops the movement: the fill parks at
+   the middle of its travel, where all three stops are in the word. */
+@media (prefers-reduced-motion: reduce) {
+  .kw { animation: none; background-position: 50% 50%; }
 }
 
 /* --------------------------------------------------------------------------
@@ -3942,35 +4097,24 @@ em,
    -------------------------------------------------------------------------- */
 
 /* --------------------------------------------------------------------------
-   One sender, one group
+   Clusters
 
-   The thread is a sender group now rather than a stack of rows that each
-   carry their own badge: the avatar sits in its own column at the top, the
-   messages run down the column beside it, and every bubble starts on the same
-   left edge.
+   Consecutive messages from one sender are one cluster, and the badge appears
+   beside the first message of each — the way Slack and Google Chat group a
+   run. The second message in a cluster keeps the badge's column and leaves it
+   empty, so every bubble in the thread starts on the same left edge whether or
+   not there is an avatar beside it.
 
-   The avatar is a sibling of the track, not a child of it. That is the whole
-   reason it can be still: the track is what moves when the oldest message
-   retires, and an avatar inside it would slide up and out of the box along
-   with everything else. Out here it is anchored to the top of the group and
-   nothing in the sequence — arrivals, retirements, the reset, a role change —
-   can move it.
+   The badge lives inside its row rather than beside the whole thread. That is
+   what makes it leave when its message does: the track is what slides as the
+   oldest message retires, and an avatar outside it would be left standing next
+   to a message that had scrolled away.
 
-   `align-items: start` puts it level with the first message's top edge, which
-   is where a sender's avatar sits in every messaging client anyone has used.
+   `align-items: start` puts it level with the top of its own bubble rather
+   than the middle of the cluster.
    -------------------------------------------------------------------------- */
 
 .hero__thread.is-windowed { overflow: hidden; }
-
-.hero__thread {
-  display: grid;
-  grid-template-columns: var(--hx-avatar) minmax(0, 1fr);
-  align-items: start;
-  gap: 0 var(--hx-2);
-}
-
-.hero__thread > .msg__from { grid-column: 1; align-self: start; }
-.hero__thread > .msg-track { grid-column: 2; min-width: 0; }
 
 /* A row the current role does not use. Out of flow entirely, so it is not
    measured, not stepped through and not part of any window. */
@@ -4098,23 +4242,38 @@ em,
   transform: scale(0.86);
 }
 
-.hero__thread.is-playing[data-reactions="on"] .rx {
-  opacity: 1;
-  transition: opacity 160ms linear, transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+/* --------------------------------------------------------------------------
+   The reaction burst
+
+   Not one animation of six chips: six arrivals, driven one at a time from
+   js/thread.js. The fire chip comes first and its count climbs 1 → 4 as
+   "other people" hit it, then the rest appear around it. Every chip is in the
+   DOM at full size from the first paint and only its opacity and scale change,
+   which is what lets the box be measured before any of this runs — the tray
+   never grows, so the thread never moves.
+   -------------------------------------------------------------------------- */
+
+.hero__thread.is-playing .rx {
+  opacity: 0;
+  transform: scale(0.62);
+  transition: opacity 150ms linear,
+              transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.hero__thread.is-playing[data-reactions="on"] .rx { transform: scale(1); }
+.hero__thread.is-playing .rx.is-in {
+  opacity: 1;
+  transform: scale(1);
+}
 
-/* One after another, fast, then still. Eight chips arriving together is a
-   graphic; eight arriving 60ms apart is eight people. Nothing loops here — the
-   pops run once and the cluster stands. */
-.hero__thread.is-playing[data-reactions="on"] .rx:nth-child(2) { transition-delay: 60ms; }
-.hero__thread.is-playing[data-reactions="on"] .rx:nth-child(3) { transition-delay: 120ms; }
-.hero__thread.is-playing[data-reactions="on"] .rx:nth-child(4) { transition-delay: 180ms; }
-.hero__thread.is-playing[data-reactions="on"] .rx:nth-child(5) { transition-delay: 240ms; }
-.hero__thread.is-playing[data-reactions="on"] .rx:nth-child(6) { transition-delay: 300ms; }
-.hero__thread.is-playing[data-reactions="on"] .rx:nth-child(7) { transition-delay: 360ms; }
-.hero__thread.is-playing[data-reactions="on"] .rx:nth-child(8) { transition-delay: 420ms; }
+/* Another person just clicked it. One short scale on the chip, once per
+   increment, restarted by the script. */
+.rx.is-bump { animation: rx-bump 260ms cubic-bezier(0.22, 1, 0.36, 1); }
+
+@keyframes rx-bump {
+  0%   { transform: scale(1); }
+  38%  { transform: scale(1.16); }
+  100% { transform: scale(1); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   /* Nothing ever plays: all three messages are already in the markup, so the
@@ -11065,7 +11224,7 @@ em,
    six of these need 184 of the 174 the tray actually has — one over, which is
    one chip riding up onto the message. Five is still a pile. */
 @media (max-width: 359px) {
-  .rx:nth-child(n + 5) { display: none; }
+  .rx:nth-child(n + 4) { display: none; }
 }
 
 @media (max-width: 460px) {
@@ -11551,9 +11710,10 @@ em,
   /* Bubbles take the width the phone actually has, the badge steps down, and
      the gap between rows comes in — three tall bubbles with 36px between them
      is most of a screen spent on nothing. */
-  /* The avatar keeps its size; only the gutter beside it comes in. */
-  .hero__thread { gap: 0 10px; }
-  .msg + .msg { margin-top: 16px; }
+  /* The avatar keeps its size and its relationship to the bubble; only the
+     rhythm between clusters comes in. */
+  .msg + .msg { margin-top: 10px; }
+  .msg + .msg[data-cluster] { margin-top: 20px; }
   .msg__bubble { width: 100%; }
 
   /* One tray rather than three floating circles: same border, radius and
@@ -11570,15 +11730,15 @@ em,
     box-shadow: var(--shadow-card);
   }
 
-  /* Six chips, not eight. A 256px bubble has about 230px of tray once the
-     corner inset is taken off, and eight of these at a readable size need 254
-     — so the eighth wrapped onto a second row and sat on top of the message's
-     last line, because the tray hangs off the bubble's corner rather than
-     sitting in the flow beneath it.
+  /* Five chips, not six. Every chip carries a count now, which makes each one
+     wider, and a 256px bubble has about 230px of tray once the corner inset is
+     taken off. The sixth wrapped onto a second row and sat on top of the
+     message's last line — the tray hangs off the bubble's corner rather than
+     sitting in the flow beneath it, so a second row goes upwards.
 
-     Six at a size you can see beats eight you cannot. The joke is the pile,
-     and six is still a pile. */
-  .rx:nth-child(n + 7) { display: none; }
+     Five at a size you can read beats six you cannot, and the fire chip at
+     four is what carries the joke either way. */
+  .rx:nth-child(n + 6) { display: none; }
 
 
   .msg__reactions { gap: 5px; }
@@ -12080,7 +12240,7 @@ em,
 
             
             <a class="hero__book" href="#" data-placeholder-link>
-              Schedule a Call With Me <span class="cta__arrow" aria-hidden="true">&#8599;</span>
+              Schedule a Call <span class="cta__arrow" aria-hidden="true">&#8599;</span>
             </a>
 
           </div>
@@ -12109,32 +12269,33 @@ em,
             <h1 class="t-hero hero__name hero__thread" id="hero-name" data-thread>
               
               
-              <span class="msg__from" aria-hidden="true">SS</span>
-
               <span class="msg-track" data-track>
-              <span class="msg" data-msg>
-                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">Namaskar 👋🏽 Nice to meet you.</span></span>
+              <span class="msg" data-msg data-cluster>
+                <span class="msg__from" aria-hidden="true">SS</span>
+                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text"><span class="kw kw--namaskar">Namaskar</span> 👋🏽 Nice to meet you.</span></span>
               </span>
               <span class="msg" data-msg>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
-                  <em>Sarthak Sahoo</em>, a Product Designer based in Austin, TX</span></span>
+                  <em>Sarthak Sahoo</em>, a <span class="kw kw--craft">Product Designer</span> based in Austin, TX</span></span>
               </span>
-              <span class="msg" data-msg>
+              <span class="msg" data-msg data-cluster>
+                <span class="msg__from" aria-hidden="true">SS</span>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I design products
-                  that make complex things feel simple.</span></span>
+                  that make <span class="kw kw--complex">complex</span> things feel <span class="kw kw--simple">simple</span>.</span></span>
               </span>
               <span class="msg" data-msg>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;ve worked across
                   healthcare, biotechnology, financial services,
                   and enterprise systems.</span></span>
               </span>
-              <span class="msg" data-msg>
+              <span class="msg" data-msg data-cluster>
+                <span class="msg__from" aria-hidden="true">SS</span>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I design for the workflow,
                   not just the screen.</span></span>
               </span>
               <span class="msg" data-msg>
                 <span class="msg__bubble msg__bubble--reacted"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I could keep explaining,
-                  but hiring me is faster.</span><span class="msg__reactions"><button type="button" class="rx" aria-label="React with fire"><span class="rx__e" aria-hidden="true">🔥</span><span class="rx__n" aria-hidden="true">3</span></button><button type="button" class="rx" aria-label="React with hundred"><span class="rx__e" aria-hidden="true">💯</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" aria-label="React with clap"><span class="rx__e" aria-hidden="true">👏</span><span class="rx__n" aria-hidden="true">2</span></button><button type="button" class="rx" aria-label="React with raised hands"><span class="rx__e" aria-hidden="true">🙌</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" aria-label="React with rocket"><span class="rx__e" aria-hidden="true">🚀</span><span class="rx__n" aria-hidden="true">4</span></button><button type="button" class="rx" aria-label="React with star"><span class="rx__e" aria-hidden="true">⭐</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" aria-label="React with heart"><span class="rx__e" aria-hidden="true">❤️</span><span class="rx__n" aria-hidden="true">2</span></button><button type="button" class="rx" aria-label="React with check"><span class="rx__e" aria-hidden="true">✅</span><span class="rx__n" aria-hidden="true"></span></button></span></span>
+                  but hiring me is <span class="kw kw--faster">faster</span>.</span><span class="msg__reactions"><button type="button" class="rx" data-rx="fire" aria-label="React with fire"><span class="rx__e" aria-hidden="true">🔥</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="clap" aria-label="React with applause"><span class="rx__e" aria-hidden="true">👏</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hundred" aria-label="React with hundred"><span class="rx__e" aria-hidden="true">💯</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hands" aria-label="React with raised hands"><span class="rx__e" aria-hidden="true">🙌</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="rocket" aria-label="React with rocket"><span class="rx__e" aria-hidden="true">🚀</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="heart" aria-label="React with heart"><span class="rx__e" aria-hidden="true">❤️</span><span class="rx__n" aria-hidden="true"></span></button></span></span>
               </span>
               </span>
             </h1>
@@ -15595,6 +15756,882 @@ em,
                             title="OptiFlow — tagging preview" loading="lazy"
                             scrolling="no" tabindex="-1"></iframe>
                   </div></div>
+              </article>
+              
+              <article class="pv__slide" data-pv-slide data-mode="design" data-href="#" data-placeholder-link
+                       role="tabpanel" aria-label="Design System Audit" hidden>
+                <div class="pv__head">
+                  <h3 class="pv__title">Design System Audit</h3>
+                  <p class="pv__sub">Auditing provider workflows for consistency, responsiveness, theming, and filtering.</p>
+                </div>
+                <div class="pv__vis">
+                  <div class="pv__embed pv__embed--dsa">
+                    <iframe class="pv__frame pv__frame--fluid" srcdoc="&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;title&gt;Design System Audit — component workspace&lt;/title&gt;
+
+&lt;!-- =========================================================================
+     A design system audit, shown where design systems are actually audited:
+     on a canvas, in front of the components themselves.
+
+     Four passes — buttons, responsive behaviour, themes, filtering. Each pass
+     holds two frames on the canvas at once, a BEFORE and the one being worked
+     on, so the change is a comparison you can look at rather than a claim you
+     have to take. The BEFORE never moves; the draft resolves in front of it.
+
+     The cues are the ones a component environment gives you: frame names,
+     selection outlines with corner handles, spacing measurements, variant
+     labels, variable rows, column guides, annotation pins.
+
+     The buttons pass is the one that matters most, and it is not about radii.
+     &quot;Continue&quot; and &quot;Yes / No&quot; are decisions the reader has to reconstruct;
+     &quot;Submit order&quot; and &quot;Approve request&quot; are decisions the interface has
+     already made legible. Consistency is the easy half.
+
+     WHY THIS IS A DOCUMENT OF ITS OWN. It is composed for the hero&#x27;s narrow
+     portrait column and renders 1:1 there, and every id, class, timer and
+     listener is sealed off from the portfolio and from the other previews.
+     No images anywhere: markup, CSS and one timeline.
+     ========================================================================= --&gt;
+
+&lt;style&gt;
+  #dsa {
+    /* The canvas and its furniture. */
+    --canvas:  #F1F1F2;
+    --paper:   #FFFFFF;
+    --line:    #E3E3E6;
+    --ink:     #1B1B1F;
+    --ink-2:   #5B5B66;
+    --ink-3:   #8C8C99;
+    --pp:      #7B61FF;   /* selection / component */
+    --pp-soft: #EFEBFF;
+    --warnl:   #C0392B;   /* the annotation that marks a problem */
+    --warn-bg: #F7E4E2;
+    --grid:    rgba(0, 0, 0, 0.055);
+
+    /* The component tokens the themes pass switches. */
+    --c-surface: #FFFFFF;
+    --c-sunken:  #F4F5F7;
+    --c-border:  #D7DAE0;
+    --c-text:    #1B2129;
+    --c-muted:   #6B7480;
+    --c-accent:  #1F5F8B;
+    --c-on:      #FFFFFF;
+    --c-sel:     #E2EDF5;
+    --c-danger:  #A03028;
+  }
+
+  #dsa[data-tok=&quot;dark&quot;] {
+    --c-surface: #1A2027;
+    --c-sunken:  #141A20;
+    --c-border:  #333C46;
+    --c-text:    #E9EEF3;
+    --c-muted:   #9DA9B5;
+    --c-accent:  #6FC0DE;
+    --c-on:      #0C1319;
+    --c-sel:     #21323D;
+    --c-danger:  #F2A0A0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Inter, Roboto,
+                 Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background: transparent;
+  }
+
+  #dsa {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 6px;
+    color: var(--ink);
+    font-size: 11px;
+    line-height: 1.35;
+
+    /* The canvas: a dot grid, quiet enough to be a surface rather than a
+       pattern. */
+    background-color: var(--canvas);
+    background-image: radial-gradient(var(--grid) 1px, transparent 1px);
+    background-size: 12px 12px;
+    background-position: -1px -1px;
+  }
+
+  /* ---- the pass being worked on -------------------------------------- */
+
+  .dsa-bar {
+    display: flex; align-items: center; gap: 6px;
+    flex: 0 0 auto;
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.72);
+  }
+
+  .dsa-steps { display: flex; gap: 4px; }
+
+  .dsa-step {
+    padding: 2px 5px;
+    border-radius: 3px;
+    color: var(--ink-3);
+    font-size: 7.5px; font-weight: 700; letter-spacing: 0.11em;
+    transition: background-color 200ms linear, color 200ms linear;
+  }
+
+  .dsa-step.is-on { background: var(--pp-soft); color: var(--pp); }
+
+  .dsa-file {
+    margin-left: auto;
+    color: var(--ink-3);
+    font-size: 8px; letter-spacing: 0.06em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .dsa-stage { position: relative; flex: 1; min-height: 0; }
+
+  /* An act fills the canvas. Its frames share the height between them, so the
+     composition is the same shape whatever box the hero hands this document —
+     nothing here is authored against a fixed height. */
+  .dsa-act {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 11px 11px 10px;
+    opacity: 0; visibility: hidden;
+    transition: opacity 240ms linear;
+  }
+
+  .dsa-act[data-on] { opacity: 1; visibility: visible; }
+
+  /* ---- a frame ------------------------------------------------------- */
+
+  .dsa-frame {
+    position: relative;
+    display: flex; flex-direction: column;
+    min-height: 0;
+  }
+
+  .dsa-grow { flex: 1 1 0; }
+
+  /* The name sits above the frame&#x27;s top-left corner, the way it does on a
+     canvas. It goes purple when the frame is the selected one. */
+  .dsa-fname {
+    display: flex; align-items: center; gap: 5px;
+    flex: 0 0 auto;
+    margin-bottom: 3px;
+    color: var(--ink-3);
+    font-size: 8px; font-weight: 600; letter-spacing: 0.04em;
+    transition: color 200ms linear;
+  }
+
+  .dsa-frame.is-sel &gt; .dsa-fname { color: var(--pp); }
+
+  .dsa-tagx {
+    padding: 1px 4px; border-radius: 2px;
+    background: var(--line); color: var(--ink-2);
+    font-size: 7px; font-weight: 700; letter-spacing: 0.1em;
+    transition: background-color 200ms linear, color 200ms linear;
+  }
+
+  .dsa-tagx.bad  { background: var(--warn-bg); color: var(--warnl); }
+  .dsa-tagx.good { background: var(--pp-soft); color: var(--pp); }
+
+  .dsa-box {
+    position: relative;
+    flex: 1 1 auto;
+    display: flex; flex-direction: column; justify-content: center;
+    gap: 9px;
+    padding: 11px;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    background: var(--c-surface);
+    transition: background-color 260ms linear, border-color 200ms linear;
+  }
+
+  /* Selected: the outline and its four handles. */
+  .dsa-frame.is-sel &gt; .dsa-box { border-color: var(--pp); }
+
+  .dsa-frame.is-sel &gt; .dsa-box::before,
+  .dsa-frame.is-sel &gt; .dsa-box::after,
+  .dsa-frame.is-sel .dsa-h1,
+  .dsa-frame.is-sel .dsa-h2 { opacity: 1; }
+
+  .dsa-box::before, .dsa-box::after,
+  .dsa-h1, .dsa-h2 {
+    content: &quot;&quot;;
+    position: absolute;
+    width: 5px; height: 5px;
+    background: var(--paper);
+    border: 1px solid var(--pp);
+    border-radius: 1px;
+    opacity: 0;
+    transition: opacity 180ms linear;
+    pointer-events: none;
+  }
+
+  .dsa-box::before { left: -3px; top: -3px; }
+  .dsa-box::after  { right: -3px; top: -3px; }
+  .dsa-h1 { left: -3px; bottom: -3px; }
+  .dsa-h2 { right: -3px; bottom: -3px; }
+
+  /* ---- annotations --------------------------------------------------- */
+
+  .dsa-cals { display: flex; flex-direction: column; gap: 4px; }
+
+  .dsa-cal {
+    display: flex; align-items: flex-start; gap: 5px;
+    color: var(--warnl);
+    font-size: 8.5px; line-height: 1.35;
+  }
+
+  .dsa-cal::before {
+    content: &quot;&quot;;
+    width: 5px; height: 5px; flex: 0 0 auto; margin-top: 3px;
+    border-radius: 50%;
+    background: var(--warnl);
+  }
+
+  .dsa-note {
+    display: flex; align-items: flex-start; gap: 5px;
+    flex: 0 0 auto;
+    min-height: 26px;
+    color: var(--ink-2); font-size: 9px; line-height: 1.4;
+  }
+
+  .dsa-pin {
+    width: 6px; height: 6px; flex: 0 0 auto; margin-top: 3px;
+    border-radius: 50%;
+    background: var(--warnl);
+    transition: background-color 240ms linear;
+  }
+
+  .dsa-pin.is-ok { background: var(--pp); }
+
+  /* ---- buttons ------------------------------------------------------- */
+
+  .dsa-row { display: flex; flex-wrap: wrap; align-items: flex-end; }
+
+  .dsa-b {
+    border: 1px solid var(--c-border);
+    background: var(--c-surface);
+    color: var(--c-text);
+    font: inherit;
+    white-space: nowrap;
+    transition: height 340ms cubic-bezier(.4,0,.2,1),
+                padding 340ms cubic-bezier(.4,0,.2,1),
+                margin 340ms cubic-bezier(.4,0,.2,1),
+                border-radius 340ms cubic-bezier(.4,0,.2,1),
+                background-color 240ms linear, color 240ms linear,
+                border-color 240ms linear, opacity 240ms linear,
+                font-size 240ms linear, font-weight 240ms linear;
+  }
+
+  /* Found: five controls that grew separately, and none of whose labels says
+     what pressing it does. The BEFORE frame keeps these for good — it is the
+     reference the draft is read against. */
+  .dsa-b1 { height: 27px; padding: 0 15px; border-radius: 14px; margin: 0 10px 4px 0; font-size: 11px; font-weight: 700; background: var(--c-accent); border-color: var(--c-accent); color: var(--c-on); }
+  .dsa-b2 { height: 20px; padding: 0 9px;  border-radius: 2px;  margin: 0 4px 4px 0;  font-size: 9px; }
+  .dsa-b3 { height: 20px; padding: 0 9px;  border-radius: 2px;  margin: 0 12px 4px 0; font-size: 9px; }
+  .dsa-b4 { height: 24px; padding: 0 7px;  border-radius: 7px;  margin: 0 8px 4px 0;  font-size: 10px; color: var(--c-muted); }
+  .dsa-b5 { height: 23px; padding: 0 11px; border-radius: 4px;  margin: 0 0 4px 0;    font-size: 9.5px; opacity: 0.55; }
+
+  /* Resolved, and only inside the draft frame: one height, one radius, one
+     rhythm, and a hierarchy you can see — a single primary, a secondary
+     beside it, a destructive that reads as destructive, and a disabled state
+     that reads as disabled rather than as faint. */
+  #dsa[data-fix=&quot;btn&quot;] .dsa-af .dsa-b {
+    height: 26px;
+    padding: 0 11px;
+    border-radius: 4px;
+    margin: 0 7px 5px 0;
+    font-size: 10px;
+    font-weight: 600;
+    background: var(--c-surface);
+    border-color: var(--c-border);
+    color: var(--c-text);
+    opacity: 1;
+  }
+
+  #dsa[data-fix=&quot;btn&quot;] .dsa-af .dsa-b1 {
+    background: var(--c-accent); border-color: var(--c-accent); color: var(--c-on);
+  }
+
+  #dsa[data-fix=&quot;btn&quot;] .dsa-af .dsa-b3 { display: none; }
+
+  #dsa[data-fix=&quot;btn&quot;] .dsa-af .dsa-b4 {
+    background: none; border-color: var(--c-danger); color: var(--c-danger);
+  }
+
+  #dsa[data-fix=&quot;btn&quot;] .dsa-af .dsa-b5 {
+    background: var(--c-sunken); border-color: var(--c-border);
+    color: var(--c-muted); opacity: 1;
+  }
+
+  #dsa[data-fix=&quot;btn&quot;] .dsa-af .dsa-b5::after {
+    content: &quot; · disabled&quot;;
+    font-size: 8px; font-weight: 600; letter-spacing: 0.02em;
+  }
+
+  /* The spacing measurement between two components. */
+  .dsa-meas {
+    display: flex; align-items: center; gap: 4px;
+    color: var(--pp); font-size: 7.5px; font-weight: 700; letter-spacing: 0.06em;
+    opacity: 0;
+    transition: opacity 200ms linear;
+  }
+
+  .dsa-meas.is-on { opacity: 1; }
+
+  .dsa-meas i {
+    display: block; height: 1px; width: 22px;
+    background: var(--pp);
+    position: relative;
+  }
+
+  .dsa-meas i::before, .dsa-meas i::after {
+    content: &quot;&quot;; position: absolute; top: -2px; width: 1px; height: 5px; background: var(--pp);
+  }
+  .dsa-meas i::before { left: 0; }
+  .dsa-meas i::after  { right: 0; }
+
+  /* Variant labels under a component set. */
+  .dsa-vars { display: flex; flex-wrap: wrap; gap: 4px 5px; }
+
+  .dsa-var {
+    padding: 1px 5px; border-radius: 2px;
+    border: 1px dashed var(--pp);
+    color: var(--pp);
+    font-size: 7px; font-weight: 700; letter-spacing: 0.08em;
+    opacity: 0;
+    transition: opacity 220ms linear;
+  }
+
+  .dsa-vars.is-on .dsa-var { opacity: 1; }
+  .dsa-vars.is-on .dsa-var:nth-child(2) { transition-delay: 70ms; }
+  .dsa-vars.is-on .dsa-var:nth-child(3) { transition-delay: 140ms; }
+  .dsa-vars.is-on .dsa-var:nth-child(4) { transition-delay: 210ms; }
+
+  /* ---- responsive ----------------------------------------------------- */
+
+  .dsa-wrow {
+    display: flex; align-items: center; gap: 6px;
+    flex: 0 0 auto;
+    color: var(--ink-3); font-size: 8px; font-weight: 700; letter-spacing: 0.1em;
+  }
+
+  .dsa-wnum {
+    margin-left: auto;
+    padding: 1px 5px; border-radius: 2px;
+    background: var(--pp); color: #FFF;
+    font-size: 8px; font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
+  }
+
+  /* Three frames, one per breakpoint, drawn at their relative widths — the
+     staircase is the point. */
+  .dsa-bp  { transition: opacity 260ms linear; }
+  .dsa-bp1 { width: 64%; }
+  .dsa-bp2 { width: 82%; }
+  .dsa-bp3 { width: 100%; }
+
+  .dsa-bp[data-off] { opacity: 0.3; }
+
+  /* Column guides, the way a layout grid draws them. */
+  .dsa-guides {
+    position: absolute; inset: 1px;
+    display: flex; gap: 3px;
+    padding: 0 3px;
+    pointer-events: none;
+  }
+
+  .dsa-guides span { flex: 1; background: rgba(123, 97, 255, 0.09); }
+
+  .dsa-bp1 .dsa-guides span:nth-child(n + 5),
+  .dsa-bp2 .dsa-guides span:nth-child(n + 7) { display: none; }
+
+  /* Modules inside the frame reflow rather than scale. */
+  .dsa-mods { position: relative; display: grid; gap: 5px; grid-template-columns: 1fr; }
+  .dsa-bp2 .dsa-mods { grid-template-columns: 1fr 1fr; }
+  .dsa-bp3 .dsa-mods { grid-template-columns: 1fr 1fr 1fr; }
+
+  .dsa-mod {
+    height: 26px;
+    border: 1px solid var(--c-border);
+    border-radius: 2px;
+    background: var(--c-sunken);
+    display: flex; align-items: center; padding: 0 7px;
+    color: var(--c-muted); font-size: 7.5px; font-weight: 600; letter-spacing: 0.06em;
+    overflow: hidden;
+    transition: background-color 260ms linear, border-color 260ms linear, color 260ms linear;
+  }
+
+  /* ---- themes --------------------------------------------------------- */
+
+  .dsa-toks { display: grid; gap: 6px; }
+
+  /* The rows live inside the component frame, so they take the theme&#x27;s own
+     text colours rather than the canvas&#x27;s — a slate label on a dark surface
+     would be the one thing in an audit about contrast that fails it. */
+  .dsa-tok {
+    display: flex; align-items: center; gap: 6px;
+    color: var(--c-text); font-size: 8.5px;
+    transition: color 260ms linear;
+  }
+
+  .dsa-chipc {
+    width: 22px; height: 13px; flex: 0 0 auto;
+    border: 1px solid var(--c-border);
+    border-radius: 2px;
+    transition: background-color 260ms linear, border-color 260ms linear;
+  }
+
+  .dsa-tok b { font-weight: 600; letter-spacing: 0.02em; }
+  .dsa-tok span {
+    margin-left: auto; color: var(--c-muted);
+    font-size: 7.5px; letter-spacing: 0.04em;
+    transition: color 260ms linear;
+  }
+
+  .t-surface { background: var(--c-surface); }
+  .t-border  { background: var(--c-border); }
+  .t-accent  { background: var(--c-accent); border-color: var(--c-accent); }
+  .t-sel     { background: var(--c-sel); }
+
+  .dsa-themeb { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+
+  .dsa-mini, .dsa-mini2 {
+    height: 26px; padding: 0 11px;
+    display: inline-flex; align-items: center;
+    border-radius: 4px;
+    font-size: 10px; font-weight: 600;
+    transition: background-color 260ms linear, color 260ms linear, border-color 260ms linear;
+  }
+
+  .dsa-mini  { border: 1px solid var(--c-accent); background: var(--c-accent); color: var(--c-on); }
+  .dsa-mini2 { border: 1px solid var(--c-border); background: var(--c-surface); color: var(--c-text); }
+
+  .dsa-field {
+    display: flex; align-items: center;
+    height: 26px; padding: 0 9px;
+    border: 1px solid var(--c-border); border-radius: 4px;
+    background: var(--c-sunken); color: var(--c-muted);
+    font-size: 9.5px;
+    transition: background-color 260ms linear, color 260ms linear, border-color 260ms linear;
+  }
+
+  .dsa-ratio {
+    display: flex; align-items: center; gap: 5px;
+    color: var(--pp); font-size: 7.5px; font-weight: 700; letter-spacing: 0.06em;
+    opacity: 0;
+    transition: opacity 220ms linear;
+  }
+
+  .dsa-ratio.is-on { opacity: 1; }
+
+  /* Same purple, lightened enough to clear 7:1 on the dark surface. */
+  #dsa[data-tok=&quot;dark&quot;] .dsa-ratio { color: #B7A8FF; }
+
+  /* ---- filtering ------------------------------------------------------ */
+
+  .dsa-chips { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+
+  .dsa-c {
+    display: inline-flex; align-items: center; gap: 4px;
+    height: 21px; padding: 0 8px;
+    border: 1px solid var(--c-border); border-radius: 3px;
+    background: var(--c-surface); color: var(--c-text);
+    font-size: 9px; font-weight: 600; white-space: nowrap;
+    transition: height 320ms cubic-bezier(.4,0,.2,1),
+                padding 320ms cubic-bezier(.4,0,.2,1),
+                border-radius 320ms cubic-bezier(.4,0,.2,1),
+                background-color 220ms linear, border-color 220ms linear,
+                color 220ms linear, opacity 220ms linear;
+  }
+
+  .dsa-c1 { height: 25px; border-radius: 13px; padding: 0 12px; }
+  .dsa-c2 { height: 18px; border-radius: 2px;  padding: 0 5px; font-size: 8px; }
+  .dsa-c3 { height: 23px; border-radius: 7px;  padding: 0 10px; }
+  .dsa-c4 { height: 19px; border-radius: 2px;  padding: 0 6px; opacity: 0.5; }
+
+  #dsa[data-fix=&quot;flt&quot;] .dsa-af .dsa-c {
+    height: 21px; border-radius: 3px; padding: 0 8px; font-size: 9px; opacity: 1;
+  }
+
+  #dsa[data-fix=&quot;flt&quot;] .dsa-af .dsa-c.sel {
+    background: var(--c-sel); border-color: var(--c-accent); color: var(--c-text);
+  }
+
+  #dsa[data-fix=&quot;flt&quot;] .dsa-af .dsa-c.dis {
+    background: var(--c-sunken); color: var(--c-muted); opacity: 1;
+  }
+
+  .dsa-x {
+    display: none;
+    width: 10px; height: 10px; border-radius: 2px;
+    background: var(--c-accent); color: var(--c-on);
+    font-size: 7px; line-height: 10px; text-align: center;
+  }
+
+  #dsa[data-fix=&quot;flt&quot;] .dsa-af .dsa-c.sel .dsa-x { display: block; }
+
+  .dsa-clear {
+    color: var(--c-accent); font-size: 8.5px; font-weight: 700;
+    text-decoration: underline; text-underline-offset: 2px;
+    opacity: 0;
+    transition: opacity 220ms linear, color 260ms linear;
+  }
+
+  #dsa[data-fix=&quot;flt&quot;] .dsa-af .dsa-clear { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #dsa, #dsa * { transition: none !important; animation: none !important; }
+  }
+&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;div id=&quot;dsa&quot; data-tok=&quot;light&quot;&gt;
+
+  &lt;div class=&quot;dsa-bar&quot;&gt;
+    &lt;div class=&quot;dsa-steps&quot;&gt;
+      &lt;span class=&quot;dsa-step&quot; id=&quot;dsa-s1&quot;&gt;BUTTONS&lt;/span&gt;
+      &lt;span class=&quot;dsa-step&quot; id=&quot;dsa-s2&quot;&gt;RESPONSIVE&lt;/span&gt;
+      &lt;span class=&quot;dsa-step&quot; id=&quot;dsa-s3&quot;&gt;THEMES&lt;/span&gt;
+      &lt;span class=&quot;dsa-step&quot; id=&quot;dsa-s4&quot;&gt;FILTERING&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;span class=&quot;dsa-file&quot;&gt;Design system · audit&lt;/span&gt;
+  &lt;/div&gt;
+
+  &lt;div class=&quot;dsa-stage&quot;&gt;
+
+    &lt;!-- ============================= BUTTONS ============================ --&gt;
+    &lt;section class=&quot;dsa-act&quot; id=&quot;dsa-a1&quot; data-on&gt;
+
+      &lt;div class=&quot;dsa-frame dsa-grow&quot;&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Actions &lt;span class=&quot;dsa-tagx bad&quot;&gt;BEFORE&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsa-box&quot;&gt;
+          &lt;div class=&quot;dsa-row&quot;&gt;
+            &lt;button class=&quot;dsa-b dsa-b1&quot;&gt;Continue&lt;/button&gt;
+            &lt;button class=&quot;dsa-b dsa-b2&quot;&gt;Yes&lt;/button&gt;
+            &lt;button class=&quot;dsa-b dsa-b3&quot;&gt;No&lt;/button&gt;
+            &lt;button class=&quot;dsa-b dsa-b4&quot;&gt;Delete&lt;/button&gt;
+            &lt;button class=&quot;dsa-b dsa-b5&quot;&gt;Send&lt;/button&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;dsa-cals&quot;&gt;
+            &lt;div class=&quot;dsa-cal&quot;&gt;Four heights, four radii, no shared spacing&lt;/div&gt;
+            &lt;div class=&quot;dsa-cal&quot;&gt;“Continue” to where? “Yes / No” to what?&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;dsa-frame dsa-grow dsa-af&quot; id=&quot;dsa-f1&quot;&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Actions &lt;span class=&quot;dsa-tagx bad&quot; id=&quot;dsa-t1&quot;&gt;DRAFT&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsa-box&quot;&gt;
+          &lt;div class=&quot;dsa-row&quot;&gt;
+            &lt;button class=&quot;dsa-b dsa-b1&quot; id=&quot;dsa-bb1&quot;&gt;Continue&lt;/button&gt;
+            &lt;button class=&quot;dsa-b dsa-b2&quot; id=&quot;dsa-bb2&quot;&gt;Yes&lt;/button&gt;
+            &lt;button class=&quot;dsa-b dsa-b3&quot;&gt;No&lt;/button&gt;
+            &lt;button class=&quot;dsa-b dsa-b4&quot; id=&quot;dsa-bb4&quot;&gt;Delete&lt;/button&gt;
+            &lt;button class=&quot;dsa-b dsa-b5&quot; id=&quot;dsa-bb5&quot;&gt;Send&lt;/button&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;dsa-meas&quot; id=&quot;dsa-m1&quot;&gt;&lt;i&gt;&lt;/i&gt;8&lt;/div&gt;
+          &lt;div class=&quot;dsa-vars&quot; id=&quot;dsa-v1&quot;&gt;
+            &lt;span class=&quot;dsa-var&quot;&gt;PRIMARY&lt;/span&gt;
+            &lt;span class=&quot;dsa-var&quot;&gt;SECONDARY&lt;/span&gt;
+            &lt;span class=&quot;dsa-var&quot;&gt;DESTRUCTIVE&lt;/span&gt;
+            &lt;span class=&quot;dsa-var&quot;&gt;DISABLED&lt;/span&gt;
+          &lt;/div&gt;
+          &lt;span class=&quot;dsa-h1&quot;&gt;&lt;/span&gt;&lt;span class=&quot;dsa-h2&quot;&gt;&lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;dsa-note&quot;&gt;&lt;span class=&quot;dsa-pin&quot; id=&quot;dsa-p1&quot;&gt;&lt;/span&gt;&lt;span id=&quot;dsa-n1&quot;&gt;Five treatments, and not one label names the outcome&lt;/span&gt;&lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;!-- ============================ RESPONSIVE ========================== --&gt;
+    &lt;section class=&quot;dsa-act&quot; id=&quot;dsa-a2&quot;&gt;
+      &lt;div class=&quot;dsa-wrow&quot;&gt;FRAME WIDTH &lt;span class=&quot;dsa-wnum&quot; id=&quot;dsa-w&quot;&gt;1280&lt;/span&gt;&lt;/div&gt;
+
+      &lt;div class=&quot;dsa-frame dsa-grow dsa-bp dsa-bp1&quot; id=&quot;dsa-r1&quot; data-off&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Workspace · 1280 &lt;span class=&quot;dsa-tagx&quot;&gt;4 COL&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsa-box&quot;&gt;
+          &lt;div class=&quot;dsa-guides&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;dsa-mods&quot;&gt;&lt;div class=&quot;dsa-mod&quot;&gt;MODULE&lt;/div&gt;&lt;/div&gt;
+          &lt;span class=&quot;dsa-h1&quot;&gt;&lt;/span&gt;&lt;span class=&quot;dsa-h2&quot;&gt;&lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;dsa-frame dsa-grow dsa-bp dsa-bp2&quot; id=&quot;dsa-r2&quot; data-off&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Workspace · 1440 &lt;span class=&quot;dsa-tagx&quot;&gt;6 COL&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsa-box&quot;&gt;
+          &lt;div class=&quot;dsa-guides&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;dsa-mods&quot;&gt;&lt;div class=&quot;dsa-mod&quot;&gt;MODULE&lt;/div&gt;&lt;div class=&quot;dsa-mod&quot;&gt;MODULE&lt;/div&gt;&lt;/div&gt;
+          &lt;span class=&quot;dsa-h1&quot;&gt;&lt;/span&gt;&lt;span class=&quot;dsa-h2&quot;&gt;&lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;dsa-frame dsa-grow dsa-bp dsa-bp3&quot; id=&quot;dsa-r3&quot; data-off&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Workspace · 1600 &lt;span class=&quot;dsa-tagx&quot;&gt;8 COL&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsa-box&quot;&gt;
+          &lt;div class=&quot;dsa-guides&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;dsa-mods&quot;&gt;&lt;div class=&quot;dsa-mod&quot;&gt;MODULE&lt;/div&gt;&lt;div class=&quot;dsa-mod&quot;&gt;MODULE&lt;/div&gt;&lt;div class=&quot;dsa-mod&quot;&gt;MODULE&lt;/div&gt;&lt;/div&gt;
+          &lt;span class=&quot;dsa-h1&quot;&gt;&lt;/span&gt;&lt;span class=&quot;dsa-h2&quot;&gt;&lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;dsa-note&quot;&gt;&lt;span class=&quot;dsa-pin is-ok&quot;&gt;&lt;/span&gt;&lt;span id=&quot;dsa-n2&quot;&gt;One auto-layout rule, three breakpoints — the columns resolve, the components hold&lt;/span&gt;&lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;!-- ============================== THEMES ============================ --&gt;
+    &lt;section class=&quot;dsa-act&quot; id=&quot;dsa-a3&quot;&gt;
+
+      &lt;div class=&quot;dsa-frame dsa-grow is-sel&quot; id=&quot;dsa-f3&quot;&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Variables &lt;span class=&quot;dsa-tagx good&quot; id=&quot;dsa-t3&quot;&gt;LIGHT&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsa-box&quot;&gt;
+          &lt;div class=&quot;dsa-toks&quot;&gt;
+            &lt;div class=&quot;dsa-tok&quot;&gt;&lt;span class=&quot;dsa-chipc t-surface&quot;&gt;&lt;/span&gt;&lt;b&gt;surface&lt;/b&gt;&lt;span&gt;SURFACE&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;dsa-tok&quot;&gt;&lt;span class=&quot;dsa-chipc t-border&quot;&gt;&lt;/span&gt;&lt;b&gt;border&lt;/b&gt;&lt;span&gt;STROKE&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;dsa-tok&quot;&gt;&lt;span class=&quot;dsa-chipc t-sel&quot;&gt;&lt;/span&gt;&lt;b&gt;state.selected&lt;/b&gt;&lt;span&gt;STATE&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;dsa-tok&quot;&gt;&lt;span class=&quot;dsa-chipc t-accent&quot;&gt;&lt;/span&gt;&lt;b&gt;action.primary&lt;/b&gt;&lt;span&gt;ACTION&lt;/span&gt;&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;span class=&quot;dsa-h1&quot;&gt;&lt;/span&gt;&lt;span class=&quot;dsa-h2&quot;&gt;&lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;dsa-frame dsa-grow&quot;&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Components · bound to variables&lt;/div&gt;
+        &lt;div class=&quot;dsa-box&quot;&gt;
+          &lt;div class=&quot;dsa-themeb&quot;&gt;
+            &lt;span class=&quot;dsa-mini&quot;&gt;Submit order&lt;/span&gt;
+            &lt;span class=&quot;dsa-mini2&quot;&gt;Send back&lt;/span&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;dsa-field&quot;&gt;Specimen ID&lt;/div&gt;
+          &lt;div class=&quot;dsa-ratio&quot; id=&quot;dsa-ra&quot;&gt;CONTRAST · text 8.4 : 1 · action 4.9 : 1&lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;dsa-note&quot;&gt;&lt;span class=&quot;dsa-pin is-ok&quot;&gt;&lt;/span&gt;&lt;span id=&quot;dsa-n3&quot;&gt;One component, two themes — the values change, the component does not&lt;/span&gt;&lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;!-- ============================= FILTERING ========================== --&gt;
+    &lt;section class=&quot;dsa-act&quot; id=&quot;dsa-a4&quot;&gt;
+
+      &lt;div class=&quot;dsa-frame dsa-grow&quot;&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Filter &lt;span class=&quot;dsa-tagx bad&quot;&gt;BEFORE&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsa-box&quot;&gt;
+          &lt;div class=&quot;dsa-chips&quot;&gt;
+            &lt;span class=&quot;dsa-c dsa-c1 sel&quot;&gt;Priority&lt;/span&gt;
+            &lt;span class=&quot;dsa-c dsa-c2&quot;&gt;Assigned&lt;/span&gt;
+            &lt;span class=&quot;dsa-c dsa-c3 sel&quot;&gt;Open&lt;/span&gt;
+            &lt;span class=&quot;dsa-c dsa-c4 dis&quot;&gt;Archived&lt;/span&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;dsa-cals&quot;&gt;
+            &lt;div class=&quot;dsa-cal&quot;&gt;Selected and disabled read the same from a metre away&lt;/div&gt;
+            &lt;div class=&quot;dsa-cal&quot;&gt;No way out of the filters you applied&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;dsa-frame dsa-grow dsa-af&quot; id=&quot;dsa-f4&quot;&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Filter &lt;span class=&quot;dsa-tagx bad&quot; id=&quot;dsa-t4&quot;&gt;DRAFT&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsa-box&quot;&gt;
+          &lt;div class=&quot;dsa-chips&quot;&gt;
+            &lt;span class=&quot;dsa-c dsa-c1 sel&quot;&gt;Priority &lt;span class=&quot;dsa-x&quot;&gt;×&lt;/span&gt;&lt;/span&gt;
+            &lt;span class=&quot;dsa-c dsa-c2&quot;&gt;Assigned&lt;/span&gt;
+            &lt;span class=&quot;dsa-c dsa-c3 sel&quot;&gt;Open &lt;span class=&quot;dsa-x&quot;&gt;×&lt;/span&gt;&lt;/span&gt;
+            &lt;span class=&quot;dsa-c dsa-c4 dis&quot;&gt;Archived&lt;/span&gt;
+            &lt;span class=&quot;dsa-clear&quot;&gt;Clear all&lt;/span&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;dsa-vars&quot; id=&quot;dsa-v4&quot;&gt;
+            &lt;span class=&quot;dsa-var&quot;&gt;DEFAULT&lt;/span&gt;
+            &lt;span class=&quot;dsa-var&quot;&gt;SELECTED&lt;/span&gt;
+            &lt;span class=&quot;dsa-var&quot;&gt;REMOVABLE&lt;/span&gt;
+            &lt;span class=&quot;dsa-var&quot;&gt;DISABLED&lt;/span&gt;
+          &lt;/div&gt;
+          &lt;span class=&quot;dsa-h1&quot;&gt;&lt;/span&gt;&lt;span class=&quot;dsa-h2&quot;&gt;&lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;dsa-note&quot;&gt;&lt;span class=&quot;dsa-pin&quot; id=&quot;dsa-p4&quot;&gt;&lt;/span&gt;&lt;span id=&quot;dsa-n4&quot;&gt;Four chips, four shapes, and no way to tell selected from disabled&lt;/span&gt;&lt;/div&gt;
+    &lt;/section&gt;
+
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+/* ===========================================================================
+   The audit, as a timeline.
+
+   One array of [what it does, how long it stands]. Every entry writes an
+   attribute or a class and nothing else — the script never measures or
+   positions anything, so the frame&#x27;s size is never something it can get
+   wrong.
+
+   All state is closed over; the only global touched is one visibility
+   listener; everything is looked up under #dsa.
+   =========================================================================== */
+(function () {
+  &#x27;use strict&#x27;;
+
+  var root = document.getElementById(&#x27;dsa&#x27;);
+  if (!root) return;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var acts = { a1: $(&#x27;dsa-a1&#x27;), a2: $(&#x27;dsa-a2&#x27;), a3: $(&#x27;dsa-a3&#x27;), a4: $(&#x27;dsa-a4&#x27;) };
+  var steps = [$(&#x27;dsa-s1&#x27;), $(&#x27;dsa-s2&#x27;), $(&#x27;dsa-s3&#x27;), $(&#x27;dsa-s4&#x27;)];
+  var bps = [$(&#x27;dsa-r1&#x27;), $(&#x27;dsa-r2&#x27;), $(&#x27;dsa-r3&#x27;)];
+
+  var still = window.matchMedia &amp;&amp;
+              window.matchMedia(&#x27;(prefers-reduced-motion: reduce)&#x27;).matches;
+
+  function act(k, n) {
+    for (var id in acts) {
+      if (id === k) acts[id].setAttribute(&#x27;data-on&#x27;, &#x27;&#x27;);
+      else acts[id].removeAttribute(&#x27;data-on&#x27;);
+    }
+    for (var i = 0; i &lt; steps.length; i++) steps[i].classList.toggle(&#x27;is-on&#x27;, i === n);
+  }
+
+  function tag(el, text, good) {
+    el.textContent = text;
+    el.className = &#x27;dsa-tagx &#x27; + (good ? &#x27;good&#x27; : &#x27;bad&#x27;);
+  }
+
+  function label(id, text) { $(id).textContent = text; }
+
+  /* Which breakpoint frame is the live one; the ones above it stay, the ones
+     below it wait. */
+  function bp(n) {
+    for (var i = 0; i &lt; bps.length; i++) {
+      bps[i].classList.toggle(&#x27;is-sel&#x27;, i === n);
+      if (i &lt;= n) bps[i].removeAttribute(&#x27;data-off&#x27;);
+      else bps[i].setAttribute(&#x27;data-off&#x27;, &#x27;&#x27;);
+    }
+  }
+
+  /* The four passes, in order. */
+  var T = [
+    /* ---- buttons: what was found ------------------------------------ */
+    [function () {
+      act(&#x27;a1&#x27;, 0);
+      root.removeAttribute(&#x27;data-fix&#x27;);
+      root.setAttribute(&#x27;data-tok&#x27;, &#x27;light&#x27;);
+      $(&#x27;dsa-f1&#x27;).classList.remove(&#x27;is-sel&#x27;);
+      $(&#x27;dsa-m1&#x27;).classList.remove(&#x27;is-on&#x27;);
+      $(&#x27;dsa-v1&#x27;).classList.remove(&#x27;is-on&#x27;);
+      $(&#x27;dsa-v4&#x27;).classList.remove(&#x27;is-on&#x27;);
+      $(&#x27;dsa-ra&#x27;).classList.remove(&#x27;is-on&#x27;);
+      $(&#x27;dsa-f4&#x27;).classList.remove(&#x27;is-sel&#x27;);
+      $(&#x27;dsa-p1&#x27;).className = &#x27;dsa-pin&#x27;;
+      $(&#x27;dsa-p4&#x27;).className = &#x27;dsa-pin&#x27;;
+      tag($(&#x27;dsa-t1&#x27;), &#x27;DRAFT&#x27;, false);
+      tag($(&#x27;dsa-t4&#x27;), &#x27;DRAFT&#x27;, false);
+      $(&#x27;dsa-bb1&#x27;).textContent = &#x27;Continue&#x27;;
+      $(&#x27;dsa-bb2&#x27;).textContent = &#x27;Yes&#x27;;
+      $(&#x27;dsa-bb4&#x27;).textContent = &#x27;Delete&#x27;;
+      $(&#x27;dsa-bb5&#x27;).textContent = &#x27;Send&#x27;;
+      label(&#x27;dsa-n1&#x27;, &#x27;Five treatments, and not one label names the outcome&#x27;);
+      label(&#x27;dsa-n4&#x27;, &#x27;Four chips, four shapes, and no way to tell selected from disabled&#x27;);
+      label(&#x27;dsa-w&#x27;, &#x27;1280&#x27;);
+      bp(-1);
+    }, 2000],
+
+    [function () { $(&#x27;dsa-f1&#x27;).classList.add(&#x27;is-sel&#x27;); }, 900],
+
+    /* ---- buttons: the language first, then the system ---------------- */
+    [function () {
+      $(&#x27;dsa-bb1&#x27;).textContent = &#x27;Submit order&#x27;;
+      $(&#x27;dsa-bb2&#x27;).textContent = &#x27;Approve request&#x27;;
+      $(&#x27;dsa-bb4&#x27;).textContent = &#x27;Cancel order&#x27;;
+      $(&#x27;dsa-bb5&#x27;).textContent = &#x27;Release result&#x27;;
+      label(&#x27;dsa-n1&#x27;, &#x27;Every label now names its outcome, not its direction&#x27;);
+    }, 1700],
+
+    [function () {
+      root.setAttribute(&#x27;data-fix&#x27;, &#x27;btn&#x27;);
+      tag($(&#x27;dsa-t1&#x27;), &#x27;AFTER&#x27;, true);
+      label(&#x27;dsa-n1&#x27;, &#x27;One primary, one secondary, one destructive, one disabled&#x27;);
+      $(&#x27;dsa-p1&#x27;).className = &#x27;dsa-pin is-ok&#x27;;
+    }, 1400],
+
+    [function () { $(&#x27;dsa-m1&#x27;).classList.add(&#x27;is-on&#x27;); }, 900],
+    [function () { $(&#x27;dsa-v1&#x27;).classList.add(&#x27;is-on&#x27;); }, 1900],
+
+    /* ---- responsive --------------------------------------------------- */
+    [function () { act(&#x27;a2&#x27;, 1); bp(0); label(&#x27;dsa-w&#x27;, &#x27;1280&#x27;); }, 1500],
+    [function () { bp(1); label(&#x27;dsa-w&#x27;, &#x27;1440&#x27;); }, 1500],
+    [function () { bp(2); label(&#x27;dsa-w&#x27;, &#x27;1600&#x27;); }, 1900],
+
+    /* ---- themes ------------------------------------------------------- */
+    [function () { act(&#x27;a3&#x27;, 2); }, 1300],
+    [function () {
+      root.setAttribute(&#x27;data-tok&#x27;, &#x27;dark&#x27;);
+      tag($(&#x27;dsa-t3&#x27;), &#x27;DARK&#x27;, true);
+      label(&#x27;dsa-n3&#x27;, &#x27;Surface, stroke, state and action all re-bind at once&#x27;);
+    }, 1500],
+    [function () { $(&#x27;dsa-ra&#x27;).classList.add(&#x27;is-on&#x27;); }, 1600],
+    [function () {
+      root.setAttribute(&#x27;data-tok&#x27;, &#x27;light&#x27;);
+      tag($(&#x27;dsa-t3&#x27;), &#x27;LIGHT&#x27;, true);
+      label(&#x27;dsa-n3&#x27;, &#x27;One component, two themes — the values change, the component does not&#x27;);
+    }, 1500],
+
+    /* ---- filtering ---------------------------------------------------- */
+    [function () { act(&#x27;a4&#x27;, 3); }, 1700],
+    [function () { $(&#x27;dsa-f4&#x27;).classList.add(&#x27;is-sel&#x27;); }, 800],
+    [function () {
+      root.setAttribute(&#x27;data-fix&#x27;, &#x27;flt&#x27;);
+      tag($(&#x27;dsa-t4&#x27;), &#x27;AFTER&#x27;, true);
+      $(&#x27;dsa-p4&#x27;).className = &#x27;dsa-pin is-ok&#x27;;
+      label(&#x27;dsa-n4&#x27;, &#x27;One chip with four states, and a way out of all of them&#x27;);
+    }, 1300],
+    [function () { $(&#x27;dsa-v4&#x27;).classList.add(&#x27;is-on&#x27;); }, 2600]
+  ];
+
+  var i = 0, timer = null, running = false;
+
+  function step() {
+    if (i &gt;= T.length) i = 0;
+    var entry = T[i++];
+    entry[0]();
+    timer = setTimeout(step, entry[1]);
+  }
+
+  function play() { if (running || still) return; running = true; step(); }
+  function pause() { running = false; clearTimeout(timer); }
+
+  /* Reduced motion: the audited state, standing still. */
+  if (still) {
+    root.setAttribute(&#x27;data-fix&#x27;, &#x27;flt&#x27;);
+    act(&#x27;a4&#x27;, 3);
+    $(&#x27;dsa-f4&#x27;).classList.add(&#x27;is-sel&#x27;);
+    $(&#x27;dsa-v4&#x27;).classList.add(&#x27;is-on&#x27;);
+    tag($(&#x27;dsa-t4&#x27;), &#x27;AFTER&#x27;, true);
+    $(&#x27;dsa-p4&#x27;).className = &#x27;dsa-pin is-ok&#x27;;
+    label(&#x27;dsa-n4&#x27;, &#x27;One chip with four states, and a way out of all of them&#x27;);
+    return;
+  }
+
+  document.addEventListener(&#x27;visibilitychange&#x27;, function () {
+    if (document.hidden) pause(); else play();
+  });
+
+  play();
+})();
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+"
+                            title="Design System Audit — component workspace" loading="lazy"
+                            scrolling="no" tabindex="-1"></iframe>
+                  </div>
+                </div>
               </article>
               <article class="pv__slide" data-pv-slide data-mode="design" data-href="#" data-placeholder-link
                        role="tabpanel" aria-label="PNC Bank" hidden>
@@ -21033,16 +22070,19 @@ window.PF = window.PF || {};
      and nothing below the thread moves when you switch. */
   var ROLES = {
     design: [
-      [{ t: 'Namaskar \uD83D\uDC4B\uD83C\uDFFD Nice to meet you.' }],
+      [{ t: 'Namaskar', k: 'namaskar' }, { t: ' \uD83D\uDC4B\uD83C\uDFFD Nice to meet you.' }],
       [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true },
-       { t: ', a Product Designer based in Austin, TX' }],
-      [{ t: 'I design products that make complex things feel simple.' }],
+       { t: ', a ' }, { t: 'Product Designer', k: 'craft' },
+       { t: ' based in Austin, TX' }],
+      [{ t: 'I design products that make ' }, { t: 'complex', k: 'complex' },
+       { t: ' things feel ' }, { t: 'simple', k: 'simple' }, { t: '.' }],
       [{ t: 'I\u2019ve worked across healthcare, biotechnology, financial services, and enterprise systems.' }],
       [{ t: 'I design for the workflow, not just the screen.' }],
-      [{ t: 'I could keep explaining, but hiring me is faster.' }]
+      [{ t: 'I could keep explaining, but hiring me is ' },
+       { t: 'faster', k: 'faster' }, { t: '.' }]
     ],
     illustration: [
-      [{ t: 'Namaskar \uD83D\uDC4B\uD83C\uDFFD Nice to meet you.' }],
+      [{ t: 'Namaskar', k: 'namaskar' }, { t: ' \uD83D\uDC4B\uD83C\uDFFD Nice to meet you.' }],
       [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true },
        { t: ', and I draw as much as I design.' }],
       [{ t: 'Illustration is where I work an idea out before it becomes an interface.' }],
@@ -21050,7 +22090,7 @@ window.PF = window.PF || {};
       [{ t: 'Drawing is where I find the idea, not where I decorate it.' }]
     ],
     music: [
-      [{ t: 'Namaskar \uD83D\uDC4B\uD83C\uDFFD Nice to meet you.' }],
+      [{ t: 'Namaskar', k: 'namaskar' }, { t: ' \uD83D\uDC4B\uD83C\uDFFD Nice to meet you.' }],
       [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true },
        { t: ', and off the clock I make house music.' }],
       [{ t: 'Same instinct as design: build the arrangement, then take things out.' }],
@@ -21063,11 +22103,19 @@ window.PF = window.PF || {};
     return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  /* Runs to markup. Written once per role change, never per frame. */
+  /* Runs to markup. Written once per role change, never per frame.
+
+     A run is plain text, the one emphasised name, or a keyword — `k` names
+     the gradient the word carries. The class is all this does: the fill, the
+     angle and the speed all live in the stylesheet, so a keyword here costs
+     one span and nothing else. */
   function render(msg) {
     var out = '';
     for (var i = 0; i < msg.length; i++) {
-      out += msg[i].em ? '<em>' + esc(msg[i].t) + '</em>' : esc(msg[i].t);
+      var t = esc(msg[i].t);
+      if (msg[i].em) out += '<em>' + t + '</em>';
+      else if (msg[i].k) out += '<span class="kw kw--' + msg[i].k + '">' + t + '</span>';
+      else out += t;
     }
     return out;
   }
@@ -21160,7 +22208,7 @@ window.PF = window.PF || {};
        retires, as the fifth arrives, and the thread comes to rest showing
        messages two to five. */
     var VISIBLE = 4;
-    var heights = [], step = [], boxH = 0, gap = 0;
+    var heights = [], gaps = [], step = [], boxH = 0;
 
     function reserve() {
       var i, prev = [];
@@ -21171,28 +22219,33 @@ window.PF = window.PF || {};
       }
 
       /* One read pass, so the layout is computed once rather than once per
-         row. The gap comes from the stylesheet rather than from a constant
-         here — it is a design-system value, not a behaviour. */
+         row. The gaps come from the stylesheet rather than from a constant
+         here — they are design-system values, not behaviour — and there is one
+         PER ROW now rather than one for the thread: a message that starts a
+         new cluster sits further from the one above it than a message that
+         continues one, so a single number would be wrong for two rows in every
+         three. */
       heights = [];
-      for (i = 0; i < count; i++) heights.push(rows[i].getBoundingClientRect().height);
-      gap = count > 1
-        ? parseFloat(window.getComputedStyle(rows[1]).marginTop) || 0
-        : 0;
+      gaps = [];
+      for (i = 0; i < count; i++) {
+        heights.push(rows[i].getBoundingClientRect().height);
+        gaps.push(i === 0 ? 0 : parseFloat(window.getComputedStyle(rows[i]).marginTop) || 0);
+      }
 
       for (i = 0; i < count; i++) {
         rows[i].style.minHeight = Math.ceil(heights[i]) + 'px';
         rows[i].setAttribute('data-state', prev[i]);
       }
 
-      /* The tallest window of three. */
+      /* The tallest window the sequence produces, measured with the gaps that
+         actually fall inside each one. */
       boxH = 0;
       for (i = 0; i + VISIBLE <= count; i++) {
-        var h = 0;
-        for (var j = 0; j < VISIBLE; j++) h += heights[i + j];
-        h += gap * (VISIBLE - 1);
+        var h = heights[i];
+        for (var j = 1; j < VISIBLE; j++) h += gaps[i + j] + heights[i + j];
         if (h > boxH) boxH = h;
       }
-      if (!boxH) for (i = 0; i < count; i++) boxH += heights[i] + (i ? gap : 0);
+      if (!boxH) for (i = 0; i < count; i++) boxH += heights[i] + gaps[i];
 
       /* The reaction tray is absolutely positioned and hangs below its bubble,
          so no row's measured height contains it. Clipping the box at the last
@@ -21209,9 +22262,12 @@ window.PF = window.PF || {};
         }
       }
 
-      /* How far the track travels to retire each row. */
+      /* How far the track travels to retire each row: that row's height plus
+         the gap under it, which is the NEXT row's top margin. */
       step = [];
-      for (i = 0; i < count; i++) step.push(heights[i] + gap);
+      for (i = 0; i < count; i++) {
+        step.push(heights[i] + (i + 1 < count ? gaps[i + 1] : 0));
+      }
 
       /* The box is fixed whether or not anything is going to move in it: a
          reduced-motion visit shows the last four messages, which is the same
@@ -21351,11 +22407,60 @@ window.PF = window.PF || {};
 
     function resetReactions() {
       for (var i = 0; i < chips.length; i++) {
-        chips[i].classList.remove('is-on');
+        chips[i].classList.remove('is-on', 'is-in', 'is-bump');
         chips[i].setAttribute('aria-pressed', 'false');
         var n = chips[i].querySelector('.rx__n');
         if (n) n.textContent = '';
       }
+    }
+
+    /* ---- the burst ------------------------------------------------------
+
+       Six chips, one at a time, in an order that tells a small story: the fire
+       lands first and climbs to four as more people hit the same one, and the
+       rest arrive around it. It is the same chip counting up rather than four
+       fire chips, which is what a reaction bar actually does.
+
+       Every chip is already in the DOM at full size and only its opacity and
+       scale change, so the tray never grows and the box that was measured
+       before any of this ran is still the right box. */
+    var RX_PLAN = [
+      ['fire', '1', 250], ['fire', '2', 250], ['fire', '3', 250], ['fire', '4', 320],
+      ['clap', '1', 200], ['hundred', '1', 200], ['hands', '1', 200],
+      ['rocket', '1', 200], ['heart', '1', 260], ['clap', '2', 200]
+    ];
+
+    function burst() {
+      thread.setAttribute('data-reactions', 'on');
+      resetReactions();
+
+      var k = 0;
+      (function nextRx() {
+        if (k >= RX_PLAN.length) {
+          phase = 'hold';
+          running = false;
+          arm();
+          return;
+        }
+        var item = RX_PLAN[k++];
+        var chip = thread.querySelector('.rx[data-rx="' + item[0] + '"]');
+        if (chip) {
+          var first = !chip.classList.contains('is-in');
+          chip.classList.add('is-in', 'is-on');
+          chip.setAttribute('aria-pressed', 'true');
+          var n = chip.querySelector('.rx__n');
+          if (n) n.textContent = item[1];
+          /* The arrival is the scale transition; a later increment is the
+             bump. Never both on the same frame — they animate the same
+             property and would fight. */
+          if (!first) {
+            chip.classList.remove('is-bump');
+            void chip.offsetWidth;
+            chip.classList.add('is-bump');
+          }
+        }
+        timer = setTimeout(nextRx, item[2]);
+      })();
     }
 
     for (var c = 0; c < chips.length; c++) {
@@ -21397,10 +22502,8 @@ window.PF = window.PF || {};
             row.setAttribute('data-state', 'settled');
             if (idx >= count) {
               timer = setTimeout(function () {
-                thread.setAttribute('data-reactions', 'on');
-                running = false;
-                phase = 'hold';
-                arm();
+                phase = 'react';
+                burst();
               }, REACT_MS);
               return;
             }
@@ -21462,6 +22565,10 @@ window.PF = window.PF || {};
       clearTimeout(timer);
       if (phase === 'hold') timer = setTimeout(restart, HOLD_MS);
       else if (phase === 'reset') restart();
+      /* The burst sets absolute states, so replaying it from the top is
+         always safe — which is what makes a pause in the middle of it
+         self-healing rather than a stuck half-row of chips. */
+      else if (phase === 'react') burst();
     }
 
     function play() {
@@ -21498,6 +22605,14 @@ window.PF = window.PF || {};
       idx = count;
       phase = 'hold';
       thread.setAttribute('data-reactions', 'on');
+      for (q = 0; q < RX_PLAN.length; q++) {
+        var c = thread.querySelector('.rx[data-rx="' + RX_PLAN[q][0] + '"]');
+        if (!c) continue;
+        c.classList.add('is-in', 'is-on');
+        c.setAttribute('aria-pressed', 'true');
+        var nn = c.querySelector('.rx__n');
+        if (nn) nn.textContent = RX_PLAN[q][1];
+      }
       return;
     }
 
@@ -21771,7 +22886,11 @@ window.PF = window.PF || {};
      preview is always contained and never cropped, and never enlarged past
      1:1 either, which would only make it soft. */
   function fit() {
-    var frames = root.querySelectorAll('.pv__embed');
+    /* Only the framed previews that are authored at a fixed size. The audit
+       is fluid — it has no --pv-w to divide by and needs no scale — and the
+       loop below skips it on that alone, but naming it here is clearer than
+       relying on a missing value. */
+    var frames = root.querySelectorAll('.pv__embed:not(.pv__embed--dsa)');
     if (!frames.length) return;
 
     /* One read pass then one write pass, so the layout is computed once
