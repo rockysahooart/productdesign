@@ -2040,6 +2040,16 @@ em,
   border-top: 0;
 }
 
+/* The strip introduces itself on a phone, where it sits high in the card under
+   the name. Everywhere else it closes the card after the introduction has
+   already made the point, and a label would be captioning the obvious. */
+.clients__label { display: none; }
+
+/* The landing place for the capabilities list on a phone (js/thread.js moves
+   the node there and back). At every other width it is an empty section, and
+   an empty section is a screenful of padding. */
+.section--capsslot:empty { display: none; }
+
 /* --------------------------------------------------------------------------
    Headshot slot
    Replace the <svg> with an <img> and drop .avatar--placeholder.
@@ -10869,12 +10879,31 @@ em,
 /* --------------------------------------------------------------------------
    Hero on a phone
 
-   Three zones, in this order: identity, conversation, one action. Not the
-   desktop composition stacked — the identity block is flat rather than boxed,
-   the portrait and the name share a row, the clock moves up beside the city it
-   reports, the plant goes (there is no width left for it to balance), and the
-   ten capabilities collapse behind a disclosure so they stop eating the first
-   screen.
+   Ordered for someone deciding in ten seconds whether to keep reading, which
+   on a phone is one column of about six inches:
+
+     1  who he is        portrait, name, discipline and city
+     2  who he has       the employer strip, labelled, directly under the name
+        worked for       rather than at the foot of the card
+     3  how to reach     phone, email, LinkedIn
+        him
+     4  where he         one line of education
+        trained
+     5  which of the     the discipline selector
+        three
+     6  how he           the conversation
+        describes it
+     7  the work         one action into Selected Work
+
+   Two things leave. The studio cluster — clock, books, window — is desk
+   scenery; it is charming at 1440 and it is four scroll-inches of charm on a
+   phone, so it goes, and with it the reason the aside existed. The ten
+   capabilities move out of the hero entirely and reappear below Selected Work
+   (js/thread.js moves the node), because a recruiter reads what he has
+   shipped before a list of what he can do.
+
+   Not the desktop composition stacked: the identity block is flat rather than
+   boxed, and the portrait and the name share a row.
    -------------------------------------------------------------------------- */
 
 @media (max-width: 719px) {
@@ -10925,29 +10954,42 @@ em,
     color: var(--ink-secondary);
   }
 
-  /* The clock joins the identity rather than sitting alone further down, at
-     about two thirds of the size it was. The plant has no spatial job left in
-     one column. */
-  .hero__aside {
-    order: 3;
-    grid-column: 2;
-    align-items: flex-start;
-    margin-top: 10px;
-  }
-
+  /* The studio goes. The clock, the shelf, the window and the plant are all
+     inside the aside, and none of them is doing work a phone has room for. */
+  .hero__aside { display: none; }
   .hero__plant, #plRoot { display: none !important; }
 
-  /* The whole cluster is scaled to two thirds, so the spine type is set larger
-     here to land at a readable size once the transform is applied. */
-  .book { font-size: 9px; letter-spacing: 0.04em; }
+  /* Zone 2 — the employers, directly under the name.
 
-  /* Books and clock scale together — they are one object, so one transform. */
-  .hero__aside .hero__deskline {
-    transform: scale(0.66);
-    transform-origin: left top;
-    /* The scaled cluster still occupies its unscaled height, so the box is
-       pulled back to what is actually painted. */
-    margin-bottom: -24px;
+     This is the strongest thing on the first screen for a stranger: five logos
+     somebody already recognises, before any claim he makes about himself. It
+     needs a label to be read as a claim rather than as decoration, and a rule
+     above it to separate it from the name without a heading. The negative
+     bottom margin that lets it close the card on desktop is cancelled — here
+     it is in the middle of one. */
+  .hero__clients {
+    order: 3;
+    grid-column: 1 / -1;
+    margin-top: 20px;
+    margin-bottom: 0;
+    padding-block: 14px 4px;
+    /* The strip carries the card's own horizontal padding so that on desktop
+       the marquee can be measured against the card's edges. Here it is one
+       item in a column that is already inside that padding, so carrying it
+       again indents the label 24px past the name above it. */
+    padding-inline: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .clients__label {
+    display: block;
+    margin: 0 0 10px;
+    font-family: var(--font-sans);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
   }
 
   /* Contact runs full width under both columns, in two compact rows. */
@@ -10980,15 +11022,18 @@ em,
   .hero__edu dd b { display: inline; }
   .hero__edu dd b::after { content: " — "; font-weight: 400; }
 
-  /* Ten capabilities, collapsed. They are still on the page and still one tap
-     away; they are simply not worth a third of the first screen. */
-  .hero__caps {
-    order: 6;
-    grid-column: 1 / -1;
-    margin-top: 12px;
-  }
+  /* Ten capabilities, collapsed — and no longer in the hero at all. The node
+     is moved below Selected Work by js/thread.js; these rules travel with it,
+     because the disclosure looks the same wherever it is standing. */
+  .hero__caps { margin-top: 12px; }
 
   .hero__caps[open] { padding-bottom: 4px; }
+
+  .section--capsslot .hero__caps {
+    margin: 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
 
   .hero__caps__sum {
     display: block;
@@ -11009,8 +11054,8 @@ em,
 
   .hero__skills { margin-top: 4px; font-size: 12px; row-gap: 6px; }
 
-  /* Conversation. */
-  .hero__copy { order: 7; grid-column: 1 / -1; margin-top: 26px; }
+  /* Zone 5 and 6 — the selector, then the conversation. */
+  .hero__copy { order: 6; grid-column: 1 / -1; margin-top: 26px; }
 
   /* The selector sits directly on the conversation rather than floating above
      it, and scrolls sideways rather than wrapping into two ragged lines. */
@@ -11066,8 +11111,10 @@ em,
 
   .msg__bubble--reacted { padding-bottom: calc(var(--hx-pad) + 10px); }
 
-  .hero__mobile-cta { order: 8; grid-column: 1 / -1; }
-  .hero__clients    { order: 9; grid-column: 1 / -1; margin-top: 8px; }
+  /* Zone 7 — the one action. It is the last thing in the card now that the
+     logo strip has moved up, so it also carries the space to the card's edge
+     that the strip used to. */
+  .hero__mobile-cta { order: 7; grid-column: 1 / -1; margin-top: 4px; }
 }
 
 /* --------------------------------------------------------------------------
@@ -11664,6 +11711,8 @@ em,
 
           
           <div class="hero__clients">
+            
+            <p class="clients__label">Experience across</p>
             <div class="clients__marquee" data-marquee>
               <ul class="clients__track">
               <li class="clients__item">
@@ -12916,6 +12965,9 @@ em,
 
     </div>
   </section>
+
+  
+  <section class="section section--capsslot" data-caps-slot></section>
 
 
   
@@ -16581,15 +16633,46 @@ window.PF = window.PF || {};
 
   /* The capabilities list is a plain block on desktop and a disclosure on a
      phone. `open` is an attribute, not a style, so the breakpoint has to be
-     read here rather than in CSS. */
+     read here rather than in CSS.
+
+     It also changes place. On a phone the first screen is meant to answer who
+     he is, who he has worked for and how to reach him — ten skills in the
+     middle of that is a list nobody scrolled for, so the whole node moves
+     below Selected Work and comes back when the viewport is wide enough for
+     the identity column to hold it. Moving the node rather than duplicating it
+     means there is only ever one of these on the page, in the accessibility
+     tree as much as on screen. */
   function caps() {
     var d = document.querySelector('.hero__caps');
     if (!d) return;
+
+    var home = d.parentNode;
+    var mark = document.createComment('caps');   /* keeps the spot in the hero */
+    home.insertBefore(mark, d);
+    var slot = document.querySelector('[data-caps-slot]');
+
     var mq = window.matchMedia('(max-width: 719px)');
+
+    function place() {
+      if (!slot) return;
+      if (mq.matches) {
+        if (d.parentNode !== slot) slot.appendChild(d);
+      } else if (d.parentNode !== home) {
+        home.insertBefore(d, mark);
+      }
+    }
+
     var sync = function () { if (!d._touched) d.open = !mq.matches; };
     d.addEventListener('toggle', function () { d._touched = true; });
+    place();
     sync();
-    if (mq.addEventListener) mq.addEventListener('change', function () { d._touched = false; sync(); });
+    if (mq.addEventListener) {
+      mq.addEventListener('change', function () {
+        d._touched = false;
+        place();
+        sync();
+      });
+    }
   }
 
   function boot() {
