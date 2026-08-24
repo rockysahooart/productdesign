@@ -1733,31 +1733,34 @@ em,
   --sky-city: #3E4654;
   --night: 0;
 
-  /* Pane geometry, declared once so the sky and the skyline can be positioned
-     from it. Both are one image spanning the whole window; each pane shows its
-     own slice, which is why the mullions cross a continuous view instead of
-     four repeats of the same one.
+  /* Pane geometry. The sky and the skyline are each one image spanning the
+     whole window, and every pane shows its own slice — which is why the
+     mullions cross a continuous view rather than eight repeats of the same
+     one. Everything the panes need to place their slice is here.
 
-     Bigger than it was — 132x106 against 92x74 — with a proportionally heavier
-     frame. It is the only object in the aside that describes where he works
-     rather than what he does, and at the old size it read as a detail on the
-     way to the plant. It is still secondary to the conversation: a third the
-     width of the message column, in the far corner. */
-  --win-w: 132px;
-  --win-h: 106px;
+     The width is not here, because the width is not a number any more. The
+     window is as wide as the books and the clock standing under it: it is the
+     wall those objects are on, so its edges are their edges. `.hero__aside` is
+     sized to the deskline (see below) and this fills it, so the relationship
+     holds at every width without a single measurement — the shelf gets wider
+     at 1440 and the window gets wider with it.
+
+     Only the height is fixed, and only two rows deep, so a window four panes
+     across still reads as a window rather than as a band. */
+  --win-h: 118px;
+  --win-cols: 4;
   --win-gap: 4px;
   --win-pad: 4px;
   --win-edge: 2px;
   --win-inset: calc(var(--win-edge) + var(--win-pad));          /* 6px */
-  --pane-w: calc((var(--win-w) - 2 * var(--win-inset) - var(--win-gap)) / 2);
   --pane-h: calc((var(--win-h) - 2 * var(--win-inset) - var(--win-gap)) / 2);
 
   position: relative;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(var(--win-cols), 1fr);
   grid-template-rows: repeat(2, 1fr);
   gap: var(--win-gap);
-  width: var(--win-w);
+  width: 100%;
   height: var(--win-h);
   padding: var(--win-pad);
   border: var(--win-edge) solid var(--ink-secondary);
@@ -1769,8 +1772,17 @@ em,
   /* The plant is drawn out of flow — it hangs above the clock rather than
      occupying a row of its own — so the aside's flow height knows nothing
      about it. This margin is the plant's own height plus air, which is what
-     puts the window above the leaves instead of behind them. */
-  margin-bottom: 224px;
+     puts the window above the leaves instead of behind them. It is also the
+     negative space between the window and the desk: the two are one scene, but
+     they are not stacked on each other. */
+  margin-bottom: 172px;
+}
+
+/* Once the shelf is wide enough to carry it, the window gets a third row's
+   worth of height — still two rows of panes, just taller ones. Below this the
+   deskline is 244px across and a 150px-tall window would be a door. */
+@media (min-width: 1200px) {
+  .studiowin { --win-h: 150px; }
 }
 
 .studiowin__pane {
@@ -1796,12 +1808,13 @@ em,
 
 /* Each pane's slice of the sky: the image is the height of the whole window,
    pulled up by however far down the window that pane starts. Vertical only —
-   the gradient has no horizontal component, so the columns need no offset. */
-.studiowin__pane:nth-child(-n + 2) {
+   the gradient has no horizontal component, so the four columns need no offset
+   at all, and the rule is two lines rather than eight. */
+.studiowin__pane:nth-child(-n + 4) {
   background-position: 0 calc(-1 * var(--win-inset));
 }
 
-.studiowin__pane:nth-child(n + 3):nth-child(-n + 4) {
+.studiowin__pane:nth-child(n + 5):nth-child(-n + 8) {
   background-position: 0
     calc(-1 * (var(--win-inset) + var(--pane-h) + var(--win-gap)));
 }
@@ -1829,14 +1842,20 @@ em,
    -------------------------------------------------------------------------- */
 
 .studiowin {
-  --skyline: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20132%20106'%20preserveAspectRatio='none'%3E%3Cg%20fill='white'%3E%3Crect%20x='0'%20y='94'%20width='15'%20height='12'/%3E%3Crect%20x='16'%20y='88'%20width='9'%20height='18'/%3E%3Crect%20x='28'%20y='86'%20width='15'%20height='20'/%3E%3Crect%20x='32.5'%20y='79'%20width='6'%20height='7'/%3E%3Ccircle%20cx='35.5'%20cy='79.4'%20r='3.6'/%3E%3Crect%20x='34.9'%20y='72'%20width='1.2'%20height='7'/%3E%3Crect%20x='46'%20y='92'%20width='10'%20height='14'/%3E%3Cpath%20d='M59%2075%20L63%2066%20L66.5%2073%20L70%2066%20L72.4%2075%20L72.4%20106%20L59%20106%20Z'/%3E%3Crect%20x='75'%20y='90'%20width='8'%20height='16'/%3E%3Crect%20x='86'%20y='68'%20width='11'%20height='38'%20rx='5'/%3E%3Crect%20x='101'%20y='72'%20width='12'%20height='11'/%3E%3Crect%20x='103'%20y='82'%20width='14'%20height='11'/%3E%3Crect%20x='101'%20y='92'%20width='15'%20height='14'/%3E%3Crect%20x='120'%20y='95'%20width='12'%20height='11'/%3E%3C/g%3E%3C/svg%3E");
+  --skyline: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20400%20150'%20preserveAspectRatio='none'%3E%3Cg%20fill='white'%3E%3Crect%20x='0'%20y='138'%20width='26'%20height='12'/%3E%3Crect%20x='30'%20y='128'%20width='16'%20height='22'/%3E%3Crect%20x='54'%20y='124'%20width='30'%20height='26'/%3E%3Crect%20x='65'%20y='110'%20width='12'%20height='14'/%3E%3Ccircle%20cx='71'%20cy='111'%20r='7'/%3E%3Crect%20x='70.2'%20y='96'%20width='1.6'%20height='15'/%3E%3Crect%20x='92'%20y='134'%20width='20'%20height='16'/%3E%3Crect%20x='118'%20y='122'%20width='16'%20height='28'/%3E%3Cpath%20d='M142%20112%20L150%2096%20L157%20108%20L164%2096%20L172%20112%20L172%20150%20L142%20150%20Z'/%3E%3Crect%20x='180'%20y='132'%20width='16'%20height='18'/%3E%3Crect%20x='204'%20y='100'%20width='26'%20height='50'%20rx='11'/%3E%3Crect%20x='238'%20y='136'%20width='14'%20height='14'/%3E%3Crect%20x='260'%20y='102'%20width='24'%20height='17'/%3E%3Crect%20x='264'%20y='118'%20width='30'%20height='17'/%3E%3Crect%20x='260'%20y='134'%20width='28'%20height='16'/%3E%3Crect%20x='302'%20y='130'%20width='18'%20height='20'/%3E%3Crect%20x='328'%20y='140'%20width='18'%20height='10'/%3E%3Crect%20x='354'%20y='126'%20width='24'%20height='24'/%3E%3Crect%20x='386'%20y='141'%20width='14'%20height='9'/%3E%3C/g%3E%3C/svg%3E");
 }
 
+/* The width the pane cannot be told: `100%` inside this pseudo-element is the
+   pane's own width, so the window's width is four of those plus the frame and
+   the three bars between them. Written that way, the skyline follows a window
+   whose width is a percentage of something else entirely — which is the whole
+   reason it can be. The same trick gives the offsets below. */
 .studiowin__pane::after {
   content: "";
   position: absolute;
-  width: var(--win-w);
-  height: var(--win-h);
+  width: calc(var(--win-cols) * 100% + 2 * var(--win-inset)
+              + (var(--win-cols) - 1) * var(--win-gap));
+  height: calc(2 * 100% + 2 * var(--win-inset) + var(--win-gap));
   background-color: var(--sky-city);
   -webkit-mask-image: var(--skyline);
           mask-image: var(--skyline);
@@ -1847,27 +1866,34 @@ em,
   pointer-events: none;
 }
 
-.studiowin__pane:nth-child(1)::after,
-.studiowin__pane:nth-child(3)::after { left: calc(-1 * var(--win-inset)); }
+/* Column offsets. Panes 1 and 5 are the left column, 2 and 6 the second, and
+   so on: one step of a pane's width plus a bar, per column crossed. */
+.studiowin__pane:nth-child(4n + 1)::after { left: calc(-1 * var(--win-inset)); }
 
-.studiowin__pane:nth-child(2)::after,
-.studiowin__pane:nth-child(4)::after {
-  left: calc(-1 * (var(--win-inset) + var(--pane-w) + var(--win-gap)));
+.studiowin__pane:nth-child(4n + 2)::after {
+  left: calc(-1 * (var(--win-inset) + 1 * (100% + var(--win-gap))));
 }
 
-.studiowin__pane:nth-child(1)::after,
-.studiowin__pane:nth-child(2)::after { top: calc(-1 * var(--win-inset)); }
+.studiowin__pane:nth-child(4n + 3)::after {
+  left: calc(-1 * (var(--win-inset) + 2 * (100% + var(--win-gap))));
+}
 
-.studiowin__pane:nth-child(3)::after,
-.studiowin__pane:nth-child(4)::after {
-  top: calc(-1 * (var(--win-inset) + var(--pane-h) + var(--win-gap)));
+.studiowin__pane:nth-child(4n + 4)::after {
+  left: calc(-1 * (var(--win-inset) + 3 * (100% + var(--win-gap))));
+}
+
+/* Row offsets. Top row first four, bottom row last four. */
+.studiowin__pane:nth-child(-n + 4)::after { top: calc(-1 * var(--win-inset)); }
+
+.studiowin__pane:nth-child(n + 5):nth-child(-n + 8)::after {
+  top: calc(-1 * (var(--win-inset) + 100% + var(--win-gap)));
 }
 
 /* Both sit in the upper-left pane, which is the only one they need. */
 .studiowin__moon {
   position: absolute;
-  top: 18px;
-  left: 18px;
+  top: 17px;
+  left: 22px;
   width: 15px;
   height: 15px;
   border-radius: 50%;
@@ -1895,11 +1921,12 @@ em,
   background: #F2EEDF;
 }
 
-/* Placed in the upper half only: below that they would be stars behind
-   buildings, which is a different thing entirely. */
-.studiowin__stars i:nth-child(1) { top: 20px; right: 30px; }
-.studiowin__stars i:nth-child(2) { top: 38px; right: 47px; opacity: 0.7; }
-.studiowin__stars i:nth-child(3) { top: 31px; right: 16px; opacity: 0.55; }
+/* Placed in the upper row only: below that they would be stars behind
+   buildings, which is a different thing entirely. Spread across the width
+   rather than clustered, now that there is width to spread across. */
+.studiowin__stars i:nth-child(1) { top: 22px; right: 22%; }
+.studiowin__stars i:nth-child(2) { top: 38px; right: 40%; opacity: 0.7; }
+.studiowin__stars i:nth-child(3) { top: 29px; right: 8%; opacity: 0.55; }
 
 @media (prefers-reduced-motion: reduce) {
   .studiowin,
@@ -2099,11 +2126,19 @@ em,
   gap: 16px;
 }
 
-/* Right rail — headshot slot above the live status. */
+/* Right rail — the studio corner: window, plant, then the shelf and the clock.
+
+   `max-content` is what makes the window possible. The column is sized to its
+   widest child, which is the deskline — the books and the clock side by side —
+   and nothing else in here contributes a width, because the window asks for
+   100% and a percentage contributes nothing to an intrinsic measurement. So
+   the column is exactly as wide as the objects on the desk, and the window
+   fills it. Widen the shelf and the window widens; nothing has to be told. */
 .hero__aside {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
+  width: max-content;
   gap: var(--s-3);
 }
 
@@ -11904,8 +11939,13 @@ em,
 
           <div class="hero__aside">
             
+            
             <div class="studiowin" data-studiowin role="img"
-                 aria-label="A studio window showing the light outside in Austin.">
+                 aria-label="A studio window looking out over the Austin skyline, showing the light outside.">
+              <span class="studiowin__pane"></span>
+              <span class="studiowin__pane"></span>
+              <span class="studiowin__pane"></span>
+              <span class="studiowin__pane"></span>
               <span class="studiowin__pane"></span>
               <span class="studiowin__pane"></span>
               <span class="studiowin__pane"></span>
