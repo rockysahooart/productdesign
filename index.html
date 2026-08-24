@@ -615,10 +615,11 @@ html {
    darkens a light wall and lightens a dark one by the same amount and neither
    theme needs its own copy.
 
-   Mottling, under it: three very wide radial gradients at two to three
-   percent, fixed to the viewport so they do not tile down a long page. This is
-   the part you feel rather than see — it is what stops a large flat surface
-   reading as a swatch.
+   The mottling that used to sit under it is gone. Three very wide radial
+   gradients at two percent are still three gradients, and the one anchored
+   near the top read as a band across the head of the page — which is the one
+   thing the hero was not supposed to have. What is left is a flat colour and a
+   texture, which is what a painted wall is.
 
    Nothing here is grain, plaster, canvas or concrete: text on top measures what
    it measured before.
@@ -627,17 +628,9 @@ html {
 body {
   margin: 0;
   background-color: var(--canvas);
-  background-image:
-    url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='150'%20height='150'%3E%3Cfilter%20id='w'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.86'%20numOctaves='3'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='150'%20height='150'%20filter='url%28%23w%29'%20opacity='0.085'/%3E%3C/svg%3E"),
-    radial-gradient(120% 62% at 16% 4%,
-      rgba(0, 0, 0, 0.020) 0%, rgba(0, 0, 0, 0) 62%),
-    radial-gradient(86% 52% at 82% 16%,
-      rgba(255, 255, 255, 0.030) 0%, rgba(255, 255, 255, 0) 58%),
-    radial-gradient(140% 68% at 56% 96%,
-      rgba(0, 0, 0, 0.022) 0%, rgba(0, 0, 0, 0) 60%);
-  background-size: 150px 150px, auto, auto, auto;
-  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
-  background-attachment: scroll, fixed, fixed, fixed;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='150'%20height='150'%3E%3Cfilter%20id='w'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.86'%20numOctaves='3'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='150'%20height='150'%20filter='url%28%23w%29'%20opacity='0.085'/%3E%3C/svg%3E");
+  background-size: 150px 150px;
+  background-repeat: repeat;
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--fs-body);
@@ -1388,10 +1381,17 @@ em,
        widest, but it no longer takes two thirds of the row: the conversation
        reads at about 46 characters, which is a comfortable measure and leaves
        a real column for the work. */
+    /* The middle column used to take everything the other two did not, and
+       the bubbles do not grow to fill it — so at 1440 there were 176px of dead
+       column between the last bubble and the project browser against 46px
+       between the profile card and the first avatar. The right column is wider
+       now by about what the middle was wasting: the browser starts further
+       left, its previews get the width, and the two gutters become versions of
+       the same number instead of one being four times the other. */
     grid-template-columns:
       clamp(228px, 18vw, 284px)
       minmax(0, 1fr)
-      clamp(292px, 25vw, 380px);
+      clamp(300px, 32vw, 462px);
     grid-template-areas:
       "identity copy    work"
       "clients  clients clients";
@@ -1430,7 +1430,10 @@ em,
   .hero-card .hero__copy {
     position: relative;   /* the display control hangs off this */
     max-width: none;
-    padding: var(--tile-pad) clamp(20px, 1.8vw, 34px);
+    /* The same padding a card has, so the gutter between the messages and
+       whatever is beside them is built from the same value as every other
+       gutter in the composition rather than from a number of its own. */
+    padding: var(--tile-pad);
   }
 
   /* --- profile ---------------------------------------------------------
@@ -1707,14 +1710,20 @@ em,
 
   /* The visual takes everything left over. Contained, never cropped, never
      stretched: a preview that distorts an interface is worse than no preview. */
+  /* No plate. One grey box behind all five previews made every project look
+     like the same framed mockup of a different thing — and it was taking ten
+     pixels off each edge of the only region that has anything to show. The
+     stage is now the card itself: the visual sits on it, and what separates it
+     from the subtitle above is the space, not a container.
+
+     Each preview brings whatever ground it needs. Carry's phone has its own
+     body, the two diagrams are drawn on transparent, and the photograph has
+     its own. */
   .pv__vis {
     flex: 1;
     min-height: 0;
     display: grid;
     place-items: center;
-    padding: 10px;
-    border-radius: var(--r-md);
-    background: var(--surface-sunken);
     overflow: hidden;
   }
 
@@ -1767,7 +1776,7 @@ em,
      ratios, so a preview is always contained and never cropped. */
   .pv__embed--carry   { --pv-w: 390px;  --pv-h: 760px; }
   .pv__embed--tagging { --pv-w: 1000px; --pv-h: 720px; }
-  .pv__embed--pnc     { --pv-w: 1200px; --pv-h: 720px; }
+  .pv__embed--pnc     { --pv-w: 640px;  --pv-h: 1000px; }
 
   /* Cryptography is a second live instance of the component itself rather than
      a framed document — encryption.js initialises and gates each root from its
@@ -2193,42 +2202,13 @@ em,
    any other card that ever carries a marquee.
    -------------------------------------------------------------------------- */
 
-/* --------------------------------------------------------------------------
-   The lamp
-
-   A light in the header card, not a glow attached to the plant. It was the
-   other way around first — a pseudo-element on #plRoot — and that made the
-   light part of the artwork: it moved with the plant, it stopped at the
-   plant's box, and it could never fall on anything else. A lamp on a desk does
-   not belong to the object it lights.
-
-   So it lives here, on the card, thrown from above and left of where the plant
-   stands. The plant answers it rather than carrying it: the gradient across
-   the leaves in 08-plant.css runs at the same 152deg, lit at the end nearest
-   the source and shadowed away from it, and the pot is the darkest part
-   because it is furthest from the light and behind the foliage.
-
-   ::before rather than ::after, so it is the card's first child in paint order
-   and everything else — copy, portrait, plant, logo rail — sits above it. The
-   card already clips to its own radius, so the pool is cut by the card's edge
-   the way light is cut by the edge of a desk.
+/* The lamp is gone. It was a radial pool thrown from above the card, and once
+   the hero stopped being a card it read as exactly what it was: a gradient
+   band fading across the top of the composition. The structure here is made of
+   spacing, borders and alignment; it does not need a light source to explain
+   itself. --lamp-core / --lamp-mid / --lamp-far are still in 01-tokens.css and
+   nothing reads them.
    -------------------------------------------------------------------------- */
-.hero-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  /* Centred above and left of where the plant stands, wide enough that the
-     pool reaches down over it and past it onto the rest of the card. The
-     source sits off the top edge on purpose — a lamp is above the desk, not
-     on it, so what belongs in frame is the light, not the fixture. */
-  background: radial-gradient(58% 104% at 69% -10%,
-              var(--lamp-core) 0%,
-              var(--lamp-mid) 32%,
-              var(--lamp-far) 62%,
-              transparent 100%);
-}
 
 .hero__clients {
   --bleed: var(--pad);
@@ -11921,7 +11901,7 @@ em,
               <span class="msg" data-msg>
                 <span class="msg__from" aria-hidden="true">S</span>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
-                  <em>Sarthak Sahoo</em>, a Product Designer in Austin, TX</span></span>
+                  <em>Sarthak Sahoo</em>, a Product Designer based in Austin, TX</span></span>
               </span>
               <span class="msg" data-msg>
                 <span class="msg__from" aria-hidden="true">S</span>
@@ -12528,10 +12508,11 @@ html {
    darkens a light wall and lightens a dark one by the same amount and neither
    theme needs its own copy.
 
-   Mottling, under it: three very wide radial gradients at two to three
-   percent, fixed to the viewport so they do not tile down a long page. This is
-   the part you feel rather than see — it is what stops a large flat surface
-   reading as a swatch.
+   The mottling that used to sit under it is gone. Three very wide radial
+   gradients at two percent are still three gradients, and the one anchored
+   near the top read as a band across the head of the page — which is the one
+   thing the hero was not supposed to have. What is left is a flat colour and a
+   texture, which is what a painted wall is.
 
    Nothing here is grain, plaster, canvas or concrete: text on top measures what
    it measured before.
@@ -12540,17 +12521,9 @@ html {
 body {
   margin: 0;
   background-color: var(--canvas);
-  background-image:
-    url(&quot;data:image/svg+xml,%3Csvg%20xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%3E%3Cfilter%20id=&#x27;w&#x27;%3E%3CfeTurbulence%20type=&#x27;fractalNoise&#x27;%20baseFrequency=&#x27;0.86&#x27;%20numOctaves=&#x27;3&#x27;%20stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix%20type=&#x27;saturate&#x27;%20values=&#x27;0&#x27;/%3E%3C/filter%3E%3Crect%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%20filter=&#x27;url%28%23w%29&#x27;%20opacity=&#x27;0.085&#x27;/%3E%3C/svg%3E&quot;),
-    radial-gradient(120% 62% at 16% 4%,
-      rgba(0, 0, 0, 0.020) 0%, rgba(0, 0, 0, 0) 62%),
-    radial-gradient(86% 52% at 82% 16%,
-      rgba(255, 255, 255, 0.030) 0%, rgba(255, 255, 255, 0) 58%),
-    radial-gradient(140% 68% at 56% 96%,
-      rgba(0, 0, 0, 0.022) 0%, rgba(0, 0, 0, 0) 60%);
-  background-size: 150px 150px, auto, auto, auto;
-  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
-  background-attachment: scroll, fixed, fixed, fixed;
+  background-image: url(&quot;data:image/svg+xml,%3Csvg%20xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%3E%3Cfilter%20id=&#x27;w&#x27;%3E%3CfeTurbulence%20type=&#x27;fractalNoise&#x27;%20baseFrequency=&#x27;0.86&#x27;%20numOctaves=&#x27;3&#x27;%20stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix%20type=&#x27;saturate&#x27;%20values=&#x27;0&#x27;/%3E%3C/filter%3E%3Crect%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%20filter=&#x27;url%28%23w%29&#x27;%20opacity=&#x27;0.085&#x27;/%3E%3C/svg%3E&quot;);
+  background-size: 150px 150px;
+  background-repeat: repeat;
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--fs-body);
@@ -13995,10 +13968,11 @@ html {
    darkens a light wall and lightens a dark one by the same amount and neither
    theme needs its own copy.
 
-   Mottling, under it: three very wide radial gradients at two to three
-   percent, fixed to the viewport so they do not tile down a long page. This is
-   the part you feel rather than see — it is what stops a large flat surface
-   reading as a swatch.
+   The mottling that used to sit under it is gone. Three very wide radial
+   gradients at two percent are still three gradients, and the one anchored
+   near the top read as a band across the head of the page — which is the one
+   thing the hero was not supposed to have. What is left is a flat colour and a
+   texture, which is what a painted wall is.
 
    Nothing here is grain, plaster, canvas or concrete: text on top measures what
    it measured before.
@@ -14007,17 +13981,9 @@ html {
 body {
   margin: 0;
   background-color: var(--canvas);
-  background-image:
-    url(&quot;data:image/svg+xml,%3Csvg%20xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%3E%3Cfilter%20id=&#x27;w&#x27;%3E%3CfeTurbulence%20type=&#x27;fractalNoise&#x27;%20baseFrequency=&#x27;0.86&#x27;%20numOctaves=&#x27;3&#x27;%20stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix%20type=&#x27;saturate&#x27;%20values=&#x27;0&#x27;/%3E%3C/filter%3E%3Crect%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%20filter=&#x27;url%28%23w%29&#x27;%20opacity=&#x27;0.085&#x27;/%3E%3C/svg%3E&quot;),
-    radial-gradient(120% 62% at 16% 4%,
-      rgba(0, 0, 0, 0.020) 0%, rgba(0, 0, 0, 0) 62%),
-    radial-gradient(86% 52% at 82% 16%,
-      rgba(255, 255, 255, 0.030) 0%, rgba(255, 255, 255, 0) 58%),
-    radial-gradient(140% 68% at 56% 96%,
-      rgba(0, 0, 0, 0.022) 0%, rgba(0, 0, 0, 0) 60%);
-  background-size: 150px 150px, auto, auto, auto;
-  background-repeat: repeat, no-repeat, no-repeat, no-repeat;
-  background-attachment: scroll, fixed, fixed, fixed;
+  background-image: url(&quot;data:image/svg+xml,%3Csvg%20xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%3E%3Cfilter%20id=&#x27;w&#x27;%3E%3CfeTurbulence%20type=&#x27;fractalNoise&#x27;%20baseFrequency=&#x27;0.86&#x27;%20numOctaves=&#x27;3&#x27;%20stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix%20type=&#x27;saturate&#x27;%20values=&#x27;0&#x27;/%3E%3C/filter%3E%3Crect%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%20filter=&#x27;url%28%23w%29&#x27;%20opacity=&#x27;0.085&#x27;/%3E%3C/svg%3E&quot;);
+  background-size: 150px 150px;
+  background-repeat: repeat;
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--fs-body);
@@ -14920,6 +14886,13 @@ em,
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;script&gt;
+  /* Read by js/tagging.js before its first frame. The scene is rendered at
+     roughly a quarter size inside the hero&#x27;s project card, so each beat is
+     framed closer than it is on the page — the diagram is the same diagram,
+     the camera is just nearer to it. */
+  window.TF_ZOOM = 1.34;
+&lt;/script&gt;
+&lt;script&gt;
 /* ==========================================================================
    tagging.js — the OptiFlow thumbnail&#x27;s camera loop, verbatim.
 
@@ -15248,7 +15221,14 @@ em,
      Pulling the camera back further trades type size for context, which is the
      right trade when the alternative is a card that looks broken. Read once
      and on resize, never per frame. */
+  /* A host can override this. The hero&#x27;s project browser renders the whole
+     component at about 280px wide — the document inside the frame still
+     measures 1000, so it cannot work this out for itself — and at the card&#x27;s
+     pull-back every beat came out too small to read. The preview document sets
+     window.TF_ZOOM and the camera frames each step tighter, which is the
+     magnification the small card needs: the same 27 keyframes, closer in. */
   function zoomFit() {
+    if (typeof window.TF_ZOOM === &#x27;number&#x27;) return window.TF_ZOOM;
     var w = (root &amp;&amp; root.clientWidth) || window.innerWidth;
     return w &lt; 420 ? 0.62 : ZOOM_FIT;
   }
@@ -15675,9 +15655,27 @@ em,
   /* The artboard is landscape now, matching the slot this shares with the
      Specimen Kit card. Everything below works in these coordinates; fit()
      scales the whole thing to whatever box the host hands over. */
-  var VPW = 1200, VPH = 720;
   var stage = document.getElementById(&#x27;stage&#x27;);
   var vp = document.getElementById(&#x27;vp&#x27;);
+
+  /* The artboard, chosen from the shape of the box this document is given.
+
+     1200x720 is the landscape slot the Selected Work card provides. The hero&#x27;s
+     project browser is a tall narrow column, and a landscape artboard scaled
+     into it comes out about a quarter size — every label unreadable, which is
+     the one thing this diagram cannot afford.
+
+     So the artboard turns portrait instead of shrinking. Nothing about the
+     diagram changes: the world is the same 3600x3100, every node, label,
+     connector and beat is the same, and the camera below frames each step
+     against the box it is actually given — CY, BOX_W and BOX_H are all derived
+     from these two numbers, so the whole sequence reframes itself. A step that
+     used to be shown alongside its neighbours is simply shown closer. */
+  var PORTRAIT = stage.clientHeight &gt; stage.clientWidth * 1.15;
+  var VPW = PORTRAIT ? 640 : 1200;
+  var VPH = PORTRAIT ? 1000 : 720;
+  vp.style.width = VPW + &#x27;px&#x27;;
+  vp.style.height = VPH + &#x27;px&#x27;;
   var world = document.getElementById(&#x27;world&#x27;);
   var wires = document.getElementById(&#x27;wires&#x27;);
 
@@ -15880,7 +15878,14 @@ em,
      step count legible, individual steps not. On a wider frame at a bigger
      scale the step names are the point, so the box takes most of the artboard
      and the ceiling roughly doubles. */
-  var BOX_W = VPW * 0.88, BOX_H = VPH * 0.72, CAP = 1.15;
+  /* A portrait board is narrow, so the framing box takes more of its width
+     and less of its height — the same rule as the landscape one, read for the
+     shape it is actually in. CAP rises with it: on a small board a beat is
+     allowed closer before it stops being one system and starts being a
+     close-up. */
+  var BOX_W = VPW * (PORTRAIT ? 0.94 : 0.88);
+  var BOX_H = VPH * (PORTRAIT ? 0.60 : 0.72);
+  var CAP = PORTRAIT ? 1.55 : 1.15;
 
   /* frame a set of nodes: returns [centreX, centreY, scale] */
   function fitOf(list, boxW, boxH, cap){
@@ -16950,9 +16955,27 @@ em,
   /* The artboard is landscape now, matching the slot this shares with the
      Specimen Kit card. Everything below works in these coordinates; fit()
      scales the whole thing to whatever box the host hands over. */
-  var VPW = 1200, VPH = 720;
   var stage = document.getElementById(&#x27;stage&#x27;);
   var vp = document.getElementById(&#x27;vp&#x27;);
+
+  /* The artboard, chosen from the shape of the box this document is given.
+
+     1200x720 is the landscape slot the Selected Work card provides. The hero&#x27;s
+     project browser is a tall narrow column, and a landscape artboard scaled
+     into it comes out about a quarter size — every label unreadable, which is
+     the one thing this diagram cannot afford.
+
+     So the artboard turns portrait instead of shrinking. Nothing about the
+     diagram changes: the world is the same 3600x3100, every node, label,
+     connector and beat is the same, and the camera below frames each step
+     against the box it is actually given — CY, BOX_W and BOX_H are all derived
+     from these two numbers, so the whole sequence reframes itself. A step that
+     used to be shown alongside its neighbours is simply shown closer. */
+  var PORTRAIT = stage.clientHeight &gt; stage.clientWidth * 1.15;
+  var VPW = PORTRAIT ? 640 : 1200;
+  var VPH = PORTRAIT ? 1000 : 720;
+  vp.style.width = VPW + &#x27;px&#x27;;
+  vp.style.height = VPH + &#x27;px&#x27;;
   var world = document.getElementById(&#x27;world&#x27;);
   var wires = document.getElementById(&#x27;wires&#x27;);
 
@@ -17155,7 +17178,14 @@ em,
      step count legible, individual steps not. On a wider frame at a bigger
      scale the step names are the point, so the box takes most of the artboard
      and the ceiling roughly doubles. */
-  var BOX_W = VPW * 0.88, BOX_H = VPH * 0.72, CAP = 1.15;
+  /* A portrait board is narrow, so the framing box takes more of its width
+     and less of its height — the same rule as the landscape one, read for the
+     shape it is actually in. CAP rises with it: on a small board a beat is
+     allowed closer before it stops being one system and starts being a
+     close-up. */
+  var BOX_W = VPW * (PORTRAIT ? 0.94 : 0.88);
+  var BOX_H = VPH * (PORTRAIT ? 0.60 : 0.72);
+  var CAP = PORTRAIT ? 1.55 : 1.15;
 
   /* frame a set of nodes: returns [centreX, centreY, scale] */
   function fitOf(list, boxW, boxH, cap){
@@ -20516,7 +20546,14 @@ window.PF = window.PF || {};
      Pulling the camera back further trades type size for context, which is the
      right trade when the alternative is a card that looks broken. Read once
      and on resize, never per frame. */
+  /* A host can override this. The hero's project browser renders the whole
+     component at about 280px wide — the document inside the frame still
+     measures 1000, so it cannot work this out for itself — and at the card's
+     pull-back every beat came out too small to read. The preview document sets
+     window.TF_ZOOM and the camera frames each step tighter, which is the
+     magnification the small card needs: the same 27 keyframes, closer in. */
   function zoomFit() {
+    if (typeof window.TF_ZOOM === 'number') return window.TF_ZOOM;
     var w = (root && root.clientWidth) || window.innerWidth;
     return w < 420 ? 0.62 : ZOOM_FIT;
   }
@@ -20707,7 +20744,7 @@ window.PF = window.PF || {};
     design: [
       [{ t: 'Hello \uD83D\uDC4B' }],
       [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true },
-       { t: ', a Product Designer in Austin, TX' }],
+       { t: ', a Product Designer based in Austin, TX' }],
       [{ t: 'I design products that make complex things feel simple.' }],
       [{ t: 'I\u2019ve worked across healthcare, fintech, and enterprise systems.' }],
       [{ t: 'I design for the workflow, not just the screen.' }]
