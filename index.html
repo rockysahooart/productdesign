@@ -4077,10 +4077,11 @@ em,
    and the depth is the same one-pixel card shadow the rest of the page uses.
    -------------------------------------------------------------------------- */
 
-/* The bubble that carries reactions makes room for them: the chips overlap
-   padding, never a line of type. Without this the last line and the chips
-   collided the moment the message wrapped — which is every phone. */
-.msg__bubble--reacted { padding-bottom: calc(var(--hx-pad) + 14px); }
+/* The bubble that carries reactions used to make extra room inside itself,
+   because the chips overlapped its bottom edge. They do not any more — they
+   hang entirely below it — so the bubble is the same bubble as every other
+   one, and the space the chips need is reserved outside it by the measured
+   overhang in js/thread.js. */
 
 /* --------------------------------------------------------------------------
    The three-message window
@@ -4149,11 +4150,16 @@ em,
 }
 
 .msg__reactions {
+  /* The chip's own height, so the tray can be placed exactly clear of the
+     bubble from one number. */
+  --rx-h: 32px;
+
   position: absolute;
   right: var(--hx-2);
-  /* Overlapping the boundary by a third of a chip: enough to read as attached
-     to the bubble, not enough to crowd the text inside it. */
-  bottom: -22px;
+  /* Entirely below the bubble rather than overlapping its edge. The chips
+     carry no fill now, so an overlap would have let the bubble's border run
+     straight through them; clear of it, a transparent chip reads as a chip. */
+  bottom: calc(-1 * (var(--rx-h) + 6px));
   display: flex;
   /* Eight of them now, and they are allowed to wrap — to the right, so the
      cluster stays anchored to the corner of the message it belongs to and
@@ -4162,7 +4168,7 @@ em,
   flex-wrap: wrap-reverse;
   justify-content: flex-end;
   align-items: center;
-  gap: 7px;
+  gap: 9px;
   /* `width: max-content` rather than shrink-to-fit. An absolutely positioned
      box with only `right` set takes its available width from its STATIC
      position — which for this one is wherever the message text happened to
@@ -4173,29 +4179,34 @@ em,
   max-width: 100%;
 }
 
+/* NO FILL. A reaction is not a control the page is offering you — it is other
+   people's mark on the message, and a filled grey pill gives it the weight of
+   a button. What is left is the emoji, the count, and a hairline that keeps
+   the pair reading as one object and gives the button an edge to be found by.
+   The emoji is the object; everything else gets out of its way. */
 .rx {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 5px;
   min-width: 0;
-  height: calc(var(--hx-avatar) * 0.86);
-  padding: 0 8px;
+  height: var(--rx-h, 32px);
+  padding: 0 9px;
   border: var(--hx-line);
   border-radius: 999px;
-  background: var(--surface-raised);
-  box-shadow: var(--shadow-card);
+  background: none;
   line-height: 1;
   user-select: none;
   cursor: pointer;
-  transition: border-color 130ms linear, background-color 130ms linear;
+  transition: border-color 130ms linear;
 }
 
 /* Explicit, so the emoji is a designed object rather than a line of text at
-   whatever size the emoji font decides. */
+   whatever size the emoji font decides — and large enough to be read at a
+   glance from across the composition rather than squinted at. */
 .rx__e {
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
-  font-size: 16px;
+  font-size: 20px;
   line-height: 1;
 }
 
@@ -4205,15 +4216,21 @@ em,
 
 .rx__n {
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;   /* 1 → 4 must not change the width */
   color: var(--ink-secondary);
 }
 
+/* Reacted: the edge firms up and the count takes the full ink. No fill —
+   that is the whole point of the treatment. */
 .rx.is-on {
   border-color: var(--border-strong);
-  background: var(--surface-sunken);
 }
+
+.rx.is-on .rx__n { color: var(--ink); }
+
+.rx:hover { border-color: var(--border-strong); }
 
 .rx:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
@@ -4228,12 +4245,14 @@ em,
 .rx.is-tapped { animation: rx-press 240ms cubic-bezier(0.22, 1, 0.36, 1); }
 
 @media (prefers-reduced-motion: reduce) {
-  .rx.is-tapped { animation: none; }
+  .rx.is-tapped,
+  .rx.is-bump { animation: none; }
 }
 
-.rx:nth-child(1) { rotate: -4deg; }
-.rx:nth-child(2) { rotate: 2deg; translate: 0 -1px; }
-.rx:nth-child(3) { rotate: -1.5deg; }
+/* THE TILT IS GONE. Three of the chips used to sit at a few degrees each, a
+   sticker-ish touch that worked when they were filled pills with a shadow
+   under them. Unfilled, a tilted emoji reads as a mistake rather than as a
+   choice, and the row is quieter square. */
 
 /* While the sequence is playing the reactions wait for their cue. Off-play —
    reduced motion, or no JS at all — they are simply there. */
@@ -4265,13 +4284,32 @@ em,
   transform: scale(1);
 }
 
-/* Another person just clicked it. One short scale on the chip, once per
-   increment, restarted by the script. */
-.rx.is-bump { animation: rx-bump 260ms cubic-bezier(0.22, 1, 0.36, 1); }
+/* Another person just hit the same one.
+
+   THE COUNT IS THE EVENT, so the chip is what moves — the whole chip, emoji
+   and number together, not the emoji inside a pill that stays still. It goes
+   up fast and comes back slowly: a quick rise on an ease-out, then a longer
+   settle on a standard curve, and it never passes 1 on the way back. That
+   last part is what keeps it off the cartoon end of this — there is no
+   overshoot, no wobble and no second peak, just a surge and a return.
+
+   How far it goes is the script's decision, one increment at a time, so the
+   fire can climb: each of the four is bigger than the one before it and the
+   fourth is the loudest thing in the composition for about half a second.
+   Everything else that increments gets the same move, quieter. */
+.rx.is-bump {
+  animation: rx-bump var(--rx-bump-ms, 460ms) both;
+}
 
 @keyframes rx-bump {
-  0%   { transform: scale(1); }
-  38%  { transform: scale(1.16); }
+  0% {
+    transform: scale(1);
+    animation-timing-function: cubic-bezier(0.16, 0.84, 0.32, 1);   /* out, fast */
+  }
+  28% {
+    transform: scale(var(--rx-peak, 1.22));
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);        /* back, smooth */
+  }
   100% { transform: scale(1); }
 }
 
@@ -11220,10 +11258,31 @@ em,
   .artifact--signature { min-height: 190px; }
 }
 
-/* The narrowest phones lose one more chip. At 320 the bubble is 186px wide and
-   six of these need 184 of the 174 the tray actually has — one over, which is
-   one chip riding up onto the message. Five is still a pile. */
-@media (max-width: 359px) {
+/* HOW MANY CHIPS FIT is a question about the bubble, not about the viewport,
+   and the two do not track each other — at 940 the bubble is 402px wide and
+   at 960 it is 270, because that is where the bento takes over and the message
+   column stops being the whole page. So the counts below are measured against
+   the bubble at each width, with the chips carrying counts: six of them need
+   399px, five need 331, four need 263.
+
+   Six only above 1200, where there is 417px to put them in. Five from 720 to
+   1199, which covers both the wide pre-bento bubble and the bento's own
+   column once it has grown past about 1080. Four through the bento's tightest
+   stretch, 960 to 1079, where the bubble bottoms out at 270. */
+@media (min-width: 720px) and (max-width: 1199px) {
+  .rx:nth-child(n + 6) { display: none; }
+}
+
+@media (min-width: 960px) and (max-width: 1079px) {
+  .rx:nth-child(n + 5) { display: none; }
+}
+
+/* The narrowest phones lose one more chip. Measured rather than guessed: with
+   the larger emoji and a count on every chip, four of them need about 224px
+   while the bubble at 360 is 218 — one over, which is one chip riding up onto
+   the message. It clears at 390, so the cut sits just under that. Three is
+   still a pile, and the fire at four is what carries the joke anyway. */
+@media (max-width: 389px) {
   .rx:nth-child(n + 4) { display: none; }
 }
 
@@ -11716,18 +11775,21 @@ em,
   .msg + .msg[data-cluster] { margin-top: 20px; }
   .msg__bubble { width: 100%; }
 
-  /* One tray rather than three floating circles: same border, radius and
-     surface as a bubble, attached to the corner of the last message. */
+  /* The tray is no longer a pill either. It was a bordered, shadowed surface
+     holding six borderless circles — a lot of container for six emoji — and
+     the desktop treatment dropped its fill for good reasons that apply just
+     as much at this width. What is left is the chips, hanging clear of the
+     bubble, on nothing. */
   .msg__reactions {
+    --rx-h: 28px;
     right: 12px;
-    bottom: -17px;
-    height: 34px;
-    gap: 0;
-    padding: 0 4px;
-    border: var(--hx-line);
-    border-radius: 999px;
-    background: var(--surface-raised);
-    box-shadow: var(--shadow-card);
+    bottom: calc(-1 * (var(--rx-h) + 5px));
+    height: auto;
+    gap: 7px;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
   }
 
   /* Five chips, not six. Every chip carries a count now, which makes each one
@@ -11736,30 +11798,27 @@ em,
      message's last line — the tray hangs off the bubble's corner rather than
      sitting in the flow beneath it, so a second row goes upwards.
 
-     Five at a size you can read beats six you cannot, and the fire chip at
-     four is what carries the joke either way. */
-  .rx:nth-child(n + 6) { display: none; }
+     Four at a size you can read beats six you cannot, and the fire chip at
+     four is what carries the joke either way. It is four rather than five
+     because every chip is bigger now and every one of them ends up carrying a
+     count: five of them measure wider than a 248px bubble, and the fifth went
+     up onto the message rather than along the row. */
+  .rx:nth-child(n + 5) { display: none; }
 
-
-  .msg__reactions { gap: 5px; }
 
   .rx {
     min-width: 0;
-    height: 26px;
-    padding: 0 5px;
-    gap: 2px;
-    border: 0;
+    height: var(--rx-h, 28px);
+    padding: 0 7px;
+    gap: 4px;
     background: none;
     box-shadow: none;
-    rotate: none;
-    translate: none;
   }
 
-  .rx__e { font-size: 15px; }
-  .rx__n { font-size: 10px; }
-  .rx.is-on { background: var(--surface-sunken); border-radius: 999px; }
-
-  .msg__bubble--reacted { padding-bottom: calc(var(--hx-pad) + 10px); }
+  /* Smaller than the desktop chip because the bubble is smaller, but still a
+     step up from where it was: the emoji is the thing being read. */
+  .rx__e { font-size: 17px; }
+  .rx__n { font-size: 11.5px; }
 
   /* Zone 7 — the one action. It is the last thing in the card now that the
      logo strip has moved up, so it also carries the space to the card's edge
@@ -15762,7 +15821,7 @@ em,
                        role="tabpanel" aria-label="Design System Audit" hidden>
                 <div class="pv__head">
                   <h3 class="pv__title">Design System Audit</h3>
-                  <p class="pv__sub">Auditing provider workflows for consistency, responsiveness, theming, and filtering.</p>
+                  <p class="pv__sub">The same action as a button, a link, and a menu item — audited into one set of rules across four provider workflows.</p>
                 </div>
                 <div class="pv__vis">
                   <div class="pv__embed pv__embed--dsa">
@@ -15771,25 +15830,29 @@ em,
 &lt;head&gt;
 &lt;meta charset=&quot;utf-8&quot;&gt;
 &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
-&lt;title&gt;Design System Audit — component workspace&lt;/title&gt;
+&lt;title&gt;Design System Audit — provider workflow language&lt;/title&gt;
 
 &lt;!-- =========================================================================
-     A design system audit, shown where design systems are actually audited:
-     on a canvas, in front of the components themselves.
+     The audit, shown where an audit actually happens: on a canvas, in front
+     of the components themselves.
 
-     Four passes — buttons, responsive behaviour, themes, filtering. Each pass
-     holds two frames on the canvas at once, a BEFORE and the one being worked
-     on, so the change is a comparison you can look at rather than a claim you
-     have to take. The BEFORE never moves; the draft resolves in front of it.
+     THE STORY, IN ORDER. The same action appeared as a button, a link and a
+     menu item across orders, specimens, results and tasks — so the first act
+     is action hierarchy. The statuses named a state and left the owner and
+     the next step to be inferred — so the second act is language. The third
+     turns both into rules a team can apply without asking. The fourth is the
+     supporting systemisation — widths, themes, filters — kept deliberately
+     short, because it is the consequence of the work and not the work.
 
-     The cues are the ones a component environment gives you: frame names,
-     selection outlines with corner handles, spacing measurements, variant
-     labels, variable rows, column guides, annotation pins.
+     Each act holds two frames at once, a BEFORE and the one being worked on,
+     so the change is a comparison you can look at rather than a claim you
+     have to take.
 
-     The buttons pass is the one that matters most, and it is not about radii.
-     &quot;Continue&quot; and &quot;Yes / No&quot; are decisions the reader has to reconstruct;
-     &quot;Submit order&quot; and &quot;Approve request&quot; are decisions the interface has
-     already made legible. Consistency is the easy half.
+     The strings are the case study&#x27;s own where the case study has them —
+     &quot;Awaiting provider action&quot;, &quot;Submission error&quot;, &quot;Review order&quot;,
+     &quot;Review result&quot;, &quot;Resolve issue&quot; — and illustrative where it does not.
+     Nothing here is a screen from the product: it is a component set, drawn
+     the way a component set is drawn.
 
      WHY THIS IS A DOCUMENT OF ITS OWN. It is composed for the hero&#x27;s narrow
      portrait column and renders 1:1 there, and every id, class, timer and
@@ -15812,7 +15875,7 @@ em,
     --warn-bg: #F7E4E2;
     --grid:    rgba(0, 0, 0, 0.055);
 
-    /* The component tokens the themes pass switches. */
+    /* The component tokens the themes beat switches. */
     --c-surface: #FFFFFF;
     --c-sunken:  #F4F5F7;
     --c-border:  #D7DAE0;
@@ -15822,6 +15885,12 @@ em,
     --c-on:      #FFFFFF;
     --c-sel:     #E2EDF5;
     --c-danger:  #A03028;
+
+    /* Status, as a pair of values per state rather than a hue per state —
+       every one of them carries a mark as well as a colour. */
+    --s-wait-bg:  #FBF0DE;  --s-wait-fg:  #7A5310;
+    --s-work-bg:  #E7EFF6;  --s-work-fg:  #1F5F8B;
+    --s-err-bg:   #FAE6E3;  --s-err-fg:   #94322A;
   }
 
   #dsa[data-tok=&quot;dark&quot;] {
@@ -15834,6 +15903,10 @@ em,
     --c-on:      #0C1319;
     --c-sel:     #21323D;
     --c-danger:  #F2A0A0;
+
+    --s-wait-bg:  #352914;  --s-wait-fg:  #E9C486;
+    --s-work-bg:  #1E2C36;  --s-work-fg:  #8FCDE8;
+    --s-err-bg:   #38221F;  --s-err-fg:   #F0A79F;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -15866,27 +15939,26 @@ em,
     background-position: -1px -1px;
   }
 
-  /* ---- the pass being worked on -------------------------------------- */
+  /* ---- the file, and where you are in it ------------------------------ */
 
   .dsa-bar {
-    display: flex; align-items: center; gap: 6px;
+    display: flex; align-items: center; gap: 8px;
     flex: 0 0 auto;
     padding: 9px 10px;
     border-bottom: 1px solid var(--line);
     background: rgba(255, 255, 255, 0.72);
   }
 
-  .dsa-steps { display: flex; gap: 4px; }
+  .dsa-dots { display: flex; gap: 5px; }
 
-  .dsa-step {
-    padding: 2px 5px;
-    border-radius: 3px;
-    color: var(--ink-3);
-    font-size: 7.5px; font-weight: 700; letter-spacing: 0.11em;
-    transition: background-color 200ms linear, color 200ms linear;
+  .dsa-dots i {
+    display: block; width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--line);
+    transition: background-color 220ms linear;
   }
 
-  .dsa-step.is-on { background: var(--pp-soft); color: var(--pp); }
+  .dsa-dots i.is-on { background: var(--pp); }
 
   .dsa-file {
     margin-left: auto;
@@ -15903,12 +15975,26 @@ em,
   .dsa-act {
     position: absolute; inset: 0;
     display: flex; flex-direction: column; gap: 8px;
-    padding: 11px 11px 10px;
+    padding: 10px 11px;
     opacity: 0; visibility: hidden;
     transition: opacity 240ms linear;
   }
 
   .dsa-act[data-on] { opacity: 1; visibility: visible; }
+
+  /* The section this act belongs to. */
+  .dsa-sec {
+    display: flex; align-items: baseline; gap: 6px;
+    flex: 0 0 auto;
+    color: var(--pp);
+    font-size: 8px; font-weight: 700; letter-spacing: 0.14em;
+  }
+
+  .dsa-secn {
+    margin-left: auto;
+    color: var(--ink-3); font-weight: 600; letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+  }
 
   /* ---- a frame ------------------------------------------------------- */
 
@@ -15928,6 +16014,7 @@ em,
     margin-bottom: 3px;
     color: var(--ink-3);
     font-size: 8px; font-weight: 600; letter-spacing: 0.04em;
+    white-space: nowrap;
     transition: color 200ms linear;
   }
 
@@ -15947,8 +16034,8 @@ em,
     position: relative;
     flex: 1 1 auto;
     display: flex; flex-direction: column; justify-content: center;
-    gap: 9px;
-    padding: 11px;
+    gap: 8px;
+    padding: 10px;
     border: 1px solid var(--line);
     border-radius: 2px;
     background: var(--c-surface);
@@ -15983,7 +16070,7 @@ em,
 
   /* ---- annotations --------------------------------------------------- */
 
-  .dsa-cals { display: flex; flex-direction: column; gap: 4px; }
+  .dsa-cals { display: flex; flex-direction: column; gap: 3px; }
 
   .dsa-cal {
     display: flex; align-items: flex-start; gap: 5px;
@@ -16001,7 +16088,7 @@ em,
   .dsa-note {
     display: flex; align-items: flex-start; gap: 5px;
     flex: 0 0 auto;
-    min-height: 26px;
+    min-height: 25px;
     color: var(--ink-2); font-size: 9px; line-height: 1.4;
   }
 
@@ -16014,72 +16101,132 @@ em,
 
   .dsa-pin.is-ok { background: var(--pp); }
 
-  /* ---- buttons ------------------------------------------------------- */
+  /* ---- a workflow row ------------------------------------------------ */
 
-  .dsa-row { display: flex; flex-wrap: wrap; align-items: flex-end; }
+  .dsa-cd {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 0;
+    border-top: 1px solid var(--c-border);
+    transition: border-color 260ms linear;
+  }
+
+  .dsa-cd:first-child { border-top: 0; }
+
+  .dsa-cdt {
+    color: var(--c-text);
+    font-size: 9.5px; font-weight: 600; letter-spacing: 0.01em;
+    white-space: nowrap;
+    transition: color 260ms linear;
+  }
+
+  /* The action column: the thing that was in three different places. */
+  .dsa-acts { margin-left: auto; display: flex; align-items: center; gap: 6px; }
 
   .dsa-b {
+    height: 24px; padding: 0 10px;
+    display: inline-flex; align-items: center;
     border: 1px solid var(--c-border);
+    border-radius: 4px;
     background: var(--c-surface);
     color: var(--c-text);
-    font: inherit;
+    font: inherit; font-size: 9.5px; font-weight: 600;
     white-space: nowrap;
-    transition: height 340ms cubic-bezier(.4,0,.2,1),
-                padding 340ms cubic-bezier(.4,0,.2,1),
-                margin 340ms cubic-bezier(.4,0,.2,1),
-                border-radius 340ms cubic-bezier(.4,0,.2,1),
+    transition: height 320ms cubic-bezier(.4,0,.2,1),
+                padding 320ms cubic-bezier(.4,0,.2,1),
+                border-radius 320ms cubic-bezier(.4,0,.2,1),
                 background-color 240ms linear, color 240ms linear,
                 border-color 240ms linear, opacity 240ms linear,
-                font-size 240ms linear, font-weight 240ms linear;
+                text-decoration-color 240ms linear;
   }
 
-  /* Found: five controls that grew separately, and none of whose labels says
-     what pressing it does. The BEFORE frame keeps these for good — it is the
-     reference the draft is read against. */
-  .dsa-b1 { height: 27px; padding: 0 15px; border-radius: 14px; margin: 0 10px 4px 0; font-size: 11px; font-weight: 700; background: var(--c-accent); border-color: var(--c-accent); color: var(--c-on); }
-  .dsa-b2 { height: 20px; padding: 0 9px;  border-radius: 2px;  margin: 0 4px 4px 0;  font-size: 9px; }
-  .dsa-b3 { height: 20px; padding: 0 9px;  border-radius: 2px;  margin: 0 12px 4px 0; font-size: 9px; }
-  .dsa-b4 { height: 24px; padding: 0 7px;  border-radius: 7px;  margin: 0 8px 4px 0;  font-size: 10px; color: var(--c-muted); }
-  .dsa-b5 { height: 23px; padding: 0 11px; border-radius: 4px;  margin: 0 0 4px 0;    font-size: 9.5px; opacity: 0.55; }
-
-  /* Resolved, and only inside the draft frame: one height, one radius, one
-     rhythm, and a hierarchy you can see — a single primary, a secondary
-     beside it, a destructive that reads as destructive, and a disabled state
-     that reads as disabled rather than as faint. */
-  #dsa[data-fix=&quot;btn&quot;] .dsa-af .dsa-b {
-    height: 26px;
-    padding: 0 11px;
-    border-radius: 4px;
-    margin: 0 7px 5px 0;
-    font-size: 10px;
-    font-weight: 600;
-    background: var(--c-surface);
-    border-color: var(--c-border);
-    color: var(--c-text);
-    opacity: 1;
+  .dsa-ovf {
+    width: 24px; height: 24px; flex: 0 0 auto;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--c-border); border-radius: 4px;
+    background: var(--c-surface); color: var(--c-muted);
+    font-size: 12px; line-height: 1;
+    transition: background-color 240ms linear, border-color 240ms linear,
+                color 240ms linear;
   }
 
-  #dsa[data-fix=&quot;btn&quot;] .dsa-af .dsa-b1 {
+  /* BEFORE: one action, three treatments. A filled pill in orders, a bare
+     text link in specimens, and in results nothing but the menu. */
+  .dsa-x1 {
+    height: 26px; padding: 0 14px; border-radius: 13px;
     background: var(--c-accent); border-color: var(--c-accent); color: var(--c-on);
+    font-weight: 700;
   }
 
-  #dsa[data-fix=&quot;btn&quot;] .dsa-af .dsa-b3 { display: none; }
-
-  #dsa[data-fix=&quot;btn&quot;] .dsa-af .dsa-b4 {
-    background: none; border-color: var(--c-danger); color: var(--c-danger);
+  .dsa-x2 {
+    height: 20px; padding: 0;
+    border-color: transparent; background: none;
+    color: var(--c-accent); font-weight: 600;
+    text-decoration: underline; text-underline-offset: 2px;
   }
 
-  #dsa[data-fix=&quot;btn&quot;] .dsa-af .dsa-b5 {
-    background: var(--c-sunken); border-color: var(--c-border);
-    color: var(--c-muted); opacity: 1;
+  .dsa-x3 { display: none; }
+
+  /* The second action does not exist yet in the draft, and the frame it will
+     appear in is the same frame — so it waits rather than being absent. */
+  .dsa-sec2 { opacity: 0; transition: opacity 260ms linear; }
+
+  /* AFTER: one primary, one secondary, one supporting, in that order, in the
+     same place in every workflow. */
+  #dsa[data-fix=&quot;act&quot;] .dsa-af .dsa-x1,
+  #dsa[data-fix=&quot;act&quot;] .dsa-af .dsa-x2,
+  #dsa[data-fix=&quot;act&quot;] .dsa-af .dsa-x3 {
+    display: inline-flex;
+    height: 24px; padding: 0 10px; border-radius: 4px;
+    background: var(--c-accent); border-color: var(--c-accent); color: var(--c-on);
+    font-weight: 600; text-decoration: none;
   }
 
-  #dsa[data-fix=&quot;btn&quot;] .dsa-af .dsa-b5::after {
-    content: &quot; · disabled&quot;;
-    font-size: 8px; font-weight: 600; letter-spacing: 0.02em;
+  #dsa[data-fix=&quot;act&quot;] .dsa-af .dsa-sec2 { opacity: 1; }
+
+  /* ---- status -------------------------------------------------------- */
+
+  .dsa-strow { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
+
+  .dsa-st {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 21px; padding: 0 8px;
+    border: 1px solid var(--c-border); border-radius: 3px;
+    background: var(--c-sunken); color: var(--c-muted);
+    font-size: 9px; font-weight: 600; white-space: nowrap;
+    transition: background-color 260ms linear, border-color 260ms linear,
+                color 260ms linear;
   }
 
-  /* The spacing measurement between two components. */
+  /* The mark, so the state is never carried by colour alone. */
+  .dsa-st i {
+    width: 5px; height: 5px; flex: 0 0 auto;
+    border-radius: 50%;
+    background: currentColor;
+    transition: border-radius 240ms linear, background-color 240ms linear;
+  }
+
+  #dsa[data-fix=&quot;st&quot;] .dsa-af .st-wait { background: var(--s-wait-bg); color: var(--s-wait-fg); border-color: transparent; }
+  #dsa[data-fix=&quot;st&quot;] .dsa-af .st-work { background: var(--s-work-bg); color: var(--s-work-fg); border-color: transparent; }
+  #dsa[data-fix=&quot;st&quot;] .dsa-af .st-err  { background: var(--s-err-bg);  color: var(--s-err-fg);  border-color: transparent; }
+
+  /* A square for waiting, a ring for in-process, a filled dot for the error:
+     three marks, readable with no colour at all. */
+  #dsa[data-fix=&quot;st&quot;] .dsa-af .st-wait i { border-radius: 1px; }
+  #dsa[data-fix=&quot;st&quot;] .dsa-af .st-work i { border-radius: 50%; background: none; box-shadow: inset 0 0 0 1.5px currentColor; }
+
+  /* The next step, which arrives with the language. */
+  .dsa-next { margin-left: auto; opacity: 0; transition: opacity 260ms linear; }
+  .dsa-next.is-on { opacity: 1; }
+
+  .dsa-none {
+    margin-left: auto;
+    color: var(--c-muted); font-size: 8.5px;
+    opacity: 0; transition: opacity 260ms linear;
+  }
+  .dsa-none.is-on { opacity: 1; }
+
+  /* ---- the measurement and the variant labels ------------------------ */
+
   .dsa-meas {
     display: flex; align-items: center; gap: 4px;
     color: var(--pp); font-size: 7.5px; font-weight: 700; letter-spacing: 0.06em;
@@ -16090,7 +16237,7 @@ em,
   .dsa-meas.is-on { opacity: 1; }
 
   .dsa-meas i {
-    display: block; height: 1px; width: 22px;
+    display: block; height: 1px; width: 20px;
     background: var(--pp);
     position: relative;
   }
@@ -16101,7 +16248,6 @@ em,
   .dsa-meas i::before { left: 0; }
   .dsa-meas i::after  { right: 0; }
 
-  /* Variant labels under a component set. */
   .dsa-vars { display: flex; flex-wrap: wrap; gap: 4px 5px; }
 
   .dsa-var {
@@ -16118,7 +16264,27 @@ em,
   .dsa-vars.is-on .dsa-var:nth-child(3) { transition-delay: 140ms; }
   .dsa-vars.is-on .dsa-var:nth-child(4) { transition-delay: 210ms; }
 
-  /* ---- responsive ----------------------------------------------------- */
+  /* ---- the rules ------------------------------------------------------ */
+
+  .dsa-rules { display: flex; flex-direction: column; gap: 7px; }
+
+  .dsa-rule {
+    display: flex; align-items: flex-start; gap: 6px;
+    color: var(--c-text); font-size: 8.5px; line-height: 1.35;
+    opacity: 0;
+    transition: opacity 260ms linear;
+  }
+
+  .dsa-rule.is-on { opacity: 1; }
+
+  .dsa-rule b {
+    flex: 0 0 auto;
+    color: var(--pp); font-size: 8px; font-weight: 700;
+  }
+
+  .dsa-rule span { color: var(--c-muted); }
+
+  /* ---- responsive, themes, filtering: the supporting work ------------- */
 
   .dsa-wrow {
     display: flex; align-items: center; gap: 6px;
@@ -16127,22 +16293,15 @@ em,
   }
 
   .dsa-wnum {
-    margin-left: auto;
     padding: 1px 5px; border-radius: 2px;
     background: var(--pp); color: #FFF;
     font-size: 8px; font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
   }
 
-  /* Three frames, one per breakpoint, drawn at their relative widths — the
-     staircase is the point. */
-  .dsa-bp  { transition: opacity 260ms linear; }
-  .dsa-bp1 { width: 64%; }
-  .dsa-bp2 { width: 82%; }
-  .dsa-bp3 { width: 100%; }
+  .dsa-rf { transition: width 420ms cubic-bezier(.4,0,.2,1); width: 62%; }
+  #dsa[data-w=&quot;1440&quot;] .dsa-rf { width: 80%; }
+  #dsa[data-w=&quot;1600&quot;] .dsa-rf { width: 100%; }
 
-  .dsa-bp[data-off] { opacity: 0.3; }
-
-  /* Column guides, the way a layout grid draws them. */
   .dsa-guides {
     position: absolute; inset: 1px;
     display: flex; gap: 3px;
@@ -16151,51 +16310,40 @@ em,
   }
 
   .dsa-guides span { flex: 1; background: rgba(123, 97, 255, 0.09); }
+  .dsa-guides span:nth-child(n + 5) { display: none; }
+  #dsa[data-w=&quot;1440&quot;] .dsa-guides span:nth-child(n + 5) { display: block; }
+  #dsa[data-w=&quot;1440&quot;] .dsa-guides span:nth-child(n + 7) { display: none; }
+  #dsa[data-w=&quot;1600&quot;] .dsa-guides span:nth-child(n + 5) { display: block; }
+  #dsa[data-w=&quot;1600&quot;] .dsa-guides span:nth-child(n + 7) { display: block; }
 
-  .dsa-bp1 .dsa-guides span:nth-child(n + 5),
-  .dsa-bp2 .dsa-guides span:nth-child(n + 7) { display: none; }
-
-  /* Modules inside the frame reflow rather than scale. */
   .dsa-mods { position: relative; display: grid; gap: 5px; grid-template-columns: 1fr; }
-  .dsa-bp2 .dsa-mods { grid-template-columns: 1fr 1fr; }
-  .dsa-bp3 .dsa-mods { grid-template-columns: 1fr 1fr 1fr; }
+  #dsa[data-w=&quot;1440&quot;] .dsa-mods { grid-template-columns: 1fr 1fr; }
+  #dsa[data-w=&quot;1600&quot;] .dsa-mods { grid-template-columns: 1fr 1fr 1fr; }
 
   .dsa-mod {
-    height: 26px;
+    height: 22px;
     border: 1px solid var(--c-border);
     border-radius: 2px;
     background: var(--c-sunken);
-    display: flex; align-items: center; padding: 0 7px;
+    display: flex; align-items: center; padding: 0 6px;
     color: var(--c-muted); font-size: 7.5px; font-weight: 600; letter-spacing: 0.06em;
     overflow: hidden;
     transition: background-color 260ms linear, border-color 260ms linear, color 260ms linear;
   }
 
-  /* ---- themes --------------------------------------------------------- */
+  .dsa-toks { display: flex; flex-wrap: wrap; gap: 4px 10px; }
 
-  .dsa-toks { display: grid; gap: 6px; }
-
-  /* The rows live inside the component frame, so they take the theme&#x27;s own
-     text colours rather than the canvas&#x27;s — a slate label on a dark surface
-     would be the one thing in an audit about contrast that fails it. */
   .dsa-tok {
-    display: flex; align-items: center; gap: 6px;
-    color: var(--c-text); font-size: 8.5px;
+    display: flex; align-items: center; gap: 5px;
+    color: var(--c-text); font-size: 8px;
     transition: color 260ms linear;
   }
 
   .dsa-chipc {
-    width: 22px; height: 13px; flex: 0 0 auto;
+    width: 16px; height: 11px; flex: 0 0 auto;
     border: 1px solid var(--c-border);
     border-radius: 2px;
     transition: background-color 260ms linear, border-color 260ms linear;
-  }
-
-  .dsa-tok b { font-weight: 600; letter-spacing: 0.02em; }
-  .dsa-tok span {
-    margin-left: auto; color: var(--c-muted);
-    font-size: 7.5px; letter-spacing: 0.04em;
-    transition: color 260ms linear;
   }
 
   .t-surface { background: var(--c-surface); }
@@ -16203,50 +16351,23 @@ em,
   .t-accent  { background: var(--c-accent); border-color: var(--c-accent); }
   .t-sel     { background: var(--c-sel); }
 
-  .dsa-themeb { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
-
-  .dsa-mini, .dsa-mini2 {
-    height: 26px; padding: 0 11px;
-    display: inline-flex; align-items: center;
-    border-radius: 4px;
-    font-size: 10px; font-weight: 600;
-    transition: background-color 260ms linear, color 260ms linear, border-color 260ms linear;
-  }
-
-  .dsa-mini  { border: 1px solid var(--c-accent); background: var(--c-accent); color: var(--c-on); }
-  .dsa-mini2 { border: 1px solid var(--c-border); background: var(--c-surface); color: var(--c-text); }
-
-  .dsa-field {
-    display: flex; align-items: center;
-    height: 26px; padding: 0 9px;
-    border: 1px solid var(--c-border); border-radius: 4px;
-    background: var(--c-sunken); color: var(--c-muted);
-    font-size: 9.5px;
-    transition: background-color 260ms linear, color 260ms linear, border-color 260ms linear;
-  }
-
   .dsa-ratio {
-    display: flex; align-items: center; gap: 5px;
     color: var(--pp); font-size: 7.5px; font-weight: 700; letter-spacing: 0.06em;
     opacity: 0;
     transition: opacity 220ms linear;
   }
 
   .dsa-ratio.is-on { opacity: 1; }
-
-  /* Same purple, lightened enough to clear 7:1 on the dark surface. */
   #dsa[data-tok=&quot;dark&quot;] .dsa-ratio { color: #B7A8FF; }
-
-  /* ---- filtering ------------------------------------------------------ */
 
   .dsa-chips { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
 
   .dsa-c {
     display: inline-flex; align-items: center; gap: 4px;
-    height: 21px; padding: 0 8px;
+    height: 20px; padding: 0 8px;
     border: 1px solid var(--c-border); border-radius: 3px;
     background: var(--c-surface); color: var(--c-text);
-    font-size: 9px; font-weight: 600; white-space: nowrap;
+    font-size: 8.5px; font-weight: 600; white-space: nowrap;
     transition: height 320ms cubic-bezier(.4,0,.2,1),
                 padding 320ms cubic-bezier(.4,0,.2,1),
                 border-radius 320ms cubic-bezier(.4,0,.2,1),
@@ -16254,20 +16375,20 @@ em,
                 color 220ms linear, opacity 220ms linear;
   }
 
-  .dsa-c1 { height: 25px; border-radius: 13px; padding: 0 12px; }
-  .dsa-c2 { height: 18px; border-radius: 2px;  padding: 0 5px; font-size: 8px; }
-  .dsa-c3 { height: 23px; border-radius: 7px;  padding: 0 10px; }
-  .dsa-c4 { height: 19px; border-radius: 2px;  padding: 0 6px; opacity: 0.5; }
+  .dsa-c1 { height: 24px; border-radius: 12px; padding: 0 11px; }
+  .dsa-c2 { height: 17px; border-radius: 2px;  padding: 0 5px; font-size: 8px; }
+  .dsa-c3 { height: 22px; border-radius: 7px;  padding: 0 9px; }
+  .dsa-c4 { height: 18px; border-radius: 2px;  padding: 0 6px; opacity: 0.5; }
 
-  #dsa[data-fix=&quot;flt&quot;] .dsa-af .dsa-c {
-    height: 21px; border-radius: 3px; padding: 0 8px; font-size: 9px; opacity: 1;
+  #dsa[data-fix=&quot;flt&quot;] .dsa-c {
+    height: 20px; border-radius: 3px; padding: 0 8px; font-size: 8.5px; opacity: 1;
   }
 
-  #dsa[data-fix=&quot;flt&quot;] .dsa-af .dsa-c.sel {
+  #dsa[data-fix=&quot;flt&quot;] .dsa-c.sel {
     background: var(--c-sel); border-color: var(--c-accent); color: var(--c-text);
   }
 
-  #dsa[data-fix=&quot;flt&quot;] .dsa-af .dsa-c.dis {
+  #dsa[data-fix=&quot;flt&quot;] .dsa-c.dis {
     background: var(--c-sunken); color: var(--c-muted); opacity: 1;
   }
 
@@ -16278,16 +16399,18 @@ em,
     font-size: 7px; line-height: 10px; text-align: center;
   }
 
-  #dsa[data-fix=&quot;flt&quot;] .dsa-af .dsa-c.sel .dsa-x { display: block; }
+  #dsa[data-fix=&quot;flt&quot;] .dsa-c.sel .dsa-x { display: block; }
 
   .dsa-clear {
-    color: var(--c-accent); font-size: 8.5px; font-weight: 700;
+    color: var(--c-accent); font-size: 8px; font-weight: 700;
     text-decoration: underline; text-underline-offset: 2px;
     opacity: 0;
     transition: opacity 220ms linear, color 260ms linear;
   }
 
-  #dsa[data-fix=&quot;flt&quot;] .dsa-af .dsa-clear { opacity: 1; }
+  #dsa[data-fix=&quot;flt&quot;] .dsa-clear { opacity: 1; }
+
+  .dsa-dim { opacity: 0.34; transition: opacity 260ms linear; }
 
   @media (prefers-reduced-motion: reduce) {
     #dsa, #dsa * { transition: none !important; animation: none !important; }
@@ -16296,169 +16419,214 @@ em,
 &lt;/head&gt;
 &lt;body&gt;
 
-&lt;div id=&quot;dsa&quot; data-tok=&quot;light&quot;&gt;
+&lt;div id=&quot;dsa&quot; data-tok=&quot;light&quot; data-w=&quot;1280&quot;&gt;
 
   &lt;div class=&quot;dsa-bar&quot;&gt;
-    &lt;div class=&quot;dsa-steps&quot;&gt;
-      &lt;span class=&quot;dsa-step&quot; id=&quot;dsa-s1&quot;&gt;BUTTONS&lt;/span&gt;
-      &lt;span class=&quot;dsa-step&quot; id=&quot;dsa-s2&quot;&gt;RESPONSIVE&lt;/span&gt;
-      &lt;span class=&quot;dsa-step&quot; id=&quot;dsa-s3&quot;&gt;THEMES&lt;/span&gt;
-      &lt;span class=&quot;dsa-step&quot; id=&quot;dsa-s4&quot;&gt;FILTERING&lt;/span&gt;
+    &lt;div class=&quot;dsa-dots&quot;&gt;
+      &lt;i id=&quot;dsa-d1&quot; class=&quot;is-on&quot;&gt;&lt;/i&gt;&lt;i id=&quot;dsa-d2&quot;&gt;&lt;/i&gt;&lt;i id=&quot;dsa-d3&quot;&gt;&lt;/i&gt;&lt;i id=&quot;dsa-d4&quot;&gt;&lt;/i&gt;
     &lt;/div&gt;
-    &lt;span class=&quot;dsa-file&quot;&gt;Design system · audit&lt;/span&gt;
+    &lt;span class=&quot;dsa-file&quot;&gt;Provider workflows · design system audit&lt;/span&gt;
   &lt;/div&gt;
 
   &lt;div class=&quot;dsa-stage&quot;&gt;
 
-    &lt;!-- ============================= BUTTONS ============================ --&gt;
+    &lt;!-- ============================= ACTIONS ============================ --&gt;
     &lt;section class=&quot;dsa-act&quot; id=&quot;dsa-a1&quot; data-on&gt;
+      &lt;div class=&quot;dsa-sec&quot;&gt;ACTIONS &lt;span class=&quot;dsa-secn&quot;&gt;01 / 04&lt;/span&gt;&lt;/div&gt;
 
       &lt;div class=&quot;dsa-frame dsa-grow&quot;&gt;
-        &lt;div class=&quot;dsa-fname&quot;&gt;Actions &lt;span class=&quot;dsa-tagx bad&quot;&gt;BEFORE&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Workflow row &lt;span class=&quot;dsa-tagx bad&quot;&gt;BEFORE&lt;/span&gt;&lt;/div&gt;
         &lt;div class=&quot;dsa-box&quot;&gt;
-          &lt;div class=&quot;dsa-row&quot;&gt;
-            &lt;button class=&quot;dsa-b dsa-b1&quot;&gt;Continue&lt;/button&gt;
-            &lt;button class=&quot;dsa-b dsa-b2&quot;&gt;Yes&lt;/button&gt;
-            &lt;button class=&quot;dsa-b dsa-b3&quot;&gt;No&lt;/button&gt;
-            &lt;button class=&quot;dsa-b dsa-b4&quot;&gt;Delete&lt;/button&gt;
-            &lt;button class=&quot;dsa-b dsa-b5&quot;&gt;Send&lt;/button&gt;
+          &lt;div class=&quot;dsa-cd&quot;&gt;
+            &lt;span class=&quot;dsa-cdt&quot;&gt;Orders&lt;/span&gt;
+            &lt;span class=&quot;dsa-acts&quot;&gt;&lt;button class=&quot;dsa-b dsa-x1&quot;&gt;Continue&lt;/button&gt;&lt;/span&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;dsa-cd&quot;&gt;
+            &lt;span class=&quot;dsa-cdt&quot;&gt;Specimens&lt;/span&gt;
+            &lt;span class=&quot;dsa-acts&quot;&gt;&lt;button class=&quot;dsa-b dsa-x2&quot;&gt;View&lt;/button&gt;&lt;/span&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;dsa-cd&quot;&gt;
+            &lt;span class=&quot;dsa-cdt&quot;&gt;Results&lt;/span&gt;
+            &lt;span class=&quot;dsa-acts&quot;&gt;&lt;span class=&quot;dsa-ovf&quot;&gt;⋯&lt;/span&gt;&lt;/span&gt;
           &lt;/div&gt;
           &lt;div class=&quot;dsa-cals&quot;&gt;
-            &lt;div class=&quot;dsa-cal&quot;&gt;Four heights, four radii, no shared spacing&lt;/div&gt;
-            &lt;div class=&quot;dsa-cal&quot;&gt;“Continue” to where? “Yes / No” to what?&lt;/div&gt;
+            &lt;div class=&quot;dsa-cal&quot;&gt;One action as a button, a link, and a menu item&lt;/div&gt;
+            &lt;div class=&quot;dsa-cal&quot;&gt;In results it is only in the menu&lt;/div&gt;
           &lt;/div&gt;
         &lt;/div&gt;
       &lt;/div&gt;
 
       &lt;div class=&quot;dsa-frame dsa-grow dsa-af&quot; id=&quot;dsa-f1&quot;&gt;
-        &lt;div class=&quot;dsa-fname&quot;&gt;Actions &lt;span class=&quot;dsa-tagx bad&quot; id=&quot;dsa-t1&quot;&gt;DRAFT&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Workflow row &lt;span class=&quot;dsa-tagx bad&quot; id=&quot;dsa-t1&quot;&gt;DRAFT&lt;/span&gt;&lt;/div&gt;
         &lt;div class=&quot;dsa-box&quot;&gt;
-          &lt;div class=&quot;dsa-row&quot;&gt;
-            &lt;button class=&quot;dsa-b dsa-b1&quot; id=&quot;dsa-bb1&quot;&gt;Continue&lt;/button&gt;
-            &lt;button class=&quot;dsa-b dsa-b2&quot; id=&quot;dsa-bb2&quot;&gt;Yes&lt;/button&gt;
-            &lt;button class=&quot;dsa-b dsa-b3&quot;&gt;No&lt;/button&gt;
-            &lt;button class=&quot;dsa-b dsa-b4&quot; id=&quot;dsa-bb4&quot;&gt;Delete&lt;/button&gt;
-            &lt;button class=&quot;dsa-b dsa-b5&quot; id=&quot;dsa-bb5&quot;&gt;Send&lt;/button&gt;
+          &lt;div class=&quot;dsa-cd&quot;&gt;
+            &lt;span class=&quot;dsa-cdt&quot;&gt;Orders&lt;/span&gt;
+            &lt;span class=&quot;dsa-acts&quot;&gt;
+              &lt;button class=&quot;dsa-b dsa-x1&quot; id=&quot;dsa-ab1&quot;&gt;Continue&lt;/button&gt;
+              &lt;button class=&quot;dsa-b dsa-sec2&quot;&gt;Assign&lt;/button&gt;
+              &lt;span class=&quot;dsa-ovf&quot;&gt;⋯&lt;/span&gt;
+            &lt;/span&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;dsa-cd&quot;&gt;
+            &lt;span class=&quot;dsa-cdt&quot;&gt;Specimens&lt;/span&gt;
+            &lt;span class=&quot;dsa-acts&quot;&gt;
+              &lt;button class=&quot;dsa-b dsa-x2&quot; id=&quot;dsa-ab2&quot;&gt;View&lt;/button&gt;
+              &lt;button class=&quot;dsa-b dsa-sec2&quot;&gt;Assign&lt;/button&gt;
+              &lt;span class=&quot;dsa-ovf&quot;&gt;⋯&lt;/span&gt;
+            &lt;/span&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;dsa-cd&quot;&gt;
+            &lt;span class=&quot;dsa-cdt&quot;&gt;Results&lt;/span&gt;
+            &lt;span class=&quot;dsa-acts&quot;&gt;
+              &lt;button class=&quot;dsa-b dsa-x3&quot; id=&quot;dsa-ab3&quot;&gt;Review result&lt;/button&gt;
+              &lt;button class=&quot;dsa-b dsa-sec2&quot;&gt;Assign&lt;/button&gt;
+              &lt;span class=&quot;dsa-ovf&quot;&gt;⋯&lt;/span&gt;
+            &lt;/span&gt;
           &lt;/div&gt;
           &lt;div class=&quot;dsa-meas&quot; id=&quot;dsa-m1&quot;&gt;&lt;i&gt;&lt;/i&gt;8&lt;/div&gt;
           &lt;div class=&quot;dsa-vars&quot; id=&quot;dsa-v1&quot;&gt;
             &lt;span class=&quot;dsa-var&quot;&gt;PRIMARY&lt;/span&gt;
             &lt;span class=&quot;dsa-var&quot;&gt;SECONDARY&lt;/span&gt;
-            &lt;span class=&quot;dsa-var&quot;&gt;DESTRUCTIVE&lt;/span&gt;
-            &lt;span class=&quot;dsa-var&quot;&gt;DISABLED&lt;/span&gt;
+            &lt;span class=&quot;dsa-var&quot;&gt;SUPPORTING&lt;/span&gt;
           &lt;/div&gt;
           &lt;span class=&quot;dsa-h1&quot;&gt;&lt;/span&gt;&lt;span class=&quot;dsa-h2&quot;&gt;&lt;/span&gt;
         &lt;/div&gt;
       &lt;/div&gt;
 
-      &lt;div class=&quot;dsa-note&quot;&gt;&lt;span class=&quot;dsa-pin&quot; id=&quot;dsa-p1&quot;&gt;&lt;/span&gt;&lt;span id=&quot;dsa-n1&quot;&gt;Five treatments, and not one label names the outcome&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;dsa-note&quot;&gt;&lt;span class=&quot;dsa-pin&quot; id=&quot;dsa-p1&quot;&gt;&lt;/span&gt;&lt;span id=&quot;dsa-n1&quot;&gt;The same action, in three shapes, in three places&lt;/span&gt;&lt;/div&gt;
     &lt;/section&gt;
 
-    &lt;!-- ============================ RESPONSIVE ========================== --&gt;
+    &lt;!-- ========================= STATUS LANGUAGE ======================== --&gt;
     &lt;section class=&quot;dsa-act&quot; id=&quot;dsa-a2&quot;&gt;
-      &lt;div class=&quot;dsa-wrow&quot;&gt;FRAME WIDTH &lt;span class=&quot;dsa-wnum&quot; id=&quot;dsa-w&quot;&gt;1280&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;dsa-sec&quot;&gt;STATUS LANGUAGE &lt;span class=&quot;dsa-secn&quot;&gt;02 / 04&lt;/span&gt;&lt;/div&gt;
 
-      &lt;div class=&quot;dsa-frame dsa-grow dsa-bp dsa-bp1&quot; id=&quot;dsa-r1&quot; data-off&gt;
-        &lt;div class=&quot;dsa-fname&quot;&gt;Workspace · 1280 &lt;span class=&quot;dsa-tagx&quot;&gt;4 COL&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;dsa-frame dsa-grow&quot;&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Status &lt;span class=&quot;dsa-tagx bad&quot;&gt;BEFORE&lt;/span&gt;&lt;/div&gt;
         &lt;div class=&quot;dsa-box&quot;&gt;
-          &lt;div class=&quot;dsa-guides&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/div&gt;
-          &lt;div class=&quot;dsa-mods&quot;&gt;&lt;div class=&quot;dsa-mod&quot;&gt;MODULE&lt;/div&gt;&lt;/div&gt;
+          &lt;div class=&quot;dsa-strow&quot;&gt;&lt;span class=&quot;dsa-st&quot;&gt;&lt;i&gt;&lt;/i&gt;Pending&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;dsa-strow&quot;&gt;&lt;span class=&quot;dsa-st&quot;&gt;&lt;i&gt;&lt;/i&gt;In Progress&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;dsa-strow&quot;&gt;&lt;span class=&quot;dsa-st&quot;&gt;&lt;i&gt;&lt;/i&gt;Failed&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;dsa-cals&quot;&gt;
+            &lt;div class=&quot;dsa-cal&quot;&gt;Pending on whom? Failed at what?&lt;/div&gt;
+            &lt;div class=&quot;dsa-cal&quot;&gt;“Review” is a state and an instruction at once&lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;dsa-frame dsa-grow dsa-af&quot; id=&quot;dsa-f2&quot;&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Status &lt;span class=&quot;dsa-tagx bad&quot; id=&quot;dsa-t2&quot;&gt;DRAFT&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsa-box&quot;&gt;
+          &lt;div class=&quot;dsa-strow&quot;&gt;
+            &lt;span class=&quot;dsa-st st-wait&quot;&gt;&lt;i&gt;&lt;/i&gt;&lt;span id=&quot;dsa-sl1&quot;&gt;Pending&lt;/span&gt;&lt;/span&gt;
+            &lt;button class=&quot;dsa-b dsa-next&quot; id=&quot;dsa-nx1&quot;&gt;Review order&lt;/button&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;dsa-strow&quot;&gt;
+            &lt;span class=&quot;dsa-st st-work&quot;&gt;&lt;i&gt;&lt;/i&gt;&lt;span id=&quot;dsa-sl2&quot;&gt;In Progress&lt;/span&gt;&lt;/span&gt;
+            &lt;span class=&quot;dsa-none&quot; id=&quot;dsa-nx2&quot;&gt;No action needed&lt;/span&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;dsa-strow&quot;&gt;
+            &lt;span class=&quot;dsa-st st-err&quot;&gt;&lt;i&gt;&lt;/i&gt;&lt;span id=&quot;dsa-sl3&quot;&gt;Failed&lt;/span&gt;&lt;/span&gt;
+            &lt;button class=&quot;dsa-b dsa-next&quot; id=&quot;dsa-nx3&quot;&gt;Resolve issue&lt;/button&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;dsa-vars&quot; id=&quot;dsa-v2&quot;&gt;
+            &lt;span class=&quot;dsa-var&quot;&gt;PROVIDER&lt;/span&gt;
+            &lt;span class=&quot;dsa-var&quot;&gt;LAB&lt;/span&gt;
+            &lt;span class=&quot;dsa-var&quot;&gt;SYSTEM&lt;/span&gt;
+          &lt;/div&gt;
           &lt;span class=&quot;dsa-h1&quot;&gt;&lt;/span&gt;&lt;span class=&quot;dsa-h2&quot;&gt;&lt;/span&gt;
         &lt;/div&gt;
       &lt;/div&gt;
 
-      &lt;div class=&quot;dsa-frame dsa-grow dsa-bp dsa-bp2&quot; id=&quot;dsa-r2&quot; data-off&gt;
-        &lt;div class=&quot;dsa-fname&quot;&gt;Workspace · 1440 &lt;span class=&quot;dsa-tagx&quot;&gt;6 COL&lt;/span&gt;&lt;/div&gt;
-        &lt;div class=&quot;dsa-box&quot;&gt;
-          &lt;div class=&quot;dsa-guides&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/div&gt;
-          &lt;div class=&quot;dsa-mods&quot;&gt;&lt;div class=&quot;dsa-mod&quot;&gt;MODULE&lt;/div&gt;&lt;div class=&quot;dsa-mod&quot;&gt;MODULE&lt;/div&gt;&lt;/div&gt;
-          &lt;span class=&quot;dsa-h1&quot;&gt;&lt;/span&gt;&lt;span class=&quot;dsa-h2&quot;&gt;&lt;/span&gt;
-        &lt;/div&gt;
-      &lt;/div&gt;
-
-      &lt;div class=&quot;dsa-frame dsa-grow dsa-bp dsa-bp3&quot; id=&quot;dsa-r3&quot; data-off&gt;
-        &lt;div class=&quot;dsa-fname&quot;&gt;Workspace · 1600 &lt;span class=&quot;dsa-tagx&quot;&gt;8 COL&lt;/span&gt;&lt;/div&gt;
-        &lt;div class=&quot;dsa-box&quot;&gt;
-          &lt;div class=&quot;dsa-guides&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/div&gt;
-          &lt;div class=&quot;dsa-mods&quot;&gt;&lt;div class=&quot;dsa-mod&quot;&gt;MODULE&lt;/div&gt;&lt;div class=&quot;dsa-mod&quot;&gt;MODULE&lt;/div&gt;&lt;div class=&quot;dsa-mod&quot;&gt;MODULE&lt;/div&gt;&lt;/div&gt;
-          &lt;span class=&quot;dsa-h1&quot;&gt;&lt;/span&gt;&lt;span class=&quot;dsa-h2&quot;&gt;&lt;/span&gt;
-        &lt;/div&gt;
-      &lt;/div&gt;
-
-      &lt;div class=&quot;dsa-note&quot;&gt;&lt;span class=&quot;dsa-pin is-ok&quot;&gt;&lt;/span&gt;&lt;span id=&quot;dsa-n2&quot;&gt;One auto-layout rule, three breakpoints — the columns resolve, the components hold&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;dsa-note&quot;&gt;&lt;span class=&quot;dsa-pin&quot; id=&quot;dsa-p2&quot;&gt;&lt;/span&gt;&lt;span id=&quot;dsa-n2&quot;&gt;Four words that name a state and leave the owner to be guessed&lt;/span&gt;&lt;/div&gt;
     &lt;/section&gt;
 
-    &lt;!-- ============================== THEMES ============================ --&gt;
+    &lt;!-- =========================== SYSTEM RULES ======================== --&gt;
     &lt;section class=&quot;dsa-act&quot; id=&quot;dsa-a3&quot;&gt;
+      &lt;div class=&quot;dsa-sec&quot;&gt;SYSTEM RULES &lt;span class=&quot;dsa-secn&quot;&gt;03 / 04&lt;/span&gt;&lt;/div&gt;
 
-      &lt;div class=&quot;dsa-frame dsa-grow is-sel&quot; id=&quot;dsa-f3&quot;&gt;
-        &lt;div class=&quot;dsa-fname&quot;&gt;Variables &lt;span class=&quot;dsa-tagx good&quot; id=&quot;dsa-t3&quot;&gt;LIGHT&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;dsa-frame&quot; id=&quot;dsa-f3&quot;&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Components · published &lt;span class=&quot;dsa-tagx good&quot;&gt;SET&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsa-box&quot;&gt;
+          &lt;div class=&quot;dsa-cd&quot;&gt;
+            &lt;span class=&quot;dsa-cdt&quot;&gt;Row&lt;/span&gt;
+            &lt;span class=&quot;dsa-acts&quot;&gt;
+              &lt;button class=&quot;dsa-b&quot; style=&quot;background: var(--c-accent); border-color: var(--c-accent); color: var(--c-on);&quot;&gt;Review order&lt;/button&gt;
+              &lt;button class=&quot;dsa-b&quot;&gt;Assign&lt;/button&gt;
+              &lt;span class=&quot;dsa-ovf&quot;&gt;⋯&lt;/span&gt;
+            &lt;/span&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;dsa-strow&quot; style=&quot;gap: 5px; flex-wrap: wrap;&quot;&gt;
+            &lt;span class=&quot;dsa-st st-wait&quot; style=&quot;background: var(--s-wait-bg); color: var(--s-wait-fg); border-color: transparent;&quot;&gt;&lt;i style=&quot;border-radius: 1px;&quot;&gt;&lt;/i&gt;Awaiting provider action&lt;/span&gt;
+            &lt;span class=&quot;dsa-st st-err&quot; style=&quot;background: var(--s-err-bg); color: var(--s-err-fg); border-color: transparent;&quot;&gt;&lt;i&gt;&lt;/i&gt;Submission error&lt;/span&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;dsa-frame dsa-grow&quot;&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Rules &lt;span class=&quot;dsa-tagx good&quot;&gt;DOCUMENTED&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsa-box&quot;&gt;
+          &lt;div class=&quot;dsa-rules&quot;&gt;
+            &lt;div class=&quot;dsa-rule&quot; id=&quot;dsa-r1&quot;&gt;&lt;b&gt;01&lt;/b&gt;One primary action per row, always in the same column&lt;/div&gt;
+            &lt;div class=&quot;dsa-rule&quot; id=&quot;dsa-r2&quot;&gt;&lt;b&gt;02&lt;/b&gt;A status names its owner — &lt;span&gt;provider · lab · system&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;dsa-rule&quot; id=&quot;dsa-r3&quot;&gt;&lt;b&gt;03&lt;/b&gt;Every status carries the next step, or says none is needed&lt;/div&gt;
+            &lt;div class=&quot;dsa-rule&quot; id=&quot;dsa-r4&quot;&gt;&lt;b&gt;04&lt;/b&gt;Spacing 4 / 8 / 16 · &lt;span&gt;default · hover · focus · disabled&lt;/span&gt;&lt;/div&gt;
+            &lt;div class=&quot;dsa-rule&quot; id=&quot;dsa-r5&quot;&gt;&lt;b&gt;05&lt;/b&gt;State is never carried by colour alone, at 4.5:1 or better&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;span class=&quot;dsa-h1&quot;&gt;&lt;/span&gt;&lt;span class=&quot;dsa-h2&quot;&gt;&lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;dsa-note&quot;&gt;&lt;span class=&quot;dsa-pin is-ok&quot;&gt;&lt;/span&gt;&lt;span id=&quot;dsa-n3&quot;&gt;Audited once, written down as rules the four workflows share&lt;/span&gt;&lt;/div&gt;
+    &lt;/section&gt;
+
+    &lt;!-- ================ RESPONSIVE / THEMES / FILTERING ================ --&gt;
+    &lt;section class=&quot;dsa-act&quot; id=&quot;dsa-a4&quot;&gt;
+      &lt;div class=&quot;dsa-sec&quot;&gt;RESPONSIVE / THEMES / FILTERING &lt;span class=&quot;dsa-secn&quot;&gt;04 / 04&lt;/span&gt;&lt;/div&gt;
+
+      &lt;div class=&quot;dsa-frame dsa-grow dsa-rf dsa-dim&quot; id=&quot;dsa-q1&quot;&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Responsive &lt;span class=&quot;dsa-wnum&quot; id=&quot;dsa-w&quot;&gt;1280&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;dsa-box&quot;&gt;
+          &lt;div class=&quot;dsa-guides&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;dsa-mods&quot;&gt;
+            &lt;div class=&quot;dsa-mod&quot;&gt;ROW&lt;/div&gt;&lt;div class=&quot;dsa-mod&quot;&gt;ROW&lt;/div&gt;&lt;div class=&quot;dsa-mod&quot;&gt;ROW&lt;/div&gt;
+          &lt;/div&gt;
+          &lt;span class=&quot;dsa-h1&quot;&gt;&lt;/span&gt;&lt;span class=&quot;dsa-h2&quot;&gt;&lt;/span&gt;
+        &lt;/div&gt;
+      &lt;/div&gt;
+
+      &lt;div class=&quot;dsa-frame dsa-grow dsa-dim&quot; id=&quot;dsa-q2&quot;&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Themes &lt;span class=&quot;dsa-tagx&quot; id=&quot;dsa-t4&quot;&gt;LIGHT&lt;/span&gt;&lt;/div&gt;
         &lt;div class=&quot;dsa-box&quot;&gt;
           &lt;div class=&quot;dsa-toks&quot;&gt;
-            &lt;div class=&quot;dsa-tok&quot;&gt;&lt;span class=&quot;dsa-chipc t-surface&quot;&gt;&lt;/span&gt;&lt;b&gt;surface&lt;/b&gt;&lt;span&gt;SURFACE&lt;/span&gt;&lt;/div&gt;
-            &lt;div class=&quot;dsa-tok&quot;&gt;&lt;span class=&quot;dsa-chipc t-border&quot;&gt;&lt;/span&gt;&lt;b&gt;border&lt;/b&gt;&lt;span&gt;STROKE&lt;/span&gt;&lt;/div&gt;
-            &lt;div class=&quot;dsa-tok&quot;&gt;&lt;span class=&quot;dsa-chipc t-sel&quot;&gt;&lt;/span&gt;&lt;b&gt;state.selected&lt;/b&gt;&lt;span&gt;STATE&lt;/span&gt;&lt;/div&gt;
-            &lt;div class=&quot;dsa-tok&quot;&gt;&lt;span class=&quot;dsa-chipc t-accent&quot;&gt;&lt;/span&gt;&lt;b&gt;action.primary&lt;/b&gt;&lt;span&gt;ACTION&lt;/span&gt;&lt;/div&gt;
+            &lt;span class=&quot;dsa-tok&quot;&gt;&lt;span class=&quot;dsa-chipc t-surface&quot;&gt;&lt;/span&gt;surface&lt;/span&gt;
+            &lt;span class=&quot;dsa-tok&quot;&gt;&lt;span class=&quot;dsa-chipc t-border&quot;&gt;&lt;/span&gt;border&lt;/span&gt;
+            &lt;span class=&quot;dsa-tok&quot;&gt;&lt;span class=&quot;dsa-chipc t-sel&quot;&gt;&lt;/span&gt;state.selected&lt;/span&gt;
+            &lt;span class=&quot;dsa-tok&quot;&gt;&lt;span class=&quot;dsa-chipc t-accent&quot;&gt;&lt;/span&gt;action.primary&lt;/span&gt;
           &lt;/div&gt;
+          &lt;div class=&quot;dsa-acts&quot; style=&quot;margin: 0; justify-content: flex-start;&quot;&gt;
+            &lt;button class=&quot;dsa-b&quot; style=&quot;background: var(--c-accent); border-color: var(--c-accent); color: var(--c-on);&quot;&gt;Review order&lt;/button&gt;
+            &lt;span class=&quot;dsa-st st-err&quot; style=&quot;background: var(--s-err-bg); color: var(--s-err-fg); border-color: transparent;&quot;&gt;&lt;i&gt;&lt;/i&gt;Submission error&lt;/span&gt;
+          &lt;/div&gt;
+          &lt;div class=&quot;dsa-ratio&quot; id=&quot;dsa-ra&quot;&gt;CONTRAST · text 8.4 : 1 · action 4.9 : 1&lt;/div&gt;
           &lt;span class=&quot;dsa-h1&quot;&gt;&lt;/span&gt;&lt;span class=&quot;dsa-h2&quot;&gt;&lt;/span&gt;
         &lt;/div&gt;
       &lt;/div&gt;
 
-      &lt;div class=&quot;dsa-frame dsa-grow&quot;&gt;
-        &lt;div class=&quot;dsa-fname&quot;&gt;Components · bound to variables&lt;/div&gt;
-        &lt;div class=&quot;dsa-box&quot;&gt;
-          &lt;div class=&quot;dsa-themeb&quot;&gt;
-            &lt;span class=&quot;dsa-mini&quot;&gt;Submit order&lt;/span&gt;
-            &lt;span class=&quot;dsa-mini2&quot;&gt;Send back&lt;/span&gt;
-          &lt;/div&gt;
-          &lt;div class=&quot;dsa-field&quot;&gt;Specimen ID&lt;/div&gt;
-          &lt;div class=&quot;dsa-ratio&quot; id=&quot;dsa-ra&quot;&gt;CONTRAST · text 8.4 : 1 · action 4.9 : 1&lt;/div&gt;
-        &lt;/div&gt;
-      &lt;/div&gt;
-
-      &lt;div class=&quot;dsa-note&quot;&gt;&lt;span class=&quot;dsa-pin is-ok&quot;&gt;&lt;/span&gt;&lt;span id=&quot;dsa-n3&quot;&gt;One component, two themes — the values change, the component does not&lt;/span&gt;&lt;/div&gt;
-    &lt;/section&gt;
-
-    &lt;!-- ============================= FILTERING ========================== --&gt;
-    &lt;section class=&quot;dsa-act&quot; id=&quot;dsa-a4&quot;&gt;
-
-      &lt;div class=&quot;dsa-frame dsa-grow&quot;&gt;
-        &lt;div class=&quot;dsa-fname&quot;&gt;Filter &lt;span class=&quot;dsa-tagx bad&quot;&gt;BEFORE&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;dsa-frame dsa-grow dsa-dim&quot; id=&quot;dsa-q3&quot;&gt;
+        &lt;div class=&quot;dsa-fname&quot;&gt;Filtering &lt;span class=&quot;dsa-tagx&quot; id=&quot;dsa-t5&quot;&gt;4 SHAPES&lt;/span&gt;&lt;/div&gt;
         &lt;div class=&quot;dsa-box&quot;&gt;
           &lt;div class=&quot;dsa-chips&quot;&gt;
-            &lt;span class=&quot;dsa-c dsa-c1 sel&quot;&gt;Priority&lt;/span&gt;
+            &lt;span class=&quot;dsa-c dsa-c1 sel&quot;&gt;Awaiting &lt;span class=&quot;dsa-x&quot;&gt;×&lt;/span&gt;&lt;/span&gt;
             &lt;span class=&quot;dsa-c dsa-c2&quot;&gt;Assigned&lt;/span&gt;
-            &lt;span class=&quot;dsa-c dsa-c3 sel&quot;&gt;Open&lt;/span&gt;
-            &lt;span class=&quot;dsa-c dsa-c4 dis&quot;&gt;Archived&lt;/span&gt;
-          &lt;/div&gt;
-          &lt;div class=&quot;dsa-cals&quot;&gt;
-            &lt;div class=&quot;dsa-cal&quot;&gt;Selected and disabled read the same from a metre away&lt;/div&gt;
-            &lt;div class=&quot;dsa-cal&quot;&gt;No way out of the filters you applied&lt;/div&gt;
-          &lt;/div&gt;
-        &lt;/div&gt;
-      &lt;/div&gt;
-
-      &lt;div class=&quot;dsa-frame dsa-grow dsa-af&quot; id=&quot;dsa-f4&quot;&gt;
-        &lt;div class=&quot;dsa-fname&quot;&gt;Filter &lt;span class=&quot;dsa-tagx bad&quot; id=&quot;dsa-t4&quot;&gt;DRAFT&lt;/span&gt;&lt;/div&gt;
-        &lt;div class=&quot;dsa-box&quot;&gt;
-          &lt;div class=&quot;dsa-chips&quot;&gt;
-            &lt;span class=&quot;dsa-c dsa-c1 sel&quot;&gt;Priority &lt;span class=&quot;dsa-x&quot;&gt;×&lt;/span&gt;&lt;/span&gt;
-            &lt;span class=&quot;dsa-c dsa-c2&quot;&gt;Assigned&lt;/span&gt;
-            &lt;span class=&quot;dsa-c dsa-c3 sel&quot;&gt;Open &lt;span class=&quot;dsa-x&quot;&gt;×&lt;/span&gt;&lt;/span&gt;
+            &lt;span class=&quot;dsa-c dsa-c3 sel&quot;&gt;Errors &lt;span class=&quot;dsa-x&quot;&gt;×&lt;/span&gt;&lt;/span&gt;
             &lt;span class=&quot;dsa-c dsa-c4 dis&quot;&gt;Archived&lt;/span&gt;
             &lt;span class=&quot;dsa-clear&quot;&gt;Clear all&lt;/span&gt;
           &lt;/div&gt;
-          &lt;div class=&quot;dsa-vars&quot; id=&quot;dsa-v4&quot;&gt;
-            &lt;span class=&quot;dsa-var&quot;&gt;DEFAULT&lt;/span&gt;
-            &lt;span class=&quot;dsa-var&quot;&gt;SELECTED&lt;/span&gt;
-            &lt;span class=&quot;dsa-var&quot;&gt;REMOVABLE&lt;/span&gt;
-            &lt;span class=&quot;dsa-var&quot;&gt;DISABLED&lt;/span&gt;
-          &lt;/div&gt;
           &lt;span class=&quot;dsa-h1&quot;&gt;&lt;/span&gt;&lt;span class=&quot;dsa-h2&quot;&gt;&lt;/span&gt;
         &lt;/div&gt;
       &lt;/div&gt;
 
-      &lt;div class=&quot;dsa-note&quot;&gt;&lt;span class=&quot;dsa-pin&quot; id=&quot;dsa-p4&quot;&gt;&lt;/span&gt;&lt;span id=&quot;dsa-n4&quot;&gt;Four chips, four shapes, and no way to tell selected from disabled&lt;/span&gt;&lt;/div&gt;
+      &lt;div class=&quot;dsa-note&quot;&gt;&lt;span class=&quot;dsa-pin is-ok&quot;&gt;&lt;/span&gt;&lt;span id=&quot;dsa-n4&quot;&gt;Supporting work: the same rules holding across widths, themes and filters&lt;/span&gt;&lt;/div&gt;
     &lt;/section&gt;
 
   &lt;/div&gt;
@@ -16471,7 +16639,8 @@ em,
    One array of [what it does, how long it stands]. Every entry writes an
    attribute or a class and nothing else — the script never measures or
    positions anything, so the frame&#x27;s size is never something it can get
-   wrong.
+   wrong. The two comparisons that carry the story, actions and status
+   language, are given the longest holds.
 
    All state is closed over; the only global touched is one visibility
    listener; everything is looked up under #dsa.
@@ -16484,8 +16653,9 @@ em,
 
   var $ = function (id) { return document.getElementById(id); };
   var acts = { a1: $(&#x27;dsa-a1&#x27;), a2: $(&#x27;dsa-a2&#x27;), a3: $(&#x27;dsa-a3&#x27;), a4: $(&#x27;dsa-a4&#x27;) };
-  var steps = [$(&#x27;dsa-s1&#x27;), $(&#x27;dsa-s2&#x27;), $(&#x27;dsa-s3&#x27;), $(&#x27;dsa-s4&#x27;)];
-  var bps = [$(&#x27;dsa-r1&#x27;), $(&#x27;dsa-r2&#x27;), $(&#x27;dsa-r3&#x27;)];
+  var dots = [$(&#x27;dsa-d1&#x27;), $(&#x27;dsa-d2&#x27;), $(&#x27;dsa-d3&#x27;), $(&#x27;dsa-d4&#x27;)];
+  var rules = [$(&#x27;dsa-r1&#x27;), $(&#x27;dsa-r2&#x27;), $(&#x27;dsa-r3&#x27;), $(&#x27;dsa-r4&#x27;), $(&#x27;dsa-r5&#x27;)];
+  var quiet = [$(&#x27;dsa-q1&#x27;), $(&#x27;dsa-q2&#x27;), $(&#x27;dsa-q3&#x27;)];
 
   var still = window.matchMedia &amp;&amp;
               window.matchMedia(&#x27;(prefers-reduced-motion: reduce)&#x27;).matches;
@@ -16495,7 +16665,7 @@ em,
       if (id === k) acts[id].setAttribute(&#x27;data-on&#x27;, &#x27;&#x27;);
       else acts[id].removeAttribute(&#x27;data-on&#x27;);
     }
-    for (var i = 0; i &lt; steps.length; i++) steps[i].classList.toggle(&#x27;is-on&#x27;, i === n);
+    for (var i = 0; i &lt; dots.length; i++) dots[i].classList.toggle(&#x27;is-on&#x27;, i === n);
   }
 
   function tag(el, text, good) {
@@ -16505,93 +16675,126 @@ em,
 
   function label(id, text) { $(id).textContent = text; }
 
-  /* Which breakpoint frame is the live one; the ones above it stay, the ones
-     below it wait. */
-  function bp(n) {
-    for (var i = 0; i &lt; bps.length; i++) {
-      bps[i].classList.toggle(&#x27;is-sel&#x27;, i === n);
-      if (i &lt;= n) bps[i].removeAttribute(&#x27;data-off&#x27;);
-      else bps[i].setAttribute(&#x27;data-off&#x27;, &#x27;&#x27;);
+  /* Which of the three supporting frames is being looked at. */
+  function look(n) {
+    for (var i = 0; i &lt; quiet.length; i++) {
+      quiet[i].classList.toggle(&#x27;is-sel&#x27;, i === n);
+      quiet[i].classList.toggle(&#x27;dsa-dim&#x27;, n &gt;= 0 &amp;&amp; i !== n);
     }
   }
 
-  /* The four passes, in order. */
+  function ruleOn(n) { for (var i = 0; i &lt;= n; i++) rules[i].classList.add(&#x27;is-on&#x27;); }
+
+  /* ------------------------------------------------------------------- */
+
   var T = [
-    /* ---- buttons: what was found ------------------------------------ */
+    /* ---- 01 actions: what the audit found --------------------------- */
     [function () {
       act(&#x27;a1&#x27;, 0);
       root.removeAttribute(&#x27;data-fix&#x27;);
       root.setAttribute(&#x27;data-tok&#x27;, &#x27;light&#x27;);
+      root.setAttribute(&#x27;data-w&#x27;, &#x27;1280&#x27;);
       $(&#x27;dsa-f1&#x27;).classList.remove(&#x27;is-sel&#x27;);
+      $(&#x27;dsa-f2&#x27;).classList.remove(&#x27;is-sel&#x27;);
       $(&#x27;dsa-m1&#x27;).classList.remove(&#x27;is-on&#x27;);
       $(&#x27;dsa-v1&#x27;).classList.remove(&#x27;is-on&#x27;);
-      $(&#x27;dsa-v4&#x27;).classList.remove(&#x27;is-on&#x27;);
+      $(&#x27;dsa-v2&#x27;).classList.remove(&#x27;is-on&#x27;);
       $(&#x27;dsa-ra&#x27;).classList.remove(&#x27;is-on&#x27;);
-      $(&#x27;dsa-f4&#x27;).classList.remove(&#x27;is-sel&#x27;);
+      $(&#x27;dsa-nx1&#x27;).classList.remove(&#x27;is-on&#x27;);
+      $(&#x27;dsa-nx2&#x27;).classList.remove(&#x27;is-on&#x27;);
+      $(&#x27;dsa-nx3&#x27;).classList.remove(&#x27;is-on&#x27;);
+      for (var i = 0; i &lt; rules.length; i++) rules[i].classList.remove(&#x27;is-on&#x27;);
+      look(-1);
       $(&#x27;dsa-p1&#x27;).className = &#x27;dsa-pin&#x27;;
-      $(&#x27;dsa-p4&#x27;).className = &#x27;dsa-pin&#x27;;
+      $(&#x27;dsa-p2&#x27;).className = &#x27;dsa-pin&#x27;;
       tag($(&#x27;dsa-t1&#x27;), &#x27;DRAFT&#x27;, false);
-      tag($(&#x27;dsa-t4&#x27;), &#x27;DRAFT&#x27;, false);
-      $(&#x27;dsa-bb1&#x27;).textContent = &#x27;Continue&#x27;;
-      $(&#x27;dsa-bb2&#x27;).textContent = &#x27;Yes&#x27;;
-      $(&#x27;dsa-bb4&#x27;).textContent = &#x27;Delete&#x27;;
-      $(&#x27;dsa-bb5&#x27;).textContent = &#x27;Send&#x27;;
-      label(&#x27;dsa-n1&#x27;, &#x27;Five treatments, and not one label names the outcome&#x27;);
-      label(&#x27;dsa-n4&#x27;, &#x27;Four chips, four shapes, and no way to tell selected from disabled&#x27;);
+      tag($(&#x27;dsa-t2&#x27;), &#x27;DRAFT&#x27;, false);
+      $(&#x27;dsa-ab1&#x27;).textContent = &#x27;Continue&#x27;;
+      $(&#x27;dsa-ab2&#x27;).textContent = &#x27;View&#x27;;
+      label(&#x27;dsa-sl1&#x27;, &#x27;Pending&#x27;);
+      label(&#x27;dsa-sl2&#x27;, &#x27;In Progress&#x27;);
+      label(&#x27;dsa-sl3&#x27;, &#x27;Failed&#x27;);
       label(&#x27;dsa-w&#x27;, &#x27;1280&#x27;);
-      bp(-1);
-    }, 2000],
+      label(&#x27;dsa-n1&#x27;, &#x27;The same action, in three shapes, in three places&#x27;);
+      label(&#x27;dsa-n2&#x27;, &#x27;Four words that name a state and leave the owner to be guessed&#x27;);
+      $(&#x27;dsa-t4&#x27;).textContent = &#x27;LIGHT&#x27;;
+      $(&#x27;dsa-t5&#x27;).textContent = &#x27;4 SHAPES&#x27;;
+    }, 2300],
 
     [function () { $(&#x27;dsa-f1&#x27;).classList.add(&#x27;is-sel&#x27;); }, 900],
 
-    /* ---- buttons: the language first, then the system ---------------- */
+    /* The language first: a label that names its outcome. */
     [function () {
-      $(&#x27;dsa-bb1&#x27;).textContent = &#x27;Submit order&#x27;;
-      $(&#x27;dsa-bb2&#x27;).textContent = &#x27;Approve request&#x27;;
-      $(&#x27;dsa-bb4&#x27;).textContent = &#x27;Cancel order&#x27;;
-      $(&#x27;dsa-bb5&#x27;).textContent = &#x27;Release result&#x27;;
-      label(&#x27;dsa-n1&#x27;, &#x27;Every label now names its outcome, not its direction&#x27;);
+      $(&#x27;dsa-ab1&#x27;).textContent = &#x27;Review order&#x27;;
+      $(&#x27;dsa-ab2&#x27;).textContent = &#x27;Review specimen&#x27;;
+      label(&#x27;dsa-n1&#x27;, &#x27;Every action names its outcome, not its direction&#x27;);
     }, 1700],
 
+    /* Then the hierarchy: primary, secondary, supporting, same order. */
     [function () {
-      root.setAttribute(&#x27;data-fix&#x27;, &#x27;btn&#x27;);
+      root.setAttribute(&#x27;data-fix&#x27;, &#x27;act&#x27;);
       tag($(&#x27;dsa-t1&#x27;), &#x27;AFTER&#x27;, true);
-      label(&#x27;dsa-n1&#x27;, &#x27;One primary, one secondary, one destructive, one disabled&#x27;);
       $(&#x27;dsa-p1&#x27;).className = &#x27;dsa-pin is-ok&#x27;;
-    }, 1400],
+      label(&#x27;dsa-n1&#x27;, &#x27;One primary, one secondary, one menu — in that order, everywhere&#x27;);
+    }, 1800],
 
-    [function () { $(&#x27;dsa-m1&#x27;).classList.add(&#x27;is-on&#x27;); }, 900],
-    [function () { $(&#x27;dsa-v1&#x27;).classList.add(&#x27;is-on&#x27;); }, 1900],
+    [function () { $(&#x27;dsa-m1&#x27;).classList.add(&#x27;is-on&#x27;); }, 1000],
+    [function () { $(&#x27;dsa-v1&#x27;).classList.add(&#x27;is-on&#x27;); }, 2200],
 
-    /* ---- responsive --------------------------------------------------- */
-    [function () { act(&#x27;a2&#x27;, 1); bp(0); label(&#x27;dsa-w&#x27;, &#x27;1280&#x27;); }, 1500],
-    [function () { bp(1); label(&#x27;dsa-w&#x27;, &#x27;1440&#x27;); }, 1500],
-    [function () { bp(2); label(&#x27;dsa-w&#x27;, &#x27;1600&#x27;); }, 1900],
+    /* ---- 02 status language ----------------------------------------- */
+    [function () { act(&#x27;a2&#x27;, 1); }, 2300],
+    [function () { $(&#x27;dsa-f2&#x27;).classList.add(&#x27;is-sel&#x27;); }, 900],
 
-    /* ---- themes ------------------------------------------------------- */
-    [function () { act(&#x27;a3&#x27;, 2); }, 1300],
+    [function () {
+      label(&#x27;dsa-sl1&#x27;, &#x27;Awaiting provider action&#x27;);
+      label(&#x27;dsa-sl2&#x27;, &#x27;With the lab&#x27;);
+      label(&#x27;dsa-sl3&#x27;, &#x27;Submission error&#x27;);
+      label(&#x27;dsa-n2&#x27;, &#x27;The status names who holds it, in the workflow’s own words&#x27;);
+    }, 2000],
+
+    [function () {
+      root.setAttribute(&#x27;data-fix&#x27;, &#x27;st&#x27;);
+      tag($(&#x27;dsa-t2&#x27;), &#x27;AFTER&#x27;, true);
+      $(&#x27;dsa-p2&#x27;).className = &#x27;dsa-pin is-ok&#x27;;
+    }, 1300],
+
+    [function () {
+      $(&#x27;dsa-nx1&#x27;).classList.add(&#x27;is-on&#x27;);
+      $(&#x27;dsa-nx2&#x27;).classList.add(&#x27;is-on&#x27;);
+      $(&#x27;dsa-nx3&#x27;).classList.add(&#x27;is-on&#x27;);
+      label(&#x27;dsa-n2&#x27;, &#x27;And the action beside it names the next step, or says there is none&#x27;);
+    }, 2200],
+
+    [function () { $(&#x27;dsa-v2&#x27;).classList.add(&#x27;is-on&#x27;); }, 2000],
+
+    /* ---- 03 the rules ------------------------------------------------ */
+    [function () { act(&#x27;a3&#x27;, 2); ruleOn(0); }, 1100],
+    [function () { ruleOn(1); }, 1000],
+    [function () { ruleOn(2); }, 1000],
+    [function () { ruleOn(3); }, 1000],
+    [function () { ruleOn(4); }, 2400],
+
+    /* ---- 04 the supporting work -------------------------------------- */
+    [function () { act(&#x27;a4&#x27;, 3); look(0); }, 1300],
+    [function () { root.setAttribute(&#x27;data-w&#x27;, &#x27;1440&#x27;); label(&#x27;dsa-w&#x27;, &#x27;1440&#x27;); }, 1100],
+    [function () { root.setAttribute(&#x27;data-w&#x27;, &#x27;1600&#x27;); label(&#x27;dsa-w&#x27;, &#x27;1600&#x27;); }, 1300],
+
+    [function () { look(1); }, 900],
     [function () {
       root.setAttribute(&#x27;data-tok&#x27;, &#x27;dark&#x27;);
-      tag($(&#x27;dsa-t3&#x27;), &#x27;DARK&#x27;, true);
-      label(&#x27;dsa-n3&#x27;, &#x27;Surface, stroke, state and action all re-bind at once&#x27;);
-    }, 1500],
-    [function () { $(&#x27;dsa-ra&#x27;).classList.add(&#x27;is-on&#x27;); }, 1600],
+      $(&#x27;dsa-t4&#x27;).textContent = &#x27;DARK&#x27;;
+    }, 1300],
+    [function () { $(&#x27;dsa-ra&#x27;).classList.add(&#x27;is-on&#x27;); }, 1400],
     [function () {
       root.setAttribute(&#x27;data-tok&#x27;, &#x27;light&#x27;);
-      tag($(&#x27;dsa-t3&#x27;), &#x27;LIGHT&#x27;, true);
-      label(&#x27;dsa-n3&#x27;, &#x27;One component, two themes — the values change, the component does not&#x27;);
-    }, 1500],
+      $(&#x27;dsa-t4&#x27;).textContent = &#x27;LIGHT&#x27;;
+    }, 1100],
 
-    /* ---- filtering ---------------------------------------------------- */
-    [function () { act(&#x27;a4&#x27;, 3); }, 1700],
-    [function () { $(&#x27;dsa-f4&#x27;).classList.add(&#x27;is-sel&#x27;); }, 800],
+    [function () { look(2); }, 1000],
     [function () {
       root.setAttribute(&#x27;data-fix&#x27;, &#x27;flt&#x27;);
-      tag($(&#x27;dsa-t4&#x27;), &#x27;AFTER&#x27;, true);
-      $(&#x27;dsa-p4&#x27;).className = &#x27;dsa-pin is-ok&#x27;;
-      label(&#x27;dsa-n4&#x27;, &#x27;One chip with four states, and a way out of all of them&#x27;);
-    }, 1300],
-    [function () { $(&#x27;dsa-v4&#x27;).classList.add(&#x27;is-on&#x27;); }, 2600]
+      $(&#x27;dsa-t5&#x27;).textContent = &#x27;ONE CHIP · FOUR STATES&#x27;;
+    }, 2600]
   ];
 
   var i = 0, timer = null, running = false;
@@ -16606,15 +16809,21 @@ em,
   function play() { if (running || still) return; running = true; step(); }
   function pause() { running = false; clearTimeout(timer); }
 
-  /* Reduced motion: the audited state, standing still. */
+  /* Reduced motion: the comparison that carries the story, standing still. */
   if (still) {
-    root.setAttribute(&#x27;data-fix&#x27;, &#x27;flt&#x27;);
-    act(&#x27;a4&#x27;, 3);
-    $(&#x27;dsa-f4&#x27;).classList.add(&#x27;is-sel&#x27;);
-    $(&#x27;dsa-v4&#x27;).classList.add(&#x27;is-on&#x27;);
-    tag($(&#x27;dsa-t4&#x27;), &#x27;AFTER&#x27;, true);
-    $(&#x27;dsa-p4&#x27;).className = &#x27;dsa-pin is-ok&#x27;;
-    label(&#x27;dsa-n4&#x27;, &#x27;One chip with four states, and a way out of all of them&#x27;);
+    root.setAttribute(&#x27;data-fix&#x27;, &#x27;st&#x27;);
+    act(&#x27;a2&#x27;, 1);
+    $(&#x27;dsa-f2&#x27;).classList.add(&#x27;is-sel&#x27;);
+    tag($(&#x27;dsa-t2&#x27;), &#x27;AFTER&#x27;, true);
+    $(&#x27;dsa-p2&#x27;).className = &#x27;dsa-pin is-ok&#x27;;
+    label(&#x27;dsa-sl1&#x27;, &#x27;Awaiting provider action&#x27;);
+    label(&#x27;dsa-sl2&#x27;, &#x27;With the lab&#x27;);
+    label(&#x27;dsa-sl3&#x27;, &#x27;Submission error&#x27;);
+    $(&#x27;dsa-nx1&#x27;).classList.add(&#x27;is-on&#x27;);
+    $(&#x27;dsa-nx2&#x27;).classList.add(&#x27;is-on&#x27;);
+    $(&#x27;dsa-nx3&#x27;).classList.add(&#x27;is-on&#x27;);
+    $(&#x27;dsa-v2&#x27;).classList.add(&#x27;is-on&#x27;);
+    label(&#x27;dsa-n2&#x27;, &#x27;The status names who holds it; the action names the next step&#x27;);
     return;
   }
 
@@ -22408,6 +22617,8 @@ window.PF = window.PF || {};
     function resetReactions() {
       for (var i = 0; i < chips.length; i++) {
         chips[i].classList.remove('is-on', 'is-in', 'is-bump');
+        chips[i].style.removeProperty('--rx-peak');
+        chips[i].style.removeProperty('--rx-bump-ms');
         chips[i].setAttribute('aria-pressed', 'false');
         var n = chips[i].querySelector('.rx__n');
         if (n) n.textContent = '';
@@ -22424,10 +22635,27 @@ window.PF = window.PF || {};
        Every chip is already in the DOM at full size and only its opacity and
        scale change, so the tray never grows and the box that was measured
        before any of this ran is still the right box. */
+    /* [chip, count, how long before the next step, how far the chip scales].
+
+       The fourth number is the whole rhythm. The fire lands, takes a beat and
+       swells once on its own — somebody reacted — and then climbs, and every
+       climb is bigger than the last: 1.24, 1.32, 1.40, and 1.54 on the fourth,
+       which is held a little longer than the rest. Anything else that
+       increments moves the same way at 1.18, because it is the same event
+       happening with less force behind it.
+
+       A step with no fourth number is an arrival, and an arrival is the scale
+       transition rather than the bump — never both on one frame, since they
+       animate the same property. */
     var RX_PLAN = [
-      ['fire', '1', 250], ['fire', '2', 250], ['fire', '3', 250], ['fire', '4', 320],
-      ['clap', '1', 200], ['hundred', '1', 200], ['hands', '1', 200],
-      ['rocket', '1', 200], ['heart', '1', 260], ['clap', '2', 200]
+      ['fire', '1', 320],
+      ['fire', '1', 470, 1.24, 460],
+      ['fire', '2', 500, 1.32, 480],
+      ['fire', '3', 520, 1.40, 500],
+      ['fire', '4', 640, 1.54, 560],
+      ['clap', '1', 210], ['hundred', '1', 210], ['hands', '1', 210],
+      ['rocket', '1', 210], ['heart', '1', 280],
+      ['clap', '2', 420, 1.18, 440]
     ];
 
     function burst() {
@@ -22450,10 +22678,12 @@ window.PF = window.PF || {};
           chip.setAttribute('aria-pressed', 'true');
           var n = chip.querySelector('.rx__n');
           if (n) n.textContent = item[1];
-          /* The arrival is the scale transition; a later increment is the
-             bump. Never both on the same frame — they animate the same
-             property and would fight. */
-          if (!first) {
+          /* The arrival is the scale transition; anything after it is a bump,
+             at whatever strength this step asks for. Never both on the same
+             frame — they animate the same property and would fight. */
+          if (!first && item[3]) {
+            chip.style.setProperty('--rx-peak', item[3]);
+            chip.style.setProperty('--rx-bump-ms', (item[4] || 460) + 'ms');
             chip.classList.remove('is-bump');
             void chip.offsetWidth;
             chip.classList.add('is-bump');
