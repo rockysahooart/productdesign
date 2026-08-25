@@ -4100,6 +4100,10 @@ em,
   image-rendering: pixelated;
 }
 
+/* An icon and the punctuation after it are one unit: a comma stranded at the
+   start of a line is the kind of thing that makes a careful page look careless. */
+.pxi-nb { white-space: nowrap; }
+
 [data-theme="dark"] .pxi { --pxi-fg: #FFFFFF; --pxi-bg: #000000; }
 
 @media (prefers-color-scheme: dark) {
@@ -4394,7 +4398,10 @@ em,
 
 .msg-track {
   display: block;
-  transition: transform 500ms cubic-bezier(0.2, 0.75, 0.25, 1);
+  /* Matched to SHIFT_MS in js/thread.js. Slower than it was: the window
+     opening is the one moment the whole stack moves, and at 500ms it read as
+     a jump rather than as the conversation making room. */
+  transition: transform 700ms cubic-bezier(0.2, 0.75, 0.25, 1);
 }
 
 /* A retired row goes quietly: it fades where it stands while the track carries
@@ -12647,15 +12654,25 @@ em,
               <span class="msg-track" data-track>
               <span class="msg" data-msg data-cluster>
                 <span class="msg__from" aria-hidden="true">SS</span>
+                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">Hello :) nice to meet you</span></span>
+              </span>
+              <span class="msg" data-msg>
+                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
+                  <em>Sarthak Sahoo</em> <span class="pxi-nb"><svg class="pxi" role="img" aria-label="introduction"><use href="#px-smiley"/></svg>,</span> a Product Designer
+                  <span class="pxi-nb"><svg class="pxi" role="img" aria-label="product"><use href="#px-phone"/></svg><svg class="pxi" role="img" aria-label="design"><use href="#px-laptop"/></svg></span> based in Austin, TX
+                  <span class="pxi-nb"><svg class="pxi" role="img" aria-label="Austin"><use href="#px-pin"/></svg></span></span></span>
+              </span>
+              <span class="msg" data-msg data-cluster>
+                <span class="msg__from" aria-hidden="true">SS</span>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I design products
                   that make <span class="kw kw--complex">complex</span> things feel <span class="kw kw--simple">simple</span>.</span></span>
               </span>
               <span class="msg" data-msg>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;ve helped teams
-                  across healthcare <svg class="pxi" role="img" aria-label="healthcare"><use href="#px-hospital"/></svg>⁠, biotechnology <svg class="pxi" role="img" aria-label="biotechnology"><use href="#px-dna"/></svg>⁠, financial services
-                  <svg class="pxi" role="img" aria-label="financial services"><use href="#px-card"/></svg>⁠, and enterprise systems <svg class="pxi" role="img" aria-label="enterprise systems"><use href="#px-building"/></svg>⁠ by providing flexible design support
-                  across multiple verticals <svg class="pxi" role="img" aria-label="upward across verticals"><use href="#px-shuffle"/></svg>⁠ and turning complex workflows
-                  into clearer products <svg class="pxi" role="img" aria-label="clearer"><use href="#px-sparkle"/></svg>⁠.</span></span>
+                  across healthcare <span class="pxi-nb"><svg class="pxi" role="img" aria-label="healthcare"><use href="#px-hospital"/></svg>,</span> biotechnology <span class="pxi-nb"><svg class="pxi" role="img" aria-label="biotechnology"><use href="#px-dna"/></svg>,</span> financial services
+                  <span class="pxi-nb"><svg class="pxi" role="img" aria-label="financial services"><use href="#px-card"/></svg>,</span> and enterprise systems <span class="pxi-nb"><svg class="pxi" role="img" aria-label="enterprise systems"><use href="#px-building"/></svg></span> by providing flexible design support
+                  across multiple verticals <span class="pxi-nb"><svg class="pxi" role="img" aria-label="upward across verticals"><use href="#px-shuffle"/></svg></span> and turning complex workflows
+                  into clearer products <span class="pxi-nb"><svg class="pxi" role="img" aria-label="clearer"><use href="#px-sparkle"/></svg>.</span></span></span>
               </span>
               
               <span class="msg" data-msg data-cluster data-scramble data-dwell="1300">
@@ -22746,6 +22763,11 @@ window.PF = window.PF || {};
      and nothing below the thread moves when you switch. */
   var ROLES = {
     design: [
+      [{ t: 'Hello :) nice to meet you' }],
+      [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true }, { t: ' ' },
+       { ic: 'smiley', lbl: 'introduction' }, { t: ', a Product Designer ' },
+       { ic: 'phone', lbl: 'product' }, { ic: 'laptop', lbl: 'design' },
+       { t: ' based in Austin, TX ' }, { ic: 'pin', lbl: 'Austin' }],
       [{ t: 'I design products that make ' }, { t: 'complex', k: 'complex' },
        { t: ' things feel ' }, { t: 'simple', k: 'simple' }, { t: '.' }],
       [{ t: 'I\u2019ve helped teams across healthcare ' }, { ic: 'hospital', lbl: 'healthcare' },
@@ -22775,6 +22797,12 @@ window.PF = window.PF || {};
     ]
   };
 
+  /* Per-message behaviour, addressed by index into the set above rather than
+     spelled into the markup. A message can ask to arrive decoded, and it can
+     ask to be held longer than the standard gap once it has. Adding one is a
+     line here; nothing else in the file needs to know. */
+  ROLES.design[4].opt = { scramble: true, dwell: 1300 };
+
   function esc(t) {
     return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
@@ -22788,7 +22816,7 @@ window.PF = window.PF || {};
   function render(msg) {
     var out = '';
     for (var i = 0; i < msg.length; i++) {
-      var t = esc(msg[i].t);
+      var t = esc(msg[i].t || '');   /* an icon run carries no text */
       if (msg[i].em) out += '<em>' + t + '</em>';
       else if (msg[i].k) out += '<span class="kw kw--' + msg[i].k + '">' + t + '</span>';
       /* An icon run is a pixel symbol from the sprite, not a character. It
@@ -22798,22 +22826,30 @@ window.PF = window.PF || {};
         esc(msg[i].lbl || msg[i].ic) + '"><use href="#px-' + msg[i].ic + '"/></svg>\u2060';
       else out += t;
     }
-    return out;
+    /* An icon must not be left at the end of a line with its comma starting
+       the next one. The icon and whatever punctuation follows it become one
+       unbreakable unit — a joiner alone does not stop a break beside an
+       inline-block. */
+    return out.replace(
+      /(<svg class="pxi"[^>]*><use[^>]*\/><\/svg>)\u2060([,.]*)/g,
+      '<span class="pxi-nb">$1$2</span>')
+      /* Two icons side by side are one unit as well. */
+      .replace(/<\/span><span class="pxi-nb">/g, '');
   }
 
   /* Paced to read as a conversation rather than a transition. The loading
      state is on screen long enough to say "this is being written" instead of
      flickering past, and each message is given room to land before the next
      one starts, so no two animations ever overlap. */
-  var DOTS_MS = 1150;   /* the sending indicator: long enough to read as work */
+  var DOTS_MS = 1350;   /* the sending indicator: long enough to read as work */
   var POP_MS = 360;     /* the bubble's arrival, matched to the CSS */
-  var GAP_MS = 820;     /* the message sits before the next begins */
-  var REACT_MS = 560;   /* after the last message has settled */
-  var SHIFT_MS = 500;   /* the window opening: matched to the CSS transition */
-  var HOLD_MS = 4200;   /* the finished thread stands, reactions and all */
+  var GAP_MS = 1500;    /* the message stands, finished, before the next begins */
+  var REACT_MS = 700;   /* after the last message has settled */
+  var SHIFT_MS = 700;   /* the window opening: matched to the CSS transition */
+  var HOLD_MS = 5200;   /* the finished thread stands, reactions and all */
   var FADE_MS = 340;    /* the whole stack dims out together */
   var BLANK_MS = 640;   /* an empty beat, so the loop is a breath not a cut */
-  var SCRAMBLE_MS = 1250; /* the decode: long enough to read as resolving */
+  var SCRAMBLE_MS = 1500; /* the decode: long enough to read as resolving */
 
   /* ---- the decode ---------------------------------------------------------
 
@@ -22937,8 +22973,76 @@ window.PF = window.PF || {};
     if (thread._thDone) return;
     thread._thDone = true;
 
-    var rows = thread.querySelectorAll('[data-msg]');
+    var rows = [].slice.call(thread.querySelectorAll('[data-msg]'));
     if (!rows.length) return;
+
+    /* ---- the rows come from the data, not from the markup ---------------
+
+       THE VIEWPORT IS A MESSAGE SYSTEM, NOT A SET OF SLOTS. The markup holds
+       one authored row per message because that is what a screen reader and a
+       no-JS visit read — but the sequence is the array at the top of this
+       file, and it is allowed to be any length. If a set has more messages
+       than there are rows, the rows are built from the first one; if it has
+       fewer, the extras go out of flow. Four, six, ten, thirty: the same code,
+       and no hand-positioning anywhere.
+
+       None of this touches the box. Its height is the tallest window of
+       VISIBLE messages the set produces, which is a property of the widest
+       pair, not of how many pairs there are — so a longer sequence scrolls for
+       longer inside exactly the same rectangle. */
+    var track = thread.querySelector('[data-track]') || thread;
+
+    /* The template is the first row, stripped of anything that belongs to a
+       particular message. */
+    var TEMPLATE = (function () {
+      var t = rows[0].cloneNode(true);
+      var rx = t.querySelector('.msg__reactions');
+      if (rx && rx.parentNode) rx.parentNode.removeChild(rx);
+      var bub = t.querySelector('.msg__bubble');
+      if (bub) bub.classList.remove('msg__bubble--reacted');
+      return t;
+    })();
+
+    function grow(n) {
+      while (rows.length < n) {
+        var r = TEMPLATE.cloneNode(true);
+        r.setAttribute('data-state', 'idle');
+        r.setAttribute('aria-hidden', 'true');
+        track.appendChild(r);
+        rows.push(r);
+      }
+    }
+
+    /* Clustering is a rule, not an attribute somebody remembered to type: a
+       new sender group every two messages, and the badge belongs to the row
+       that starts one. Per-message options come from the data beside it. */
+    function shape(set) {
+      for (var i = 0; i < set.length && i < rows.length; i++) {
+        var row = rows[i];
+        var opens = i % 2 === 0;
+        var badge = row.querySelector('.msg__from');
+
+        if (opens) {
+          row.setAttribute('data-cluster', '');
+          if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'msg__from';
+            badge.setAttribute('aria-hidden', 'true');
+            badge.textContent = 'SS';
+            row.insertBefore(badge, row.firstChild);
+          }
+        } else {
+          row.removeAttribute('data-cluster');
+          if (badge && badge.parentNode) badge.parentNode.removeChild(badge);
+        }
+
+        var opt = set[i].opt || {};
+        if (opt.scramble) row.setAttribute('data-scramble', '');
+        else row.removeAttribute('data-scramble');
+        if (opt.dwell) row.setAttribute('data-dwell', opt.dwell);
+        else row.removeAttribute('data-dwell');
+      }
+    }
 
     /* How many of the rows in the markup this role actually uses. Product
        Designer has six and ends on a punchline; the other two have five. Rows
@@ -23091,7 +23195,10 @@ window.PF = window.PF || {};
        that has to be settled before the box is measured. */
     var startBtn = document.querySelector('[data-role][aria-selected="true"]');
     var startKey = (startBtn && startBtn.getAttribute('data-role')) || 'design';
-    setCount((ROLES[startKey] || ROLES.design).length);
+    var startSet = ROLES[startKey] || ROLES.design;
+    grow(startSet.length);
+    shape(startSet);
+    setCount(startSet.length);
 
     reserve();
 
@@ -23148,7 +23255,6 @@ window.PF = window.PF || {};
       setTimeout(function () { rows[0].setAttribute('data-state', 'settled'); }, POP_MS);
     }
 
-    var track = thread.querySelector('[data-track]');
     var idx = 1, retired = 0, timer = null, running = false;
 
     /* Where in the cycle we are. 'seq' is messages arriving; 'hold' is the
@@ -23223,6 +23329,8 @@ window.PF = window.PF || {};
         roleBtns[i].setAttribute('aria-selected',
           roleBtns[i].getAttribute('data-role') === key ? 'true' : 'false');
       }
+      grow(set.length);
+      shape(set);
       setCount(set.length);
       for (i = 0; i < count; i++) {
         var t = rows[i].querySelector('.msg__text');
