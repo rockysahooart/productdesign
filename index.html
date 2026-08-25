@@ -4116,6 +4116,34 @@ em,
 
 .hero__thread.is-windowed { overflow: hidden; }
 
+/* --------------------------------------------------------------------------
+   ...AND STOPS CLIPPING ONCE THE CONVERSATION IS OVER
+
+   The window exists so a message can leave through the top of the box. That
+   is the only job it has, and it is finished the moment the last message has
+   landed — from then until the loop starts over, nothing moves and nothing
+   needs to be masked. But the reactions hang below the last bubble, so a box
+   that is still clipping is a box that can cut them in half if a row measures
+   even slightly taller than it did when the height was reserved: a font that
+   arrives late, a wrapped line, a zoom level. Reserving the space is a
+   calculation and calculations can be wrong; not clipping cannot.
+
+   So the box opens. The rows that have retired are already at opacity 0 and
+   the ones that have not arrived yet are too, so opening it shows nothing
+   that was hidden — it only stops taking something away.
+   -------------------------------------------------------------------------- */
+.hero__thread.is-windowed.is-open { overflow: visible; }
+
+/* A row nobody can see is a row nobody can click through, either. With the
+   box open, a retired row sits over whatever is above the thread. */
+.msg[data-state="gone"],
+.msg[data-state="idle"] { pointer-events: none; }
+
+/* The tray belongs on top of the stack: it hangs past its own bubble, and
+   with the box open there is nothing to stop a neighbouring bubble drawing
+   over it. */
+.msg__reactions { z-index: 2; }
+
 /* A row the current role does not use. Out of flow entirely, so it is not
    measured, not stepped through and not part of any window. */
 .msg[data-off] { display: none; }
@@ -22754,6 +22782,11 @@ window.PF = window.PF || {};
             var row = rows[idx];
           row.setAttribute('data-state', 'live');
           idx++;
+          /* Last one in. Nothing else will leave through the top of the box,
+             so the box stops clipping — the reactions about to arrive under
+             this bubble hang past it, and no measurement has to be right for
+             them to be whole. */
+          if (idx >= count) thread.classList.add('is-open');
         /* The arrival is allowed to finish before anything else happens: the
            `settled` state only drops the compositor hint, and the next
            indicator waits out the full gap after that. */
@@ -22791,7 +22824,12 @@ window.PF = window.PF || {};
       thread.classList.add('is-clearing');
 
       timer = setTimeout(function () {
-        /* Everything back to the start, invisibly, while the stack is out. */
+        /* Everything back to the start, invisibly, while the stack is out.
+           The box goes back to clipping here rather than at the top of the
+           fade: the reactions are still on screen while the stack dims, and
+           cutting them off on the way out is the same fault as cutting them
+           off on the way in. */
+        thread.classList.remove('is-open');
         thread.removeAttribute('data-reactions');
         resetReactions();
         retired = 0;
@@ -22863,6 +22901,9 @@ window.PF = window.PF || {};
       retired = first;
       idx = count;
       phase = 'hold';
+      /* Nothing will ever move in this box, so nothing needs masking — and
+         the reactions under the last bubble must be whole here too. */
+      thread.classList.add('is-open');
       thread.setAttribute('data-reactions', 'on');
       for (q = 0; q < RX_PLAN.length; q++) {
         var c = thread.querySelector('.rx[data-rx="' + RX_PLAN[q][0] + '"]');
