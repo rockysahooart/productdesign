@@ -4077,11 +4077,10 @@ em,
    and the depth is the same one-pixel card shadow the rest of the page uses.
    -------------------------------------------------------------------------- */
 
-/* The bubble that carries reactions used to make extra room inside itself,
-   because the chips overlapped its bottom edge. They do not any more — they
-   hang entirely below it — so the bubble is the same bubble as every other
-   one, and the space the chips need is reserved outside it by the measured
-   overhang in js/thread.js. */
+/* The bubble that carries reactions makes room for them: the tuck overlaps
+   padding, never a line of type. The rest of the space they need is outside
+   the bubble, and js/thread.js reserves it by measuring the overhang. */
+.msg__bubble--reacted { padding-bottom: calc(var(--hx-pad) + 10px); }
 
 /* --------------------------------------------------------------------------
    The three-message window
@@ -4150,16 +4149,25 @@ em,
 }
 
 .msg__reactions {
-  /* The chip's own height, so the tray can be placed exactly clear of the
-     bubble from one number. */
+  /* The chip's height and how far the row is tucked under the bubble's bottom
+     edge, so the placement comes out of two numbers rather than one magic
+     offset. */
   --rx-h: 32px;
+  --rx-tuck: 10px;
+
+  /* Each chip is its own small white object. The fill is what lets the row
+     overlap the message at all: it covers the bubble's edge instead of
+     letting it run through the emoji, which is exactly the job a fill is for
+     here. Pure white in light so it lifts off both the bubble and the canvas;
+     the raised surface in dark, where white would be a hole. */
+  --rx-fill: #FFFFFF;
 
   position: absolute;
   right: var(--hx-2);
-  /* Entirely below the bubble rather than overlapping its edge. The chips
-     carry no fill now, so an overlap would have let the bubble's border run
-     straight through them; clear of it, a transparent chip reads as a chip. */
-  bottom: calc(-1 * (var(--rx-h) + 6px));
+  /* Tucked under the bubble's bottom edge rather than parked below it: the
+     top of each chip sits inside the message, the rest hangs out of it, and
+     the row reads as belonging to that message and no other. */
+  bottom: calc(-1 * (var(--rx-h) - var(--rx-tuck)));
   display: flex;
   /* Eight of them now, and they are allowed to wrap — to the right, so the
      cluster stays anchored to the corner of the message it belongs to and
@@ -4179,11 +4187,11 @@ em,
   max-width: 100%;
 }
 
-/* NO FILL. A reaction is not a control the page is offering you — it is other
-   people's mark on the message, and a filled grey pill gives it the weight of
-   a button. What is left is the emoji, the count, and a hairline that keeps
-   the pair reading as one object and gives the button an edge to be found by.
-   The emoji is the object; everything else gets out of its way. */
+/* ONE BUBBLE PER REACTION. Not a tray with six emoji in it — six separate
+   objects, each the size of what it holds, each lifted off the message by the
+   same one-pixel card shadow the rest of the page uses. No border: a white
+   pill with a shadow under it is already an edge, and a stroke on top of that
+   is the third line saying the same thing. */
 .rx {
   display: inline-flex;
   align-items: center;
@@ -4192,13 +4200,21 @@ em,
   min-width: 0;
   height: var(--rx-h, 32px);
   padding: 0 9px;
-  border: var(--hx-line);
+  border: 0;
   border-radius: 999px;
-  background: none;
+  background: var(--rx-fill, #FFFFFF);
+  box-shadow: var(--shadow-card);
   line-height: 1;
   user-select: none;
   cursor: pointer;
-  transition: border-color 130ms linear;
+  transition: box-shadow 130ms linear;
+}
+
+/* Dark: the same object, on the surface that lifts rather than on white. */
+[data-theme="dark"] .msg__reactions { --rx-fill: var(--surface-raised); }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .msg__reactions { --rx-fill: var(--surface-raised); }
 }
 
 /* Explicit, so the emoji is a designed object rather than a line of text at
@@ -4222,15 +4238,12 @@ em,
   color: var(--ink-secondary);
 }
 
-/* Reacted: the edge firms up and the count takes the full ink. No fill —
-   that is the whole point of the treatment. */
-.rx.is-on {
-  border-color: var(--border-strong);
-}
-
+/* Reacted: the count takes the full ink. The bubble itself does not change —
+   it is already the reaction. */
 .rx.is-on .rx__n { color: var(--ink); }
 
-.rx:hover { border-color: var(--border-strong); }
+/* Under the pointer it lifts a little further. Nothing else moves. */
+.rx:hover { box-shadow: var(--shadow-card), 0 2px 6px -2px rgba(0, 0, 0, 0.14); }
 
 .rx:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
@@ -4565,7 +4578,12 @@ em,
   .cf-dynamic-island{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:118px; height:34px; background:#000; border-radius:20px; z-index:80; }
   .cf-status-icons{ display:flex; align-items:center; gap:5px; }
 
-  .cf-app-header{ display:flex; align-items:center; gap:12px; padding:10px 18px 16px; flex-shrink:0; background:var(--bg-header); border-bottom:1px solid var(--border-soft); }
+  /* The header takes the app's own surface rather than --bg-header, which was
+     a shade darker and read as a separate grey strip across the top of the
+     phone. Structure, padding and the hairline under it are untouched; only
+     the fill changes, and the status bar above it was already transparent, so
+     the whole top of the screen is now one surface. */
+  .cf-app-header{ display:flex; align-items:center; gap:12px; padding:10px 18px 16px; flex-shrink:0; background:var(--bg-app); border-bottom:1px solid var(--border-soft); }
   .cf-icon-btn{ width:34px;height:34px;border-radius:50%; display:flex;align-items:center;justify-content:center; color:var(--text-primary); flex-shrink:0; }
   .cf-icon-btn svg{ width:20px; height:20px; }
   .cf-app-header .cf-title-block{ flex:1; min-width:0; }
@@ -11782,8 +11800,8 @@ em,
      bubble, on nothing. */
   .msg__reactions {
     --rx-h: 28px;
+    --rx-tuck: 9px;
     right: 12px;
-    bottom: calc(-1 * (var(--rx-h) + 5px));
     height: auto;
     gap: 7px;
     padding: 0;
@@ -11806,13 +11824,13 @@ em,
   .rx:nth-child(n + 5) { display: none; }
 
 
+  /* Same object as the desktop chip, one size down: its own white bubble with
+     the same lift under it. */
   .rx {
     min-width: 0;
     height: var(--rx-h, 28px);
-    padding: 0 7px;
+    padding: 0 8px;
     gap: 4px;
-    background: none;
-    box-shadow: none;
   }
 
   /* Smaller than the desktop chip because the bubble is smaller, but still a
@@ -13364,7 +13382,12 @@ em,
   .cf-dynamic-island{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:118px; height:34px; background:#000; border-radius:20px; z-index:80; }
   .cf-status-icons{ display:flex; align-items:center; gap:5px; }
 
-  .cf-app-header{ display:flex; align-items:center; gap:12px; padding:10px 18px 16px; flex-shrink:0; background:var(--bg-header); border-bottom:1px solid var(--border-soft); }
+  /* The header takes the app&#x27;s own surface rather than --bg-header, which was
+     a shade darker and read as a separate grey strip across the top of the
+     phone. Structure, padding and the hairline under it are untouched; only
+     the fill changes, and the status bar above it was already transparent, so
+     the whole top of the screen is now one surface. */
+  .cf-app-header{ display:flex; align-items:center; gap:12px; padding:10px 18px 16px; flex-shrink:0; background:var(--bg-app); border-bottom:1px solid var(--border-soft); }
   .cf-icon-btn{ width:34px;height:34px;border-radius:50%; display:flex;align-items:center;justify-content:center; color:var(--text-primary); flex-shrink:0; }
   .cf-icon-btn svg{ width:20px; height:20px; }
   .cf-app-header .cf-title-block{ flex:1; min-width:0; }
@@ -22467,7 +22490,13 @@ window.PF = window.PF || {};
         if (host) {
           var over = rx.getBoundingClientRect().bottom -
                      host.getBoundingClientRect().bottom;
-          if (over > 0) boxH += Math.ceil(over) + 2;
+          /* Plus headroom for the loudest bump. A chip scales to about 1.54
+             at the fourth fire, which puts a quarter of its height past where
+             it rests — and the box clips, so an unreserved bump would be a
+             chip with its bottom sliced off at the exact moment it is meant
+             to be the loudest thing on the page. */
+          var head = Math.ceil(rx.getBoundingClientRect().height * 0.33);
+          if (over > 0) boxH += Math.ceil(over) + head + 2;
         }
       }
 
