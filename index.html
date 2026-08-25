@@ -4071,6 +4071,68 @@ em,
    messaging client draws it. */
 
 /* --------------------------------------------------------------------------
+   THE PROJECT LIST
+
+   How the conversation ends: the work, named, with somewhere to go. It lives
+   on the same track as the messages and inside the same box, so it scrolls
+   with them and is governed by the same content-aware placement — not a
+   component bolted under the card.
+
+   A name and an arrow. No thumbnail, no description, no tag, no metadata:
+   everything about a project that could be said here is already said better
+   on the card this list was read from.
+   -------------------------------------------------------------------------- */
+
+.plist {
+  display: block;
+  margin-top: 22px;
+  /* Smaller than the messages, because it is a list of destinations rather
+     than something being said. */
+  font-size: 0.6em;
+  line-height: 1.3;
+}
+
+.plist[hidden] { display: none; }
+
+.plist__row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 9px 2px;
+  border-top: 1px solid var(--border);
+  color: var(--ink-secondary);
+  text-decoration: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 380ms linear,
+              transform 380ms cubic-bezier(0.2, 0.75, 0.25, 1),
+              color 140ms linear;
+}
+
+.plist__row:last-child { border-bottom: 1px solid var(--border); }
+
+.plist__row.is-in { opacity: 1; transform: none; }
+
+.plist__name { flex: 1 1 auto; min-width: 0; }
+
+/* The arrow sits at the end of the row and steps out under the pointer. */
+.plist__go {
+  flex: 0 0 auto;
+  transition: transform 160ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+.plist__row:hover,
+.plist__row:focus-visible { color: var(--ink); }
+
+.plist__row:hover .plist__go { transform: translateX(4px); }
+
+.plist__row:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .plist__row { opacity: 1; transform: none; transition: none; }
+}
+
+/* --------------------------------------------------------------------------
    THE PIXEL ICONS
 
    The emoji in the thread are drawn rather than typed. An operating system's
@@ -23219,7 +23281,7 @@ window.PF = window.PF || {};
           /* If the opening is still the only thing on screen, it is still the
              thing that has to be centred — and it was centred against the old
              measurement. */
-          if (idx <= 1 && lead) centreOpening(); else place();
+          place(true);
           void track.offsetWidth;
           track.style.transition = '';
         }
@@ -23235,7 +23297,7 @@ window.PF = window.PF || {};
            back where it belongs for however many rows have retired. */
         if (track) {
           track.style.transition = 'none';
-          if (idx <= 1 && lead) centreOpening(); else place();
+          place(true);
           /* Read, so the suppressed transition is committed before the real
              one is put back — one read, on a debounced resize. */
           void track.offsetWidth;
@@ -23271,48 +23333,183 @@ window.PF = window.PF || {};
        that everything moves once. */
     /* ---- where the track sits ------------------------------------------
 
-       THE OPENING IS CENTRED, THE SEQUENCE IS NOT. The first message arrives
-       around the middle of the box with the space above it left empty — a
-       single line in a lot of air, which is what makes it read as an opening
-       statement rather than as the top of a list. `lead` is that offset. It is
-       spent the moment the second message lands: the pair moves up together on
-       the track's own transition, and from there the thread behaves exactly as
-       it did before, retiring from the top.
+       A CONVERSATION CANVAS, NOT A CHAT WINDOW. The old rule was positional:
+       every message after the second pushed the stack up by exactly one row.
+       That is why the box emptied out — the newest message ended up pinned to
+       the top with two thirds of the card unused beneath it.
 
-       One function owns the transform so the lead-in and the retirement can
-       never disagree about where the track is. */
-    var lead = 0;
+       This one is content-aware and knows nothing about how many messages
+       there are. It measures what is actually on screen and asks one question:
+       does the live stack still fit comfortably?
+
+         · While it fits, the whole group is centred on a zone just below the
+           middle. One message sits there alone; two sit there together,
+           growing up and down around it. Nothing is pushed anywhere, because
+           nothing needs the room.
+
+         · Once it does not, the bottom parks on an anchor line low in the box
+           and the top runs off the edge. The newest thing is always in the
+           reading zone; the oldest ones leave through the top, which is the
+           only direction left. The crossover is not a threshold anybody set:
+           it is whichever of the two positions is higher.
+
+       Every value here is a fraction of the box, and the correction is a
+       delta from a measured position, so it is self-righting: whatever the
+       transform was, one call puts the stack where it belongs. No index
+       arithmetic, no per-message constants, and nothing to adjust when a
+       seventh message is added to the array. */
+    var ZONE = 0.55;     /* where a comfortable stack is centred */
+    var ANCHOR = 0.81;   /* where a tall stack's bottom parks */
+
+    var offsetY = 0;
     var cancelScramble = null;
 
-    function place() {
+    /* The live content, in viewport coordinates: the first message that has
+       arrived through the last thing on the track, which is the project list
+       once that exists. */
+    function liveRect() {
+      var top = null, bottom = null, i, r;
+      for (i = 0; i < count; i++) {
+        var st = rows[i].getAttribute('data-state');
+        if (st !== 'live' && st !== 'settled' && st !== 'loading') continue;
+        r = rows[i].getBoundingClientRect();
+        if (top === null) top = r.top;
+        bottom = r.bottom;
+      }
+      if (top === null) return null;
+      if (plist && !plist.hasAttribute('hidden')) {
+        r = plist.getBoundingClientRect();
+        if (r.height) bottom = r.bottom;
+      }
+      return { top: top, bottom: bottom, h: bottom - top };
+    }
+
+    function place(instant) {
       if (!track) return;
-      var off = 0;
-      for (var i = 0; i < retired; i++) off += step[i];
-      track.style.transform = 'translateY(' + Math.round(lead - off) + 'px)';
+      var s = liveRect();
+      if (!s) return;
+      var box = thread.getBoundingClientRect();
+      if (!box.height) return;
+
+      /* One rule, not two branches: centre the stack on the zone, and never
+         let its bottom fall past the anchor. A short stack is centred, because
+         centred is the higher of the two; a tall one parks on the anchor and
+         runs off the top, because that is. The crossover happens on its own,
+         at whatever height the content reaches it — which is what makes this
+         work for four messages, or ten, or four and a project list. */
+      var wantTop = Math.min(
+        box.top + box.height * ZONE - s.h / 2,
+        box.top + box.height * ANCHOR - s.h);
+
+      offsetY += (wantTop - s.top);
+
+      if (instant) {
+        track.style.transition = 'none';
+        track.style.transform = 'translateY(' + Math.round(offsetY) + 'px)';
+        void track.offsetWidth;
+        track.style.transition = '';
+      } else {
+        track.style.transform = 'translateY(' + Math.round(offsetY) + 'px)';
+      }
+
+      /* Anything that has left through the top stops painting. It keeps its
+         space — the track is one block and nothing may collapse — but with the
+         box open at the end of the sequence there must be nothing of it left
+         to see above the thread. */
+      for (var j = 0; j < count; j++) {
+        var rr = rows[j].getBoundingClientRect();
+        var out = rr.bottom < box.top + 4;
+        if (out) { rows[j].setAttribute('data-state', 'gone'); retired = j + 1; }
+      }
     }
 
+    /* The opening state: the first message, in the zone, before anything
+       moves. Same function, no special case. */
     function centreOpening() {
-      if (still || !track || !heights.length) return;
-      /* Half the room left over once the first message is in the box, so the
-         message sits on the middle rather than under it. */
-      lead = Math.max(0, Math.round((boxH - heights[0]) / 2));
-      track.style.transition = 'none';
-      place();
-      void track.offsetWidth;
-      track.style.transition = '';
+      if (!track) return;
+      offsetY = 0;
+      place(true);
     }
 
-    /* The opening state: one message, on the middle of the box. Called here
-       rather than beside the track lookup because `lead` has to exist before
-       anything can be offset by it. */
-    centreOpening();
+    /* ---- the projects, at the end of the sentence ------------------------
 
-    function retire() {
-      if (!track || retired >= count) return 0;
-      rows[retired].setAttribute('data-state', 'gone');
-      retired++;
+       The conversation finishes by handing over the work. The list is not a
+       second copy of the portfolio's data: it is read off the project cards
+       in the page, name and destination both, so it cannot drift out of sync
+       with them. Rename a project on its card and this renames itself; add a
+       card and a row appears; remove one and it goes. Nothing here knows what
+       any project is called.
+
+       Name comes from the card's eyebrow rather than its headline — the
+       eyebrow is where the project is named, the headline is what it did. */
+    var plist = null;
+
+    function buildProjects() {
+      if (plist) return plist;
+      var cards = document.querySelectorAll('#work .card--project');
+      if (!cards.length) return null;
+
+      plist = document.createElement('span');
+      plist.className = 'plist';
+      plist.setAttribute('hidden', '');
+
+      for (var i = 0; i < cards.length; i++) {
+        var link = cards[i].querySelector('a[href]');
+        var eyebrow = cards[i].querySelector('.card__eyebrow');
+        if (!link || !eyebrow) continue;
+        var name = eyebrow.textContent.split('\u00b7')[0].trim();
+        if (!name) continue;
+
+        var row = document.createElement('a');
+        row.className = 'plist__row';
+        row.setAttribute('href', link.getAttribute('href'));
+        if (link.hasAttribute('data-placeholder-link')) {
+          row.setAttribute('data-placeholder-link', '');
+        }
+        row.innerHTML = '<span class="plist__name"></span>' +
+                        '<span class="plist__go" aria-hidden="true">\u2192</span>';
+        row.querySelector('.plist__name').textContent = name;
+        plist.appendChild(row);
+      }
+
+      if (!plist.children.length) { plist = null; return null; }
+      track.appendChild(plist);
+      return plist;
+    }
+
+    /* Revealed a row at a time, on the same easing as everything else, and
+       the canvas re-balances as it grows — so the list fills the space under
+       the last message instead of the message being shoved up to make way. */
+    function showProjects(instant) {
+      var list = buildProjects();
+      if (!list) return;
+      list.removeAttribute('hidden');
+      var kids = list.children, i;
+
+      if (instant || still) {
+        for (i = 0; i < kids.length; i++) kids[i].classList.add('is-in');
+        place(true);
+        return;
+      }
+
       place();
-      return SHIFT_MS;
+      for (i = 0; i < kids.length; i++) {
+        (function (el, n) {
+          setTimeout(function () {
+            el.classList.add('is-in');
+            /* Each row is more content; the canvas answers for it. */
+            place();
+          }, 90 * n);
+        })(kids[i], i);
+      }
+    }
+
+    function hideProjects() {
+      if (!plist) return;
+      plist.setAttribute('hidden', '');
+      for (var i = 0; i < plist.children.length; i++) {
+        plist.children[i].classList.remove('is-in');
+      }
     }
 
     /* ---- role switching -------------------------------------------------
@@ -23481,13 +23678,12 @@ window.PF = window.PF || {};
     function next() {
       if (idx >= count) { running = false; return; }
 
-      /* Past the third message the window has to open before the indicator
-         can appear in it — otherwise the dots would be drawn below the box and
-         clipped. Oldest out, everything up, then he starts writing. */
-      var wait = idx >= VISIBLE ? retire() : 0;
-
+      /* Nothing is retired on a count any more: the canvas makes room when
+         the room is needed and not before. The indicator appears first, the
+         stack settles around it, and then the message is written. */
       timer = setTimeout(function () {
         rows[idx].setAttribute('data-state', 'loading');
+        place();
         timer = setTimeout(function () {
             var row = rows[idx];
           row.setAttribute('data-state', 'live');
@@ -23502,17 +23698,17 @@ window.PF = window.PF || {};
               cancelScramble = null;
             });
           }
-          /* The opening is over the moment it has company: the centred
-             offset is spent here, and the pair rides up together on the
-             track's own transition. Nothing else about the sequence changes —
-             from here the stack retires from the top exactly as before. */
-          if (lead) { lead = 0; place(); }
+          /* The bubble is its full size now, so the canvas balances again. */
+          place();
 
-          /* Last one in. Nothing else will leave through the top of the box,
-             so the box stops clipping — the reactions about to arrive under
-             this bubble hang past it, and no measurement has to be right for
-             them to be whole. */
-          if (idx >= count) thread.classList.add('is-open');
+          /* THE BOX KEEPS CLIPPING, and it can afford to now. It used to open
+             at the last message so the reaction chips would not be cut in
+             half — but that was when the stack's position came from a
+             measurement that could be wrong. The canvas parks the content
+             with a fifth of the box still clear beneath it, which is more
+             room than the chips need, so nothing has to be let out of the
+             box to be whole. And nothing can escape it: not a row on its way
+             out of the top, not a project row arriving at the bottom. */
         /* The arrival is allowed to finish before anything else happens: the
            `settled` state only drops the compositor hint, and the next
            indicator waits out the full gap after that. */
@@ -23522,13 +23718,15 @@ window.PF = window.PF || {};
               timer = setTimeout(function () {
                 phase = 'react';
                 burst();
+                /* The work itself, under the last thing said about it. */
+                showProjects();
               }, REACT_MS);
               return;
             }
             timer = setTimeout(next, GAP_MS);
           }, POP_MS);
         }, DOTS_MS);
-      }, wait);
+      }, 0);
     }
 
     /* ---- the loop --------------------------------------------------------
@@ -23556,6 +23754,7 @@ window.PF = window.PF || {};
            cutting them off on the way out is the same fault as cutting them
            off on the way in. */
         thread.classList.remove('is-open');
+        hideProjects();
         if (cancelScramble) { cancelScramble(); cancelScramble = null; }
         thread.removeAttribute('data-reactions');
         resetReactions();
@@ -23616,23 +23815,13 @@ window.PF = window.PF || {};
        at, not a loop with the movement taken out of it. Nothing here plays,
        nothing repeats, and the role buttons and reactions still work. */
     if (still) {
-      var first = Math.max(0, count - VISIBLE);
-      var off = 0;
-      for (var q = 0; q < first; q++) {
-        rows[q].setAttribute('data-state', 'gone');
-        off += step[q];
-      }
-      for (q = first; q < count; q++) rows[q].setAttribute('data-state', 'settled');
-      if (track) {
-        track.style.transition = 'none';
-        track.style.transform = 'translateY(' + -Math.round(off) + 'px)';
-      }
-      retired = first;
+      for (var q = 0; q < count; q++) rows[q].setAttribute('data-state', 'settled');
       idx = count;
+      showProjects(true);
+      /* The same content-aware rule, run once: the end of the conversation,
+         parked on the anchor with whatever came before it above the edge. */
+      place(true);
       phase = 'hold';
-      /* Nothing will ever move in this box, so nothing needs masking — and
-         the reactions under the last bubble must be whole here too. */
-      thread.classList.add('is-open');
       thread.setAttribute('data-reactions', 'on');
       for (q = 0; q < RX_PLAN.length; q++) {
         var c = thread.querySelector('.rx[data-rx="' + RX_PLAN[q][0] + '"]');
