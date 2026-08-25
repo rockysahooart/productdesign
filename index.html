@@ -3923,7 +3923,10 @@ em,
   /* Internal padding, so a bigger bubble breathes. It steps down on narrow
      screens: 24px of padding on a phone is padding you can see rather than
      padding you feel, and it pushes a three-line message off the fold. */
-  --hx-pad:  clamp(14px, 1.35vw + 9px, 28px);
+  /* The bubble's own padding. Trimmed from a 28px ceiling: the sequence now
+     carries a two-hundred-character sentence, and every pixel of padding is a
+     pixel the type cannot have inside a box whose height is fixed. */
+  --hx-pad:  clamp(13px, 0.9vw + 9px, 22px);
   --hx-padx: clamp(18px, 1.65vw + 10px, 34px);
   --hx-radius: var(--r-lg);
   --hx-line: 1px solid var(--border);
@@ -3949,8 +3952,15 @@ em,
      a track that narrow wraps into a stack rather than a sentence. So the
      display size belongs to the widths that can hold it, and the band below
      gets its own, smaller scale a few rules down. */
-  font-size: clamp(34px, 1.1vw + 21px, 44px);
-  line-height: 1.32;
+  /* The ceiling is set by the longest message, not by taste. The sequence
+     carries a two-hundred-character sentence about the work, and a fixed box
+     can hold it at one size only — every extra point of type is another line
+     of wrap, and eight lines of it against its neighbour is the whole
+     viewport. So the display size is what the copy allows: still the largest
+     thing in the composition, still the pixel face, sized to the sentence
+     rather than to the ambition. */
+  font-size: clamp(24px, 0.5vw + 19px, 30px);
+  line-height: 1.28;
   letter-spacing: -0.012em;
   font-weight: var(--fw-display);
   max-width: 32ch;
@@ -4059,6 +4069,42 @@ em,
    have scrolled away from the avatar it was pointing at. A sender group does
    not need one; the avatar's adjacency is the relationship, which is how every
    messaging client draws it. */
+
+/* --------------------------------------------------------------------------
+   THE PIXEL ICONS
+
+   The emoji in the thread are drawn rather than typed. An operating system's
+   emoji are full-colour, anti-aliased and different on every machine, which is
+   three things this thread is not — so each one is a nine-by-nine symbol in
+   the sprite, two values, hard edges, `crispEdges` so the renderer is not
+   allowed to soften them either.
+
+   Two values and no more: the mark and the holes cut through it. They invert
+   with the theme, which is the only difference between light and dark.
+
+   Sized in em so they track the message they sit in, and nudged onto the
+   baseline rather than sitting on it, the way a glyph would. */
+.pxi {
+  --pxi-fg: #000000;
+  --pxi-bg: #FFFFFF;
+
+  display: inline-block;
+  /* A shade over the em, because a nine-unit grid needs the room to stay
+     legible beside a pixel typeface. */
+  width: 1.15em;
+  height: 1.15em;
+  vertical-align: -0.21em;
+  shape-rendering: crispEdges;
+  /* The grid is nine units across a whole em, so a pixel is never a fraction
+     of a device pixel at the sizes this thread uses. */
+  image-rendering: pixelated;
+}
+
+[data-theme="dark"] .pxi { --pxi-fg: #FFFFFF; --pxi-bg: #000000; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .pxi { --pxi-fg: #FFFFFF; --pxi-bg: #000000; }
+}
 
 /* THE MESSAGES ARE THE ONE PIXEL-SET THING ON THE PAGE. Scoped to the text
    inside a bubble, so nothing else — not the avatar, not the loading dots, not
@@ -12209,11 +12255,11 @@ em,
      floor is the phone: 28px in a 250px bubble is three or four words a line,
      which is a title, and the box lands within a few pixels of the height the
      four small messages used to need. */
-  .hero__thread { font-size: clamp(28px, 3.4vw + 15px, 40px); }
+  .hero__thread { font-size: clamp(20px, 2.2vw + 11px, 31px); }
 }
 
 @media (min-width: 960px) and (max-width: 1279px) {
-  .hero__thread { font-size: clamp(26px, 2.2vw + 5px, 33px); }
+  .hero__thread { font-size: clamp(20px, 1.1vw + 9px, 23px); }
 }
 
 </style>
@@ -12266,6 +12312,19 @@ em,
     <symbol id="i-user" viewBox="0 0 20 20">
       <circle cx="10" cy="7" r="3"/><path d="M4.4 16.4a5.6 5.6 0 0 1 11.2 0"/>
     </symbol>
+    
+
+    <symbol id="px-smiley" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM3 2h10v1h-10zM2 3h12v1h-12zM1 4h4v1h-4zM7 4h2v1h-2zM11 4h4v1h-4zM1 5h4v1h-4zM7 5h2v1h-2zM11 5h4v1h-4zM0 6h16v1h-16zM0 7h16v1h-16zM0 8h16v1h-16zM1 9h2v1h-2zM4 9h8v1h-8zM13 9h2v1h-2zM1 10h3v1h-3zM6 10h4v1h-4zM12 10h3v1h-3zM2 11h4v1h-4zM10 11h4v1h-4zM3 12h10v1h-10zM5 13h6v1h-6z"/><path fill="var(--pxi-bg)" d="M5 4h2v1h-2zM9 4h2v1h-2zM5 5h2v1h-2zM9 5h2v1h-2zM3 9h1v1h-1zM12 9h1v1h-1zM4 10h2v1h-2zM10 10h2v1h-2zM6 11h4v1h-4z"/></symbol>
+    <symbol id="px-phone" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM5 2h6v1h-6zM5 3h1v1h-1zM10 3h1v1h-1zM5 4h1v1h-1zM10 4h1v1h-1zM5 5h1v1h-1zM10 5h1v1h-1zM5 6h1v1h-1zM10 6h1v1h-1zM5 7h1v1h-1zM10 7h1v1h-1zM5 8h1v1h-1zM10 8h1v1h-1zM5 9h1v1h-1zM10 9h1v1h-1zM5 10h1v1h-1zM10 10h1v1h-1zM5 11h6v1h-6zM5 12h2v1h-2zM9 12h2v1h-2zM5 13h6v1h-6z"/><path fill="var(--pxi-bg)" d="M6 3h4v1h-4zM6 4h4v1h-4zM6 5h4v1h-4zM6 6h4v1h-4zM6 7h4v1h-4zM6 8h4v1h-4zM6 9h4v1h-4zM6 10h4v1h-4zM7 12h2v1h-2z"/></symbol>
+    <symbol id="px-laptop" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M3 2h10v1h-10zM3 3h1v1h-1zM12 3h1v1h-1zM3 4h1v1h-1zM12 4h1v1h-1zM3 5h1v1h-1zM12 5h1v1h-1zM3 6h1v1h-1zM12 6h1v1h-1zM3 7h1v1h-1zM12 7h1v1h-1zM3 8h10v1h-10zM1 10h14v1h-14zM1 11h5v1h-5zM10 11h5v1h-5zM1 12h14v1h-14z"/><path fill="var(--pxi-bg)" d="M4 3h8v1h-8zM4 4h8v1h-8zM4 5h8v1h-8zM4 6h8v1h-8zM4 7h8v1h-8zM6 11h4v1h-4z"/></symbol>
+    <symbol id="px-pin" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM4 2h8v1h-8zM3 3h4v1h-4zM9 3h4v1h-4zM3 4h3v1h-3zM10 4h3v1h-3zM3 5h3v1h-3zM10 5h3v1h-3zM3 6h4v1h-4zM9 6h4v1h-4zM4 7h8v1h-8zM5 8h6v1h-6zM6 9h4v1h-4zM7 10h2v1h-2zM7 11h2v1h-2zM6 12h4v1h-4z"/><path fill="var(--pxi-bg)" d="M7 3h2v1h-2zM6 4h4v1h-4zM6 5h4v1h-4zM7 6h2v1h-2z"/></symbol>
+    <symbol id="px-hospital" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M6 0h5v1h-5zM6 1h2v1h-2zM9 1h2v1h-2zM6 2h1v1h-1zM10 2h1v1h-1zM6 3h2v1h-2zM9 3h2v1h-2zM6 4h5v1h-5zM2 5h12v1h-12zM2 6h1v1h-1zM4 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h2v1h-2zM2 7h12v1h-12zM2 8h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM12 8h2v1h-2zM2 9h12v1h-12zM2 10h1v1h-1zM4 10h1v1h-1zM6 10h1v1h-1zM8 10h1v1h-1zM10 10h1v1h-1zM12 10h2v1h-2zM2 11h12v1h-12zM2 12h5v1h-5zM9 12h5v1h-5zM2 13h5v1h-5zM9 13h5v1h-5z"/><path fill="var(--pxi-bg)" d="M8 1h1v1h-1zM7 2h3v1h-3zM8 3h1v1h-1zM3 6h1v1h-1zM5 6h1v1h-1zM7 6h1v1h-1zM9 6h1v1h-1zM11 6h1v1h-1zM3 8h1v1h-1zM5 8h1v1h-1zM7 8h1v1h-1zM9 8h1v1h-1zM11 8h1v1h-1zM3 10h1v1h-1zM5 10h1v1h-1zM7 10h1v1h-1zM9 10h1v1h-1zM11 10h1v1h-1zM7 12h2v1h-2zM7 13h2v1h-2z"/></symbol>
+    <symbol id="px-dna" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M4 0h2v1h-2zM10 0h2v1h-2zM5 1h1v1h-1zM10 1h1v1h-1zM6 2h1v1h-1zM9 2h1v1h-1zM6 3h4v1h-4zM7 4h2v1h-2zM6 5h1v1h-1zM9 5h1v1h-1zM5 6h1v1h-1zM10 6h1v1h-1zM4 7h2v1h-2zM10 7h2v1h-2zM4 8h2v1h-2zM10 8h2v1h-2zM5 9h1v1h-1zM10 9h1v1h-1zM6 10h1v1h-1zM9 10h1v1h-1zM6 11h4v1h-4zM7 12h2v1h-2zM6 13h1v1h-1zM9 13h1v1h-1zM5 14h1v1h-1zM10 14h1v1h-1zM4 15h2v1h-2zM10 15h2v1h-2z"/></symbol>
+    <symbol id="px-card" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M2 2h12v1h-12zM2 3h12v1h-12zM2 4h1v1h-1zM13 4h1v1h-1zM2 5h1v1h-1zM13 5h1v1h-1zM2 6h12v1h-12zM2 7h12v1h-12zM2 8h12v1h-12zM2 9h1v1h-1zM6 9h3v1h-3zM11 9h1v1h-1zM13 9h1v1h-1zM2 10h1v1h-1zM6 10h3v1h-3zM11 10h1v1h-1zM13 10h1v1h-1zM2 11h12v1h-12zM2 12h12v1h-12z"/><path fill="var(--pxi-bg)" d="M3 4h10v1h-10zM3 5h10v1h-10zM3 9h3v1h-3zM9 9h2v1h-2zM12 9h1v1h-1zM3 10h3v1h-3zM9 10h2v1h-2zM12 10h1v1h-1z"/></symbol>
+    <symbol id="px-building" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M3 1h7v1h-7zM3 2h1v1h-1zM5 2h1v1h-1zM7 2h1v1h-1zM9 2h1v1h-1zM3 3h7v1h-7zM3 4h1v1h-1zM5 4h1v1h-1zM7 4h1v1h-1zM9 4h1v1h-1zM12 4h3v1h-3zM3 5h7v1h-7zM12 5h3v1h-3zM3 6h1v1h-1zM5 6h1v1h-1zM7 6h1v1h-1zM9 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM3 7h7v1h-7zM12 7h3v1h-3zM3 8h1v1h-1zM5 8h1v1h-1zM7 8h1v1h-1zM9 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM3 9h7v1h-7zM12 9h3v1h-3zM3 10h1v1h-1zM5 10h1v1h-1zM7 10h1v1h-1zM9 10h1v1h-1zM12 10h1v1h-1zM14 10h1v1h-1zM3 11h7v1h-7zM12 11h3v1h-3zM3 12h7v1h-7zM12 12h3v1h-3z"/><path fill="var(--pxi-bg)" d="M4 2h1v1h-1zM6 2h1v1h-1zM8 2h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM8 4h1v1h-1zM4 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM13 6h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM8 8h1v1h-1zM13 8h1v1h-1zM4 10h1v1h-1zM6 10h1v1h-1zM8 10h1v1h-1zM13 10h1v1h-1z"/></symbol>
+    <symbol id="px-shuffle" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M7 1h2v1h-2zM6 2h4v1h-4zM5 3h6v1h-6zM4 4h8v1h-8zM3 5h10v1h-10zM2 6h3v1h-3zM6 6h4v1h-4zM11 6h3v1h-3zM1 7h3v1h-3zM6 7h4v1h-4zM12 7h3v1h-3zM6 8h4v1h-4zM6 9h4v1h-4zM6 10h4v1h-4zM6 11h4v1h-4zM6 12h4v1h-4zM6 13h4v1h-4z"/></symbol>
+    <symbol id="px-sparkle" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M7 1h1v1h-1zM7 2h1v1h-1zM6 3h3v1h-3zM6 4h3v1h-3zM13 4h1v1h-1zM5 5h5v1h-5zM12 5h3v1h-3zM2 6h10v1h-10zM13 6h1v1h-1zM5 7h5v1h-5zM6 8h3v1h-3zM6 9h3v1h-3zM7 10h1v1h-1zM7 11h1v1h-1zM11 11h1v1h-1zM10 12h3v1h-3zM11 13h1v1h-1z"/></symbol>
+
     <symbol id="i-sun" viewBox="0 0 20 20">
       <circle cx="10" cy="10" r="3.4"/>
       <path d="M10 2.3v1.9M10 15.8v1.9M4.6 4.6l1.4 1.4M14 14l1.4 1.4M2.3 10h1.9M15.8 10h1.9M4.6 15.4 6 14M14 6l1.4-1.4"/>
@@ -12588,26 +12647,22 @@ em,
               <span class="msg-track" data-track>
               <span class="msg" data-msg data-cluster>
                 <span class="msg__from" aria-hidden="true">SS</span>
-                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text"><span class="kw kw--namaskar">Namaskar</span> 👋🏽 Nice to meet you.</span></span>
-              </span>
-              <span class="msg" data-msg>
-                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
-                  <em>Sarthak Sahoo</em>, a <span class="kw kw--craft">Product Designer</span> based in Austin, TX</span></span>
-              </span>
-              <span class="msg" data-msg data-cluster>
-                <span class="msg__from" aria-hidden="true">SS</span>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I design products
                   that make <span class="kw kw--complex">complex</span> things feel <span class="kw kw--simple">simple</span>.</span></span>
               </span>
               <span class="msg" data-msg>
-                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;ve worked across
-                  healthcare, biotechnology, financial services,
-                  and enterprise systems.</span></span>
+                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;ve helped teams
+                  across healthcare <svg class="pxi" role="img" aria-label="healthcare"><use href="#px-hospital"/></svg>⁠, biotechnology <svg class="pxi" role="img" aria-label="biotechnology"><use href="#px-dna"/></svg>⁠, financial services
+                  <svg class="pxi" role="img" aria-label="financial services"><use href="#px-card"/></svg>⁠, and enterprise systems <svg class="pxi" role="img" aria-label="enterprise systems"><use href="#px-building"/></svg>⁠ by providing flexible design support
+                  across multiple verticals <svg class="pxi" role="img" aria-label="upward across verticals"><use href="#px-shuffle"/></svg>⁠ and turning complex workflows
+                  into clearer products <svg class="pxi" role="img" aria-label="clearer"><use href="#px-sparkle"/></svg>⁠.</span></span>
               </span>
-              <span class="msg" data-msg data-cluster>
+              
+              <span class="msg" data-msg data-cluster data-scramble data-dwell="1300">
                 <span class="msg__from" aria-hidden="true">SS</span>
-                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I design for the workflow,
-                  not just the screen.</span></span>
+                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I focus on building
+                  for clarity, trust, security, and
+                  <span class="kw kw--craft">performance</span>.</span></span>
               </span>
               <span class="msg" data-msg>
                 <span class="msg__bubble msg__bubble--reacted"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I could keep explaining,
@@ -22691,29 +22746,29 @@ window.PF = window.PF || {};
      and nothing below the thread moves when you switch. */
   var ROLES = {
     design: [
-      [{ t: 'Namaskar', k: 'namaskar' }, { t: ' \uD83D\uDC4B\uD83C\uDFFD Nice to meet you.' }],
-      [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true },
-       { t: ', a ' }, { t: 'Product Designer', k: 'craft' },
-       { t: ' based in Austin, TX' }],
       [{ t: 'I design products that make ' }, { t: 'complex', k: 'complex' },
        { t: ' things feel ' }, { t: 'simple', k: 'simple' }, { t: '.' }],
-      [{ t: 'I\u2019ve worked across healthcare, biotechnology, financial services, and enterprise systems.' }],
-      [{ t: 'I design for the workflow, not just the screen.' }],
+      [{ t: 'I\u2019ve helped teams across healthcare ' }, { ic: 'hospital', lbl: 'healthcare' },
+       { t: ', biotechnology ' }, { ic: 'dna', lbl: 'biotechnology' },
+       { t: ', financial services ' }, { ic: 'card', lbl: 'financial services' },
+       { t: ', and enterprise systems ' }, { ic: 'building', lbl: 'enterprise systems' },
+       { t: ' by providing flexible design support across multiple verticals ' },
+       { ic: 'shuffle', lbl: 'upward across verticals' },
+       { t: ' and turning complex workflows into clearer products ' },
+       { ic: 'sparkle', lbl: 'clearer' }, { t: '.' }],
+      [{ t: 'I focus on building for clarity, trust, security, and ' },
+       { t: 'performance', k: 'craft' }, { t: '.' }],
       [{ t: 'I could keep explaining, but hiring me is ' },
        { t: 'faster', k: 'faster' }, { t: '.' }]
     ],
     illustration: [
-      [{ t: 'Namaskar', k: 'namaskar' }, { t: ' \uD83D\uDC4B\uD83C\uDFFD Nice to meet you.' }],
-      [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true },
-       { t: ', and I draw as much as I design.' }],
+      [{ t: 'I draw as much as I design.' }],
       [{ t: 'Illustration is where I work an idea out before it becomes an interface.' }],
       [{ t: 'Most of it happens on paper before it happens anywhere else.' }],
       [{ t: 'Drawing is where I find the idea, not where I decorate it.' }]
     ],
     music: [
-      [{ t: 'Namaskar', k: 'namaskar' }, { t: ' \uD83D\uDC4B\uD83C\uDFFD Nice to meet you.' }],
-      [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true },
-       { t: ', and off the clock I make house music.' }],
+      [{ t: 'Off the clock I make house music.' }],
       [{ t: 'Same instinct as design: build the arrangement, then take things out.' }],
       [{ t: 'Most of what I make never leaves the room, and that is fine.' }],
       [{ t: 'The good version is usually the one with fewer parts.' }]
@@ -22736,6 +22791,11 @@ window.PF = window.PF || {};
       var t = esc(msg[i].t);
       if (msg[i].em) out += '<em>' + t + '</em>';
       else if (msg[i].k) out += '<span class="kw kw--' + msg[i].k + '">' + t + '</span>';
+      /* An icon run is a pixel symbol from the sprite, not a character. It
+         carries its meaning as a label because there is no longer an emoji
+         for a screen reader to read. */
+      else if (msg[i].ic) out += '<svg class="pxi" role="img" aria-label="' +
+        esc(msg[i].lbl || msg[i].ic) + '"><use href="#px-' + msg[i].ic + '"/></svg>\u2060';
       else out += t;
     }
     return out;
@@ -22753,6 +22813,125 @@ window.PF = window.PF || {};
   var HOLD_MS = 4200;   /* the finished thread stands, reactions and all */
   var FADE_MS = 340;    /* the whole stack dims out together */
   var BLANK_MS = 640;   /* an empty beat, so the loop is a breath not a cut */
+  var SCRAMBLE_MS = 1250; /* the decode: long enough to read as resolving */
+
+  /* ---- the decode ---------------------------------------------------------
+
+     One message arrives out of noise rather than simply arriving. It is not a
+     glitch: nothing flashes, nothing jumps, and the sentence never moves a
+     pixel while it resolves.
+
+     THE TRICK IS WIDTH. Geist Pixel is proportional — an `i` is 380 units and
+     a `W` is 912 — so swapping characters at random would re-wrap the line on
+     every frame, which is exactly the jitter that makes this effect look
+     cheap. The pool is therefore measured once, in the real face at the real
+     size, and bucketed by advance width; a character is only ever stood in for
+     by one that occupies precisely the same space. The line boxes cannot move,
+     because nothing in them has changed size.
+
+     The resolve is a left-to-right wave with a little slack in it, so it reads
+     as settling rather than as a cursor wiping across. Characters that have no
+     same-width stand-in — spaces, punctuation — are simply there from the
+     start, which also keeps the shape of the sentence legible while the
+     letters are still noise.
+
+     The final text is already in the DOM, gradient span and all: this walks
+     its text nodes and puts them back exactly as it found them. There is no
+     swap at the end, so `performance` resolves straight into its gradient
+     rather than cutting to it. */
+  var POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+  function widthBuckets(el) {
+    var cs = window.getComputedStyle(el);
+    var font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + '/' +
+               cs.lineHeight + ' ' + cs.fontFamily;
+    var cv = document.createElement('canvas').getContext('2d');
+    cv.font = font;
+    var by = {};
+    for (var i = 0; i < POOL.length; i++) {
+      var c = POOL.charAt(i);
+      var w = Math.round(cv.measureText(c).width * 100);
+      (by[w] = by[w] || []).push(c);
+    }
+    return { by: by, ctx: cv };
+  }
+
+  function scramble(row, ms, done) {
+    var host = row.querySelector('.msg__text');
+    if (!host) { if (done) done(); return; }
+
+    var buckets = widthBuckets(host);
+    var nodes = [];
+    (function walk(n) {
+      for (var i = 0; i < n.childNodes.length; i++) {
+        var c = n.childNodes[i];
+        if (c.nodeType === 3) nodes.push(c);
+        else if (c.nodeType === 1) walk(c);
+      }
+    })(host);
+
+    /* One flat list of slots across every text node, so the wave crosses the
+       gradient word rather than restarting inside it. */
+    var slots = [], total = 0, i, j;
+    for (i = 0; i < nodes.length; i++) {
+      var text = nodes[i].nodeValue;
+      var pool = [];
+      for (j = 0; j < text.length; j++) {
+        var ch = text.charAt(j);
+        var w = Math.round(buckets.ctx.measureText(ch).width * 100);
+        var same = buckets.by[w];
+        /* Only a character with a same-width understudy is ever hidden. */
+        pool.push(ch === ' ' || !same || same.length < 2 ? null : same);
+        if (pool[j]) total++;
+      }
+      slots.push({ node: nodes[i], text: text, pool: pool, order: null });
+    }
+    if (!total) { if (done) done(); return; }
+
+    /* When each slot resolves: a left-to-right ramp with jitter, so the edge
+       is soft. */
+    var seen = 0;
+    for (i = 0; i < slots.length; i++) {
+      slots[i].order = [];
+      for (j = 0; j < slots[i].text.length; j++) {
+        slots[i].order.push(slots[i].pool[j]
+          ? (seen++ / total) * 0.78 + Math.random() * 0.22
+          : -1);
+      }
+    }
+
+    var t0 = 0, raf = 0, last = 0;
+    function frame(now) {
+      if (!t0) t0 = now;
+      var p = Math.min(1, (now - t0) / ms);
+      /* The noise itself steps at about 24 a second; the resolve is smooth.
+         Re-rolling every frame reads as static rather than as characters. */
+      var roll = now - last > 42;
+      if (roll) last = now;
+      for (var a = 0; a < slots.length; a++) {
+        var s = slots[a], out = '';
+        for (var b = 0; b < s.text.length; b++) {
+          var when = s.order[b];
+          if (when < 0 || p >= when) out += s.text.charAt(b);
+          else {
+            var set = s.pool[b];
+            out += set[(Math.random() * set.length) | 0];
+          }
+        }
+        if (roll || p >= 1) s.node.nodeValue = out;
+      }
+      if (p < 1) raf = window.requestAnimationFrame(frame);
+      else {
+        for (a = 0; a < slots.length; a++) slots[a].node.nodeValue = slots[a].text;
+        if (done) done();
+      }
+    }
+    raf = window.requestAnimationFrame(frame);
+    return function cancel() {
+      window.cancelAnimationFrame(raf);
+      for (var a = 0; a < slots.length; a++) slots[a].node.nodeValue = slots[a].text;
+    };
+  }
 
   function init(thread) {
     if (thread._thDone) return;
@@ -22928,11 +23107,12 @@ window.PF = window.PF || {};
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(function () {
         reserve();
-        var off = 0;
-        for (var i = 0; i < retired; i++) off += step[i];
         if (track) {
           track.style.transition = 'none';
-          track.style.transform = 'translateY(' + -Math.round(off) + 'px)';
+          /* If the opening is still the only thing on screen, it is still the
+             thing that has to be centred — and it was centred against the old
+             measurement. */
+          if (idx <= 1 && lead) centreOpening(); else place();
           void track.offsetWidth;
           track.style.transition = '';
         }
@@ -22946,11 +23126,9 @@ window.PF = window.PF || {};
         reserve();
         /* The track is measured in pixels, so a resize invalidates it. Put it
            back where it belongs for however many rows have retired. */
-        var off = 0;
-        for (var i = 0; i < retired; i++) off += step[i];
         if (track) {
           track.style.transition = 'none';
-          track.style.transform = 'translateY(' + -Math.round(off) + 'px)';
+          if (idx <= 1 && lead) centreOpening(); else place();
           /* Read, so the suppressed transition is committed before the real
              one is put back — one read, on a debounced resize. */
           void track.offsetWidth;
@@ -22985,13 +23163,49 @@ window.PF = window.PF || {};
        the gap under it. The row stays in flow while it goes — collapsing it
        would move everything a second time, and the whole point of the track is
        that everything moves once. */
+    /* ---- where the track sits ------------------------------------------
+
+       THE OPENING IS CENTRED, THE SEQUENCE IS NOT. The first message arrives
+       around the middle of the box with the space above it left empty — a
+       single line in a lot of air, which is what makes it read as an opening
+       statement rather than as the top of a list. `lead` is that offset. It is
+       spent the moment the second message lands: the pair moves up together on
+       the track's own transition, and from there the thread behaves exactly as
+       it did before, retiring from the top.
+
+       One function owns the transform so the lead-in and the retirement can
+       never disagree about where the track is. */
+    var lead = 0;
+    var cancelScramble = null;
+
+    function place() {
+      if (!track) return;
+      var off = 0;
+      for (var i = 0; i < retired; i++) off += step[i];
+      track.style.transform = 'translateY(' + Math.round(lead - off) + 'px)';
+    }
+
+    function centreOpening() {
+      if (still || !track || !heights.length) return;
+      /* Half the room left over once the first message is in the box, so the
+         message sits on the middle rather than under it. */
+      lead = Math.max(0, Math.round((boxH - heights[0]) / 2));
+      track.style.transition = 'none';
+      place();
+      void track.offsetWidth;
+      track.style.transition = '';
+    }
+
+    /* The opening state: one message, on the middle of the box. Called here
+       rather than beside the track lookup because `lead` has to exist before
+       anything can be offset by it. */
+    centreOpening();
+
     function retire() {
       if (!track || retired >= count) return 0;
       rows[retired].setAttribute('data-state', 'gone');
       retired++;
-      var off = 0;
-      for (var i = 0; i < retired; i++) off += step[i];
-      track.style.transform = 'translateY(' + -Math.round(off) + 'px)';
+      place();
       return SHIFT_MS;
     }
 
@@ -23170,6 +23384,22 @@ window.PF = window.PF || {};
             var row = rows[idx];
           row.setAttribute('data-state', 'live');
           idx++;
+
+          /* A row can ask to arrive out of noise. The decode runs inside the
+             bubble that has already landed — the arrival animation is
+             untouched, and so is everything after it. */
+          if (!still && row.hasAttribute('data-scramble')) {
+            if (cancelScramble) cancelScramble();
+            cancelScramble = scramble(row, SCRAMBLE_MS, function () {
+              cancelScramble = null;
+            });
+          }
+          /* The opening is over the moment it has company: the centred
+             offset is spent here, and the pair rides up together on the
+             track's own transition. Nothing else about the sequence changes —
+             from here the stack retires from the top exactly as before. */
+          if (lead) { lead = 0; place(); }
+
           /* Last one in. Nothing else will leave through the top of the box,
              so the box stops clipping — the reactions about to arrive under
              this bubble hang past it, and no measurement has to be right for
@@ -23218,6 +23448,7 @@ window.PF = window.PF || {};
            cutting them off on the way out is the same fault as cutting them
            off on the way in. */
         thread.classList.remove('is-open');
+        if (cancelScramble) { cancelScramble(); cancelScramble = null; }
         thread.removeAttribute('data-reactions');
         resetReactions();
         retired = 0;
@@ -23227,7 +23458,9 @@ window.PF = window.PF || {};
         }
         if (track) {
           track.style.transition = 'none';
-          track.style.transform = 'translateY(0)';
+          /* Back to the opening state, centre included — the loop starts the
+             way the first visit did. */
+          centreOpening();
           void track.offsetWidth;
           track.style.transition = '';
         }
