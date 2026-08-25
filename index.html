@@ -3996,8 +3996,14 @@ em,
 
 /* Inside a cluster the messages sit close; a new cluster gets about twice
    that. Enough to read as a new thought, not enough to be a gap. */
-.msg + .msg { margin-top: 13px; }
-.msg + .msg[data-cluster] { margin-top: 26px; }
+/* SPACING IS THE COMPOSITION. These were 13 and 26 — a chat feed's rhythm,
+   where the point is density. This is not a feed: each message is a statement
+   that should be able to be read on its own, so the space between them is
+   proportional to the type and generous enough to separate one thought from
+   the next. Between clusters it is nearly double again, because that is where
+   the speaker pauses. */
+.msg + .msg { margin-top: 1.15em; }
+.msg + .msg[data-cluster] { margin-top: 2.2em; }
 
 /* The loading row sits on the same rhythm as a message row, so the sequence
    does not tighten and loosen as it plays. */
@@ -4085,10 +4091,14 @@ em,
 
 .plist {
   display: block;
-  margin-top: 22px;
+  /* The pronounced pause. This is the seam between what he says and what he
+     has made, and it is the largest interval in the whole composition —
+     bigger than any gap between messages, so the change of subject is felt
+     before it is read. */
+  margin-top: clamp(46px, 5.4vw, 92px);
   /* Smaller than the messages, because it is a list of destinations rather
      than something being said. */
-  font-size: 0.6em;
+  font-size: 0.66em;
   line-height: 1.3;
 }
 
@@ -4097,8 +4107,10 @@ em,
 .plist__row {
   display: flex;
   align-items: baseline;
-  gap: 12px;
-  padding: 9px 2px;
+  gap: 16px;
+  /* A project is a thing you choose, not a line in a menu. The padding is
+     what makes each row a place to put a cursor rather than a small link. */
+  padding: 18px 2px;
   border-top: 1px solid var(--border);
   color: var(--ink-secondary);
   text-decoration: none;
@@ -4415,7 +4427,32 @@ em,
    than the middle of the cluster.
    -------------------------------------------------------------------------- */
 
-.hero__thread.is-windowed { overflow: hidden; }
+.hero__thread.is-windowed {
+  overflow: hidden;
+
+  /* THE TOP EDGE IS A DISSOLVE, NOT A CUT. A message on its way out used to
+     be fully opaque right up to the pixel where the box clipped it, which
+     reads as content being severed rather than leaving. The box carries a
+     mask instead: a shallow band at the top where everything passing through
+     it loses opacity with its own position, and nothing else in the box is
+     touched.
+
+     Position, not time — so it holds for four messages or forty, at any
+     scroll offset, with no state to keep. The band is deliberately shallow —
+     around forty pixels, fully opaque by a tenth of the way down — so only
+     something genuinely leaving is touched by it. Nothing that has just
+     arrived, and nothing in the middle of the box, ever softens. */
+  -webkit-mask-image: linear-gradient(to bottom,
+                        rgba(0, 0, 0, 0) 0,
+                        rgba(0, 0, 0, 0.5) 3.5%,
+                        rgba(0, 0, 0, 1) 9%,
+                        rgba(0, 0, 0, 1) 100%);
+          mask-image: linear-gradient(to bottom,
+                        rgba(0, 0, 0, 0) 0,
+                        rgba(0, 0, 0, 0.5) 3.5%,
+                        rgba(0, 0, 0, 1) 9%,
+                        rgba(0, 0, 0, 1) 100%);
+}
 
 /* --------------------------------------------------------------------------
    ...AND STOPS CLIPPING ONCE THE CONVERSATION IS OVER
@@ -23178,6 +23215,7 @@ window.PF = window.PF || {};
        css/04-components.css are one decision made twice: halve the window,
        double the type, same rectangle. */
     var VISIBLE = 2;
+    var SIZING_GAP = 26;   /* the rhythm the card's height was set at */
     var heights = [], gaps = [], step = [], boxH = 0;
 
     function reserve() {
@@ -23211,8 +23249,16 @@ window.PF = window.PF || {};
          actually fall inside each one. */
       boxH = 0;
       for (i = 0; i + VISIBLE <= count; i++) {
+        /* THE BOX IS SIZED ON THE MESSAGES, NOT ON THE AIR BETWEEN THEM.
+           The gap in the stylesheet is now a composition decision — generous,
+           and free to grow — and if the box were measured with it, every
+           adjustment to the rhythm would push the card taller. So the height
+           is two messages plus a fixed sizing interval: the card stays the
+           size it was designed at, and the extra air is spent by older
+           messages leaving the top a little sooner, which is what the canvas
+           is for. */
         var h = heights[i];
-        for (var j = 1; j < VISIBLE; j++) h += gaps[i + j] + heights[i + j];
+        for (var j = 1; j < VISIBLE; j++) h += SIZING_GAP + heights[i + j];
         if (h > boxH) boxH = h;
       }
       if (!boxH) for (i = 0; i < count; i++) boxH += heights[i] + gaps[i];
@@ -23364,32 +23410,43 @@ window.PF = window.PF || {};
     var offsetY = 0;
     var cancelScramble = null;
 
-    /* The live content, in viewport coordinates: the first message that has
-       arrived through the last thing on the track, which is the project list
-       once that exists. */
-    function liveRect() {
-      var top = null, bottom = null, i, r;
+    /* The live content, in the track's own coordinates. Layout offsets, not
+       rendered rectangles: `offsetTop` is where a thing sits before any
+       transform is applied, so a measurement taken mid-transition is the same
+       measurement taken at rest. That is what lets this be called five times
+       in half a second — once per project row arriving — and land on one
+       answer instead of five compounding corrections. */
+    /* A transformed element is its own containing block, so once the track has
+       a transform its children measure from IT rather than from whatever the
+       page's nearest positioned ancestor happens to be. Both cases have to be
+       handled, because the first measurement is taken before the first
+       transform exists. */
+    function trackBase() {
+      return (rows[0] && rows[0].offsetParent === track) ? 0 : track.offsetTop;
+    }
+
+    function liveSpan() {
+      var base = trackBase(), top = null, bottom = null, i;
       for (i = 0; i < count; i++) {
         var st = rows[i].getAttribute('data-state');
         if (st !== 'live' && st !== 'settled' && st !== 'loading') continue;
-        r = rows[i].getBoundingClientRect();
-        if (top === null) top = r.top;
-        bottom = r.bottom;
+        var t = rows[i].offsetTop - base;
+        if (top === null) top = t;
+        bottom = t + rows[i].offsetHeight;
       }
       if (top === null) return null;
-      if (plist && !plist.hasAttribute('hidden')) {
-        r = plist.getBoundingClientRect();
-        if (r.height) bottom = r.bottom;
+      if (plist && !plist.hasAttribute('hidden') && plist.offsetHeight) {
+        bottom = plist.offsetTop - base + plist.offsetHeight;
       }
       return { top: top, bottom: bottom, h: bottom - top };
     }
 
     function place(instant) {
       if (!track) return;
-      var s = liveRect();
+      var s = liveSpan();
       if (!s) return;
-      var box = thread.getBoundingClientRect();
-      if (!box.height) return;
+      var H = thread.clientHeight;
+      if (!H) return;
 
       /* One rule, not two branches: centre the stack on the zone, and never
          let its bottom fall past the anchor. A short stack is centred, because
@@ -23397,29 +23454,30 @@ window.PF = window.PF || {};
          runs off the top, because that is. The crossover happens on its own,
          at whatever height the content reaches it — which is what makes this
          work for four messages, or ten, or four and a project list. */
-      var wantTop = Math.min(
-        box.top + box.height * ZONE - s.h / 2,
-        box.top + box.height * ANCHOR - s.h);
+      var wantTop = Math.min(H * ZONE - s.h / 2, H * ANCHOR - s.h);
 
-      offsetY += (wantTop - s.top);
+      /* Absolute, not incremental. Whatever the track was doing, this is where
+         it belongs. */
+      offsetY = Math.round(wantTop - s.top);
 
       if (instant) {
         track.style.transition = 'none';
-        track.style.transform = 'translateY(' + Math.round(offsetY) + 'px)';
+        track.style.transform = 'translateY(' + offsetY + 'px)';
         void track.offsetWidth;
         track.style.transition = '';
       } else {
-        track.style.transform = 'translateY(' + Math.round(offsetY) + 'px)';
+        track.style.transform = 'translateY(' + offsetY + 'px)';
       }
 
-      /* Anything that has left through the top stops painting. It keeps its
-         space — the track is one block and nothing may collapse — but with the
-         box open at the end of the sequence there must be nothing of it left
-         to see above the thread. */
+      /* Anything whose resting place is entirely above the box stops painting.
+         Judged on where it is going, not on where the transition currently has
+         it, so nothing is retired early by being measured mid-flight. */
       for (var j = 0; j < count; j++) {
-        var rr = rows[j].getBoundingClientRect();
-        var out = rr.bottom < box.top + 4;
-        if (out) { rows[j].setAttribute('data-state', 'gone'); retired = j + 1; }
+        var rt = rows[j].offsetTop - trackBase() + offsetY;
+        if (rt + rows[j].offsetHeight < 2) {
+          rows[j].setAttribute('data-state', 'gone');
+          retired = j + 1;
+        }
       }
     }
 
