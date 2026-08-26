@@ -14013,7 +14013,7 @@ em,
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
                   <em class="kw kw--name">Sarthak Sahoo</em>, a Product <span class="pxi-nb">Designer&nbsp;<svg class="pxi" data-px="phone" role="img" aria-label="product"><use href="#px-phone"/></svg><svg class="pxi" data-px="laptop" role="img" aria-label="design"><use href="#px-laptop"/></svg></span> based in Austin, TX</span></span>
               </span>
-              <span class="msg" data-msg data-cluster>
+              <span class="msg" data-msg data-cluster data-scramble data-shuffle data-dwell="700">
                 <span class="msg__from" aria-hidden="true">SS</span>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I design products
                   that make <span class="kw kw--complex">complex</span> things feel <span class="kw kw--simple">simple</span>.</span></span>
@@ -24551,9 +24551,10 @@ window.PF = window.PF || {};
   /* THE QUALITIES STAND LONGER THAN THE GREETINGS. A hello is a word you
      recognise before you have finished reading it; clarity, trust and
      performance are the claim the sentence is making, and each one wants a
-     beat of its own after it lands — long enough to be read as a statement
-     rather than as a word being cycled through. */
-  var QUALITY_HOLD = 2800;
+     beat of its own after it lands: near four seconds, which is long enough
+     to read the whole sentence around it rather than just the word that
+     changed. */
+  var QUALITY_HOLD = 3800;
 
   var ROLES = {
     design: [
@@ -24596,6 +24597,14 @@ window.PF = window.PF || {};
      ask to be held longer than the standard gap once it has. Adding one is a
      line here; nothing else in the file needs to know. */
   ROLES.design[4].opt = { scramble: true, dwell: 1300 };
+
+  /* THE SENTENCE ABOUT THE WORK ARRIVES OUT OF TYPE, NOT JUST OUT OF NOISE.
+     It is the one line that says what he does, so it is the one line that gets
+     to be about type: it lands as noise set in somebody else's face, changes
+     face while it resolves, and settles into the pixel one the rest of the
+     thread is set in. Slow enough to watch — the whole point is that you can
+     see it happening. */
+  ROLES.design[2].opt = { scramble: true, shuffle: true, dwell: 700 };
 
   function esc(t) {
     return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -24685,6 +24694,22 @@ window.PF = window.PF || {};
   var FADE_MS = 340;    /* the whole stack dims out together */
   var BLANK_MS = 640;   /* an empty beat, so the loop is a breath not a cut */
   var SCRAMBLE_MS = 1800; /* the decode: four words, one after another */
+  /* The typeface shuffle runs longer than a plain decode, because it has two
+     things to show rather than one: the noise resolving, and the type settling
+     into the face the thread is set in. */
+  var SHUFFLE_MS = 2800;
+  /* The faces it passes through on the way. Every one of them is already
+     loaded for the artifacts, and all of them set this sentence to the same
+     number of lines as the pixel face — measured, not assumed, because a
+     shuffle that reflows the bubble is a shuffle that shakes the page. */
+  var SHUFFLE_FACES = [
+    '"JetBrains Mono", monospace',
+    '"Fraunces", serif',
+    '"Sora", sans-serif',
+    '"Space Grotesk", sans-serif',
+    '"Inter", sans-serif',
+    '"Be Vietnam Pro", sans-serif'
+  ];
   var WORD_HOLD = 1700;      /* each word stands, and is read, before the next */
   var WORD_SCRAMBLE = 620;   /* and the change between them is quick */
 
@@ -24933,6 +24958,7 @@ window.PF = window.PF || {};
         var row = rows[i];
         if (i >= set.length) {
           row.removeAttribute('data-scramble');
+          row.removeAttribute('data-shuffle');
           row.removeAttribute('data-dwell');
           continue;
         }
@@ -24965,6 +24991,8 @@ window.PF = window.PF || {};
         var opt = set[i].opt || {};
         if (opt.scramble) row.setAttribute('data-scramble', '');
         else row.removeAttribute('data-scramble');
+        if (opt.shuffle) row.setAttribute('data-shuffle', '');
+        else row.removeAttribute('data-shuffle');
 
         /* A message can ask to be held after it lands, either by naming a
            dwell in the data or by being one of the opening two. */
@@ -25249,6 +25277,40 @@ window.PF = window.PF || {};
     }
 
     var idx = 1, retired = 0, timer = null, running = false;
+
+    /* ---- the face changes while the words resolve -------------------------
+
+       One message arrives as noise in somebody else's typeface and settles
+       into the thread's own. The faces are stepped through on a slow clock —
+       six of them across the decode, four hundred milliseconds each — because
+       the point is that you can watch it happen rather than notice afterwards
+       that something did.
+
+       Every face is already loaded for the artifacts, and each sets this
+       sentence to the same number of lines as the pixel face, so the bubble
+       never changes height under it. The last step is no face at all: the
+       inline style comes off and the stylesheet's pixel face takes over,
+       which is the sentence arriving home rather than being told to. */
+    function shuffleFaces(row, ms) {
+      var el = row.querySelector('.msg__text');
+      if (!el) return null;
+
+      var step = Math.max(240, Math.round(ms / (SHUFFLE_FACES.length + 1)));
+      var i = 0;
+      el.style.fontFamily = SHUFFLE_FACES[0];
+
+      var t = setInterval(function () {
+        i++;
+        if (i >= SHUFFLE_FACES.length) { done(); return; }
+        el.style.fontFamily = SHUFFLE_FACES[i];
+      }, step);
+
+      function done() {
+        clearInterval(t);
+        el.style.fontFamily = '';
+      }
+      return done;
+    }
 
     /* ---- the words that keep changing ------------------------------------
 
@@ -25965,9 +26027,13 @@ window.PF = window.PF || {};
              untouched, and so is everything after it. */
           if (!still && row.hasAttribute('data-scramble')) {
             if (cancelScramble) cancelScramble();
-            cancelScramble = scramble(row, SCRAMBLE_MS, function () {
-              cancelScramble = null;
-            });
+            var shuffling = row.hasAttribute('data-shuffle');
+            var stopFaces = shuffling ? shuffleFaces(row, SHUFFLE_MS) : null;
+            cancelScramble = scramble(row, shuffling ? SHUFFLE_MS : SCRAMBLE_MS,
+              function () {
+                if (stopFaces) stopFaces();
+                cancelScramble = null;
+              });
           }
           /* The bubble is its full size now, so the canvas balances again. */
           place();
