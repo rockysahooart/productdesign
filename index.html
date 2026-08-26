@@ -4586,7 +4586,7 @@ em,
    time. One value for every pair, and a shorter one, so three messages sit
    together as a conversation rather than as three separate statements. */
 .msg + .msg,
-.msg + .msg[data-cluster] { margin-top: 0.82em; }
+.msg + .msg[data-cluster] { margin-top: 1.05em; }
 
 /* The loading row sits on the same rhythm as a message row, so the sequence
    does not tighten and loosen as it plays. */
@@ -13722,13 +13722,14 @@ em,
   .hero__eyebrow::-webkit-scrollbar { display: none; }
   .hero__role { white-space: nowrap; }
 
-  /* Bubbles take the width the phone actually has, the badge steps down, and
-     the gap between rows comes in — three tall bubbles with 36px between them
-     is most of a screen spent on nothing. */
-  /* The avatar keeps its size and its relationship to the bubble; only the
-     rhythm between clusters comes in. */
-  .msg + .msg { margin-top: 10px; }
-  .msg + .msg[data-cluster] { margin-top: 20px; }
+  /* Bubbles take the width the phone actually has and the badge steps down.
+     The rhythm between them came right in when the phone was holding a
+     six-message thread and every pixel of gap was a pixel of the last message
+     nobody would see. It is two messages now — the sentence that needs width
+     is not sent at this size — so the rows can have the air back: ten pixels
+     between two tall bubbles reads as one bubble that has been cut in half. */
+  .msg + .msg { margin-top: 17px; }
+  .msg + .msg[data-cluster] { margin-top: 26px; }
   .msg__bubble { width: 100%; }
 
   /* The tray is no longer a pill either. It was a bordered, shadowed surface
@@ -24917,7 +24918,7 @@ window.PF = window.PF || {};
      the decode and holds the finished sentence before the reactions arrive on
      it. No dwell here — a dwell is the gap before the NEXT message, and there
      is no next message. */
-  ROLES.design[2].opt = { scramble: true, shuffle: true };
+  ROLES.design[2].opt = { scramble: true, shuffle: true, wide: true };
 
   function esc(t) {
     return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -25223,6 +25224,15 @@ window.PF = window.PF || {};
     var rows = [].slice.call(thread.querySelectorAll('[data-msg]'));
     if (!rows.length) return;
 
+    /* Declared up here, and without initialisers on purpose. reserve() runs
+       near the top of this function and asks whether the invitation exists so
+       it can measure it; a `var x = null` further down would run AFTER that,
+       put the reference back to null, and the next caller would build a SECOND
+       invitation and show that one while the box had reserved room for the
+       first. Hoisting gives the declaration; an initialiser takes it away
+       again. */
+    var ctaRow, view, backRow;
+
     /* ---- the rows come from the data, not from the markup ---------------
 
        THE VIEWPORT IS A MESSAGE SYSTEM, NOT A SET OF SLOTS. The markup holds
@@ -25326,6 +25336,27 @@ window.PF = window.PF || {};
         if (dwell) row.setAttribute('data-dwell', dwell);
         else row.removeAttribute('data-dwell');
       }
+    }
+
+    /* ---- how much of the set this screen gets --------------------------
+
+       A phone is holding the whole conversation in about the height of two
+       bubbles, and the third message is the longest thing in it: a sentence
+       that takes six seconds to write itself, in a viewport where the first
+       two have already used the room. So the set ends at the introduction
+       there, and the reactions and the invitation move up onto it — which is
+       what the ending does anyway with whatever the last message turns out to
+       be.
+
+       Marked in the data rather than counted here, so a set says which of its
+       messages need width and nothing has to know how many any role has. */
+    var narrow = window.matchMedia('(max-width: 719px)');
+
+    function fits(set) {
+      var n = set.length;
+      if (!narrow.matches) return n;
+      while (n > 1 && set[n - 1].opt && set[n - 1].opt.wide) n--;
+      return n;
     }
 
     /* How many of the rows in the markup this role actually uses. Product
@@ -25479,6 +25510,27 @@ window.PF = window.PF || {};
         }
       }
 
+      /* AND WHEN NOTHING IS GOING TO LEAVE, EVERYTHING HAS TO FIT. The window
+         is three messages and the canvas makes room by retiring the ones that
+         reach the top — which is the right answer for a sequence longer than
+         the window, and no answer at all for one shorter than it. A phone gets
+         two messages, so nothing above the invitation is ever going to move
+         out of its way: the invitation's own height is part of the box.
+
+         Measured rather than guessed, and measured through the same hidden
+         attribute it lives behind the rest of the time. */
+      if (count < VISIBLE) {
+        var cta = buildCta();
+        if (cta) {
+          var was = cta.hasAttribute('hidden');
+          if (was) cta.removeAttribute('hidden');
+          var ch = cta.getBoundingClientRect().height;
+          var cm = parseFloat(window.getComputedStyle(cta).marginTop) || 0;
+          if (was) cta.setAttribute('hidden', '');
+          if (ch) boxH += Math.ceil(ch + cm);
+        }
+      }
+
       /* How far the track travels to retire each row: that row's height plus
          the gap under it, which is the NEXT row's top margin. */
       step = [];
@@ -25544,7 +25596,7 @@ window.PF = window.PF || {};
     var role = ROLES[startKey] ? startKey : 'design';
     grow(startSet.length);
     shape(startSet);
-    setCount(startSet.length);
+    setCount(fits(startSet));
 
     reserve();
 
@@ -25939,6 +25991,15 @@ window.PF = window.PF || {};
       var floor = (plist && !plist.hasAttribute('hidden')) ? 0.965 : ANCHOR;
       var wantTop = Math.min(H * ZONE - s.h / 2, H * floor - s.h);
 
+      /* AND A STACK THAT FITS NEVER LEAVES THE TOP. The anchor is a rule about
+         where a stack too tall for the box should park its bottom, and it was
+         being applied to one that was not: on a phone the conversation is two
+         messages, its reactions and the invitation — twenty pixels short of
+         the box — and parking that at four fifths of the height pushed the
+         greeting out through the top to leave a gap under the button. Nothing
+         has to go anywhere if everything is already in. */
+      if (s.h <= H) wantTop = Math.max(0, wantTop);
+
       /* Absolute, not incremental. Whatever the track was doing, this is where
          it belongs. */
       offsetY = Math.round(wantTop - s.top);
@@ -26117,8 +26178,6 @@ window.PF = window.PF || {};
 
        The invitation is a button under the last message, which is where the
        reader's eye already is when the reactions have finished. */
-    var ctaRow = null, view = null, backRow = null;
-
     function buildCta() {
       if (ctaRow) return ctaRow;
       ctaRow = document.createElement('span');
@@ -26272,7 +26331,7 @@ window.PF = window.PF || {};
       }
       grow(set.length);
       shape(set);
-      setCount(set.length);
+      setCount(fits(set));
       for (i = 0; i < count; i++) {
         var t = rows[i].querySelector('.msg__text');
         if (t) t.innerHTML = render(set[i]);
@@ -26323,6 +26382,17 @@ window.PF = window.PF || {};
         });
       })(roleBtns[r]);
     }
+
+    /* A window dragged across the breakpoint gets the set that width is owed,
+       from the top — the alternative is a thread halfway through a message
+       that this width does not have. Only on the crossing, not on every pixel
+       of a resize: the query fires once, when the answer changes. */
+    (function (mq) {
+      if (!mq) return;
+      function again() { setRole(role, !still); }
+      if (mq.addEventListener) mq.addEventListener('change', again);
+      else if (mq.addListener) mq.addListener(again);
+    })(narrow);
 
     /* ---- play it again ----------------------------------------------------
 
@@ -26510,23 +26580,7 @@ window.PF = window.PF || {};
            indicator waits out the full gap after that. */
           timer = setTimeout(function () {
             row.setAttribute('data-state', 'settled');
-            if (idx >= count) {
-              /* The last message is allowed to be read before anything happens
-                 to it. If it arrived out of noise, that clock starts when the
-                 noise clears rather than when the bubble landed — and it gets
-                 a beat of its own on top, because a line that takes two
-                 seconds to write itself has earned one. */
-              var left = Math.max(0, decodeEnds - now());
-              timer = setTimeout(function () {
-                phase = 'react';
-                /* The reactions, and then — after they have been allowed to
-                   stand — the work. Both are burst()'s tail now: the list
-                   used to start on this same frame, underneath chips that
-                   were still arriving. */
-                burst();
-              }, left ? left + LINE_HOLD : REACT_MS);
-              return;
-            }
+            if (idx >= count) { ending(); return; }
             timer = setTimeout(next, gapAfter(idx - 1));
           }, POP_MS);
         }, DOTS_MS);
@@ -26639,9 +26693,31 @@ window.PF = window.PF || {};
       return Math.min(GAP_MS + len * READ_MS, GAP_MAX) + dwellOf(i);
     }
 
+    /* THE LAST MESSAGE IS ALLOWED TO BE READ before anything happens to it. If
+       it arrived out of noise, that clock starts when the noise clears rather
+       than when the bubble landed — and it gets a beat of its own on top,
+       because a line that takes two seconds to write itself has earned one.
+
+       Reached from two places: the end of the sequence, and a thread whose
+       whole content is its opening — which is what the narrow set is, two
+       messages that arrive together and are already finished. */
+    function ending() {
+      var left = Math.max(0, decodeEnds - now());
+      timer = setTimeout(function () {
+        phase = 'react';
+        /* The reactions, and then — after they have been allowed to stand —
+           the work. Both are burst()'s tail: the list used to start on this
+           same frame, underneath chips that were still arriving. */
+        burst();
+      }, left ? left + LINE_HOLD : REACT_MS);
+    }
+
     function play() {
       if (phase !== 'seq') { arm(); return; }
-      if (running || idx >= count) return;
+      if (running) return;
+      /* Nothing left to send. On a phone that is the ordinary case rather than
+         the edge one, so it is the ending rather than a return. */
+      if (idx >= count) { ending(); return; }
       running = true;
       startCycle();
       timer = setTimeout(next, gapAfter(idx - 1));
