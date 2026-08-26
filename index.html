@@ -1706,6 +1706,15 @@ em,
   .hero-card .hero__clients { grid-area: clients; grid-column: 1 / 3; }
   .hero-card .hero__tools   { grid-area: tools;   grid-column: 3 / 4; grid-row: 2; }
 
+  /* ONE BAND, TWO PANELS. The employers and the tools sit in the same row and
+     say the same kind of thing — where the work was done, what it was made
+     with — so they are the same height whatever their contents measure. The
+     row is as tall as the taller of them and both stretch into it; their
+     content is centred rather than parked at the top, so a shorter rail reads
+     as a rail with air around it rather than as a card that stopped early. */
+  .hero-card .hero__clients,
+  .hero-card .hero__tools { align-self: stretch; }
+
   /* One surface, one hairline, one radius. Nothing else.
 
      Two-class selectors because the base rules for these same regions live
@@ -1972,23 +1981,24 @@ em,
   .hero-card .hero-tile--clients .clients__marquee {
     flex: 1 1 auto;
     min-width: 0;
-    /* Nothing scrolls here any more, so there is nothing to dissolve into:
-       the five marks stand still and spend the whole rail. */
-    -webkit-mask-image: none;
-    mask-image: none;
+    /* The rail starts where the label ends, so only a hair of dissolve is
+       needed on that side; the far edge keeps the full fade. */
+    -webkit-mask-image: linear-gradient(to right,
+        transparent 0, #000 3%, #000 93%, transparent 100%);
+    mask-image: linear-gradient(to right,
+        transparent 0, #000 3%, #000 93%, transparent 100%);
   }
 
   /* Closer together than they were. The rail is shorter now that the label
      shares its row, and a 190px gap in a shorter rail is two logos on screen
      with a corridor between them. */
   .hero-card .hero-tile--clients .clients__track {
-    /* Spread across the rail rather than spaced by a fixed interval: five
-       marks, once, filling exactly the width the label leaves them. */
-    width: 100%;
-    justify-content: space-between;
-    gap: clamp(12px, 1.4vw, 28px);
-    padding-inline-end: 0;
-    animation: none;
+    gap: clamp(40px, 5.2vw, 104px);
+    padding-inline-end: clamp(40px, 5.2vw, 104px);
+    /* The rail is shorter than it was and the marks are closer, so the same
+       duration would have crawled. Held at roughly the 26px a second the
+       strip has always run at. */
+    animation-duration: 30s;
   }
 
   /* THE TOOLS TILE. Same chrome as the strip beside it — same padding, same
@@ -6350,28 +6360,8 @@ em,
      gap, no pause. */
   flex: 0 0 auto;
   padding-inline-end: var(--clients-gap);
+  animation: clients-scroll var(--clients-dur) linear infinite;
   will-change: transform;
-}
-
-/* Nothing dissolves into anything here any more: the marks stand still, so a
-   fade at either end is a logo with its edge rubbed out rather than one on its
-   way past. The rail keeps its overflow guard and loses its mask. */
-.clients__marquee {
-  -webkit-mask-image: none;
-  mask-image: none;
-}
-
-/* THE EMPLOYERS DO NOT REPEAT. Five marks is a short list, and a loop of a
-   short list is the same logo twice on one screen — which reads as filler
-   rather than as a record. They sit still, spread across whatever width the
-   card has. The tools rail below still moves: twelve marks is long enough
-   that a loop never shows the same one twice. */
-.clients__marquee .clients__track {
-  animation: none;
-  width: 100%;
-  justify-content: space-between;
-  gap: clamp(12px, 1.4vw, 28px);
-  padding-inline-end: 0;
 }
 
 @keyframes clients-scroll {
@@ -6523,7 +6513,10 @@ em,
   padding-block: 0;
   padding-inline-end: clamp(20px, 1.8vw, 30px);
   list-style: none;
-  animation: clients-scroll 34s linear infinite;
+  /* Quicker than the employers' rail: twelve small marks reading as one
+     texture want to move like a ticker, where five brand lockups want to be
+     read one at a time. */
+  animation: clients-scroll 22s linear infinite;
   will-change: transform;
 }
 
@@ -12712,17 +12705,6 @@ em,
   }
 
   .clients__logo { height: clamp(28px, 6.4vw, 36px); opacity: 0.82; }
-
-  /* FIVE MARKS, TWO ROWS. They do not scroll any more, and at this width they
-     do not fit on one line at a size anybody could recognise — so they wrap.
-     Two rows of real logos beats one row of thumbnails. */
-  .clients__marquee { overflow: visible; }
-
-  .clients__marquee .clients__track {
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: clamp(16px, 4vw, 26px) clamp(20px, 6vw, 34px);
-  }
 
   /* THE TOOLS, UNDER THE EMPLOYERS. Same shape as the strip above it — the
      label on its own line, the rail beneath — because at this width a label
@@ -19209,7 +19191,7 @@ em,
           <div class="hero__clients hero-tile hero-tile--clients">
             
             <p class="clients__label">Worked with</p>
-            <div class="clients__marquee">
+            <div class="clients__marquee" data-marquee>
               <ul class="clients__track">
               <li class="clients__item">
                 <span class="clients__logo clients__logo--cg" aria-hidden="true"></span>
