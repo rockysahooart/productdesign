@@ -1463,8 +1463,9 @@ em,
    twice their size, so the one piece of ornament on the button belongs to the
    same hand as everything else. */
 .cta__arrow--px {
-  width: 1.6em;
-  height: 1.6em;
+  height: 0.95em;
+  width: auto;
+  aspect-ratio: 14 / 8;
   /* Centred on the label rather than sitting on its baseline. */
   vertical-align: middle;
   position: relative;
@@ -4709,16 +4710,48 @@ em,
   --pxi-bg: #FFFFFF;
 
   display: inline-block;
-  /* A shade over the em, because a nine-unit grid needs the room to stay
-     legible beside a pixel typeface. */
-  width: 1.15em;
+  /* SIZED BY ITS INK, NOT BY ITS GRID. Every symbol's box is trimmed to what
+     is actually drawn in it, so the width follows the drawing: a phone is
+     narrow, a laptop is wide, and neither carries a margin of empty grid that
+     the sentence has to pay for. The height is the constant — a shade over the
+     em, because a pixel drawing needs the room to stay legible beside a pixel
+     typeface — and the space around it is set here rather than inherited from
+     wherever the artwork happened to sit.
+
+     What this fixes: the gap before an icon used to be a word space plus
+     however much empty grid that particular icon carried, which is why no two
+     of them were the same distance from the word in front of them. */
   height: 1.15em;
+  width: auto;
+  /* The height is fixed and the width follows the drawing. An inline SVG will
+     not take its width from its own viewBox, so each icon names its ratio —
+     one line each, from the box the artwork actually occupies. */
+  aspect-ratio: 1;
+  /* A hair of air on the left so the icon is not touching the word, and less
+     on the right so the comma after it still belongs to it. */
+  margin-inline: 0.06em 0.04em;
   vertical-align: -0.21em;
   shape-rendering: crispEdges;
   /* The grid is nine units across a whole em, so a pixel is never a fraction
      of a device pixel at the sizes this thread uses. */
   image-rendering: pixelated;
 }
+
+/* Two icons side by side are two words, not one: they get the same interval
+   between them that a space would give. */
+.pxi[data-px="smiley"] { aspect-ratio: 16 / 13; }
+.pxi[data-px="phone"] { aspect-ratio: 6 / 13; }
+.pxi[data-px="laptop"] { aspect-ratio: 14 / 11; }
+.pxi[data-px="pin"] { aspect-ratio: 10 / 12; }
+.pxi[data-px="hat"] { aspect-ratio: 16 / 8; }
+.pxi[data-px="caduceus"] { aspect-ratio: 16 / 14; }
+.pxi[data-px="dna"] { aspect-ratio: 8 / 16; }
+.pxi[data-px="dollar"] { aspect-ratio: 12 / 15; }
+.pxi[data-px="building"] { aspect-ratio: 12 / 12; }
+.pxi[data-px="shuffle"] { aspect-ratio: 14 / 13; }
+.pxi[data-px="sparkle"] { aspect-ratio: 13 / 13; }
+
+.pxi + .pxi { margin-left: 0.24em; }
 
 /* An icon and the punctuation after it are one unit: a comma stranded at the
    start of a line is the kind of thing that makes a careful page look careless. */
@@ -6856,6 +6889,84 @@ em,
 @media (prefers-reduced-motion: reduce) {
   .hero__tools { transition: none; }
   .tools__orbit { display: none; }
+}
+
+
+/* ==========================================================================
+   THE SAME CARD, COUNTING
+
+   Illustration is not a stack of software. What that practice has is a body
+   of work, so in that discipline the card stops listing tools and says how
+   much of it there is: three numbers, counted up rather than printed, on the
+   same line the rail was on and in the same height of card.
+
+   Nothing about the card changes but its contents — same band, same rhythm,
+   same label position — because it is the same card answering a different
+   question.
+   ========================================================================== */
+
+.tools__stats {
+  display: none;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hero__tools.is-stats .tools__stats {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  /* Three of these plus a label have to fit the browser's column, so the
+     interval is what is left rather than what would be comfortable. */
+  gap: clamp(8px, 0.9vw, 16px);
+}
+
+.hero__tools.is-stats .tools__marquee { display: none; }
+
+.tools__stat {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 300ms linear, transform 300ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+.tools__stat.is-in { opacity: 1; transform: none; }
+
+/* The number is the loud half and it is set in the display face, because it is
+   a figure rather than a sentence. */
+.tools__stat-n {
+  font-family: var(--font-display);
+  font-size: clamp(17px, 1.15vw, 22px);
+  font-weight: var(--fw-display);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  /* Tabular, so a number counting from nine to ten does not shove the word
+     beside it sideways. */
+  font-variant-numeric: tabular-nums;
+}
+
+.tools__stat-l {
+  font-family: var(--font-body);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
+}
+
+/* Nothing to open into: the ring is a ring of logos. */
+.hero__tools.is-stats { min-height: 0; }
+.hero__tools.is-stats .tools__orbit { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tools__stat { opacity: 1; transform: none; transition: none; }
 }
 
 
@@ -13399,19 +13510,19 @@ em,
     </symbol>
     
 
-    <symbol id="px-smiley" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM3 2h10v1h-10zM2 3h12v1h-12zM1 4h4v1h-4zM7 4h2v1h-2zM11 4h4v1h-4zM1 5h4v1h-4zM7 5h2v1h-2zM11 5h4v1h-4zM0 6h16v1h-16zM0 7h16v1h-16zM0 8h16v1h-16zM1 9h2v1h-2zM4 9h8v1h-8zM13 9h2v1h-2zM1 10h3v1h-3zM6 10h4v1h-4zM12 10h3v1h-3zM2 11h4v1h-4zM10 11h4v1h-4zM3 12h10v1h-10zM5 13h6v1h-6z"/><path fill="var(--pxi-bg)" d="M5 4h2v1h-2zM9 4h2v1h-2zM5 5h2v1h-2zM9 5h2v1h-2zM3 9h1v1h-1zM12 9h1v1h-1zM4 10h2v1h-2zM10 10h2v1h-2zM6 11h4v1h-4z"/></symbol>
-    <symbol id="px-phone" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM5 2h6v1h-6zM5 3h1v1h-1zM10 3h1v1h-1zM5 4h1v1h-1zM10 4h1v1h-1zM5 5h1v1h-1zM10 5h1v1h-1zM5 6h1v1h-1zM10 6h1v1h-1zM5 7h1v1h-1zM10 7h1v1h-1zM5 8h1v1h-1zM10 8h1v1h-1zM5 9h1v1h-1zM10 9h1v1h-1zM5 10h1v1h-1zM10 10h1v1h-1zM5 11h6v1h-6zM5 12h2v1h-2zM9 12h2v1h-2zM5 13h6v1h-6z"/><path fill="var(--pxi-bg)" d="M6 3h4v1h-4zM6 4h4v1h-4zM6 5h4v1h-4zM6 6h4v1h-4zM6 7h4v1h-4zM6 8h4v1h-4zM6 9h4v1h-4zM6 10h4v1h-4zM7 12h2v1h-2z"/></symbol>
-    <symbol id="px-laptop" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M3 2h10v1h-10zM3 3h1v1h-1zM12 3h1v1h-1zM3 4h1v1h-1zM12 4h1v1h-1zM3 5h1v1h-1zM12 5h1v1h-1zM3 6h1v1h-1zM12 6h1v1h-1zM3 7h1v1h-1zM12 7h1v1h-1zM3 8h10v1h-10zM1 10h14v1h-14zM1 11h5v1h-5zM10 11h5v1h-5zM1 12h14v1h-14z"/><path fill="var(--pxi-bg)" d="M4 3h8v1h-8zM4 4h8v1h-8zM4 5h8v1h-8zM4 6h8v1h-8zM4 7h8v1h-8zM6 11h4v1h-4z"/></symbol>
-    <symbol id="px-pin" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM4 2h8v1h-8zM3 3h4v1h-4zM9 3h4v1h-4zM3 4h3v1h-3zM10 4h3v1h-3zM3 5h3v1h-3zM10 5h3v1h-3zM3 6h4v1h-4zM9 6h4v1h-4zM4 7h8v1h-8zM5 8h6v1h-6zM6 9h4v1h-4zM7 10h2v1h-2zM7 11h2v1h-2zM6 12h4v1h-4z"/><path fill="var(--pxi-bg)" d="M7 3h2v1h-2zM6 4h4v1h-4zM6 5h4v1h-4zM7 6h2v1h-2z"/></symbol>
-    <symbol id="px-hat" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M4 4h6v1h-6zM4 5h6v1h-6zM4 6h6v1h-6zM4 7h6v1h-6zM3 8h8v1h-8zM2 9h10v1h-10zM1 10h14v1h-14zM0 11h16v1h-16z"/><path fill="var(--pxi-bg)" d="M6 4h2v1h-2zM4 8h6v1h-6z"/></symbol>
-    <symbol id="px-hospital" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M6 0h5v1h-5zM6 1h2v1h-2zM9 1h2v1h-2zM6 2h1v1h-1zM10 2h1v1h-1zM6 3h2v1h-2zM9 3h2v1h-2zM6 4h5v1h-5zM2 5h12v1h-12zM2 6h1v1h-1zM4 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h2v1h-2zM2 7h12v1h-12zM2 8h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM8 8h1v1h-1zM10 8h1v1h-1zM12 8h2v1h-2zM2 9h12v1h-12zM2 10h1v1h-1zM4 10h1v1h-1zM6 10h1v1h-1zM8 10h1v1h-1zM10 10h1v1h-1zM12 10h2v1h-2zM2 11h12v1h-12zM2 12h5v1h-5zM9 12h5v1h-5zM2 13h5v1h-5zM9 13h5v1h-5z"/><path fill="var(--pxi-bg)" d="M8 1h1v1h-1zM7 2h3v1h-3zM8 3h1v1h-1zM3 6h1v1h-1zM5 6h1v1h-1zM7 6h1v1h-1zM9 6h1v1h-1zM11 6h1v1h-1zM3 8h1v1h-1zM5 8h1v1h-1zM7 8h1v1h-1zM9 8h1v1h-1zM11 8h1v1h-1zM3 10h1v1h-1zM5 10h1v1h-1zM7 10h1v1h-1zM9 10h1v1h-1zM11 10h1v1h-1zM7 12h2v1h-2zM7 13h2v1h-2z"/></symbol>
-    <symbol id="px-dna" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M4 0h2v1h-2zM10 0h2v1h-2zM5 1h1v1h-1zM10 1h1v1h-1zM6 2h1v1h-1zM9 2h1v1h-1zM6 3h4v1h-4zM7 4h2v1h-2zM6 5h1v1h-1zM9 5h1v1h-1zM5 6h1v1h-1zM10 6h1v1h-1zM4 7h2v1h-2zM10 7h2v1h-2zM4 8h2v1h-2zM10 8h2v1h-2zM5 9h1v1h-1zM10 9h1v1h-1zM6 10h1v1h-1zM9 10h1v1h-1zM6 11h4v1h-4zM7 12h2v1h-2zM6 13h1v1h-1zM9 13h1v1h-1zM5 14h1v1h-1zM10 14h1v1h-1zM4 15h2v1h-2zM10 15h2v1h-2z"/></symbol>
-    <symbol id="px-dollar" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M7 1h2v1h-2zM7 2h2v1h-2zM4 3h8v1h-8zM3 4h10v1h-10zM2 5h3v1h-3zM7 5h2v1h-2zM11 5h3v1h-3zM2 6h3v1h-3zM7 6h2v1h-2zM2 7h4v1h-4zM7 7h2v1h-2zM3 8h7v1h-7zM5 9h8v1h-8zM7 10h2v1h-2zM10 10h4v1h-4zM7 11h2v1h-2zM11 11h3v1h-3zM2 12h3v1h-3zM7 12h2v1h-2zM11 12h3v1h-3zM3 13h10v1h-10zM4 14h8v1h-8zM7 15h2v1h-2z"/></symbol>
-    <symbol id="px-building" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M3 1h7v1h-7zM3 2h1v1h-1zM5 2h1v1h-1zM7 2h1v1h-1zM9 2h1v1h-1zM3 3h7v1h-7zM3 4h1v1h-1zM5 4h1v1h-1zM7 4h1v1h-1zM9 4h1v1h-1zM12 4h3v1h-3zM3 5h7v1h-7zM12 5h3v1h-3zM3 6h1v1h-1zM5 6h1v1h-1zM7 6h1v1h-1zM9 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM3 7h7v1h-7zM12 7h3v1h-3zM3 8h1v1h-1zM5 8h1v1h-1zM7 8h1v1h-1zM9 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM3 9h7v1h-7zM12 9h3v1h-3zM3 10h1v1h-1zM5 10h1v1h-1zM7 10h1v1h-1zM9 10h1v1h-1zM12 10h1v1h-1zM14 10h1v1h-1zM3 11h7v1h-7zM12 11h3v1h-3zM3 12h7v1h-7zM12 12h3v1h-3z"/><path fill="var(--pxi-bg)" d="M4 2h1v1h-1zM6 2h1v1h-1zM8 2h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM8 4h1v1h-1zM4 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM13 6h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM8 8h1v1h-1zM13 8h1v1h-1zM4 10h1v1h-1zM6 10h1v1h-1zM8 10h1v1h-1zM13 10h1v1h-1z"/></symbol>
-    <symbol id="px-shuffle" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M7 1h2v1h-2zM6 2h4v1h-4zM5 3h6v1h-6zM4 4h8v1h-8zM3 5h10v1h-10zM2 6h3v1h-3zM6 6h4v1h-4zM11 6h3v1h-3zM1 7h3v1h-3zM6 7h4v1h-4zM12 7h3v1h-3zM6 8h4v1h-4zM6 9h4v1h-4zM6 10h4v1h-4zM6 11h4v1h-4zM6 12h4v1h-4zM6 13h4v1h-4z"/></symbol>
-    <symbol id="px-sparkle" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M7 1h1v1h-1zM7 2h1v1h-1zM6 3h3v1h-3zM6 4h3v1h-3zM13 4h1v1h-1zM5 5h5v1h-5zM12 5h3v1h-3zM2 6h10v1h-10zM13 6h1v1h-1zM5 7h5v1h-5zM6 8h3v1h-3zM6 9h3v1h-3zM7 10h1v1h-1zM7 11h1v1h-1zM11 11h1v1h-1zM10 12h3v1h-3zM11 13h1v1h-1z"/></symbol>
+    <symbol id="px-smiley" viewBox="0 1 16 13"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM3 2h10v1h-10zM2 3h12v1h-12zM1 4h4v1h-4zM7 4h2v1h-2zM11 4h4v1h-4zM1 5h4v1h-4zM7 5h2v1h-2zM11 5h4v1h-4zM0 6h16v1h-16zM0 7h16v1h-16zM0 8h16v1h-16zM1 9h2v1h-2zM4 9h8v1h-8zM13 9h2v1h-2zM1 10h3v1h-3zM6 10h4v1h-4zM12 10h3v1h-3zM2 11h4v1h-4zM10 11h4v1h-4zM3 12h10v1h-10zM5 13h6v1h-6z"/><path fill="var(--pxi-bg)" d="M5 4h2v1h-2zM9 4h2v1h-2zM5 5h2v1h-2zM9 5h2v1h-2zM3 9h1v1h-1zM12 9h1v1h-1zM4 10h2v1h-2zM10 10h2v1h-2zM6 11h4v1h-4z"/></symbol>
+    <symbol id="px-phone" viewBox="5 1 6 13"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM5 2h6v1h-6zM5 3h1v1h-1zM10 3h1v1h-1zM5 4h1v1h-1zM10 4h1v1h-1zM5 5h1v1h-1zM10 5h1v1h-1zM5 6h1v1h-1zM10 6h1v1h-1zM5 7h1v1h-1zM10 7h1v1h-1zM5 8h1v1h-1zM10 8h1v1h-1zM5 9h1v1h-1zM10 9h1v1h-1zM5 10h1v1h-1zM10 10h1v1h-1zM5 11h6v1h-6zM5 12h2v1h-2zM9 12h2v1h-2zM5 13h6v1h-6z"/><path fill="var(--pxi-bg)" d="M6 3h4v1h-4zM6 4h4v1h-4zM6 5h4v1h-4zM6 6h4v1h-4zM6 7h4v1h-4zM6 8h4v1h-4zM6 9h4v1h-4zM6 10h4v1h-4zM7 12h2v1h-2z"/></symbol>
+    <symbol id="px-laptop" viewBox="1 2 14 11"><path fill="var(--pxi-fg)" d="M3 2h10v1h-10zM3 3h1v1h-1zM12 3h1v1h-1zM3 4h1v1h-1zM12 4h1v1h-1zM3 5h1v1h-1zM12 5h1v1h-1zM3 6h1v1h-1zM12 6h1v1h-1zM3 7h1v1h-1zM12 7h1v1h-1zM3 8h10v1h-10zM1 10h14v1h-14zM1 11h5v1h-5zM10 11h5v1h-5zM1 12h14v1h-14z"/><path fill="var(--pxi-bg)" d="M4 3h8v1h-8zM4 4h8v1h-8zM4 5h8v1h-8zM4 6h8v1h-8zM4 7h8v1h-8zM6 11h4v1h-4z"/></symbol>
+    <symbol id="px-pin" viewBox="3 1 10 12"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM4 2h8v1h-8zM3 3h4v1h-4zM9 3h4v1h-4zM3 4h3v1h-3zM10 4h3v1h-3zM3 5h3v1h-3zM10 5h3v1h-3zM3 6h4v1h-4zM9 6h4v1h-4zM4 7h8v1h-8zM5 8h6v1h-6zM6 9h4v1h-4zM7 10h2v1h-2zM7 11h2v1h-2zM6 12h4v1h-4z"/><path fill="var(--pxi-bg)" d="M7 3h2v1h-2zM6 4h4v1h-4zM6 5h4v1h-4zM7 6h2v1h-2z"/></symbol>
+    <symbol id="px-hat" viewBox="0 4 16 8"><path fill="var(--pxi-fg)" d="M4 4h6v1h-6zM4 5h6v1h-6zM4 6h6v1h-6zM4 7h6v1h-6zM3 8h8v1h-8zM2 9h10v1h-10zM1 10h14v1h-14zM0 11h16v1h-16z"/><path fill="var(--pxi-bg)" d="M6 4h2v1h-2zM4 8h6v1h-6z"/></symbol>
+    <symbol id="px-caduceus" viewBox="0 1 16 14"><path fill="var(--pxi-fg)" d="M7 1h2v1h-2zM0 2h2v1h-2zM7 2h2v1h-2zM14 2h2v1h-2zM0 3h4v1h-4zM7 3h2v1h-2zM12 3h4v1h-4zM1 4h5v1h-5zM7 4h2v1h-2zM10 4h5v1h-5zM3 5h3v1h-3zM7 5h2v1h-2zM10 5h3v1h-3zM7 6h2v1h-2zM3 7h4v1h-4zM8 7h4v1h-4zM2 8h2v1h-2zM7 8h2v1h-2zM12 8h2v1h-2zM3 9h4v1h-4zM8 9h4v1h-4zM2 10h2v1h-2zM7 10h2v1h-2zM12 10h2v1h-2zM3 11h4v1h-4zM8 11h4v1h-4zM7 12h2v1h-2zM7 13h2v1h-2zM5 14h6v1h-6z"/></symbol>
+    <symbol id="px-dna" viewBox="4 0 8 16"><path fill="var(--pxi-fg)" d="M4 0h2v1h-2zM10 0h2v1h-2zM5 1h1v1h-1zM10 1h1v1h-1zM6 2h1v1h-1zM9 2h1v1h-1zM6 3h4v1h-4zM7 4h2v1h-2zM6 5h1v1h-1zM9 5h1v1h-1zM5 6h1v1h-1zM10 6h1v1h-1zM4 7h2v1h-2zM10 7h2v1h-2zM4 8h2v1h-2zM10 8h2v1h-2zM5 9h1v1h-1zM10 9h1v1h-1zM6 10h1v1h-1zM9 10h1v1h-1zM6 11h4v1h-4zM7 12h2v1h-2zM6 13h1v1h-1zM9 13h1v1h-1zM5 14h1v1h-1zM10 14h1v1h-1zM4 15h2v1h-2zM10 15h2v1h-2z"/></symbol>
+    <symbol id="px-dollar" viewBox="2 1 12 15"><path fill="var(--pxi-fg)" d="M7 1h2v1h-2zM7 2h2v1h-2zM4 3h8v1h-8zM3 4h10v1h-10zM2 5h3v1h-3zM7 5h2v1h-2zM11 5h3v1h-3zM2 6h3v1h-3zM7 6h2v1h-2zM2 7h4v1h-4zM7 7h2v1h-2zM3 8h7v1h-7zM5 9h8v1h-8zM7 10h2v1h-2zM10 10h4v1h-4zM7 11h2v1h-2zM11 11h3v1h-3zM2 12h3v1h-3zM7 12h2v1h-2zM11 12h3v1h-3zM3 13h10v1h-10zM4 14h8v1h-8zM7 15h2v1h-2z"/></symbol>
+    <symbol id="px-building" viewBox="3 1 12 12"><path fill="var(--pxi-fg)" d="M3 1h7v1h-7zM3 2h1v1h-1zM5 2h1v1h-1zM7 2h1v1h-1zM9 2h1v1h-1zM3 3h7v1h-7zM3 4h1v1h-1zM5 4h1v1h-1zM7 4h1v1h-1zM9 4h1v1h-1zM12 4h3v1h-3zM3 5h7v1h-7zM12 5h3v1h-3zM3 6h1v1h-1zM5 6h1v1h-1zM7 6h1v1h-1zM9 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM3 7h7v1h-7zM12 7h3v1h-3zM3 8h1v1h-1zM5 8h1v1h-1zM7 8h1v1h-1zM9 8h1v1h-1zM12 8h1v1h-1zM14 8h1v1h-1zM3 9h7v1h-7zM12 9h3v1h-3zM3 10h1v1h-1zM5 10h1v1h-1zM7 10h1v1h-1zM9 10h1v1h-1zM12 10h1v1h-1zM14 10h1v1h-1zM3 11h7v1h-7zM12 11h3v1h-3zM3 12h7v1h-7zM12 12h3v1h-3z"/><path fill="var(--pxi-bg)" d="M4 2h1v1h-1zM6 2h1v1h-1zM8 2h1v1h-1zM4 4h1v1h-1zM6 4h1v1h-1zM8 4h1v1h-1zM4 6h1v1h-1zM6 6h1v1h-1zM8 6h1v1h-1zM13 6h1v1h-1zM4 8h1v1h-1zM6 8h1v1h-1zM8 8h1v1h-1zM13 8h1v1h-1zM4 10h1v1h-1zM6 10h1v1h-1zM8 10h1v1h-1zM13 10h1v1h-1z"/></symbol>
+    <symbol id="px-shuffle" viewBox="1 1 14 13"><path fill="var(--pxi-fg)" d="M7 1h2v1h-2zM6 2h4v1h-4zM5 3h6v1h-6zM4 4h8v1h-8zM3 5h10v1h-10zM2 6h3v1h-3zM6 6h4v1h-4zM11 6h3v1h-3zM1 7h3v1h-3zM6 7h4v1h-4zM12 7h3v1h-3zM6 8h4v1h-4zM6 9h4v1h-4zM6 10h4v1h-4zM6 11h4v1h-4zM6 12h4v1h-4zM6 13h4v1h-4z"/></symbol>
+    <symbol id="px-sparkle" viewBox="2 1 13 13"><path fill="var(--pxi-fg)" d="M7 1h1v1h-1zM7 2h1v1h-1zM6 3h3v1h-3zM6 4h3v1h-3zM13 4h1v1h-1zM5 5h5v1h-5zM12 5h3v1h-3zM2 6h10v1h-10zM13 6h1v1h-1zM5 7h5v1h-5zM6 8h3v1h-3zM6 9h3v1h-3zM7 10h1v1h-1zM7 11h1v1h-1zM11 11h1v1h-1zM10 12h3v1h-3zM11 13h1v1h-1z"/></symbol>
 
-    <symbol id="px-arrow" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M9 4h2v1h-2zM10 5h2v1h-2zM11 6h2v1h-2zM0 7h14v1h-14zM0 8h14v1h-14zM11 9h2v1h-2zM10 10h2v1h-2zM9 11h2v1h-2z"/></symbol>
+    <symbol id="px-arrow" viewBox="0 4 14 8"><path fill="var(--pxi-fg)" d="M9 4h2v1h-2zM10 5h2v1h-2zM11 6h2v1h-2zM0 7h14v1h-14zM0 8h14v1h-14zM11 9h2v1h-2zM10 10h2v1h-2zM9 11h2v1h-2z"/></symbol>
 
     
     <symbol id="tl-wisprflow" viewBox="0 0 24 24"><path d="M0.00 1.94a1.71 1.71 0 0 1 3.43 0v20.12a1.71 1.71 0 0 1 -3.43 0zM5.07 12.82a1.71 1.71 0 0 1 3.43 0v7.01a1.71 1.71 0 0 1 -3.43 0zM10.29 5.81a1.71 1.71 0 0 1 3.43 0v12.22a1.71 1.71 0 0 1 -3.43 0zM15.35 12.82a1.71 1.71 0 0 1 3.43 0v7.01a1.71 1.71 0 0 1 -3.43 0zM20.57 1.94a1.71 1.71 0 0 1 3.43 0v20.12a1.71 1.71 0 0 1 -3.43 0z"/></symbol>
@@ -13756,7 +13867,7 @@ em,
               <span class="msg" data-msg>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
                   <em class="kw kw--name">Sarthak Sahoo</em>, a Product Designer
-                  <span class="pxi-nb"><svg class="pxi" role="img" aria-label="product"><use href="#px-phone"/></svg><svg class="pxi" role="img" aria-label="design"><use href="#px-laptop"/></svg></span> based in Austin, TX</span></span>
+                  <span class="pxi-nb"><svg class="pxi" data-px="phone" role="img" aria-label="product"><use href="#px-phone"/></svg><svg class="pxi" data-px="laptop" role="img" aria-label="design"><use href="#px-laptop"/></svg></span> based in Austin, TX</span></span>
               </span>
               <span class="msg" data-msg data-cluster>
                 <span class="msg__from" aria-hidden="true">SS</span>
@@ -13765,9 +13876,9 @@ em,
               </span>
               <span class="msg" data-msg>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;ve worked in
-                  healthcare <span class="pxi-nb"><svg class="pxi" role="img" aria-label="healthcare"><use href="#px-hospital"/></svg>,</span> biotech <span class="pxi-nb"><svg class="pxi" role="img" aria-label="biotechnology"><use href="#px-dna"/></svg>,</span> finance
-                  <span class="pxi-nb"><svg class="pxi" role="img" aria-label="financial services"><use href="#px-dollar"/></svg></span> and enterprise <span class="pxi-nb"><svg class="pxi" role="img" aria-label="enterprise systems"><use href="#px-building"/></svg>,</span> turning <span class="kw kw--complex">complex</span> workflows
-                  into <span class="kw kw--clearer">clearer</span> products <span class="pxi-nb"><svg class="pxi" role="img" aria-label="clearer"><use href="#px-sparkle"/></svg>.</span></span></span>
+                  healthcare <span class="pxi-nb"><svg class="pxi" data-px="caduceus" role="img" aria-label="healthcare"><use href="#px-caduceus"/></svg>,</span> biotech <span class="pxi-nb"><svg class="pxi" data-px="dna" role="img" aria-label="biotechnology"><use href="#px-dna"/></svg>,</span> finance
+                  <span class="pxi-nb"><svg class="pxi" data-px="dollar" role="img" aria-label="financial services"><use href="#px-dollar"/></svg></span> and enterprise <span class="pxi-nb"><svg class="pxi" data-px="building" role="img" aria-label="enterprise systems"><use href="#px-building"/></svg>,</span> turning <span class="kw kw--complex">complex</span> workflows
+                  into <span class="kw kw--clearer">clearer</span> products <span class="pxi-nb"><svg class="pxi" data-px="sparkle" role="img" aria-label="clearer"><use href="#px-sparkle"/></svg>.</span></span></span>
               </span>
               
               <span class="msg" data-msg data-cluster data-scramble data-dwell="1300">
@@ -19480,7 +19591,7 @@ em,
 
           
           <div class="hero__tools hero-tile hero-tile--tools">
-            <p class="tools__label">Tools</p>
+            <p class="tools__label" data-tools-label>Tools</p>
             <div class="tools__marquee" data-marquee>
               <ul class="tools__track">
               <li class="tools__item">
@@ -19521,6 +19632,21 @@ em,
               </li>
               </ul>
             </div>
+            
+            <ul class="tools__stats" hidden>
+              <li class="tools__stat">
+                <span class="tools__stat-n" data-to="60">0</span>
+                <span class="tools__stat-l">Clients</span>
+              </li>
+              <li class="tools__stat">
+                <span class="tools__stat-n" data-to="10">0</span>
+                <span class="tools__stat-l">Years</span>
+              </li>
+              <li class="tools__stat">
+                <span class="tools__stat-n" data-to="20">0</span>
+                <span class="tools__stat-l">Exhibits</span>
+              </li>
+            </ul>
           </div>
 
 
@@ -24212,8 +24338,9 @@ window.PF = window.PF || {};
       /* An icon run is a pixel symbol from the sprite, not a character. It
          carries its meaning as a label because there is no longer an emoji
          for a screen reader to read. */
-      else if (msg[i].ic) out += '<svg class="pxi" role="img" aria-label="' +
-        esc(msg[i].lbl || msg[i].ic) + '"><use href="#px-' + msg[i].ic + '"/></svg>\u2060';
+      else if (msg[i].ic) out += '<svg class="pxi" data-px="' + msg[i].ic +
+        '" role="img" aria-label="' + esc(msg[i].lbl || msg[i].ic) +
+        '"><use href="#px-' + msg[i].ic + '"/></svg>\u2060';
       else out += t;
     }
     /* An icon must not be left at the end of a line with its comma starting
@@ -26629,12 +26756,20 @@ window.PF = window.PF || {};
 
   var still = !!(window.matchMedia &&
                  window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  if (still) return;
 
-  /* ---- the ring --------------------------------------------------------- */
+  /* ---- the ring ---------------------------------------------------------
 
+     Not built at all under reduced motion: a card that resizes the page and
+     spins is the exact thing that setting is for. Everything after it still
+     runs, because swapping what the card holds is not motion. */
   var marks = source.children;
-  if (marks.length < 3) return;
+  var open = false;
+
+  function set() { /* replaced below when the ring exists */ }
+
+  if (!still && marks.length >= 3) buildRing();
+
+  function buildRing() {
 
   var orbit = document.createElement('div');
   orbit.className = 'tools__orbit';
@@ -26684,9 +26819,9 @@ window.PF = window.PF || {};
 
   /* ---- opening and closing ---------------------------------------------- */
 
-  var open = false;
-
-  function set(next) {
+  set = function (next) {
+    /* Nothing to open in the counting state: the ring is a ring of logos. */
+    if (stats && next) return;
     if (next === open) return;
     open = next;
     measure();
@@ -26700,7 +26835,7 @@ window.PF = window.PF || {};
     /* Nothing is going past while the ring is up; nothing turns while the rail
        is. One animation at a time, always. */
     rail.toggleAttribute('data-paused', open);
-  }
+  };
 
   var fine = window.matchMedia('(hover: hover) and (pointer: fine)');
 
@@ -26727,9 +26862,72 @@ window.PF = window.PF || {};
   });
 
   /* Keyboard: the card opens while the focus is inside it. */
-  card.addEventListener('focusin', function () { set(true); });
+  card.addEventListener('focusin', function () { if (!stats) set(true); });
   card.addEventListener('focusout', function (e) {
     if (!card.contains(e.relatedTarget)) set(false);
+  });
+  }
+
+  /* ---- one discipline counts instead ------------------------------------
+
+     Illustration is not a stack of software. What that practice has is a body
+     of work, so in that discipline the card stops listing tools and says how
+     much of it there is: three numbers, counted up rather than printed.
+
+     Same card, same band, same label position — it is the same card answering
+     a different question, which is why this is a swap of contents rather than
+     a second card that has to be hidden somewhere. */
+  var statList = card.querySelector('.tools__stats');
+  var label = card.querySelector('[data-tools-label]');
+  var labelWas = label ? label.textContent : '';
+  var stats = false;
+  var countTimers = [];
+
+  function countUp(el, to, ms) {
+    var t0 = null;
+    function frame(now) {
+      if (!t0) t0 = now;
+      var p = Math.min(1, (now - t0) / ms);
+      /* Fast at the start, settling at the end: a counter that decelerates
+         reads as arriving at a number rather than as a clock. */
+      var e = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(to * e) + (p >= 1 ? '+' : '');
+      if (p < 1) window.requestAnimationFrame(frame);
+    }
+    window.requestAnimationFrame(frame);
+  }
+
+  function showStats(on) {
+    if (!statList) return;
+    stats = on;
+    if (on) set(false);
+    card.classList.toggle('is-stats', on);
+    statList.toggleAttribute('hidden', !on);
+    if (label) label.textContent = on ? 'In numbers' : labelWas;
+
+    for (var t = 0; t < countTimers.length; t++) clearTimeout(countTimers[t]);
+    countTimers = [];
+
+    var items = statList.children;
+    for (var i = 0; i < items.length; i++) items[i].classList.remove('is-in');
+    if (!on) return;
+
+    for (i = 0; i < items.length; i++) {
+      (function (el, k) {
+        countTimers.push(setTimeout(function () {
+          el.classList.add('is-in');
+          var n = el.querySelector('.tools__stat-n');
+          var to = parseInt(n.getAttribute('data-to'), 10) || 0;
+          if (still) { n.textContent = to + '+'; return; }
+          countUp(n, to, 900);
+        }, 140 * k));
+      })(items[i], i);
+    }
+  }
+
+  document.addEventListener('pf:role', function (e) {
+    var role = e && e.detail && e.detail.role;
+    showStats(role === 'illustration');
   });
 })();
 
