@@ -135,22 +135,10 @@
   src: url("data:font/woff2;base64,d09GMgABAAAAAAMUAAsAAAAACXQAAALGAAB1wgAAAAAAAAAAAAAAAAAAAAAAAAAABmAAPBEICopwh0UBNgIkAzQLHAAEIAWDOAcgG+4GCB6FTdleOMfD0RHTnGrcPLJm+cBEAN2Pfnb3uukogw4w2toOqK2Srn8FQWNxBX/Qd7TW5kw+Ir6oy7s2xD0SisYPlUQliWV0cvNAoiLMA5DsBufoQlHzfzm+sbI2T/LEExlrAx0F+G9M+2dt0CxdE7DX8yUQWIB5i9uO6na1RmgslZMC8Hu52LgAbZzvDr/0BxwgYhPc/IOzUyvlY3CmWU56w9wekw3SIhPW7IpAYmsQMGgmRSF5bQxuqZJlWskkOJv9zuQvGRhvEAFKAZqAIRBWQfgKyAGAPDgK9bepTWKGXj5D30N9kp4QJk6NwYRolPbLnp7LNTwR2x77OgjBozm6OiXRbSXSegGP6kiD7Tjv2ZKcbWJMZ6mZN9c+3SS2zCqrRrWicuoeqzxNti0G9fAGioCWdLpNxCPhEY/lxxsKvyUJQhaY2crX7butq4WbnYNxr92H+cxjW/+Fe+9ZHMp5/H9hIbCv6h3Dad8i56de730LHeeHqTmPJJyp33IQrPwbPqSo/307vn9X5RiDPk/YiGkY9d14429qtT2Rwu7mNm5JWMOx8TgD0ODLml/V+Cxa549D4lry5iBK9Xvnrxpusy13ZtNQO2Lfu5oMnHw5Z2/yls3sX9Iv5t8FAAGw9uZ1zV7vYHneX4ERb/C57T3gy8Wft/8kfkgnYOFX7JtJJknRGQcIbpdLg0YwN6kPRlMS3gxNsMZ7XeHWAgNKJWC88dyu5etBwHI4ALvQfBhfEz4c68hH6HPlI4UF8FG8Q9ijaSEhD0qZSA2zkBqDjHBCakmZKSipDdPh2SlZKCAV9HQs8HYTOSkkRYIkSBQFCwuDHIkSyXQo2T+ewEwmgY6URTRemVblKmVCSmkMMzNTGlVCT2PM86g5kKVC/BTV6E+WLl7q05IiSbwNtoOUiRuOZxGSJEGajFbYWCHcAmV7BgAAAAA=") format("woff2");
 }
 
-/* ONE WORD IN ANOTHER SCRIPT.
-
-   The greeting says hello in three ways and the third is ନମସ୍କାର, which the
-   pixel face has no glyphs for — a greeting rendered as empty boxes is not a
-   greeting. So one more face is loaded, subset to exactly the seven letters
-   and marks that word needs: under seven kilobytes, and it is never used for
-   anything else on the page.
-
-   Weight 500 to sit beside a pixel face that reads heavy at display size. */
-@font-face {
-  font-family: "Noto Oriya";
-  font-style: normal;
-  font-weight: 400 600;
-  font-display: swap;
-  src: url("data:font/woff2;base64,d09GMgABAAAAABokAA8AAAAAP9QAABnFAAIBywAAAAAAAAAAAAAAAAAAAAAAAAAAGoEWG4sSHI4ABmA/U1RBVEAAfBEICtggykoBNgIkA4IoC4EWAAQgBYQKByAbYTdFB2LYOAAZ/Hv7RFGmB8PB/5cEbogIdgta9ztOUiTqQVGjUVLdtlgrWrVSflyU1nfMizdv/a0NRSbVAjX296kQT8XGOGVzPpRwcKc4QmOf5Ppfa9b7v3t6Jh2gSRaGOskSst8jsif8aSxPJMzJlYdk2Zgdnrb5z4nTtRJZEiVxR4ZgDhRUMHIsy3X1r0ie///Dz33ue9MKVao6YrNGB2x6atfPwYhEPGQBjudCrm0Mj/KaWrSyRd3QTKzJNRELVrjwe+XeL08ldth3uQ9WfLuzJp3rCZ5BNz2AUcH8Z2Ww+HH92zpbD1CUIpkzWPHNdPLC3EKOUMpNHbPx/3/NXvvu3H2b/Ekh7wOAa9kSOAZjNm8ms3nzdhY4mcICU7JJiUhxtgCkmBSCQhQOyH9ZYeu+sFX2C+lrfU9t7sd3KEeu6fIxQuv3mTPL5H4t2AhhRBhUoyrnas9X6TKcTsJdMUnA270oQFgKAIxZM4CNxRAtTkipRTwlQsUEMmleoQUeBRjTtLA1IRLgAmqhS04VhdmXYkboMFmC4TwCiik9FQTQRlxQdHnlrwT0x/F9HYD+oq+5HdDfNua7AP1D33ilDAnA8f/EHS3q/cOYToB+6BjbCYi/STrgYgsASKG29L4VLIrNkfO3mI3vMeOT2TE/ggAQB813DEXzG8xZ80fCmY/O0WxCQev8zNz5gRnmqrZVkvdQzOitm6zUpsduBMYYc/PsVs4wyaR52m6LrRTrIz7zrKSgJtZyp7roKh0mMYTz8CCGsX+EyMt4L8e1WAOaeHPqKFl8EMEBl9kqL5WUluFWP4IS6qXldMmbYJp+Cy0vg63lLH9Fq9pam+2039FR6bSLrrvrsZfe8oHPfOMnf/gvsgBRMBhQ1gOgigOg0Dvks390mTWdK1/I4wVMKSddpWHK1PsP9S6we13q/7KROQJ2v1GyWSFgSVxZ7TeGdYC19BTj7AduVnaPy9+d+RsirZwElnI0VEMRb8NyUK3EuOpBpjy8YmLumi9YS2UHVfrHNflMyLT0Z2GWq9WgRYe+Wm2cKWaZb6nVNtpur8NOOu+q2257qCD/2pBnemySoyvyj/h/jBCnFEawhnZIsXm8i9vZ193EdnWG3eopmDP7/UutZOuqOO7Dl+zT9mEOckzJEO0p7LO2j/evoVJCdVp0GTDDZCazC5JAmrDWWP97phq8K0bTvGnF3ndchXAgANtxkET5sRCcKq5T5owL1NNYj1PMGW6lhID4jfRQ3HEsdMZv06W1LxCKlAwgYAImYAIGANgF/EOrYMZ5q1tZovo3No12D+mlboUcKe6hBiCj5MAfdVM94NsN9qyPMoxdgEJWuO38KwGUAU15OeWRwXNYkbpaXrUWbLwMSULO9jXpyXjsjlrgMdVl0QJDZKZU7cDJhhiBvB7M62fNWkfbjkRyiSqk52GRlL8FcF37UUD82NiRB6p/uOUCw+eMtLd+7sm1ACdQLcCSGGn3yJgWkLFlMz760x77I+Xz09LbpQ+WfliG2h36yMfpg5WjUnqgH/FwW4Yz12zLKPKVNenQx9sq6ZsQgWNSyCwRUwyzlaSDnaipMAFWi/6BAPGcS4y2reTKHBMOhL7YGjO709YVMUCCObRSUadeg0ZN6F7HO1Fqpo2z8zfxRQYOIPriGAjymnQZMsUtrFpD6HuDXoocsAylk3SKTtMZOkvn7HkCCyLl0OAkTuE0zuAszrF5YlbSYgdiT6prMhq06TFkwhzJ5oi0oMFJnMJpnMFZnGszj2rCgqecP6mF/jGmcOjFVttst8NOuxzI9/K5N7znE1/5wW/+CReUFAwHnQSPQSnySV/0TT/0S3/s71qZqbGzlClTpkyZMmWc4cwSJzsm/ECBAgUKFChQyIvLuJ4Zqc1uDvHnVl+TJWunkkoqqaSSSirlvV5ERERERERExF12OwbwGJEgJCQkJCQkpGvON1qLHiNmeEXVSr+nWWPey6zFb2SVux1ksk3H6Bg1URM1URM1ScNW4QSOYx7zmEcUohCFKESB8YYDRHEVFFWpVvsMzQM4m8q3rXwA4ETIuA1KwwRUH4mkt+A+i5ZdAGtHQiiJSIwWajNiSUITRpuA9EA1WIg5FGgHQ9xBkHDYkHRYkDJMnpicQbut/QB97QsYax9QXnuDytqL6nZU6m0boWqnyOewdH3pgLy1UkoHWbfziyLgn1UNYJV+vHRDmQUAbxQNQBQhBgxAAEdymxavQy5wFf3YQkj27YC8KE7XHvyr7gMw7up12IBLSF30Hy9y+QIAXH3K5wpkUlpYOgDaq1+A9hyWTgHAYikwtkCUSedEUe6JoJgNDGz4SJGjw0zg+P0PyitmkftZ0X996wPvesPrnnrg0gcAkGQphJo0dcVtuQ7gMZA+EvINgAtAtQAhjTHmNJEyrYwikqWWaIGA9kydaN9ztkUyASZ67bjr2EqLYvGRlIG8M9wuzy2ryOAXc9HFENVohfZBOjKdT/Us9tWWUPRxpIZUvHAWphb5WGdhCFWY7enwk+P24ErLojtAjQZO+bNn6CQHCi9RMfWWA3JUqP9ONxpU31Y9u8jy2prrLKtqzwtDCBHHHDdUQXMC9RR4Yeb0ZkhEeYX/qBbFop1V/3/iu7hZQksx/XOwpYj4Y9QLxO8kpsEJKIQeejgWJD2fS59dazpcSTzastH5aiRgSgZq0AIfbKyo7GA9j1OyyaJYHL9sLzuQ6qn+E8R59TQay8zS5BU3Mc1IKxdFs3SQoFGEy0zmYbux41Thy1r570P1N22ncekwZ1n1muwYiVJptXlyiJZ40l3xTpLrK/SYKwahjPL6t60Wqwrqxll1CXY5hDQxd3s9LIsrsbBfQcdcDd25OB1SexNtTPRzTW7Gc51XOu+gusboxx52nfVlZMNTlBA6xLfeAPKIkC/5kFfRm+n5V710gd/x6XBv5I3qSOtshYQA+DRai9jAxiKoNG6FJWM6rXexx3dJKCJWjFQISIyrdcnzVU+URWlVcxNCJ4JGjwjATGifdlkvLi6kyMzKprRqH+G6it1z1a5MKs0KlHheDBAZvRC0KzQk2cVID2vQ3gGn2ILkpqu9Px1ZWUjvTjh9B+Fw5H8+5IFTXtbmrofZuzOiGtZJwARrEslvyXBmeSWamAD7NPTmtOIEgrB0QpZGzyKNR+KI9cwVf9tZgnK98fO9i+9ZCYkJqEOHd5GUqZCqq9vs6JxWRfM3taj0R2uQvLD9EIJoGRoP/AGOViVFs9qwLZ6dQa4KgV2UtvbYO/Sm8i71AW8d7J1dJii/Q5ZAGrWC8jBcYXKWcg0UH+Lfi7wrXkiUVqx4BMdVJ/JvxB1IjEEgsYoRWyeeikXDfyVleWyh7slMuqYbxP+fOiOZmU1slswMcdZ8Ex8XMpoiUntAXO7l83J5AxXLF7DM7BSmISYmSO6S8wdAWZslO3FKSQIGy1ak8l+R3VUULCvi7qXBuoP1365vlre7fFMnqTSWpBOPdSIZppk5YqNZxfGOCCqEmIAiQISzk6gx3EuElJxAAUvSIOUiGMl7cHo2S/TN0/7raJiOr4l7Syu1epAa7rQP3cPQYH/JhMaMv+DxoDeyYFvBLqrxsAzDETBH6bIuXuEhm6Yes+p2ztNiAefE8ocGskTqm8uQotHJdOMMvlqzrPMoUVkW3LlpeX+cSuo41Bvgla3hMH81Q4No0h/ovRi9GN1rFcKwEhQkGk9/AbKeRZiirIJHsSQEtyTTW94rrwT+Fv0J6nTnLjwYQ60QE4CepaIWJRFC7MfgqlkaqK92ob1eUCy4uu10iICNjsopHuAdOr2rR7BRfAgUoBwRWsZRU3b+NvX0C0qCON6R7oqOpgqzF1ih6g3OHNQjJfgOFKzNukWG57DR0FY/Gk4HMxCzA8cjEr6FTyrIxXX6DMSFmUd2knHb59zeOcs0Rm6Esz+uez2xsjLJnEGd1rYQzaYh7G9Bz0WWk3L90GXF40TCAR+Qu9JFZXBJhQcFTktRP6mnT3dwqUo0Jkyt48Xprq3kjs4wyJCdpXfR0HDcTTqGrT5og3432FvFCLia/zYaIdsV7LJgs6icE3bsiV4eHFRWSUW7yaROJqFJLKdjGiNrN7bYeRjYX8v+pYAsFcFecT1G4egWQAEth27/hm6vnmhxBa02d8hifr8Qygw85D+o/h9k7w9K8AfpLTEkvNDA5xTdOkp8P/0GfToWN53+RgpQvrKbsr3GIMM5RIx1rmslqNw8tkMi+Z53jEL5/wKHfzadL6guG4ZwdNeUSh1pltomk6mttQyDMk0KGmT1Fs23IcTc9PL0l27JHO6IaVODhHsfEyUia5ip0Y/mZyIVEyv9hWZJ0mNN0PiAss5UPjIJTWC63JPZSVjVUCElR5clRDoDU5iCRdXocrhbYAmosZ/KrjAdDp69F8p/Ann7IMnck5KokI0cx2D8fp6I/eklBle2+G4pUYInlZOYhUzmRzxIIZNGa8tthpRIW2kCu49CbMcYt1XVUGcbzYAcE5gjYXWTTYwNRKqFvxfTxFwIFicwUnkE8w7TKhTzfK1CH+UsbtwUhlRQF/R1SRz4JlZ9RtZwvXeINEjZQYe4w/a0mf38u7+UENhMFNZahgX7T71hhmlxhVZYH7J3c+3qZkJNuSPEbYX9hXp+jasiRde5kjJZUCbpPuQ699GsiPnp5eklxbixUxgqeX3Ck5dBxUMrE4PbDbKIdOiGujo2fQb18Ixi3KED6nqSvE1dLgx5NY0kbXkVFhZzrEIu0/Mna9YqqOitsOpSDdYJNMg1k51zmtudClrKGJtW5utbEjbUA1VCpIzq9MoIslXqqrkkotepovhPAeqCsHiOVNovFvdLpWtE4BokPE5WXGqFmscaI+bx/EzEMCnmK7RI6ryGGpJEFWa9L5LoohOHNI9IFS3IbFN9l9eBn733Xxv/oMMHgw3LlqeXgxilY/n6vsVg6MfD1l/fcevYCvGyUbtAwQ70edV50PFbNPKd6rtoBO5s62yFO9o72u2duc42gPuv6XUaf9C6xej578UmyZlLsLglzDdSgxeTQsIDPcLXXuXEYFN/3/pHUv5d/jsLYm66whR7S/F4qz+DPKNgaf8raUzEU6yjMwkXSNgBL7HFhx8LBHKMxEIy+Z+ybRKNKlInM+qSQn3MxB0Zu5jNnM+CUxyoi9nmkL6vEtlti4tg3xMukT9/5XDEfB/uVlKC7qGmm5ip+NNkfZZVVMTeGvMNuP3vJ8ZGjUYRrdGNJbs9Eyh1BkVcx67RJujP/sTXaWzsOFKpqELa2Fo28//bv6OtRgjW62GHyQjDBr3dbiqwEo8T7wthCc9JxGeEY2in2mA1sm4e34e9nrpIbsdg6sgX4wAfDXfrDEmjtaK2S+GkQYP+Qk+tGYiVOKmLRFyLg6sUyYiYdxu4DM8wSXByaDjXUkclCAxZR2L4Bg9iXNqUfvaTgKhDF9SFUHfew3LGuqnlpl52rVc9OhpFa7kBq9JH4IJtf1xxNdqcofRCVb1zPK3GVF6t5xHsWyr5PDGZ32rjRMqE0hDyYw2HO+UX8vO95TVsnVutdbXA/PQzCcwUva6RbGSVfXcNA9Cbbg5DvUOmAix+toC/6m92u9yV4OtA7qBYGPJbWtkWDAIpbyiu3FY2XOjADdpFLWZ4K7wtg7k6PJ7LxidyJD1kpcI5k0oSj5l6aQ5TD6XWqKo2sjGwOM579gOhuRzOCJyWFFcNi7iLGXwH2PX9ayYr2cs3mpunmVOOcfyaYHneH0WrxQGXPIETWeJckZXP5lizbAduMz7uIUtl4UpzD99aNNQbKc4qFHZuIanEhyJPoTBmkynLaF0bvYhxGVMGbPr9EZQzq2WRKt0oMmSfRG2q0NWbzabxG4fbsxN8+u4lJ6S1MjEPtkvrcCpbM1sPS5jmz4Ys2BtprHa5G6sikUyV25WujvpENA6HJhTeLowQgMPDYYq/3aI3JXoUPkuenfRr8pEYWi3w2xVRHF/uJe/icOTwp+8E6kp/fjXu5VnRxQwkV8qP+BDjM7wMWNyjfket/lc18K1G9Y22GLeZQN6CwxwhErZili9UGBXMC3T6AXgn0YdC+Yg77QA1RjzXSmaj5/CLX74chukaRRV+ycLvKEWy2MjxAoHwDlbl4PN5f0rqIOI6sXSGG+G1N9mffzhl/DDOeTHt1yTdqZQoJh2gEG+VFqd0RjArzRvWQ1HskyvmKaFmd71/ibavrWGC0oTfzQsrcEsIxC043GEi4SgOpPewZVSlYWRXRQClLEPZv9cu7SXKAlwpJCoJ11lGYwczBmBxgAr4MFcEBRRZsmnY0WeCZcdKbUmmjkok4zAkCv7/Vq63ZG5Vgv7+YAZrmJpE5gxhlq2ByBgY8A/EoFr1L/v8zKvlViFnrJMqKa/lGyutSvHcvxi1H1zD4U5vnPXpKBo0d3l/bnzvmxSbHAJehA8OwwDXT9sws35GV+KHANIO1vx6xNyoU4hj1dbprMrgHHrOZmy2kwa7nzQP2bXdV+oKxKZyvFU9QrVTxPjnxrD410eSw+W6VkylSGdrv0I7+japzPeljsT6TkuW/WvTqRuzvqXCWnXLiB8/e4K3IJFWHK4LjerCPQW1QWW+JHWqD7sb12oa++FB8xdnYd5ydTLrWSrasst++OzWedfr8G85XPtXoyycPf2pMoYTlPV8PXxFnhXeXphfetPgb4P93rmf6+QRz8dLJtTPY1HKwy8w/M8asH/2qkM4MQd2s8uF57GoU5Rhv36S/Onm0CwKmcdiRyOLRZrpk2uGCD5QsQfOJhJnujpfGID5PYEsZgy4sgptnYn6zXc2zAplsEtnTBmt5tpOuYNenecODhdW1FAF15dzVJVucCPGp39KP94r+fGwPBynxUfV6Lv/IXiBn7wEdq/5fxs8/bSNM+tndjm/DyDtv2ZjcDp1CnSsH8dOKsyq2mpdN8mgTmG9UqFTwWPYSgoDEX5gtNOoTCahWaxI5Qpuj9/S47OqJo4t9fUuCRv8wN2rs7X7XMax/9yOyVs1amkgIFRKdlGx3ezS4qI5VswvQ44TUQQcnnoZUwLpX/T0jqC9N4HPXfcdnf7g4NVfF3m8TouMcyFI12mUjtq+Cn3Y7It/t36FdfoE/I400n1qzaL7xfRlV6UEbCoeOjsfRi8Y99b0WJs2EOsMZWcaqznLrqI7lbe6OTKq0jiyq8LfaKPA3/OWTifIglzJYayPlv+dICtLyWD79yPWURlrGMt99iN+hD3DZ5CI98TY9/m5wSFe7Htk6FUWoyiP46O4R7Srb5NGGEo8FPZwDVkMmSCHLzlZ7lt8HJ9oJYmFwX7ftBB1JBV4GWOERjykmWh/OXls1QB0OxY3EY2aj8MuRIN/D60/F6L5/2fkJTG/0jGGN4z+AkMMkbFsLZH1/qpKmp6qRq2PJPfRl+lXiax3+7UriJH/r7etFgvM/z7GH4z7LIT/vG+3rcHHx5Il4oBf30BVYT9CsVL/X7i2HCUPsB4JBsXqtU5ebhhHiydw2f1/mhb8YvT4gqB51BKuxBShSstH8kzBilL+TZjIoaYRZFxz3R/Ic5h/yZV/YyL7zLteBWfgkGKUJYLErEGhTqMurJmP7jnPZG2aYU4HJgtqwso+hCeGVkkCHnktTgbVcMU2Pos5R8y6UW6yRBqImrp4rw32+Ac1SWU2DgJL9KIpHVRGnky+0P7EHcjMG1k0ZZc3KZi5wriaxuB0yLpS9Y1a/a964N0lRsVhVSwWsFNFCtYBuWJ3Itt3c3h2rzOnfmAd+ILd1+xMlscNDfFgvqNAN7MYhaoSH8U+ol59mzjC+0cNhU3VkMSQCXb4kpNkviefk/NCvQCHWYhB12HntTp2R1Y3fQ78NK8JV++iL9Wvmre3X7uaGLmhJjTKUZw3k4yhdv+h8oEowhMMQYAlN9Gkem9KaBz8w7PeBuyEmC6GoEiTOVlYEU4UQEJlf9+MlI0euFtTVE28kBbBUfozZSmuCAoqWpa1sR/ql21zp5j8mKErblHIrQBvfyyWjZ73/FE7rj2cjY9ozNpHuLJJtz3bODj7+TVaoKsFPtJnVNLvxNrPyZTPiMupl69KeLDJZanu1+kzFtAZ9Nczlw5IJoYW8UKf0J+v7COrr88mWbdSEhayPqxhHs59hFE3MbwbQ0SSWIUM2vsCWEXDWRF+mtqobTXximUqKB6OoI8BhhhBSTTuyp+zdNkR5fRRRg618H2qsA8WbjmA6E8XTAHwuz7r5KG7JHOoe3K+8uQjqlMfB2uKDGbUpnZ9Xaz1GMXhD2Iu7FHQ+oezAMB5cP7j8EwqbfolovALAPj27/sDwK/fH9/5b/l/7+zseGikAiD4q1myNbaG/f1gL76QXNXKfJS1/gT4P2r91OAr600O/iK3rtIXBoALOAKOP8POdy2DW9ZbFK7DCbgPj8n2QoCPC3c5q7m7KpWryDkEnf+gMwOwk+zl6PThyTUd+B3+42VwWI5a6D+wPfxEb31syfpC4u02E6CJ62htwlf0gyHAisMGe2AIkkjBB+KuMZ3mIADcBuZZpM3tWSzlaJYw4X24lM6y1KZ0ptIUYaMCgESi7awCoJMU2JzmBAuPbx6sW4/x+rTKysmj69GlRw9jT04zug3d8rrRbenTrU2zzBL/tNHen9Ndykeha0JdXV6PUQw6dTqrVdjKaGlSJ7voLNYVsGiZRVfARpHxak44XiOBstiNZZdG0qbs4adb16xJq9E6RTXLGq1Doz5KHbp0GTRqUUiIixFrTD2mFUsgwQ3J1vrC6H1oQFBleCqqAtnkQi+hDBoWnczvUCjZtuONlAAAAAA=") format("woff2");
-}
+/* The greeting used to say hello in three languages and the third was Odia,
+   which the pixel face has no glyphs for — so a seven-kilobyte subset of Noto
+   was loaded for exactly that one word. The greeting is one greeting now, and
+   the face went with it. */
 
 
 /* ===== css/01-tokens.css ===== */
@@ -549,7 +537,7 @@
      nothing fetched from another origin. */
   --font-heading: "Geist Pixel", ui-monospace, SFMono-Regular, Menlo, monospace;
   /* The hero conversation, and nothing else on the page. */
-  --font-pixel:   "Geist Pixel", "Noto Oriya", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-pixel:   "Geist Pixel", ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-body:    "Be Vietnam Pro", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* Aliases. The site's rules were written against these three names long
@@ -14330,7 +14318,7 @@ em,
               <span class="msg-track" data-track>
               <span class="msg" data-msg data-cluster>
                 <span class="msg__from" aria-hidden="true">SS</span>
-                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text"><span class="sc">Hello</span> :)</span></span>
+                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">Hello :)</span></span>
               </span>
               <span class="msg" data-msg>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
@@ -14789,7 +14777,7 @@ em,
      nothing fetched from another origin. */
   --font-heading: &quot;Geist Pixel&quot;, ui-monospace, SFMono-Regular, Menlo, monospace;
   /* The hero conversation, and nothing else on the page. */
-  --font-pixel:   &quot;Geist Pixel&quot;, &quot;Noto Oriya&quot;, ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-pixel:   &quot;Geist Pixel&quot;, ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-body:    &quot;Be Vietnam Pro&quot;, ui-sans-serif, system-ui, -apple-system, &quot;Segoe UI&quot;, sans-serif;
 
   /* Aliases. The site&#x27;s rules were written against these three names long
@@ -16547,7 +16535,7 @@ em,
      nothing fetched from another origin. */
   --font-heading: &quot;Geist Pixel&quot;, ui-monospace, SFMono-Regular, Menlo, monospace;
   /* The hero conversation, and nothing else on the page. */
-  --font-pixel:   &quot;Geist Pixel&quot;, &quot;Noto Oriya&quot;, ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-pixel:   &quot;Geist Pixel&quot;, ui-monospace, SFMono-Regular, Menlo, monospace;
   --font-body:    &quot;Be Vietnam Pro&quot;, ui-sans-serif, system-ui, -apple-system, &quot;Segoe UI&quot;, sans-serif;
 
   /* Aliases. The site&#x27;s rules were written against these three names long
@@ -24943,16 +24931,6 @@ window.PF = window.PF || {};
      screen across a role change rather than a message that gets rewritten. Only the two lines after it change, so
      the layout, the timing and the reactions are identical across all three
      and nothing below the thread moves when you switch. */
-  /* THE GREETING IS SAID THREE WAYS. It is the first thing on the page and the
-     one line that does not have to carry information, so it spends that
-     freedom on saying hello in the languages he actually says it in: the one
-     everybody reads, the one he grew up saying, and the one his family says it
-     in. Each stands long enough to be read, then dissolves into the next
-     through the same decode the sentence about the work uses.
-
-     The third is Odia, which the pixel face has no glyphs for — css/00-fonts.css
-     loads seven kilobytes of Noto behind it for exactly those letters. */
-  var GREETINGS = ['Hello', 'Namaste', '\u0B28\u0B2E\u0B38\u0B4D\u0B15\u0B3E\u0B30'];
 
   /* The three qualities used to be one word cycling in place — clarity, then
      trust, then performance, each replacing the last. They are all three in
@@ -24963,7 +24941,7 @@ window.PF = window.PF || {};
 
   var ROLES = {
     design: [
-      [{ t: 'Hello', sc: true, cycle: GREETINGS }, { t: ' :)' }],
+      [{ t: 'Hello :)' }],
       [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true, k: 'name' },
        { t: ', a Product Designer ' },
        { ic: 'phone', lbl: 'product' }, { ic: 'laptop', lbl: 'design' },
@@ -25118,10 +25096,6 @@ window.PF = window.PF || {};
   ];
   var WORD_HOLD = 1700;      /* each word stands, and is read, before the next */
   var WORD_SCRAMBLE = 620;   /* and the change between them is quick */
-  var OR_SCRAMBLE = 1500;    /* except the one that changes alphabet */
-
-  /* Odia begins at U+0B00; nothing else on the page is above the latin range. */
-  function isOdia(s) { return !!s && s.charCodeAt(0) > 0x2FF; }
 
   /* ONE MESSAGE HOLDS LONGER THAN ITS LENGTH ASKS FOR. The greeting does not:
      "Hello :)" is two words and gets the two words' worth of pause the rule
@@ -25158,44 +25132,23 @@ window.PF = window.PF || {};
      rather than cutting to it. */
   var POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
-  /* NOISE STAYS IN ITS OWN SCRIPT. The stand-ins above are latin, and letting
-     them into an Odia word produced a hello half-written in the wrong
-     alphabet — which is not noise resolving, it is a rendering fault. So a
-     character outside latin draws its stand-ins from this instead: the same
-     seven letters and marks the greeting is made of, which is all the Odia the
-     page loads. */
-  var POOL_OR = '\u0B28\u0B2E\u0B38\u0B15\u0B3E\u0B30\u0B24\u0B23';
-
-  /* Which pool a character belongs to. Latin, digits and punctuation take the
-     first; anything above the latin range takes the second. */
-  function poolFor(ch) {
-    return ch.charCodeAt(0) > 0x2FF ? POOL_OR : POOL;
-  }
-
   function widthBuckets(el) {
     var cs = window.getComputedStyle(el);
     var font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + '/' +
                cs.lineHeight + ' ' + cs.fontFamily;
     var cv = document.createElement('canvas').getContext('2d');
     cv.font = font;
-    /* Two sets of buckets, one per script, so a stand-in is never borrowed
-       from an alphabet the word is not written in. */
-    var by = {}, byOr = {};
+    var by = {};
     var i, c, w;
     for (i = 0; i < POOL.length; i++) {
       c = POOL.charAt(i);
       w = Math.round(cv.measureText(c).width * 100);
       (by[w] = by[w] || []).push(c);
     }
-    for (i = 0; i < POOL_OR.length; i++) {
-      c = POOL_OR.charAt(i);
-      w = Math.round(cv.measureText(c).width * 100);
-      (byOr[w] = byOr[w] || []).push(c);
-    }
-    return { by: by, or: byOr, ctx: cv };
+    return { by: by, ctx: cv };
   }
 
-  function scramble(row, ms, done, mix, byWord) {
+  function scramble(row, ms, done, byWord) {
     var host = row.querySelector('.msg__text');
     if (!host) { if (done) done(); return; }
 
@@ -25249,18 +25202,7 @@ window.PF = window.PF || {};
       for (j = 0; j < text.length; j++) {
         var ch = text.charAt(j);
         var w = Math.round(buckets.ctx.measureText(ch).width * 100);
-        var own = poolFor(ch) === POOL_OR ? buckets.or : buckets.by;
-        var same = own[w];
-        /* CROSSING SCRIPTS, ONCE. The rule above keeps noise inside the word's
-           own alphabet, and it is the right rule everywhere but one place:
-           the moment the greeting stops being a latin word and becomes an
-           Odia one. There the crossing IS the event, so for that transition
-           both alphabets are in play and a letter may stand in for one from
-           the other script — provided, as ever, that it is exactly as wide. */
-        if (mix) {
-          var other = (own === buckets.or ? buckets.by : buckets.or)[w];
-          if (other && other.length) same = (same || []).concat(other);
-        }
+        var same = buckets.by[w];
         /* Only a character with a same-width understudy is ever hidden. */
         pool.push(ch === ' ' || !same || same.length < 2 ? null : same);
         if (pool[j]) total++;
@@ -25314,10 +25256,8 @@ window.PF = window.PF || {};
       if (!t0) t0 = now;
       var p = Math.min(1, (now - t0) / ms);
       /* The noise itself steps at about 24 a second; the resolve is smooth.
-         Re-rolling every frame reads as static rather than as characters.
-         The crossing runs hotter, because it is meant to look like an
-         alphabet changing its mind. */
-      var roll = now - last > (mix ? 30 : 42);
+         Re-rolling every frame reads as static rather than as characters. */
+      var roll = now - last > 42;
       if (roll) last = now;
       for (var a = 0; a < slots.length; a++) {
         var s = slots[a], out = '';
@@ -25952,51 +25892,10 @@ window.PF = window.PF || {};
             return;
           }
 
-          var was = c.words[c.at];
           c.at = (c.at + 1) % c.words.length;
           var word = c.words[c.at];
 
           if (c.cancel) c.cancel();
-
-          /* THE ONE CHANGE THAT IS NOT A CHANGE OF WORD. Hello to Namaste is
-             the same alphabet saying a different thing, and a quick decode is
-             the right size of event for it. Namaste to ନମସ୍କାର is the writing
-             system itself changing, and that deserves to be watched: the word
-             you can read comes apart first, in latin noise, and what settles
-             out of it is in another script entirely. Twice as long, hotter
-             noise, and the two alphabets share the same widths throughout, so
-             nothing in the line moves while it happens. */
-          if (isOdia(word) && !isOdia(was)) {
-            var half = Math.round(OR_SCRAMBLE * 0.42);
-
-            /* THE ONE PLACE THE WIDTH RULE CANNOT HOLD ON ITS OWN. Odia is a
-               shaped script: ସ୍କ is one cluster, and dropping a latin letter
-               beside its virama pulls the cluster apart and changes how wide
-               the word draws — so equal-width stand-ins stop guaranteeing an
-               equal-width line. The word is therefore given a floor for the
-               duration, the width it had before any of this started, and the
-               floor is lowered afterwards rather than dropped: the greeting
-               settles into its new size instead of snapping to it. */
-            var was_w = Math.ceil(el.getBoundingClientRect().width);
-            el.style.display = 'inline-block';
-            el.style.minWidth = was_w + 'px';
-
-            c.cancel = scramble(row, half, function () {
-              el.textContent = word;
-              c.cancel = scramble(row, OR_SCRAMBLE - half, function () {
-                c.cancel = null;
-                el.style.transition = 'min-width 280ms cubic-bezier(0.22, 0.68, 0.24, 1)';
-                el.style.minWidth = '0px';
-                setTimeout(function () {
-                  el.style.transition = '';
-                  el.style.display = '';
-                  el.style.minWidth = '';
-                }, 320);
-              }, true);
-            }, true);
-            c.timer = setTimeout(tick, hold + OR_SCRAMBLE);
-            return;
-          }
 
           el.textContent = word;
           c.cancel = scramble(row, WORD_SCRAMBLE, function () { c.cancel = null; });
