@@ -1463,9 +1463,12 @@ em,
    twice their size, so the one piece of ornament on the button belongs to the
    same hand as everything else. */
 .cta__arrow--px {
-  height: 0.95em;
+  /* Smaller than the label's cap height and drawn with a one-unit stroke, so
+     its line weight is the type's line weight rather than a heavier mark
+     sitting next to it. */
+  height: 0.62em;
   width: auto;
-  aspect-ratio: 14 / 8;
+  aspect-ratio: 14 / 7;
   /* Centred on the label rather than sitting on its baseline. */
   vertical-align: middle;
   position: relative;
@@ -4495,16 +4498,21 @@ em,
 .msg-cta[hidden] { display: none; }
 .msg-cta.is-in { opacity: 1; transform: none; }
 
+/* FILLED, NOT OUTLINED. It is the one thing to do at the end of the
+   conversation, and an outline chip under a stack of outline bubbles is a
+   thing you have to look for. Inverted, at the same height as the booking
+   button on the card beside it, it is the only filled shape in the viewport —
+   which is what a single call to action should be. */
 .msg-cta__btn {
   appearance: none;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 34px;
-  padding: 0 15px;
-  border: 1px solid var(--border-strong);
+  gap: 9px;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 1px solid var(--ink);
   border-radius: var(--r-btn);
-  background: var(--surface-raised);
+  background: var(--ink);
 
   font-family: var(--font-body);
   font-size: var(--fs-label);
@@ -4513,14 +4521,20 @@ em,
   text-transform: uppercase;
   line-height: 1;
   white-space: nowrap;
-  color: var(--ink);
+  color: var(--surface);
   cursor: pointer;
   transition: border-color var(--dur-fast) var(--ease),
               background-color var(--dur-fast) var(--ease);
 }
 
 .msg-cta__btn span { transition: transform 180ms cubic-bezier(0.2, 0.75, 0.25, 1); }
-.msg-cta__btn:hover { border-color: var(--ink); }
+
+.msg-cta__btn:hover,
+.msg-cta__btn:focus-visible {
+  background: var(--ink-secondary);
+  border-color: var(--ink-secondary);
+}
+
 .msg-cta__btn:hover span { transform: translateX(4px); }
 .msg-cta__btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 
@@ -5668,6 +5682,97 @@ em,
 
   .cf-toast{ position:absolute; left:50%; bottom:110px; transform:translateX(-50%) translateY(10px); background:var(--teal-900); color:var(--white); font-size:13px; font-weight:600; padding:10px 18px; border-radius:30px; z-index:90; opacity:0; transition:opacity .25s ease, transform .25s ease; white-space:nowrap; }
   .cf-toast.cf-visible{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+
+/* ==========================================================================
+   THE WAIT
+
+   Between handing a file over and having a transcript there is a real minute
+   of a real product working, and the flow used to cut it. A prototype that
+   goes straight from Upload to a finished transcript is a prototype claiming
+   transcription is instant — which is the one thing about this feature nobody
+   should be left believing.
+
+   So there is a screen for it, and only for it. The tabs, the questions and
+   the Save button are all things you do to a finished transcript; while there
+   isn't one, they are furniture around a wait. What is left is the sound
+   being read — a waveform, moving because something is happening — and one
+   sentence saying where all of it is going: the questions the patient wrote
+   before the appointment, the notes, the follow-ups. That sentence is the
+   reason the wait is worth anything, so it is the only text on the screen.
+   ========================================================================== */
+
+/* Everything that belongs to a finished transcript stands down. */
+#cfRoot .cf-transcribing .cf-tabs,
+#cfRoot .cf-transcribing .cf-q-list,
+#cfRoot .cf-transcribing .cf-app-footer { display: none; }
+
+#cfRoot .cf-transcribing .cf-content {
+  display: grid;
+  align-content: center;
+  overflow: hidden;
+}
+
+#cfRoot .cf-transcribing .cf-card {
+  padding: 34px 26px 38px;
+  text-align: center;
+}
+
+/* THE SOUND BEING READ. Seven bars on their own clocks: the same amount of
+   information as a spinner, in the shape of the thing being worked on. */
+.cf-work-wave {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 46px;
+  margin-bottom: 22px;
+}
+
+.cf-work-wave span {
+  width: 5px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--teal-700);
+  opacity: 0.85;
+  animation: cf-wave 1080ms ease-in-out infinite;
+}
+
+.cf-work-wave span:nth-child(1) { animation-delay: 0ms;   }
+.cf-work-wave span:nth-child(2) { animation-delay: 120ms; }
+.cf-work-wave span:nth-child(3) { animation-delay: 240ms; }
+.cf-work-wave span:nth-child(4) { animation-delay: 360ms; }
+.cf-work-wave span:nth-child(5) { animation-delay: 200ms; }
+.cf-work-wave span:nth-child(6) { animation-delay: 80ms;  }
+.cf-work-wave span:nth-child(7) { animation-delay: 300ms; }
+
+@keyframes cf-wave {
+  0%, 100% { height: 12px; opacity: 0.55; }
+  50%      { height: 40px; opacity: 1; }
+}
+
+.cf-work-title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+/* Where all of it is going. */
+.cf-work-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+/* Reduced motion: the bars hold a still waveform rather than pulsing. */
+@media (prefers-reduced-motion: reduce) {
+  .cf-work-wave span { animation: none; }
+  .cf-work-wave span:nth-child(2n) { height: 30px; }
+  .cf-work-wave span:nth-child(3n) { height: 22px; }
+}
 
 
 /* ===== css/05-tagging.css ===== */
@@ -13523,7 +13628,7 @@ em,
     <symbol id="px-shuffle" viewBox="1 1 14 13"><path fill="var(--pxi-fg)" d="M7 1h2v1h-2zM6 2h4v1h-4zM5 3h6v1h-6zM4 4h8v1h-8zM3 5h10v1h-10zM2 6h3v1h-3zM6 6h4v1h-4zM11 6h3v1h-3zM1 7h3v1h-3zM6 7h4v1h-4zM12 7h3v1h-3zM6 8h4v1h-4zM6 9h4v1h-4zM6 10h4v1h-4zM6 11h4v1h-4zM6 12h4v1h-4zM6 13h4v1h-4z"/></symbol>
     <symbol id="px-sparkle" viewBox="2 1 13 13"><path fill="var(--pxi-fg)" d="M7 1h1v1h-1zM7 2h1v1h-1zM6 3h3v1h-3zM6 4h3v1h-3zM13 4h1v1h-1zM5 5h5v1h-5zM12 5h3v1h-3zM2 6h10v1h-10zM13 6h1v1h-1zM5 7h5v1h-5zM6 8h3v1h-3zM6 9h3v1h-3zM7 10h1v1h-1zM7 11h1v1h-1zM11 11h1v1h-1zM10 12h3v1h-3zM11 13h1v1h-1z"/></symbol>
 
-    <symbol id="px-arrow" viewBox="0 4 14 8"><path fill="var(--pxi-fg)" d="M9 4h2v1h-2zM10 5h2v1h-2zM11 6h2v1h-2zM0 7h14v1h-14zM0 8h14v1h-14zM11 9h2v1h-2zM10 10h2v1h-2zM9 11h2v1h-2z"/></symbol>
+    <symbol id="px-arrow" viewBox="0 1 14 7"><path fill="var(--pxi-fg)" d="M9 1h1v1h-1zM10 2h1v1h-1zM11 3h1v1h-1zM0 4h14v1h-14zM11 5h1v1h-1zM10 6h1v1h-1zM9 7h1v1h-1z"/></symbol>
 
     
     <symbol id="tl-wisprflow" viewBox="0 0 24 24"><path d="M0.00 1.94a1.71 1.71 0 0 1 3.43 0v20.12a1.71 1.71 0 0 1 -3.43 0zM5.07 12.82a1.71 1.71 0 0 1 3.43 0v7.01a1.71 1.71 0 0 1 -3.43 0zM10.29 5.81a1.71 1.71 0 0 1 3.43 0v12.22a1.71 1.71 0 0 1 -3.43 0zM15.35 12.82a1.71 1.71 0 0 1 3.43 0v7.01a1.71 1.71 0 0 1 -3.43 0zM20.57 1.94a1.71 1.71 0 0 1 3.43 0v20.12a1.71 1.71 0 0 1 -3.43 0z"/></symbol>
@@ -15192,6 +15297,97 @@ em,
   .cf-toast{ position:absolute; left:50%; bottom:110px; transform:translateX(-50%) translateY(10px); background:var(--teal-900); color:var(--white); font-size:13px; font-weight:600; padding:10px 18px; border-radius:30px; z-index:90; opacity:0; transition:opacity .25s ease, transform .25s ease; white-space:nowrap; }
   .cf-toast.cf-visible{ opacity:1; transform:translateX(-50%) translateY(0); }
 
+
+/* ==========================================================================
+   THE WAIT
+
+   Between handing a file over and having a transcript there is a real minute
+   of a real product working, and the flow used to cut it. A prototype that
+   goes straight from Upload to a finished transcript is a prototype claiming
+   transcription is instant — which is the one thing about this feature nobody
+   should be left believing.
+
+   So there is a screen for it, and only for it. The tabs, the questions and
+   the Save button are all things you do to a finished transcript; while there
+   isn&#x27;t one, they are furniture around a wait. What is left is the sound
+   being read — a waveform, moving because something is happening — and one
+   sentence saying where all of it is going: the questions the patient wrote
+   before the appointment, the notes, the follow-ups. That sentence is the
+   reason the wait is worth anything, so it is the only text on the screen.
+   ========================================================================== */
+
+/* Everything that belongs to a finished transcript stands down. */
+#cfRoot .cf-transcribing .cf-tabs,
+#cfRoot .cf-transcribing .cf-q-list,
+#cfRoot .cf-transcribing .cf-app-footer { display: none; }
+
+#cfRoot .cf-transcribing .cf-content {
+  display: grid;
+  align-content: center;
+  overflow: hidden;
+}
+
+#cfRoot .cf-transcribing .cf-card {
+  padding: 34px 26px 38px;
+  text-align: center;
+}
+
+/* THE SOUND BEING READ. Seven bars on their own clocks: the same amount of
+   information as a spinner, in the shape of the thing being worked on. */
+.cf-work-wave {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 46px;
+  margin-bottom: 22px;
+}
+
+.cf-work-wave span {
+  width: 5px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--teal-700);
+  opacity: 0.85;
+  animation: cf-wave 1080ms ease-in-out infinite;
+}
+
+.cf-work-wave span:nth-child(1) { animation-delay: 0ms;   }
+.cf-work-wave span:nth-child(2) { animation-delay: 120ms; }
+.cf-work-wave span:nth-child(3) { animation-delay: 240ms; }
+.cf-work-wave span:nth-child(4) { animation-delay: 360ms; }
+.cf-work-wave span:nth-child(5) { animation-delay: 200ms; }
+.cf-work-wave span:nth-child(6) { animation-delay: 80ms;  }
+.cf-work-wave span:nth-child(7) { animation-delay: 300ms; }
+
+@keyframes cf-wave {
+  0%, 100% { height: 12px; opacity: 0.55; }
+  50%      { height: 40px; opacity: 1; }
+}
+
+.cf-work-title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+/* Where all of it is going. */
+.cf-work-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+/* Reduced motion: the bars hold a still waveform rather than pulsing. */
+@media (prefers-reduced-motion: reduce) {
+  .cf-work-wave span { animation: none; }
+  .cf-work-wave span:nth-child(2n) { height: 30px; }
+  .cf-work-wave span:nth-child(3n) { height: 22px; }
+}
+
 &lt;/style&gt;
 &lt;style&gt;
   /* Transparent, so the hero card behind the frame is the ground. */
@@ -15247,6 +15443,11 @@ em,
                     &lt;svg viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;&lt;path d=&quot;M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4&quot;/&gt;&lt;polyline points=&quot;17 8 12 3 7 8&quot;/&gt;&lt;line x1=&quot;12&quot; y1=&quot;3&quot; x2=&quot;12&quot; y2=&quot;15&quot;/&gt;&lt;/svg&gt;
                     Upload recording
                   &lt;/button&gt;
+                &lt;/div&gt;
+                &lt;div id=&quot;cf-recWorking&quot; hidden&gt;
+                  &lt;div class=&quot;cf-work-wave&quot; aria-hidden=&quot;true&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/div&gt;
+                  &lt;h2 class=&quot;cf-work-title&quot;&gt;Transcribing your recording&lt;/h2&gt;
+                  &lt;p class=&quot;cf-work-note&quot;&gt;Carry is reading the conversation and organizing it into your prepared questions, your notes, and the follow-ups you need to book.&lt;/p&gt;
                 &lt;/div&gt;
                 &lt;div id=&quot;cf-recUploaded&quot; hidden&gt;
                   &lt;h2&gt;Your recording&lt;/h2&gt;
@@ -15397,23 +15598,30 @@ em,
     { text:&#x27;When should I call instead of waiting?&#x27;, answer:null }
   ];
 
+  /* Step 4 is the wait. Everything before it is the patient handing a file
+     over; everything after it is Carry having read it — and between those two
+     there is a real minute of a real product working, which the flow used to
+     skip. A prototype that goes straight from Upload to a finished transcript
+     is a prototype claiming transcription is instant. */
   var STEP_STATE = {
     0: { checked:[], expanded:[] },
     1: { checked:[], expanded:[] },
     2: { checked:[], expanded:[] },
     3: { checked:[], expanded:[] },
-    4: { checked:[0], expanded:[] },
+    4: { checked:[], expanded:[] },
     5: { checked:[0], expanded:[] },
-    6: { checked:[0,1,3], expanded:[0,1,3] }
+    6: { checked:[0], expanded:[] },
+    7: { checked:[0,1,3], expanded:[0,1,3] }
   };
 
   // dwell time (ms) spent on each step before advancing
-  var DWELL = [1700, 1700, 1400, 1300, 2100, 2100, 3200];
-  var TOTAL = 7;
+  var DWELL = [1700, 1700, 1400, 1300, 5000, 2100, 2100, 3200];
+  var TOTAL = 8;
   var step = 0;
   var timer = null;
 
   var recEmpty = document.getElementById(&#x27;cf-recEmpty&#x27;);
+  var recWorking = document.getElementById(&#x27;cf-recWorking&#x27;);
   var recUploaded = document.getElementById(&#x27;cf-recUploaded&#x27;);
   var transcriptBox = document.getElementById(&#x27;cf-transcriptBox&#x27;);
   var transcriptText = document.getElementById(&#x27;cf-transcriptText&#x27;);
@@ -15464,11 +15672,17 @@ em,
     fileRow0.classList.toggle(&#x27;cf-selected&#x27;, step===3);
     sheetUploadBtn.classList.toggle(&#x27;cf-enabled&#x27;, step===3);
 
-    var uploaded = step&gt;=4;
-    recEmpty.hidden = uploaded;
+    /* Three states for one card: nothing yet, working, done. */
+    var working = step===4;
+    /* While the wait is on screen it IS the screen: the tabs, the questions
+       and Save all belong to a transcript that does not exist yet. */
+    screenEl.classList.toggle(&#x27;cf-transcribing&#x27;, working);
+    var uploaded = step&gt;=5;
+    recEmpty.hidden = working || uploaded;
+    if (recWorking) recWorking.hidden = !working;
     recUploaded.hidden = !uploaded;
-    if (step===4){ transcriptBox.hidden = false; transcriptText.textContent = TRANSCRIPT_A; }
-    else if (step===5){ transcriptBox.hidden = false; transcriptText.textContent = TRANSCRIPT_B; }
+    if (step===5){ transcriptBox.hidden = false; transcriptText.textContent = TRANSCRIPT_A; }
+    else if (step===6){ transcriptBox.hidden = false; transcriptText.textContent = TRANSCRIPT_B; }
     else { transcriptBox.hidden = true; }
 
     var items = qList.querySelectorAll(&#x27;.q-item&#x27;);
@@ -15485,7 +15699,7 @@ em,
     if (step===3) briefPress(fileRow0);
     if (step===4) briefPress(sheetUploadBtn);
 
-    if (step===6){
+    if (step===7){
       setTimeout(function(){
         contentEl.scrollTo({ top: contentEl.scrollHeight, behavior:&#x27;smooth&#x27; });
       }, 380);
@@ -15493,11 +15707,11 @@ em,
       contentEl.scrollTo({ top: 0, behavior:&#x27;auto&#x27; });
     }
 
-    if (step===6){
+    if (step===7){
       setTimeout(function(){
         toast.classList.add(&#x27;cf-visible&#x27;);
         setTimeout(function(){ toast.classList.remove(&#x27;cf-visible&#x27;); }, 900);
-      }, DWELL[6] - 900);
+      }, DWELL[7] - 900);
     }
   }
 
@@ -19884,6 +20098,11 @@ em,
                                   Upload recording
                                 </button>
                               </div>
+                              <div id="cf-recWorking" hidden>
+                                <div class="cf-work-wave" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+                                <h2 class="cf-work-title">Transcribing your recording</h2>
+                                <p class="cf-work-note">Carry is reading the conversation and organizing it into your prepared questions, your notes, and the follow-ups you need to book.</p>
+                              </div>
                               <div id="cf-recUploaded" hidden>
                                 <h2>Your recording</h2>
                                 <div class="cf-rec-row">
@@ -21920,23 +22139,30 @@ window.PF = window.PF || {};
     { text:'When should I call instead of waiting?', answer:null }
   ];
 
+  /* Step 4 is the wait. Everything before it is the patient handing a file
+     over; everything after it is Carry having read it — and between those two
+     there is a real minute of a real product working, which the flow used to
+     skip. A prototype that goes straight from Upload to a finished transcript
+     is a prototype claiming transcription is instant. */
   var STEP_STATE = {
     0: { checked:[], expanded:[] },
     1: { checked:[], expanded:[] },
     2: { checked:[], expanded:[] },
     3: { checked:[], expanded:[] },
-    4: { checked:[0], expanded:[] },
+    4: { checked:[], expanded:[] },
     5: { checked:[0], expanded:[] },
-    6: { checked:[0,1,3], expanded:[0,1,3] }
+    6: { checked:[0], expanded:[] },
+    7: { checked:[0,1,3], expanded:[0,1,3] }
   };
 
   // dwell time (ms) spent on each step before advancing
-  var DWELL = [1700, 1700, 1400, 1300, 2100, 2100, 3200];
-  var TOTAL = 7;
+  var DWELL = [1700, 1700, 1400, 1300, 5000, 2100, 2100, 3200];
+  var TOTAL = 8;
   var step = 0;
   var timer = null;
 
   var recEmpty = document.getElementById('cf-recEmpty');
+  var recWorking = document.getElementById('cf-recWorking');
   var recUploaded = document.getElementById('cf-recUploaded');
   var transcriptBox = document.getElementById('cf-transcriptBox');
   var transcriptText = document.getElementById('cf-transcriptText');
@@ -21987,11 +22213,17 @@ window.PF = window.PF || {};
     fileRow0.classList.toggle('cf-selected', step===3);
     sheetUploadBtn.classList.toggle('cf-enabled', step===3);
 
-    var uploaded = step>=4;
-    recEmpty.hidden = uploaded;
+    /* Three states for one card: nothing yet, working, done. */
+    var working = step===4;
+    /* While the wait is on screen it IS the screen: the tabs, the questions
+       and Save all belong to a transcript that does not exist yet. */
+    screenEl.classList.toggle('cf-transcribing', working);
+    var uploaded = step>=5;
+    recEmpty.hidden = working || uploaded;
+    if (recWorking) recWorking.hidden = !working;
     recUploaded.hidden = !uploaded;
-    if (step===4){ transcriptBox.hidden = false; transcriptText.textContent = TRANSCRIPT_A; }
-    else if (step===5){ transcriptBox.hidden = false; transcriptText.textContent = TRANSCRIPT_B; }
+    if (step===5){ transcriptBox.hidden = false; transcriptText.textContent = TRANSCRIPT_A; }
+    else if (step===6){ transcriptBox.hidden = false; transcriptText.textContent = TRANSCRIPT_B; }
     else { transcriptBox.hidden = true; }
 
     var items = qList.querySelectorAll('.q-item');
@@ -22008,7 +22240,7 @@ window.PF = window.PF || {};
     if (step===3) briefPress(fileRow0);
     if (step===4) briefPress(sheetUploadBtn);
 
-    if (step===6){
+    if (step===7){
       setTimeout(function(){
         contentEl.scrollTo({ top: contentEl.scrollHeight, behavior:'smooth' });
       }, 380);
@@ -22016,11 +22248,11 @@ window.PF = window.PF || {};
       contentEl.scrollTo({ top: 0, behavior:'auto' });
     }
 
-    if (step===6){
+    if (step===7){
       setTimeout(function(){
         toast.classList.add('cf-visible');
         setTimeout(function(){ toast.classList.remove('cf-visible'); }, 900);
-      }, DWELL[6] - 900);
+      }, DWELL[7] - 900);
     }
   }
 
