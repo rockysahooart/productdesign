@@ -7083,16 +7083,6 @@ em,
 }
 
 /* A name where there is no mark, at the size the marks read at. */
-.tools__word {
-  display: block;
-  font-family: var(--font-body);
-  font-size: clamp(12.5px, 0.9vw, 14.5px);
-  font-weight: var(--fw-medium);
-  letter-spacing: -0.005em;
-  line-height: 1;
-  white-space: nowrap;
-  color: var(--ink-secondary);
-}
 
 /* Each brand's own colour. The five that are drawn in black or near-black get
    a light ink under the dark theme — the alternative is five holes in the
@@ -7248,10 +7238,6 @@ em,
 .tools__orbit .tools__logo--axure { width: calc(clamp(26px, 2.4vw, 34px) * 0.87); }
 .tools__orbit .tools__logo--chatgpt { width: calc(clamp(26px, 2.4vw, 34px) * 0.98); }
 
-.tools__orbit .tools__word {
-  font-size: clamp(13px, 1vw, 15px);
-  color: var(--ink);
-}
 
 @keyframes tools-orbit {
   from { transform: rotate(0deg); }
@@ -7265,51 +7251,12 @@ em,
   to   { transform: rotate(calc(-1 * var(--a) - 360deg)); }
 }
 
-/* ONE COLUMN GIVES WAY, NOT THE PAGE.
-
-   The open card is taller, so everything under the hero moves down by the
-   difference. That is the wrong answer for two thirds of the row below it:
-   the card sits in the right-hand column, and only the right-hand column —
-   about me — is standing in its way. Where I've been and How I work are
-   under the employers' strip, which did not grow, and there is now an empty
-   band of exactly that height above them to move back into.
-
-   So they do: the two left cards are lifted by the same number the page was
-   pushed by, which leaves them exactly where they were sitting, and about me
-   alone takes the shove. The lift is a transform, so it costs the layout
-   nothing and cannot change any card's height — the row is still as tall as
-   its tallest card, and the cards are the size they always were.
-
-   Only from 1120, because that is where the band becomes three columns and
-   about me is genuinely the one underneath the tools. Narrower than that it
-   is stacked, nothing is beside anything, and the honest answer is the one
-   the page already gives: everything moves. */
-@media (min-width: 1120px) {
-  .cell--experience,
-  .cell--process {
-    /* NO TRANSITION, AND THAT IS THE WHOLE POINT. The card's min-height goes
-       from `auto` to a length, which is not a pair CSS can interpolate — so
-       the card opens in one frame and the page is shoved down in that same
-       frame. An eased lift against an instant shove is the two cards being
-       thrown down the page and crawling back up, which is exactly the motion
-       this rule exists to prevent. The lift lands on the same frame as the
-       shove, and the two cards never move at all. */
-    transition: none;
-  }
-
-  :root.tools-open .cell--experience,
-  :root.tools-open .cell--process {
-    transform: translateY(calc(-1 * var(--tools-lift, 0px)));
-  }
-}
-
-/* Nothing opens under reduced motion — js/tools.js never builds the ring —
-   and this is the belt to those braces. */
+/* Nothing turns under reduced motion — js/tools.js never builds the ring, so
+   the card stays the rail it is in the markup — and this is the belt to those
+   braces. */
 @media (prefers-reduced-motion: reduce) {
   .hero__tools { transition: none; }
   .tools__orbit { display: none; }
-  .cell--experience,
-  .cell--process { transition: none; transform: none; }
 }
 
 
@@ -20223,12 +20170,6 @@ em,
                 <svg class="tools__logo tools__logo--notion" role="img" aria-label="Notion"><use href="#tl-notion"/></svg>
               </li>
               <li class="tools__item">
-                <span class="tools__word">ElevenLabs</span>
-              </li>
-              <li class="tools__item">
-                <span class="tools__word">DALL·E 2</span>
-              </li>
-              <li class="tools__item">
                 <span class="tools__logo tools__logo--chatgpt tools__logo--ink" role="img" aria-label="ChatGPT"></span>
               </li>
               <li class="tools__item">
@@ -27662,26 +27603,25 @@ window.PF = window.PF || {};
 
 /* ===== js/tools.js ===== */
 /* ==========================================================================
-   tools.js — the tools card opens into a ring
+   tools.js — the tools card is a ring
 
-   At rest the card is a rail: twelve marks going past, on the same line as its
-   label, the same height as the employers' strip beside it. That is the right
-   shape for something you read out of the corner of your eye.
+   The card is a square with the tools arranged on a circle inside it, turning.
+   It was a rail that became this under the pointer; it is simply this now,
+   which means the page has one layout rather than two and nothing below the
+   hero ever moves.
 
-   Under the pointer it becomes the other thing it could be. The card grows
-   down into a square — pushing everything below it down the page, which is the
-   point: it is taking the room, not floating over the top of anything — and
-   the same twelve marks arrange themselves on a circle and turn.
+   The rail is still in the markup and is still the real list — the ring is
+   built from it and marked aria-hidden, so there is one list of tools rather
+   than two that can drift, and a reader who has asked for reduced motion gets
+   the rail itself, paused, with nothing built and nothing turning.
 
    Three things this file does and nothing else:
 
-     1. Build the ring once, from the marks already in the rail, so there is
-        one list of tools in the markup rather than two that can drift.
+     1. Build the ring once, from the marks already in the rail.
      2. Measure the square and the radius, because both are the card's own
         width and CSS cannot ask an element about itself.
-     3. Open and close it — on hover for a pointer, on tap for a finger, and
-        never at all when the reader has asked for reduced motion, since a card
-        that resizes the page and spins is the exact thing that setting is for.
+     3. Swap it for the counting state in the one discipline that has numbers
+        rather than a stack of software.
    ========================================================================== */
 
 (function () {
@@ -27742,27 +27682,13 @@ window.PF = window.PF || {};
 
   /* The open card is as tall as it is wide, and the ring's radius is a
      fraction of the same number. Both are measured rather than guessed,
-     because the card's width is a grid column and changes with the window.
-
-     The third number is the difference between the two heights — how much
-     taller the page gets while the ring is up. The page below the hero is
-     told that number so it can decide, column by column, what should move
-     and what should stay: only the column under this card gives way. */
-  var rest = 0;
-
+     because the card's width is a grid column and changes with the window. */
   function measure() {
     var box = card.getBoundingClientRect();
     var w = box.width;
     if (!w) return;
-    /* The rail's own height, taken only while the card is a rail. Reading it
-       open would measure the square and the lift would collapse to nothing.
-       The class, not the flag: set() moves the flag before it moves the card,
-       so on the way closed the flag says rail while the box is still square. */
-    if (!card.classList.contains('is-open')) rest = Math.round(box.height);
     card.style.setProperty('--tools-square', Math.round(w) + 'px');
     card.style.setProperty('--tools-r', Math.round(w * 0.33) + 'px');
-    document.documentElement.style.setProperty(
-      '--tools-lift', Math.max(0, Math.round(w) - rest) + 'px');
   }
 
   measure();
@@ -27772,7 +27698,17 @@ window.PF = window.PF || {};
     rt = setTimeout(measure, 120);
   });
 
-  /* ---- opening and closing ---------------------------------------------- */
+  /* ---- the ring is the card -----------------------------------------------
+
+     This used to be a hover: a rail at rest that grew into a square under the
+     pointer. It is the square now, from the first frame — the twelve marks on
+     a circle, turning, is what the card IS rather than what it does when you
+     find it. Which also means the page has one layout instead of two: nothing
+     below the hero moves, because nothing above it ever changes size.
+
+     The rail stays in the markup and stays the accessible list; the ring is
+     built from it and marked aria-hidden, so there is still one list of tools
+     rather than two that can drift. */
 
   set = function (next) {
     /* Nothing to open in the counting state: the ring is a ring of logos. */
@@ -27781,50 +27717,17 @@ window.PF = window.PF || {};
     open = next;
     measure();
     card.classList.toggle('is-open', open);
-    /* The employers' strip is the same height as this card by default. While
-       this one is a square, that would stretch a five-logo rail into a
-       four-hundred-pixel panel, so the row stops governing it for the
-       duration. */
+    /* The employers' strip is the same height as this card by default, and a
+       square would stretch a five-logo rail into a four-hundred-pixel panel,
+       so the row stops governing it. */
     var host = card.closest('.hero-card');
     if (host) host.classList.toggle('tools-open', open);
-    /* And the page at large, because the section under the hero has to know
-       too: the card takes its room out of one column down there, not out of
-       the whole page. */
-    document.documentElement.classList.toggle('tools-open', open);
     /* Nothing is going past while the ring is up; nothing turns while the rail
        is. One animation at a time, always. */
     rail.toggleAttribute('data-paused', open);
   };
 
-  var fine = window.matchMedia('(hover: hover) and (pointer: fine)');
-
-  card.addEventListener('pointerenter', function (e) {
-    if (e.pointerType && e.pointerType !== 'mouse') return;
-    if (fine.matches) set(true);
-  });
-
-  card.addEventListener('pointerleave', function (e) {
-    if (e.pointerType && e.pointerType !== 'mouse') return;
-    set(false);
-  });
-
-  /* A finger has no hover, so the card is a toggle: one tap opens the ring,
-     the next closes it, and a tap anywhere else closes it too. */
-  card.addEventListener('click', function () {
-    if (fine.matches) return;
-    set(!open);
-  });
-
-  document.addEventListener('click', function (e) {
-    if (fine.matches || !open) return;
-    if (!card.contains(e.target)) set(false);
-  });
-
-  /* Keyboard: the card opens while the focus is inside it. */
-  card.addEventListener('focusin', function () { if (!stats) set(true); });
-  card.addEventListener('focusout', function (e) {
-    if (!card.contains(e.relatedTarget)) set(false);
-  });
+  set(true);
   }
 
   /* ---- one discipline counts instead ------------------------------------
@@ -27859,7 +27762,10 @@ window.PF = window.PF || {};
   function showStats(on) {
     if (!statList) return;
     stats = on;
-    if (on) set(false);
+    /* Out of the counting state and the card is a ring again — the same
+       swap in both directions, so the discipline switch has no memory to
+       get wrong. */
+    set(!on);
     card.classList.toggle('is-stats', on);
     statList.toggleAttribute('hidden', !on);
     if (label) label.textContent = on ? 'In numbers' : labelWas;
