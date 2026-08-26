@@ -785,6 +785,61 @@ body {
   transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }
 
+/* --------------------------------------------------------------------------
+   THE WALL MOVES, SLOWLY
+
+   The page's ground is a painted wall: a flat colour with a noise texture over
+   it. Flat is honest and it is also inert — nothing on a portfolio should be
+   perfectly still, least of all the thing everything else sits on.
+
+   So a second, much larger layer drifts across it: two washes of grey, three
+   percent apart in value, on a plane twice the size of the screen, crossing it
+   over the better part of a minute. It is deliberately at the edge of
+   perceptible — you should notice that the page feels alive without ever being
+   able to point at what moved.
+
+   Light only. The dark theme's ground is already a value where a wash this
+   subtle would either vanish or band, and a screen that is mostly dark does
+   not need help feeling deep.
+
+   It is a fixed layer behind everything, painted once, animated on background
+   position alone: no transform on the body, no repaint of the content above
+   it, nothing that can cost a frame in the hero's animation.
+   -------------------------------------------------------------------------- */
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  background-image:
+    radial-gradient(58% 46% at 22% 18%, rgba(0, 0, 0, 0.030) 0%, rgba(0, 0, 0, 0) 62%),
+    radial-gradient(52% 44% at 82% 34%, rgba(0, 0, 0, 0.024) 0%, rgba(0, 0, 0, 0) 60%),
+    radial-gradient(64% 52% at 50% 92%, rgba(0, 0, 0, 0.026) 0%, rgba(0, 0, 0, 0) 66%);
+  background-size: 200% 200%;
+  background-position: 0% 0%;
+  animation: wall-drift 58s ease-in-out infinite alternate;
+  will-change: background-position;
+}
+
+@keyframes wall-drift {
+  from { background-position: 0% 0%,   100% 0%,   50% 100%; }
+  to   { background-position: 100% 40%, 0% 60%,   50% 0%; }
+}
+
+/* The dark theme keeps its flat ground. */
+:root[data-theme="dark"] body::before { display: none; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) body::before { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+}
+
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
 ul, ol { padding: 0; list-style: none; }
 
@@ -1395,6 +1450,41 @@ em,
 }
 :where(.cta:hover, .card--link:hover .cta) .cta__arrow { transform: translateX(4px); }
 
+/* THE BOOKING ARROW IS DRAWN, NOT TYPED.
+
+   The glyph version sat at forty-five degrees whether or not anything was
+   happening, which reads as a decoration on the label rather than as a
+   direction. This one points straight at the edge of the button and does
+   nothing until somebody is on their way: under the pointer it grows and
+   leaves diagonally, the way the angled glyph was only ever implying.
+
+   Drawn on the same nine-by-nine grid as the icons in the conversation, at
+   twice their size, so the one piece of ornament on the button belongs to the
+   same hand as everything else. */
+.cta__arrow--px {
+  width: 1.6em;
+  height: 1.6em;
+  /* Centred on the label rather than sitting on its baseline. */
+  vertical-align: middle;
+  position: relative;
+  top: -0.06em;
+  --pxi-fg: currentColor;
+  shape-rendering: crispEdges;
+  transform-origin: 20% 50%;
+  transition: transform 260ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+:where(.cta:hover, .cta:focus-visible, .card--link:hover .cta) .cta__arrow--px,
+.hero__book:hover .cta__arrow--px,
+.hero__book:focus-visible .cta__arrow--px {
+  transform: translate(6px, -6px) scale(1.28);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta__arrow--px { transition: none; }
+  :where(.cta:hover, .card--link:hover .cta) .cta__arrow--px { transform: none; }
+}
+
 /* One primary treatment everywhere: a filled button.
    Colour means action here, never decoration.
 
@@ -1580,7 +1670,7 @@ em,
       clamp(300px, 32vw, 462px);
     grid-template-areas:
       "identity copy    work"
-      "clients  clients clients";
+      "clients  clients tools";
     /* The two cards take the row's height — which is the profile's, because
        the profile is the tallest thing in it — so the left and right edges of
        the composition finish on the same line. The conversation in the middle
@@ -1610,7 +1700,11 @@ em,
   .hero__identity { grid-area: identity; }
   .hero__copy     { grid-area: copy; }
   .hero__work     { grid-area: work; }
-  .hero__clients  { grid-area: clients; }
+  /* Two classes deep, because the base rule further down this file gives the
+     strip `grid-column: 1 / -1` for the single-column layouts and would
+     otherwise win on source order. */
+  .hero-card .hero__clients { grid-area: clients; grid-column: 1 / 3; }
+  .hero-card .hero__tools   { grid-area: tools;   grid-column: 3 / 4; grid-row: 2; }
 
   /* One surface, one hairline, one radius. Nothing else.
 
@@ -1788,9 +1882,9 @@ em,
     border-radius: var(--r-btn);
     background: var(--ink);
 
-    font-family: var(--font-sans);
-    font-size: 11.5px;
-    font-weight: 620;
+    font-family: var(--font-body);
+    font-size: var(--fs-label);
+    font-weight: var(--fw-medium);
     letter-spacing: 0.05em;
     line-height: 1.35;
     text-align: center;
@@ -1801,11 +1895,16 @@ em,
                 border-color var(--dur-fast) var(--ease);
   }
 
-  /* Restrained: the surface shifts a shade and the arrow moves two pixels. */
-  .hero-card .hero-tile--profile .hero__book .cta__arrow {
+  /* The drawn arrow, sitting on the label's optical middle rather than on its
+     baseline — `middle` aligns the glyph box's centre with the x-height, and
+     the label is uppercase, so it is nudged the difference. */
+  .hero-card .hero-tile--profile .hero__book .cta__arrow--px {
     display: inline-block;
-    margin-left: 5px;
-    transition: transform 160ms var(--ease);
+    margin-left: 7px;
+    vertical-align: middle;
+    position: relative;
+    top: -0.06em;
+    transition: transform 260ms cubic-bezier(0.2, 0.75, 0.25, 1);
   }
 
   .hero-card .hero-tile--profile .hero__book:hover {
@@ -1813,8 +1912,11 @@ em,
     border-color: var(--ink-secondary);
   }
 
-  .hero-card .hero-tile--profile .hero__book:hover .cta__arrow {
-    transform: translate(2px, -2px);
+  /* Under the pointer it grows and leaves diagonally — the direction the
+     angled glyph used to imply while standing still. */
+  .hero-card .hero-tile--profile .hero__book:hover .cta__arrow--px,
+  .hero-card .hero-tile--profile .hero__book:focus-visible .cta__arrow--px {
+    transform: translate(6px, -6px) scale(1.28);
   }
 
   .hero-card .hero-tile--profile .hero__book:focus-visible {
@@ -1870,24 +1972,53 @@ em,
   .hero-card .hero-tile--clients .clients__marquee {
     flex: 1 1 auto;
     min-width: 0;
-    /* The rail starts right where the label ends, so only a hair of dissolve
-       is needed on that side; the far edge keeps the full fade. */
-    -webkit-mask-image: linear-gradient(to right,
-        transparent 0, #000 3%, #000 92%, transparent 100%);
-    mask-image: linear-gradient(to right,
-        transparent 0, #000 3%, #000 92%, transparent 100%);
+    /* Nothing scrolls here any more, so there is nothing to dissolve into:
+       the five marks stand still and spend the whole rail. */
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 
   /* Closer together than they were. The rail is shorter now that the label
      shares its row, and a 190px gap in a shorter rail is two logos on screen
      with a corridor between them. */
   .hero-card .hero-tile--clients .clients__track {
-    gap: clamp(40px, 5.2vw, 104px);
-    padding-inline-end: clamp(40px, 5.2vw, 104px);
-    /* The rail is shorter and the marks are closer, so the same duration would
-       have crawled. Held at roughly the same 26px a second it always ran at. */
-    animation-duration: 30s;
+    /* Spread across the rail rather than spaced by a fixed interval: five
+       marks, once, filling exactly the width the label leaves them. */
+    width: 100%;
+    justify-content: space-between;
+    gap: clamp(12px, 1.4vw, 28px);
+    padding-inline-end: 0;
+    animation: none;
   }
+
+  /* THE TOOLS TILE. Same chrome as the strip beside it — same padding, same
+     rule, same label — on the browser's column rather than on the whole row,
+     so the two read as one band with a seam in it rather than as two cards
+     that happen to be next to each other. */
+  .hero-card .hero-tile--tools {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: clamp(14px, 1.3vw, 22px);
+    margin: 0;
+    padding: clamp(22px, 1.8vw, 30px) var(--tile-pad);
+    border-top: 1px solid var(--border);
+  }
+
+  .hero-card .hero-tile--tools .tools__label {
+    flex: 0 0 auto;
+    margin: 0;
+    white-space: nowrap;
+    font-family: var(--font-body);
+    font-size: clamp(13px, 0.5vw + 10px, 17px);
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.1em;
+    line-height: 1.2;
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
+
+  .hero-card .hero-tile--tools .tools__marquee { flex: 1 1 auto; min-width: 0; }
 
   .hero-card .hero-tile--clients .clients__logo {
     height: clamp(38px, 3.1vw, 54px);
@@ -2601,7 +2732,7 @@ em,
 .hero__clients {
   --bleed: var(--pad);
 
-  grid-column: 1 / -1;
+  grid-column: 1 / -1;   /* single-column layouts; the bento overrides it */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -4137,8 +4268,15 @@ em,
    proportional to the type and generous enough to separate one thought from
    the next. Between clusters it is nearly double again, because that is where
    the speaker pauses. */
-.msg + .msg { margin-top: 1.15em; }
-.msg + .msg[data-cluster] { margin-top: 2.2em; }
+/* ONE INTERVAL, AND A SMALLER ONE. There used to be two: a tight gap between
+   messages from the same turn and a gap nearly twice as big where a new one
+   started, which read as the stack loosening and tightening as it played. The
+   grouping is already carried by the avatar — the badge appears where a turn
+   begins and nowhere else — so the spacing does not have to say it a second
+   time. One value for every pair, and a shorter one, so three messages sit
+   together as a conversation rather than as three separate statements. */
+.msg + .msg,
+.msg + .msg[data-cluster] { margin-top: 0.82em; }
 
 /* The loading row sits on the same rhythm as a message row, so the sequence
    does not tighten and loosen as it plays. */
@@ -4596,6 +4734,23 @@ em,
   --kw-angle: 104deg; --kw-span: 260%; --kw-dur: 8s;
 }
 
+/* sky → cyan → teal: the cool half of simple's family, for the word about
+   what the work is for. Same brightness, a colder hue, so the two read as
+   related rather than as the same idea said twice. */
+.kw--clearer {
+  --kw-a: #2C6FA8; --kw-b: #1E88A8; --kw-c: #1E9A93;
+  --kw-angle: 97deg; --kw-span: 280%; --kw-dur: 11s;
+}
+
+/* THE NAME. It gets the whole palette rather than one corner of it — indigo
+   through plum to the saffron the greeting is set in — and it moves slower
+   than anything else in the thread, because it is a signature and not a
+   point being made. */
+.kw--name {
+  --kw-a: #2F2A6B; --kw-b: #5B2E6E; --kw-c: #8A4B2A;
+  --kw-angle: 100deg; --kw-span: 220%; --kw-dur: 16s;
+}
+
 /* Dark: the same five ramps lifted off a #303030 bubble. The order of value
    between complex and simple is preserved by inverting it — complex stays the
    heaviest thing in the sentence by being the dimmest. */
@@ -4604,6 +4759,8 @@ em,
 [data-theme="dark"] .kw--complex  { --kw-a: #D4708F; --kw-b: #B77FD8; --kw-c: #9B8CF0; }
 [data-theme="dark"] .kw--simple   { --kw-a: #9FD9B4; --kw-b: #7FE3C4; --kw-c: #6FDAD6; }
 [data-theme="dark"] .kw--faster   { --kw-a: #FF8A7A; --kw-b: #FF7455; --kw-c: #FF8FB4; }
+[data-theme="dark"] .kw--clearer  { --kw-a: #7FC0EE; --kw-b: #6FD3E6; --kw-c: #6FDCCF; }
+[data-theme="dark"] .kw--name     { --kw-a: #A9A6FF; --kw-b: #C9A0E8; --kw-c: #E6A878; }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .kw--namaskar { --kw-a: #F7A64B; --kw-b: #FFC163; --kw-c: #F2CE72; }
@@ -4611,6 +4768,8 @@ em,
   :root:not([data-theme="light"]) .kw--complex  { --kw-a: #D4708F; --kw-b: #B77FD8; --kw-c: #9B8CF0; }
   :root:not([data-theme="light"]) .kw--simple   { --kw-a: #9FD9B4; --kw-b: #7FE3C4; --kw-c: #6FDAD6; }
   :root:not([data-theme="light"]) .kw--faster   { --kw-a: #FF8A7A; --kw-b: #FF7455; --kw-c: #FF8FB4; }
+  :root:not([data-theme="light"]) .kw--clearer  { --kw-a: #7FC0EE; --kw-b: #6FD3E6; --kw-c: #6FDCCF; }
+  :root:not([data-theme="light"]) .kw--name     { --kw-a: #A9A6FF; --kw-b: #C9A0E8; --kw-c: #E6A878; }
 }
 
 /* Reduced motion keeps the colour and drops the movement: the fill parks at
@@ -6191,8 +6350,28 @@ em,
      gap, no pause. */
   flex: 0 0 auto;
   padding-inline-end: var(--clients-gap);
-  animation: clients-scroll var(--clients-dur) linear infinite;
   will-change: transform;
+}
+
+/* Nothing dissolves into anything here any more: the marks stand still, so a
+   fade at either end is a logo with its edge rubbed out rather than one on its
+   way past. The rail keeps its overflow guard and loses its mask. */
+.clients__marquee {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+/* THE EMPLOYERS DO NOT REPEAT. Five marks is a short list, and a loop of a
+   short list is the same logo twice on one screen — which reads as filler
+   rather than as a record. They sit still, spread across whatever width the
+   card has. The tools rail below still moves: twelve marks is long enough
+   that a loop never shows the same one twice. */
+.clients__marquee .clients__track {
+  animation: none;
+  width: 100%;
+  justify-content: space-between;
+  gap: clamp(12px, 1.4vw, 28px);
+  padding-inline-end: 0;
 }
 
 @keyframes clients-scroll {
@@ -6306,6 +6485,135 @@ em,
 @media (max-width: 900px)  { :root { --clients-dur: 30s; } }
 @media (max-width: 767px)  { :root { --clients-dur: 27s; } }
 @media (max-width: 460px)  { :root { --clients-dur: 19s; } }
+
+
+/* ==========================================================================
+   THE TOOLS RAIL
+
+   The same machinery as the employers above it, tuned for what it holds.
+   Twelve marks rather than five, so it loops — the track is long enough that
+   the copy behind it is never on screen with the original — and they are
+   packed tight, because a tool logo is a thing you recognise rather than a
+   thing you read.
+
+   Eight of the twelve are single-path glyphs painted in the brand's own
+   colour. The other four have no mark in that set, and rather than draw a
+   guess at somebody's trademark they are set as wordmarks in the site's own
+   face, at the same optical size.
+   ========================================================================== */
+
+.tools__marquee {
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+
+  -webkit-mask-image: linear-gradient(to right,
+      transparent 0, #000 4%, #000 94%, transparent 100%);
+  mask-image: linear-gradient(to right,
+      transparent 0, #000 4%, #000 94%, transparent 100%);
+}
+
+.tools__track {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  /* Conservative on purpose: these are marks, not statements. */
+  gap: clamp(20px, 1.8vw, 30px);
+  margin: 0;
+  padding-block: 0;
+  padding-inline-end: clamp(20px, 1.8vw, 30px);
+  list-style: none;
+  animation: clients-scroll 34s linear infinite;
+  will-change: transform;
+}
+
+.tools__marquee[data-paused] .tools__track { animation-play-state: paused; }
+
+.tools__item {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+/* The mark: one path, one colour, at one optical size. */
+.tools__logo {
+  display: block;
+  width: clamp(20px, 1.5vw, 24px);
+  height: clamp(20px, 1.5vw, 24px);
+  fill: var(--tl, var(--ink-secondary));
+  opacity: 0.95;
+}
+
+/* A mark that is a picture rather than a path, because it is more than one
+   colour. Same box as the drawn ones; its own aspect ratio inside it. */
+.tools__logo--img {
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  height: clamp(20px, 1.5vw, 24px);
+}
+
+.tools__logo--axure {
+  width: calc(clamp(20px, 1.5vw, 24px) * 0.87);
+  background-image: url("data:image/png;base64,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");
+}
+
+/* A name where there is no mark, at the size the marks read at. */
+.tools__word {
+  display: block;
+  font-family: var(--font-body);
+  font-size: clamp(12.5px, 0.9vw, 14.5px);
+  font-weight: var(--fw-medium);
+  letter-spacing: -0.005em;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ink-secondary);
+}
+
+/* Each brand's own colour. The five that are drawn in black or near-black get
+   a light ink under the dark theme — the alternative is five holes in the
+   row. */
+.tools__logo--figma      { --tl: #F24E1E; }
+.tools__logo--wisprflow  { --tl: #0F0F0F; }
+.tools__logo--claude     { --tl: #D97757; }
+.tools__logo--miro       { --tl: #050038; }
+.tools__logo--notion     { --tl: #0F0F0F; }
+.tools__logo--elevenlabs { --tl: #0F0F0F; }
+.tools__logo--gemini     { --tl: #8E75B2; }
+.tools__logo--github     { --tl: #181717; }
+.tools__logo--cursor     { --tl: #0F0F0F; }
+
+:root[data-theme="dark"] .tools__logo--wisprflow,
+:root[data-theme="dark"] .tools__logo--miro,
+:root[data-theme="dark"] .tools__logo--notion,
+:root[data-theme="dark"] .tools__logo--elevenlabs,
+:root[data-theme="dark"] .tools__logo--github,
+:root[data-theme="dark"] .tools__logo--cursor { --tl: #EDEDED; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .tools__logo--wisprflow,
+  :root:not([data-theme="light"]) .tools__logo--miro,
+  :root:not([data-theme="light"]) .tools__logo--notion,
+  :root:not([data-theme="light"]) .tools__logo--elevenlabs,
+  :root:not([data-theme="light"]) .tools__logo--github,
+  :root:not([data-theme="light"]) .tools__logo--cursor { --tl: #EDEDED; }
+}
+
+/* Reduced motion: the rail stands still and wraps, like the one above it. */
+@media (prefers-reduced-motion: reduce) {
+  .tools__marquee {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .tools__track {
+    animation: none;
+    flex-wrap: wrap;
+    row-gap: 14px;
+    padding-inline-end: 0;
+    width: 100%;
+  }
+  .tools__track[data-clients-clone] { display: none; }
+}
 
 
 /* ===== css/09-case.css ===== */
@@ -12279,6 +12587,31 @@ em,
   }
 
   .clients__logo { height: clamp(30px, 3.6vw, 36px); opacity: 0.82; }
+
+  .hero__tools {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: clamp(14px, 2vw, 24px);
+    margin-top: 18px;
+    padding-block: 22px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .tools__label {
+    display: block;
+    flex: 0 0 auto;
+    margin: 0;
+    white-space: nowrap;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
+
+  .tools__marquee { flex: 1 1 auto; min-width: 0; }
 }
 
 @media (max-width: 719px) {
@@ -12379,6 +12712,44 @@ em,
   }
 
   .clients__logo { height: clamp(28px, 6.4vw, 36px); opacity: 0.82; }
+
+  /* FIVE MARKS, TWO ROWS. They do not scroll any more, and at this width they
+     do not fit on one line at a size anybody could recognise — so they wrap.
+     Two rows of real logos beats one row of thumbnails. */
+  .clients__marquee { overflow: visible; }
+
+  .clients__marquee .clients__track {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: clamp(16px, 4vw, 26px) clamp(20px, 6vw, 34px);
+  }
+
+  /* THE TOOLS, UNDER THE EMPLOYERS. Same shape as the strip above it — the
+     label on its own line, the rail beneath — because at this width a label
+     beside twelve marks leaves the marks a slot barely wider than three of
+     them. */
+  .hero__tools {
+    /* The same order as the strip above it, so it lands directly under it in
+       source order rather than after the contact block. The two bands are one
+       idea — where the work was done, and what it was made with. */
+    order: 4;
+    grid-column: 1 / -1;
+    margin-top: 22px;
+    padding-block: 26px 30px;
+    padding-inline: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .tools__label {
+    display: block;
+    margin: 0 0 16px;
+    font-family: var(--font-body);
+    font-size: clamp(12px, 2.6vw, 14px);
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-secondary);
+  }
 
   /* Contact runs full width under both columns, in two compact rows. */
   /* Zone 4 — contact, composed rather than listed.
@@ -12797,6 +13168,19 @@ em,
     <symbol id="px-shuffle" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M7 1h2v1h-2zM6 2h4v1h-4zM5 3h6v1h-6zM4 4h8v1h-8zM3 5h10v1h-10zM2 6h3v1h-3zM6 6h4v1h-4zM11 6h3v1h-3zM1 7h3v1h-3zM6 7h4v1h-4zM12 7h3v1h-3zM6 8h4v1h-4zM6 9h4v1h-4zM6 10h4v1h-4zM6 11h4v1h-4zM6 12h4v1h-4zM6 13h4v1h-4z"/></symbol>
     <symbol id="px-sparkle" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M7 1h1v1h-1zM7 2h1v1h-1zM6 3h3v1h-3zM6 4h3v1h-3zM13 4h1v1h-1zM5 5h5v1h-5zM12 5h3v1h-3zM2 6h10v1h-10zM13 6h1v1h-1zM5 7h5v1h-5zM6 8h3v1h-3zM6 9h3v1h-3zM7 10h1v1h-1zM7 11h1v1h-1zM11 11h1v1h-1zM10 12h3v1h-3zM11 13h1v1h-1z"/></symbol>
 
+    <symbol id="px-arrow" viewBox="0 0 16 16"><path fill="var(--pxi-fg)" d="M9 4h2v1h-2zM10 5h2v1h-2zM11 6h2v1h-2zM0 7h14v1h-14zM0 8h14v1h-14zM11 9h2v1h-2zM10 10h2v1h-2zM9 11h2v1h-2z"/></symbol>
+
+    
+    <symbol id="tl-wisprflow" viewBox="0 0 24 24"><path d="M0.00 1.94a1.71 1.71 0 0 1 3.43 0v20.12a1.71 1.71 0 0 1 -3.43 0zM5.07 12.82a1.71 1.71 0 0 1 3.43 0v7.01a1.71 1.71 0 0 1 -3.43 0zM10.29 5.81a1.71 1.71 0 0 1 3.43 0v12.22a1.71 1.71 0 0 1 -3.43 0zM15.35 12.82a1.71 1.71 0 0 1 3.43 0v7.01a1.71 1.71 0 0 1 -3.43 0zM20.57 1.94a1.71 1.71 0 0 1 3.43 0v20.12a1.71 1.71 0 0 1 -3.43 0z"/></symbol>
+    <symbol id="tl-figma" viewBox="0 0 24 24"><path d="M15.852 8.981h-4.588V0h4.588c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.491-4.49 4.491zM12.735 7.51h3.117c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-3.117V7.51zm0 1.471H8.148c-2.476 0-4.49-2.014-4.49-4.49S5.672 0 8.148 0h4.588v8.981zm-4.587-7.51c-1.665 0-3.019 1.355-3.019 3.019s1.354 3.02 3.019 3.02h3.117V1.471H8.148zm4.587 15.019H8.148c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h4.588v8.98zM8.148 8.981c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h3.117V8.981H8.148zM8.172 24c-2.489 0-4.515-2.014-4.515-4.49s2.014-4.49 4.49-4.49h4.588v4.441c0 2.503-2.047 4.539-4.563 4.539zm-.024-7.51a3.023 3.023 0 0 0-3.019 3.019c0 1.665 1.365 3.019 3.044 3.019 1.705 0 3.093-1.376 3.093-3.068v-2.97H8.148zm7.704 0h-.098c-2.476 0-4.49-2.014-4.49-4.49s2.014-4.49 4.49-4.49h.098c2.476 0 4.49 2.014 4.49 4.49s-2.014 4.49-4.49 4.49zm-.097-7.509c-1.665 0-3.019 1.355-3.019 3.019s1.355 3.019 3.019 3.019h.098c1.665 0 3.019-1.355 3.019-3.019s-1.355-3.019-3.019-3.019h-.098z"/></symbol>
+    <symbol id="tl-claude" viewBox="0 0 24 24"><path d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z"/></symbol>
+    <symbol id="tl-miro" viewBox="0 0 24 24"><path d="M17.392 0H13.9L17 4.808 10.444 0H6.949l3.102 6.3L3.494 0H0l3.05 8.131L0 24h3.494L10.05 6.985 6.949 24h3.494L17 5.494 13.899 24h3.493L24 3.672 17.392 0z"/></symbol>
+    <symbol id="tl-notion" viewBox="0 0 24 24"><path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z"/></symbol>
+    <symbol id="tl-elevenlabs" viewBox="0 0 24 24"><path d="M4.6035 0v24h4.9317V0zm9.8613 0v24h4.9317V0z"/></symbol>
+    <symbol id="tl-gemini" viewBox="0 0 24 24"><path d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81"/></symbol>
+    <symbol id="tl-github" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
+    <symbol id="tl-cursor" viewBox="0 0 24 24"><path d="M11.503.131 1.891 5.678a.84.84 0 0 0-.42.726v11.188c0 .3.162.575.42.724l9.609 5.55a1 1 0 0 0 .998 0l9.61-5.55a.84.84 0 0 0 .42-.724V6.404a.84.84 0 0 0-.42-.726L12.497.131a1.01 1.01 0 0 0-.996 0M2.657 6.338h18.55c.263 0 .43.287.297.515L12.23 22.918c-.062.107-.229.064-.229-.06V12.335a.59.59 0 0 0-.295-.51l-9.11-5.257c-.109-.063-.064-.23.061-.23"/></symbol>
+
     <symbol id="i-sun" viewBox="0 0 20 20">
       <circle cx="10" cy="10" r="3.4"/>
       <path d="M10 2.3v1.9M10 15.8v1.9M4.6 4.6l1.4 1.4M14 14l1.4 1.4M2.3 10h1.9M15.8 10h1.9M4.6 15.4 6 14M14 6l1.4-1.4"/>
@@ -13087,7 +13471,7 @@ em,
 
             
             <a class="hero__book" href="#" data-placeholder-link>
-              Schedule a Call <span class="cta__arrow" aria-hidden="true">&#8599;</span>
+              Schedule a Call <svg class="cta__arrow cta__arrow--px" role="img" aria-hidden="true"><use href="#px-arrow"/></svg>
             </a>
 
           </div>
@@ -13129,9 +13513,8 @@ em,
               </span>
               <span class="msg" data-msg>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
-                  <em>Sarthak Sahoo</em>, a Product Designer
-                  <span class="pxi-nb"><svg class="pxi" role="img" aria-label="product"><use href="#px-phone"/></svg><svg class="pxi" role="img" aria-label="design"><use href="#px-laptop"/></svg></span> based in Austin, TX
-                  <span class="pxi-nb"><svg class="pxi" role="img" aria-label="Austin"><use href="#px-hat"/></svg></span></span></span>
+                  <em class="kw kw--name">Sarthak Sahoo</em>, a Product Designer
+                  <span class="pxi-nb"><svg class="pxi" role="img" aria-label="product"><use href="#px-phone"/></svg><svg class="pxi" role="img" aria-label="design"><use href="#px-laptop"/></svg></span> based in Austin, TX</span></span>
               </span>
               <span class="msg" data-msg data-cluster>
                 <span class="msg__from" aria-hidden="true">SS</span>
@@ -13141,15 +13524,14 @@ em,
               <span class="msg" data-msg>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;ve worked in
                   healthcare <span class="pxi-nb"><svg class="pxi" role="img" aria-label="healthcare"><use href="#px-hospital"/></svg>,</span> biotech <span class="pxi-nb"><svg class="pxi" role="img" aria-label="biotechnology"><use href="#px-dna"/></svg>,</span> finance
-                  <span class="pxi-nb"><svg class="pxi" role="img" aria-label="financial services"><use href="#px-card"/></svg></span> and enterprise <span class="pxi-nb"><svg class="pxi" role="img" aria-label="enterprise systems"><use href="#px-building"/></svg>,</span> turning complex workflows
-                  into clearer products <span class="pxi-nb"><svg class="pxi" role="img" aria-label="clearer"><use href="#px-sparkle"/></svg>.</span></span></span>
+                  <span class="pxi-nb"><svg class="pxi" role="img" aria-label="financial services"><use href="#px-card"/></svg></span> and enterprise <span class="pxi-nb"><svg class="pxi" role="img" aria-label="enterprise systems"><use href="#px-building"/></svg>,</span> turning <span class="kw kw--complex">complex</span> workflows
+                  into <span class="kw kw--clearer">clearer</span> products <span class="pxi-nb"><svg class="pxi" role="img" aria-label="clearer"><use href="#px-sparkle"/></svg>.</span></span></span>
               </span>
               
               <span class="msg" data-msg data-cluster data-scramble data-dwell="1300">
                 <span class="msg__from" aria-hidden="true">SS</span>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I focus on building
-                  for <span class="sc">clarity</span>, <span class="sc">trust</span>, <span class="sc">security</span>, and
-                  <span class="kw kw--craft sc">performance</span>.</span></span>
+                  for <span class="kw kw--craft sc">clarity</span>.</span></span>
               </span>
               <span class="msg" data-msg>
                 <span class="msg__bubble msg__bubble--reacted"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I could keep explaining,
@@ -13853,6 +14235,61 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+/* --------------------------------------------------------------------------
+   THE WALL MOVES, SLOWLY
+
+   The page&#x27;s ground is a painted wall: a flat colour with a noise texture over
+   it. Flat is honest and it is also inert — nothing on a portfolio should be
+   perfectly still, least of all the thing everything else sits on.
+
+   So a second, much larger layer drifts across it: two washes of grey, three
+   percent apart in value, on a plane twice the size of the screen, crossing it
+   over the better part of a minute. It is deliberately at the edge of
+   perceptible — you should notice that the page feels alive without ever being
+   able to point at what moved.
+
+   Light only. The dark theme&#x27;s ground is already a value where a wash this
+   subtle would either vanish or band, and a screen that is mostly dark does
+   not need help feeling deep.
+
+   It is a fixed layer behind everything, painted once, animated on background
+   position alone: no transform on the body, no repaint of the content above
+   it, nothing that can cost a frame in the hero&#x27;s animation.
+   -------------------------------------------------------------------------- */
+
+body::before {
+  content: &quot;&quot;;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  background-image:
+    radial-gradient(58% 46% at 22% 18%, rgba(0, 0, 0, 0.030) 0%, rgba(0, 0, 0, 0) 62%),
+    radial-gradient(52% 44% at 82% 34%, rgba(0, 0, 0, 0.024) 0%, rgba(0, 0, 0, 0) 60%),
+    radial-gradient(64% 52% at 50% 92%, rgba(0, 0, 0, 0.026) 0%, rgba(0, 0, 0, 0) 66%);
+  background-size: 200% 200%;
+  background-position: 0% 0%;
+  animation: wall-drift 58s ease-in-out infinite alternate;
+  will-change: background-position;
+}
+
+@keyframes wall-drift {
+  from { background-position: 0% 0%,   100% 0%,   50% 100%; }
+  to   { background-position: 100% 40%, 0% 60%,   50% 0%; }
+}
+
+/* The dark theme keeps its flat ground. */
+:root[data-theme=&quot;dark&quot;] body::before { display: none; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme=&quot;light&quot;]) body::before { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
 }
 
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
@@ -15438,6 +15875,61 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+/* --------------------------------------------------------------------------
+   THE WALL MOVES, SLOWLY
+
+   The page&#x27;s ground is a painted wall: a flat colour with a noise texture over
+   it. Flat is honest and it is also inert — nothing on a portfolio should be
+   perfectly still, least of all the thing everything else sits on.
+
+   So a second, much larger layer drifts across it: two washes of grey, three
+   percent apart in value, on a plane twice the size of the screen, crossing it
+   over the better part of a minute. It is deliberately at the edge of
+   perceptible — you should notice that the page feels alive without ever being
+   able to point at what moved.
+
+   Light only. The dark theme&#x27;s ground is already a value where a wash this
+   subtle would either vanish or band, and a screen that is mostly dark does
+   not need help feeling deep.
+
+   It is a fixed layer behind everything, painted once, animated on background
+   position alone: no transform on the body, no repaint of the content above
+   it, nothing that can cost a frame in the hero&#x27;s animation.
+   -------------------------------------------------------------------------- */
+
+body::before {
+  content: &quot;&quot;;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  background-image:
+    radial-gradient(58% 46% at 22% 18%, rgba(0, 0, 0, 0.030) 0%, rgba(0, 0, 0, 0) 62%),
+    radial-gradient(52% 44% at 82% 34%, rgba(0, 0, 0, 0.024) 0%, rgba(0, 0, 0, 0) 60%),
+    radial-gradient(64% 52% at 50% 92%, rgba(0, 0, 0, 0.026) 0%, rgba(0, 0, 0, 0) 66%);
+  background-size: 200% 200%;
+  background-position: 0% 0%;
+  animation: wall-drift 58s ease-in-out infinite alternate;
+  will-change: background-position;
+}
+
+@keyframes wall-drift {
+  from { background-position: 0% 0%,   100% 0%,   50% 100%; }
+  to   { background-position: 100% 40%, 0% 60%,   50% 0%; }
+}
+
+/* The dark theme keeps its flat ground. */
+:root[data-theme=&quot;dark&quot;] body::before { display: none; }
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme=&quot;light&quot;]) body::before { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
 }
 
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
@@ -18717,7 +19209,7 @@ em,
           <div class="hero__clients hero-tile hero-tile--clients">
             
             <p class="clients__label">Worked with</p>
-            <div class="clients__marquee" data-marquee>
+            <div class="clients__marquee">
               <ul class="clients__track">
               <li class="clients__item">
                 <span class="clients__logo clients__logo--cg" aria-hidden="true"></span>
@@ -18738,6 +19230,52 @@ em,
               <li class="clients__item">
                 <span class="clients__logo clients__logo--natera" aria-hidden="true"></span>
                 <span class="visually-hidden">Natera</span>
+              </li>
+              </ul>
+            </div>
+
+          </div>
+
+          
+          <div class="hero__tools hero-tile hero-tile--tools">
+            <p class="tools__label">Tools</p>
+            <div class="tools__marquee" data-marquee>
+              <ul class="tools__track">
+              <li class="tools__item">
+                <svg class="tools__logo tools__logo--figma" role="img" aria-label="Figma"><use href="#tl-figma"/></svg>
+              </li>
+              <li class="tools__item">
+                <svg class="tools__logo tools__logo--claude" role="img" aria-label="Claude"><use href="#tl-claude"/></svg>
+              </li>
+              <li class="tools__item">
+                <svg class="tools__logo tools__logo--miro" role="img" aria-label="Miro"><use href="#tl-miro"/></svg>
+              </li>
+              <li class="tools__item">
+                <svg class="tools__logo tools__logo--wisprflow" role="img" aria-label="Wispr Flow"><use href="#tl-wisprflow"/></svg>
+              </li>
+              <li class="tools__item">
+                <span class="tools__logo tools__logo--axure tools__logo--img" role="img" aria-label="Axure"></span>
+              </li>
+              <li class="tools__item">
+                <svg class="tools__logo tools__logo--notion" role="img" aria-label="Notion"><use href="#tl-notion"/></svg>
+              </li>
+              <li class="tools__item">
+                <svg class="tools__logo tools__logo--elevenlabs" role="img" aria-label="ElevenLabs"><use href="#tl-elevenlabs"/></svg>
+              </li>
+              <li class="tools__item">
+                <span class="tools__word">DALL·E 2</span>
+              </li>
+              <li class="tools__item">
+                <span class="tools__word">ChatGPT</span>
+              </li>
+              <li class="tools__item">
+                <svg class="tools__logo tools__logo--gemini" role="img" aria-label="Gemini"><use href="#tl-gemini"/></svg>
+              </li>
+              <li class="tools__item">
+                <svg class="tools__logo tools__logo--github" role="img" aria-label="GitHub"><use href="#tl-github"/></svg>
+              </li>
+              <li class="tools__item">
+                <svg class="tools__logo tools__logo--cursor" role="img" aria-label="Cursor"><use href="#tl-cursor"/></svg>
               </li>
               </ul>
             </div>
@@ -23333,26 +23871,31 @@ window.PF = window.PF || {};
   var GREETINGS = ['Hello', 'Namaste', 'Hola', 'Bonjour', 'Ciao',
                    'Hallo', 'Salam', 'Merhaba', 'Aloha'];
 
+  /* AND THE SENTENCE ABOUT THE WORK NAMES ONE THING AT A TIME. Three
+     qualities in a list is a list; one at a time, each arriving out of the
+     noise the last one left, is three statements. Same mechanism as the
+     greeting above, on the word the sentence turns on. */
+  var QUALITIES = ['clarity', 'trust', 'performance'];
+
   var ROLES = {
     design: [
       [{ t: 'Hello', sc: true, cycle: GREETINGS }, { t: ' :)' }],
-      [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true },
+      [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true, k: 'name' },
        { t: ', a Product Designer ' },
        { ic: 'phone', lbl: 'product' }, { ic: 'laptop', lbl: 'design' },
-       { t: ' based in Austin, TX ' }, { ic: 'hat', lbl: 'Austin' }],
+       { t: ' based in Austin, TX' }],
       [{ t: 'I design products that make ' }, { t: 'complex', k: 'complex' },
        { t: ' things feel ' }, { t: 'simple', k: 'simple' }, { t: '.' }],
       [{ t: 'I\u2019ve worked in healthcare ' }, { ic: 'hospital', lbl: 'healthcare' },
        { t: ', biotech ' }, { ic: 'dna', lbl: 'biotechnology' },
        { t: ', finance ' }, { ic: 'card', lbl: 'financial services' },
        { t: ' and enterprise ' }, { ic: 'building', lbl: 'enterprise systems' },
-       { t: ', turning complex workflows into clearer products ' },
+       { t: ', turning ' }, { t: 'complex', k: 'complex' },
+       { t: ' workflows into ' }, { t: 'clearer', k: 'clearer' },
+       { t: ' products ' },
        { ic: 'sparkle', lbl: 'clearer' }, { t: '.' }],
       [{ t: 'I focus on building for ' },
-       { t: 'clarity', sc: true }, { t: ', ' },
-       { t: 'trust', sc: true }, { t: ', ' },
-       { t: 'security', sc: true }, { t: ', and ' },
-       { t: 'performance', k: 'craft', sc: true }, { t: '.' }],
+       { t: 'clarity', k: 'craft', sc: true, cycle: QUALITIES }, { t: '.' }],
       [{ t: 'I could keep explaining, but hiring me is ' },
        { t: 'faster', k: 'faster' }, { t: '.' }]
     ],
@@ -23394,7 +23937,9 @@ window.PF = window.PF || {};
          rather than the message is what lets one sentence have a plain
          opening and four words that decode inside it. */
       var sc = msg[i].sc ? ' sc' : '';
-      if (msg[i].em) out += '<em' + (sc ? ' class="sc"' : '') + '>' + t + '</em>';
+      /* The name is both: emphasised, and carrying a gradient of its own. */
+      if (msg[i].em) out += '<em class="' + (msg[i].k ? 'kw kw--' + msg[i].k + ' ' : '') +
+                            (sc ? 'sc' : '') + '">' + t + '</em>';
       else if (msg[i].k) out += '<span class="kw kw--' + msg[i].k + sc + '">' + t + '</span>';
       else if (msg[i].sc) out += '<span class="sc">' + t + '</span>';
       /* An icon run is a pixel symbol from the sprite, not a character. It
@@ -23456,8 +24001,8 @@ window.PF = window.PF || {};
   var FADE_MS = 340;    /* the whole stack dims out together */
   var BLANK_MS = 640;   /* an empty beat, so the loop is a breath not a cut */
   var SCRAMBLE_MS = 1800; /* the decode: four words, one after another */
-  var GREET_HOLD = 1700;  /* each hello stands, and is read, before the next */
-  var GREET_SCRAMBLE = 620;  /* and the change between them is quick */
+  var WORD_HOLD = 1700;      /* each word stands, and is read, before the next */
+  var WORD_SCRAMBLE = 620;   /* and the change between them is quick */
 
   /* ONE MESSAGE HOLDS LONGER THAN ITS LENGTH ASKS FOR. The greeting does not:
      "Hello :)" is two words and gets the two words' worth of pause the rule
@@ -23674,6 +24219,7 @@ window.PF = window.PF || {};
        new sender group every two messages, and the badge belongs to the row
        that starts one. Per-message options come from the data beside it. */
     function shape(set) {
+      cyclers = [];
       /* Every row, not only the ones this role uses: a set with fewer
          messages must not inherit the last one's scramble or its dwell from
          the role before it. */
@@ -23701,7 +24247,10 @@ window.PF = window.PF || {};
           if (badge && badge.parentNode) badge.parentNode.removeChild(badge);
         }
 
-        if (i === 0) cycleWords = set[i][0] && set[i][0].cycle ? set[i][0].cycle : null;
+        /* Any run in any message can name a list of words it cycles through. */
+        for (var c = 0; c < set[i].length; c++) {
+          if (set[i][c].cycle) cyclers.push({ i: i, words: set[i][c].cycle, at: 0, timer: null, cancel: null });
+        }
 
         var opt = set[i].opt || {};
         if (opt.scramble) row.setAttribute('data-scramble', '');
@@ -23794,7 +24343,10 @@ window.PF = window.PF || {};
        the sequence produces, so it is the same height before the first message
        and after the last. */
     var VISIBLE = 3;
-    var SIZING_GAP = 26;   /* the rhythm the card's height was set at */
+    /* The interval the box is measured on. It matches the one interval the
+       stylesheet now uses between messages, so the reserved height and the
+       rhythm on screen are the same number rather than two that drift. */
+    var SIZING_GAP = 22;
     var heights = [], gaps = [], step = [], boxH = 0;
 
     function reserve() {
@@ -23988,56 +24540,78 @@ window.PF = window.PF || {};
 
     var idx = 1, retired = 0, timer = null, running = false;
 
-    /* ---- the greeting, in several languages ------------------------------
+    /* ---- the words that keep changing ------------------------------------
 
-       The opening line is the one message that is not carrying information,
-       so it spends the time it has saying hello in the languages of the teams
-       he has worked with. Each one stands, dissolves into noise and comes back
-       as the next — the same decode the sentence about the work uses, on a
-       word rather than on a sentence, so nothing new had to be invented for
-       it.
+       Two messages carry a word that does not settle. The greeting says hello
+       in the languages of the teams he has worked with; the sentence about the
+       work names one quality at a time — clarity, then trust, then
+       performance — rather than listing three and moving on. Each word stands
+       long enough to be read, dissolves into noise, and comes back as the
+       next, through the same decode the rest of the thread already had.
 
-       It runs only while the greeting is on screen: the moment the row has
-       left through the top there is nothing to say hello in, and a timer
-       still firing behind it is work nobody can see. */
-    /* cycleWords is filled by shape(), which runs before this line does —
-       declared without a value so it is not wiped on the way past. */
-    var cycleWords;
-    var cycleTimer = null, cycleAt = 0, cancelGreet = null;
+       A cycler is a row and a list of words, declared in the message data and
+       collected by shape(); nothing here knows what any of them say. They run
+       only while their row is on screen: the moment it has left through the
+       top there is nothing to change, and a timer still firing behind it is
+       work nobody can see. */
+    /* Filled by shape(), which runs before this line does — declared without a
+       value so it is not wiped on the way past. */
+    var cyclers;
 
     function stopCycle() {
-      clearTimeout(cycleTimer);
-      cycleTimer = null;
-      if (cancelGreet) { cancelGreet(); cancelGreet = null; }
+      if (!cyclers) return;
+      for (var i = 0; i < cyclers.length; i++) {
+        clearTimeout(cyclers[i].timer);
+        cyclers[i].timer = null;
+        if (cyclers[i].cancel) { cyclers[i].cancel(); cyclers[i].cancel = null; }
+      }
     }
 
     function resetCycle() {
       stopCycle();
-      cycleAt = 0;
-      var el = rows[0] && rows[0].querySelector('.sc');
-      if (el && cycleWords) el.textContent = cycleWords[0];
+      if (!cyclers) return;
+      for (var i = 0; i < cyclers.length; i++) {
+        var c = cyclers[i];
+        c.at = 0;
+        var row = rows[c.i];
+        var el = row && row.querySelector('.sc');
+        if (el) el.textContent = c.words[0];
+      }
     }
 
     function startCycle() {
       stopCycle();
-      if (still || !cycleWords || cycleWords.length < 2 || !rows[0]) return;
-      var el = rows[0].querySelector('.sc');
-      if (!el) return;
+      if (still || !cyclers) return;
+      for (var i = 0; i < cyclers.length; i++) run(cyclers[i]);
 
-      cycleTimer = setTimeout(function tick() {
-        var state = rows[0].getAttribute('data-state');
-        if (state === 'gone' || state === 'idle') { stopCycle(); return; }
+      function run(c) {
+        var row = rows[c.i];
+        if (!row || !c.words || c.words.length < 2) return;
+        var el = row.querySelector('.sc');
+        if (!el) return;
 
-        cycleAt = (cycleAt + 1) % cycleWords.length;
-        el.textContent = cycleWords[cycleAt];
+        c.timer = setTimeout(function tick() {
+          var state = row.getAttribute('data-state');
+          /* Once the row has left the top there is nothing to change. Before
+             it arrives there is nothing to change YET — which is not the same
+             thing, and the difference is a message whose word cycles and one
+             whose word never moves because the clock stopped while it was
+             still waiting to be sent. */
+          if (state === 'gone') { c.timer = null; return; }
+          if (state === 'idle' || state === 'loading') {
+            c.timer = setTimeout(tick, WORD_HOLD);
+            return;
+          }
 
-        if (cancelGreet) cancelGreet();
-        cancelGreet = scramble(rows[0], GREET_SCRAMBLE, function () {
-          cancelGreet = null;
-        });
+          c.at = (c.at + 1) % c.words.length;
+          el.textContent = c.words[c.at];
 
-        cycleTimer = setTimeout(tick, GREET_HOLD + GREET_SCRAMBLE);
-      }, GREET_HOLD);
+          if (c.cancel) c.cancel();
+          c.cancel = scramble(row, WORD_SCRAMBLE, function () { c.cancel = null; });
+
+          c.timer = setTimeout(tick, WORD_HOLD + WORD_SCRAMBLE);
+        }, WORD_HOLD);
+      }
     }
 
     /* Where in the cycle we are. 'seq' is messages arriving; 'hold' is the
@@ -24461,6 +25035,10 @@ window.PF = window.PF || {};
       var set = ROLES[key];
       if (!set) return;
       role = key;
+      /* Whatever was still changing a word belonged to the discipline being
+         left: stop it before shape() replaces the list it was reading, or the
+         old timer keeps dissolving a sentence that is no longer there. */
+      stopCycle();
       /* The old discipline's work goes with it, view and all. */
       exitList();
       hideCta();
@@ -25710,36 +26288,41 @@ window.PF = window.PF || {};
 (function () {
   'use strict';
 
-  var marquee = document.querySelector('[data-marquee]');
-  if (!marquee) return;
-
-  var track = marquee.querySelector('.clients__track');
-  if (!track) return;
+  var rails = document.querySelectorAll('[data-marquee]');
+  if (!rails.length) return;
 
   var motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  /* Under reduced motion the CSS drops the loop entirely and wraps the one
-     track instead, so a second copy would just be a duplicate row of logos. */
-  if (!motionQuery.matches) {
-    var clone = track.cloneNode(true);
-    clone.setAttribute('aria-hidden', 'true');
-    clone.setAttribute('data-clients-clone', '');
-    // The names are for assistive tech and the clone is hidden from it, so
-    // carrying them twice only adds weight to the DOM.
-    clone.querySelectorAll('.visually-hidden').forEach(function (el) {
-      el.remove();
-    });
-    marquee.appendChild(clone);
+  for (var r = 0; r < rails.length; r++) rail(rails[r]);
+
+  function rail(marquee) {
+    var track = marquee.firstElementChild;
+    while (track && track.tagName !== 'UL') track = track.nextElementSibling;
+    if (!track) return;
+
+    /* Under reduced motion the CSS drops the loop entirely and wraps the one
+       track instead, so a second copy would just be a duplicate row of logos. */
+    if (!motionQuery.matches) {
+      var clone = track.cloneNode(true);
+      clone.setAttribute('aria-hidden', 'true');
+      clone.setAttribute('data-clients-clone', '');
+      // The names are for assistive tech and the clone is hidden from it, so
+      // carrying them twice only adds weight to the DOM.
+      clone.querySelectorAll('.visually-hidden').forEach(function (el) {
+        el.remove();
+      });
+      marquee.appendChild(clone);
+    }
+
+    if (!('IntersectionObserver' in window)) return;
+
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) marquee.removeAttribute('data-paused');
+        else marquee.setAttribute('data-paused', '');
+      });
+    }, { rootMargin: '120px 0px' }).observe(marquee);
   }
-
-  if (!('IntersectionObserver' in window)) return;
-
-  new IntersectionObserver(function (entries) {
-    entries.forEach(function (entry) {
-      if (entry.isIntersecting) marquee.removeAttribute('data-paused');
-      else marquee.setAttribute('data-paused', '');
-    });
-  }, { rootMargin: '120px 0px' }).observe(marquee);
 })();
 
 
