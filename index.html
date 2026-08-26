@@ -3477,12 +3477,55 @@ em,
    EXPERIENCE
    -------------------------------------------------------------------------- */
 
+/* A LIST SORTED INTO AN ANSWER.
+
+   Five roles in date order is a record, not an answer. The question the card
+   is actually asked is what he is doing now, and after that, what he did
+   before — so the list is cut in two at that seam and each half is labelled.
+   The current role gets the first band to itself, which is the whole point of
+   a band: it is what "now" looks like when it is one thing.
+
+   Everything else is the same five entries. The card is the height it was —
+   the two labels and the spine take the room the list was leaving empty under
+   the last date. */
+
+.timeline__era:first-of-type { margin-top: var(--s-2); }
+.timeline__era + .timeline__era { margin-top: var(--s-4); }
+
+.timeline__era-label {
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-strong);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin: 0 0 var(--s-2);
+}
+
+/* The entries are spaced on the scale's next step up rather than the one the
+   flat list used: five rows in a card this tall were sitting in the top two
+   thirds with a hole under them, and the room was already paid for. */
 .timeline {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--s-2);
-  margin: var(--s-3) 0;
+  gap: var(--s-3);
+  margin: 0;
 }
+
+/* The spine. It is what makes a column of dots a timeline rather than a set
+   of bullets, and it stops at the first and last dot rather than running the
+   full height of the list — a line that starts above the first entry implies
+   a role the card is not showing. */
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 9px;
+  bottom: 9px;
+  width: 1px;
+  background: var(--border);
+}
+.timeline__era:first-of-type .timeline::before { display: none; }
 
 .timeline__item {
   display: grid;
@@ -3490,15 +3533,53 @@ em,
   align-items: start;
   gap: var(--s-2);
 }
-.timeline__item > span:last-child { display: block; min-width: 0; }
+
+.timeline__what { display: block; min-width: 0; }
+
+/* The employer and the field it was in share a line, the field pushed to the
+   far edge. If the column is too narrow to hold both, the field drops to its
+   own line instead of being cut — nothing here is ever truncated. */
+.timeline__line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0 var(--s-2);
+}
+
+.timeline__field {
+  font-size: var(--fs-meta);
+  line-height: 1.35;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
 
 .timeline__dot {
   width: 5px; height: 5px;
   margin-top: 7px;
   border-radius: 50%;
   background: var(--border-strong);
+  /* The dot sits on the spine, so it needs the card's own surface behind it
+     to read as a stop on the line rather than a bead threaded onto it. */
+  box-shadow: 0 0 0 3px var(--surface);
 }
-.timeline__item:first-child .timeline__dot { background: var(--ink); }
+
+/* Now is a filled dot with a ring around it: the only entry on the card that
+   has not finished. */
+.timeline__item.is-current .timeline__dot {
+  background: var(--ink);
+  box-shadow: 0 0 0 3px var(--surface), 0 0 0 4px var(--ink);
+}
+.timeline__item.is-current .timeline__org { color: var(--ink); }
+
+/* The wider spacing is paid for by the card's own slack, and the slack only
+   exists while the card is one of three in a row and its height is set by the
+   tallest of them. Stacked, the card is exactly as tall as its contents and
+   there is nothing spare to spend, so the list closes back up. */
+@media (max-width: 1119px) {
+  .timeline { gap: var(--s-2); }
+  .timeline__era + .timeline__era { margin-top: var(--s-3); }
+}
 
 .timeline__years {
   font-size: var(--fs-meta);
@@ -7029,11 +7110,47 @@ em,
   to   { transform: rotate(calc(-1 * var(--a) - 360deg)); }
 }
 
+/* ONE COLUMN GIVES WAY, NOT THE PAGE.
+
+   The open card is taller, so everything under the hero moves down by the
+   difference. That is the wrong answer for two thirds of the row below it:
+   the card sits in the right-hand column, and only the right-hand column —
+   about me — is standing in its way. Where I've been and How I work are
+   under the employers' strip, which did not grow, and there is now an empty
+   band of exactly that height above them to move back into.
+
+   So they do: the two left cards are lifted by the same number the page was
+   pushed by, which leaves them exactly where they were sitting, and about me
+   alone takes the shove. The lift is a transform, so it costs the layout
+   nothing and cannot change any card's height — the row is still as tall as
+   its tallest card, and the cards are the size they always were.
+
+   Only from 1120, because that is where the band becomes three columns and
+   about me is genuinely the one underneath the tools. Narrower than that it
+   is stacked, nothing is beside anything, and the honest answer is the one
+   the page already gives: everything moves. */
+@media (min-width: 1120px) {
+  .cell--experience,
+  .cell--process {
+    /* The same curve and the same duration as the card's own growth, so the
+       two motions cancel to stillness rather than to a slide. */
+    transition: transform 520ms cubic-bezier(0.22, 0.68, 0.24, 1);
+    will-change: transform;
+  }
+
+  :root.tools-open .cell--experience,
+  :root.tools-open .cell--process {
+    transform: translateY(calc(-1 * var(--tools-lift, 0px)));
+  }
+}
+
 /* Nothing opens under reduced motion — js/tools.js never builds the ring —
    and this is the belt to those braces. */
 @media (prefers-reduced-motion: reduce) {
   .hero__tools { transition: none; }
   .tools__orbit { display: none; }
+  .cell--experience,
+  .cell--process { transition: none; transform: none; }
 }
 
 
@@ -19929,48 +20046,72 @@ em,
               <div class="card__stack">
                 <h3 class="t-card card__title">where i’ve <em>been</em></h3>
 
-                <ol class="timeline">
-                  <li class="timeline__item">
-                    <span class="timeline__dot" aria-hidden="true"></span>
-                    <span class="timeline__years">2026</span>
-                    <span>
-                      <span class="timeline__org">Sahoo &amp; Co. Design Agency</span>
-                      <span class="timeline__role">Product Designer / Multiple Clients</span>
-                    </span>
-                  </li>
-                  <li class="timeline__item">
-                    <span class="timeline__dot" aria-hidden="true"></span>
-                    <span class="timeline__years">2025–26</span>
-                    <span>
-                      <span class="timeline__org">Natera</span>
-                      <span class="timeline__role">Product / UX Designer</span>
-                    </span>
-                  </li>
-                  <li class="timeline__item">
-                    <span class="timeline__dot" aria-hidden="true"></span>
-                    <span class="timeline__years">2024–25</span>
-                    <span>
-                      <span class="timeline__org">PNC Bank</span>
-                      <span class="timeline__role">Product Designer</span>
-                    </span>
-                  </li>
-                  <li class="timeline__item">
-                    <span class="timeline__dot" aria-hidden="true"></span>
-                    <span class="timeline__years">2023–24</span>
-                    <span>
-                      <span class="timeline__org">CG Infinity</span>
-                      <span class="timeline__role">UX Consultant</span>
-                    </span>
-                  </li>
-                  <li class="timeline__item">
-                    <span class="timeline__dot" aria-hidden="true"></span>
-                    <span class="timeline__years">2022</span>
-                    <span>
-                      <span class="timeline__org">CVS Health</span>
-                      <span class="timeline__role">Junior UI Developer</span>
-                    </span>
-                  </li>
-                </ol>
+                
+                <div class="timeline__era">
+                  <p class="timeline__era-label">Now</p>
+                  <ol class="timeline">
+                    <li class="timeline__item is-current">
+                      <span class="timeline__dot" aria-hidden="true"></span>
+                      <span class="timeline__years">2026</span>
+                      <span class="timeline__what">
+                        <span class="timeline__line">
+                          <span class="timeline__org">Sahoo &amp; Co. Design Agency</span>
+                        </span>
+                        <span class="timeline__role">Product Designer / Multiple Clients</span>
+                      </span>
+                    </li>
+                  </ol>
+                </div>
+
+                <div class="timeline__era">
+                  <p class="timeline__era-label">Before</p>
+                  <ol class="timeline">
+                    <li class="timeline__item">
+                      <span class="timeline__dot" aria-hidden="true"></span>
+                      <span class="timeline__years">2025–26</span>
+                      <span class="timeline__what">
+                        <span class="timeline__line">
+                          <span class="timeline__org">Natera</span>
+                          <span class="timeline__field">Biotech</span>
+                        </span>
+                        <span class="timeline__role">Product / UX Designer</span>
+                      </span>
+                    </li>
+                    <li class="timeline__item">
+                      <span class="timeline__dot" aria-hidden="true"></span>
+                      <span class="timeline__years">2024–25</span>
+                      <span class="timeline__what">
+                        <span class="timeline__line">
+                          <span class="timeline__org">PNC Bank</span>
+                          <span class="timeline__field">Finance</span>
+                        </span>
+                        <span class="timeline__role">Product Designer</span>
+                      </span>
+                    </li>
+                    <li class="timeline__item">
+                      <span class="timeline__dot" aria-hidden="true"></span>
+                      <span class="timeline__years">2023–24</span>
+                      <span class="timeline__what">
+                        <span class="timeline__line">
+                          <span class="timeline__org">CG Infinity</span>
+                          <span class="timeline__field">Enterprise</span>
+                        </span>
+                        <span class="timeline__role">UX Consultant</span>
+                      </span>
+                    </li>
+                    <li class="timeline__item">
+                      <span class="timeline__dot" aria-hidden="true"></span>
+                      <span class="timeline__years">2022</span>
+                      <span class="timeline__what">
+                        <span class="timeline__line">
+                          <span class="timeline__org">CVS Health</span>
+                          <span class="timeline__field">Healthcare</span>
+                        </span>
+                        <span class="timeline__role">Junior UI Developer</span>
+                      </span>
+                    </li>
+                  </ol>
+                </div>
 
                 <a class="cta cta--ink" href="#" data-placeholder-link>
                   View résumé <span class="cta__arrow" aria-hidden="true">→</span>
@@ -24604,7 +24745,7 @@ window.PF = window.PF || {};
      face while it resolves, and settles into the pixel one the rest of the
      thread is set in. Slow enough to watch — the whole point is that you can
      see it happening. */
-  ROLES.design[2].opt = { scramble: true, shuffle: true, dwell: 700 };
+  ROLES.design[2].opt = { scramble: true, shuffle: true, dwell: 3800 };
 
   function esc(t) {
     return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -24697,7 +24838,6 @@ window.PF = window.PF || {};
   /* The typeface shuffle runs longer than a plain decode, because it has two
      things to show rather than one: the noise resolving, and the type settling
      into the face the thread is set in. */
-  var SHUFFLE_MS = 2800;
   /* The faces it passes through on the way. Every one of them is already
      loaded for the artifacts, and all of them set this sentence to the same
      number of lines as the pixel face — measured, not assumed, because a
@@ -24712,6 +24852,10 @@ window.PF = window.PF || {};
   ];
   var WORD_HOLD = 1700;      /* each word stands, and is read, before the next */
   var WORD_SCRAMBLE = 620;   /* and the change between them is quick */
+  var OR_SCRAMBLE = 1500;    /* except the one that changes alphabet */
+
+  /* Odia begins at U+0B00; nothing else on the page is above the latin range. */
+  function isOdia(s) { return !!s && s.charCodeAt(0) > 0x2FF; }
 
   /* ONE MESSAGE HOLDS LONGER THAN ITS LENGTH ASKS FOR. The greeting does not:
      "Hello :)" is two words and gets the two words' worth of pause the rule
@@ -24785,7 +24929,7 @@ window.PF = window.PF || {};
     return { by: by, or: byOr, ctx: cv };
   }
 
-  function scramble(row, ms, done) {
+  function scramble(row, ms, done, mix) {
     var host = row.querySelector('.msg__text');
     if (!host) { if (done) done(); return; }
 
@@ -24833,7 +24977,18 @@ window.PF = window.PF || {};
       for (j = 0; j < text.length; j++) {
         var ch = text.charAt(j);
         var w = Math.round(buckets.ctx.measureText(ch).width * 100);
-        var same = (poolFor(ch) === POOL_OR ? buckets.or : buckets.by)[w];
+        var own = poolFor(ch) === POOL_OR ? buckets.or : buckets.by;
+        var same = own[w];
+        /* CROSSING SCRIPTS, ONCE. The rule above keeps noise inside the word's
+           own alphabet, and it is the right rule everywhere but one place:
+           the moment the greeting stops being a latin word and becomes an
+           Odia one. There the crossing IS the event, so for that transition
+           both alphabets are in play and a letter may stand in for one from
+           the other script — provided, as ever, that it is exactly as wide. */
+        if (mix) {
+          var other = (own === buckets.or ? buckets.by : buckets.or)[w];
+          if (other && other.length) same = (same || []).concat(other);
+        }
         /* Only a character with a same-width understudy is ever hidden. */
         pool.push(ch === ' ' || !same || same.length < 2 ? null : same);
         if (pool[j]) total++;
@@ -24874,8 +25029,10 @@ window.PF = window.PF || {};
       if (!t0) t0 = now;
       var p = Math.min(1, (now - t0) / ms);
       /* The noise itself steps at about 24 a second; the resolve is smooth.
-         Re-rolling every frame reads as static rather than as characters. */
-      var roll = now - last > 42;
+         Re-rolling every frame reads as static rather than as characters.
+         The crossing runs hotter, because it is meant to look like an
+         alphabet changing its mind. */
+      var roll = now - last > (mix ? 30 : 42);
       if (roll) last = now;
       for (var a = 0; a < slots.length; a++) {
         var s = slots[a], out = '';
@@ -25291,25 +25448,91 @@ window.PF = window.PF || {};
        never changes height under it. The last step is no face at all: the
        inline style comes off and the stylesheet's pixel face takes over,
        which is the sentence arriving home rather than being told to. */
-    function shuffleFaces(row, ms) {
-      var el = row.querySelector('.msg__text');
-      if (!el) return null;
+    /* ONE WORD AT A TIME, AND SLOWLY ENOUGH TO BE SEEN.
 
-      var step = Math.max(240, Math.round(ms / (SHUFFLE_FACES.length + 1)));
-      var i = 0;
-      el.style.fontFamily = SHUFFLE_FACES[0];
+       The sentence is not searching for its letters, it is searching for its
+       typeface, and that is only legible if you can watch it happen: a word
+       tries four faces at a rate you can count, lands in Geist Pixel, and the
+       next word starts. A whole line changing face at once was a line that
+       looked like it had loaded a webfont late. A word doing it, in turn,
+       reads as the sentence being set.
 
-      var t = setInterval(function () {
-        i++;
-        if (i >= SHUFFLE_FACES.length) { done(); return; }
-        el.style.fontFamily = SHUFFLE_FACES[i];
-      }, step);
+       The words are wrapped once and kept — the gradient spans already in the
+       line are left exactly where they are, since this walks text nodes and
+       replaces them in place rather than rewriting the message. */
+    var SHUFFLE_STEP = 150;    /* how long one face is held */
+    var SHUFFLE_TRIES = 4;     /* how many it tries before the real one */
 
-      function done() {
-        clearInterval(t);
-        el.style.fontFamily = '';
+    function shuffleWords(host) {
+      var had = host.querySelectorAll('.sh');
+      if (had.length) return [].slice.call(had);
+
+      var nodes = [], out = [];
+      (function walk(n) {
+        for (var i = 0; i < n.childNodes.length; i++) {
+          var c = n.childNodes[i];
+          if (c.nodeType === 3) nodes.push(c);
+          else if (c.nodeType === 1) walk(c);
+        }
+      })(host);
+
+      for (var i = 0; i < nodes.length; i++) {
+        var node = nodes[i];
+        var parts = node.nodeValue.split(/(\s+)/);
+        var frag = document.createDocumentFragment();
+        for (var j = 0; j < parts.length; j++) {
+          if (!parts[j]) continue;
+          if (/^\s+$/.test(parts[j])) {
+            frag.appendChild(document.createTextNode(parts[j]));
+            continue;
+          }
+          var s = document.createElement('span');
+          s.className = 'sh';
+          s.textContent = parts[j];
+          frag.appendChild(s);
+          out.push(s);
+        }
+        if (node.parentNode) node.parentNode.replaceChild(frag, node);
       }
-      return done;
+      return out;
+    }
+
+    function shuffleFaces(row) {
+      var host = row.querySelector('.msg__text');
+      if (!host) return null;
+
+      var words = shuffleWords(host);
+      if (!words.length) return null;
+
+      var timers = [];
+      var cycle = SHUFFLE_TRIES * SHUFFLE_STEP;
+
+      for (var k = 0; k < words.length; k++) {
+        (function (el, at) {
+          for (var f = 0; f < SHUFFLE_TRIES; f++) {
+            (function (face, when) {
+              timers.push(setTimeout(function () {
+                el.style.fontFamily = face;
+              }, when));
+            })(SHUFFLE_FACES[(at + f) % SHUFFLE_FACES.length],
+               at * cycle + f * SHUFFLE_STEP);
+          }
+          /* And then it is simply the face the page is set in. */
+          timers.push(setTimeout(function () {
+            el.style.fontFamily = '';
+          }, at * cycle + SHUFFLE_TRIES * SHUFFLE_STEP));
+        })(words[k], k);
+      }
+
+      return {
+        /* The letters resolve on the same clock as the faces, so a word comes
+           out of the noise on the beat it stops changing typeface. */
+        ms: words.length * cycle,
+        stop: function () {
+          for (var t = 0; t < timers.length; t++) clearTimeout(timers[t]);
+          for (var w = 0; w < words.length; w++) words[w].style.fontFamily = '';
+        }
+      };
     }
 
     /* ---- the words that keep changing ------------------------------------
@@ -25377,10 +25600,53 @@ window.PF = window.PF || {};
             return;
           }
 
+          var was = c.words[c.at];
           c.at = (c.at + 1) % c.words.length;
-          el.textContent = c.words[c.at];
+          var word = c.words[c.at];
 
           if (c.cancel) c.cancel();
+
+          /* THE ONE CHANGE THAT IS NOT A CHANGE OF WORD. Hello to Namaste is
+             the same alphabet saying a different thing, and a quick decode is
+             the right size of event for it. Namaste to ନମସ୍କାର is the writing
+             system itself changing, and that deserves to be watched: the word
+             you can read comes apart first, in latin noise, and what settles
+             out of it is in another script entirely. Twice as long, hotter
+             noise, and the two alphabets share the same widths throughout, so
+             nothing in the line moves while it happens. */
+          if (isOdia(word) && !isOdia(was)) {
+            var half = Math.round(OR_SCRAMBLE * 0.42);
+
+            /* THE ONE PLACE THE WIDTH RULE CANNOT HOLD ON ITS OWN. Odia is a
+               shaped script: ସ୍କ is one cluster, and dropping a latin letter
+               beside its virama pulls the cluster apart and changes how wide
+               the word draws — so equal-width stand-ins stop guaranteeing an
+               equal-width line. The word is therefore given a floor for the
+               duration, the width it had before any of this started, and the
+               floor is lowered afterwards rather than dropped: the greeting
+               settles into its new size instead of snapping to it. */
+            var was_w = Math.ceil(el.getBoundingClientRect().width);
+            el.style.display = 'inline-block';
+            el.style.minWidth = was_w + 'px';
+
+            c.cancel = scramble(row, half, function () {
+              el.textContent = word;
+              c.cancel = scramble(row, OR_SCRAMBLE - half, function () {
+                c.cancel = null;
+                el.style.transition = 'min-width 280ms cubic-bezier(0.22, 0.68, 0.24, 1)';
+                el.style.minWidth = '0px';
+                setTimeout(function () {
+                  el.style.transition = '';
+                  el.style.display = '';
+                  el.style.minWidth = '';
+                }, 320);
+              }, true);
+            }, true);
+            c.timer = setTimeout(tick, hold + OR_SCRAMBLE);
+            return;
+          }
+
+          el.textContent = word;
           c.cancel = scramble(row, WORD_SCRAMBLE, function () { c.cancel = null; });
 
           c.timer = setTimeout(tick, hold + WORD_SCRAMBLE);
@@ -26028,10 +26294,10 @@ window.PF = window.PF || {};
           if (!still && row.hasAttribute('data-scramble')) {
             if (cancelScramble) cancelScramble();
             var shuffling = row.hasAttribute('data-shuffle');
-            var stopFaces = shuffling ? shuffleFaces(row, SHUFFLE_MS) : null;
-            cancelScramble = scramble(row, shuffling ? SHUFFLE_MS : SCRAMBLE_MS,
+            var faces = shuffling ? shuffleFaces(row) : null;
+            cancelScramble = scramble(row, faces ? faces.ms : SCRAMBLE_MS,
               function () {
-                if (stopFaces) stopFaces();
+                if (faces) faces.stop();
                 cancelScramble = null;
               });
           }
@@ -27186,12 +27452,27 @@ window.PF = window.PF || {};
 
   /* The open card is as tall as it is wide, and the ring's radius is a
      fraction of the same number. Both are measured rather than guessed,
-     because the card's width is a grid column and changes with the window. */
+     because the card's width is a grid column and changes with the window.
+
+     The third number is the difference between the two heights — how much
+     taller the page gets while the ring is up. The page below the hero is
+     told that number so it can decide, column by column, what should move
+     and what should stay: only the column under this card gives way. */
+  var rest = 0;
+
   function measure() {
-    var w = card.getBoundingClientRect().width;
+    var box = card.getBoundingClientRect();
+    var w = box.width;
     if (!w) return;
+    /* The rail's own height, taken only while the card is a rail. Reading it
+       open would measure the square and the lift would collapse to nothing.
+       The class, not the flag: set() moves the flag before it moves the card,
+       so on the way closed the flag says rail while the box is still square. */
+    if (!card.classList.contains('is-open')) rest = Math.round(box.height);
     card.style.setProperty('--tools-square', Math.round(w) + 'px');
     card.style.setProperty('--tools-r', Math.round(w * 0.33) + 'px');
+    document.documentElement.style.setProperty(
+      '--tools-lift', Math.max(0, Math.round(w) - rest) + 'px');
   }
 
   measure();
@@ -27216,6 +27497,10 @@ window.PF = window.PF || {};
        duration. */
     var host = card.closest('.hero-card');
     if (host) host.classList.toggle('tools-open', open);
+    /* And the page at large, because the section under the hero has to know
+       too: the card takes its room out of one column down there, not out of
+       the whole page. */
+    document.documentElement.classList.toggle('tools-open', open);
     /* Nothing is going past while the ring is up; nothing turns while the rail
        is. One animation at a time, always. */
     rail.toggleAttribute('data-paused', open);
