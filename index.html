@@ -3787,6 +3787,11 @@ em,
   box-shadow: 0 0 0 3px var(--surface), 0 0 0 4px var(--ink);
 }
 .tl__stop.is-current .tl__years { color: var(--ink); }
+
+/* On the line the marker rides with the year, after a separator; stacked it
+   takes a line of its own, and the separator would be a bullet at the end of
+   a line pointing at nothing. */
+.tl__now::before { content: "· "; }
 .tl__stop.is-current .tl__mark {
   background: linear-gradient(to right, var(--border) 55%, transparent);
 }
@@ -13282,6 +13287,103 @@ em,
    in a narrow row is a label with three logos behind it.
    -------------------------------------------------------------------------- */
 
+/* --------------------------------------------------------------------------
+   WHERE I'VE BEEN, STOOD BACK UP
+
+   The line is a line because it has a column of the header's composition to
+   run along. Once the header is a single column that width is gone, and five
+   stops across a phone is five stops nobody can read — the roles wrap, the
+   fields stop lining up, and the longest employer takes two lines while the
+   others take one.
+
+   So below the composition breakpoint it is the card it always was: a spine
+   down the left, dots on it, the years in their own column and the role
+   beside them. Newest first, because the first question anyone brings to it
+   is what he is doing now — which the horizontal version answers by putting
+   that stop at the end of the line, and this one answers by putting it at the
+   top. Same five roles, same marks, read the way each shape reads best.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 959px) {
+  .hero__past .tl {
+    display: flex;
+    /* Reversed rather than reordered in the markup: the source stays
+       chronological, which is what the horizontal version and a screen reader
+       both want. */
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: var(--s-4);
+    margin-block: 0;
+  }
+
+  .hero__past .tl__stop {
+    display: grid;
+    /* Wide enough for the ring on the current stop, which is fifteen pixels
+       across and centred on a one-pixel line. */
+    grid-template-columns: 13px clamp(62px, 16vw, 78px) minmax(0, 1fr);
+    /* Named rather than implicit, because the spine spans them: `-1` is the
+       end of the EXPLICIT grid, and with no rows declared that is line one —
+       the segment was being sized to the height of the year on its own. */
+    grid-template-rows: auto auto auto;
+    column-gap: var(--s-2);
+    align-items: start;
+    padding-right: 0;
+  }
+
+  /* The rule turns ninety degrees: a segment down the left of each stop,
+     reaching into the gap below it so five segments meet and read as one
+     spine. The last of them — first on screen, since the column is reversed —
+     stops at its own stop rather than running on into nothing. */
+  .hero__past .tl__mark {
+    grid-column: 1;
+    grid-row: 1 / span 3;
+    justify-self: center;
+    width: 1px;
+    height: calc(100% + var(--s-4));
+    margin: 7px 0 0;
+    background: var(--border);
+  }
+
+  /* The oldest stop is at the foot of the column and there is nothing under it
+     for the line to reach, so it fades instead of stopping dead — the same
+     open end the current role gets when the timeline is a line. */
+  .hero__past .tl__stop:first-child .tl__mark {
+    height: 100%;
+    background: linear-gradient(to bottom, var(--border) 45%, transparent);
+  }
+
+  .hero__past .tl__dot {
+    left: 50%;
+    top: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  .hero__past .tl__stop.is-current .tl__mark {
+    background: var(--border);
+  }
+
+  /* "2026 · Now" is half again as wide as a plain year, and a year column set
+     to the widest of them wastes the width the employers need. It wraps
+     instead. */
+  .hero__past .tl__years {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    padding-top: 1px;
+    white-space: normal;
+  }
+
+  .hero__past .tl__now { display: block; }
+  .hero__past .tl__now::before { content: none; }
+
+  .hero__past .tl__org {
+    grid-column: 3;
+    grid-row: 1;
+    min-height: 0;
+  }
+  .hero__past .tl__role  { grid-column: 3; grid-row: 2; }
+  .hero__past .tl__field { grid-column: 3; grid-row: 3; margin-top: 6px; }
+}
+
 @media (min-width: 720px) and (max-width: 959px) {
   .hero__clients {
     flex-direction: row;
@@ -13458,23 +13560,6 @@ em,
     font-size: clamp(12px, 2.6vw, 14px);
     color: var(--ink-secondary);
   }
-
-  .hero__past .tl {
-    grid-template-columns: minmax(0, 1fr);
-    margin-block: 0;
-    gap: var(--s-3);
-  }
-
-  /* Stacked, the rule turns back into a spine: it runs down the left of each
-     stop rather than across the top of it. */
-  .hero__past .tl__stop { padding-right: 0; }
-  .hero__past .tl__mark { margin: 8px 0 10px; }
-  /* The card has no side padding at this width, so a dot centred on the
-     line's first pixel loses its left half over the edge. It sits just inside
-     instead — enough for the ring on the current one to clear too. */
-  .hero__past .tl__dot { left: 5px; transform: translate(0, -50%); }
-  .hero__past .tl__org { min-height: 0; }
-  .hero__past .tl__stop:last-child .tl__mark { margin-right: 0; }
 
   .hero__tools {
     /* The same order as the strip above it, so it lands directly under it in
@@ -20173,7 +20258,7 @@ em,
                 <span class="tl__field">Biotech</span>
               </li>
               <li class="tl__stop is-current">
-                <span class="tl__years">2026 &middot; Now</span>
+                <span class="tl__years">2026 <span class="tl__now">Now</span></span>
                 <span class="tl__mark" aria-hidden="true"><i class="tl__dot"></i></span>
                 <span class="tl__org">Sahoo &amp; Co. Design Agency</span>
                 <span class="tl__role">Product Designer</span>
