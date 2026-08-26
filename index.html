@@ -4539,6 +4539,13 @@ em,
 .hero__thread.is-windowed {
   overflow: hidden;
 
+  /* Where the dissolve finishes, as a fraction of the box. It is declared
+     once, here, because two things depend on it: the mask below, and the
+     clearance the archive leaves above its first message so that scrolling
+     to the top of the conversation puts the opening lines fully clear of the
+     fade rather than half inside it. */
+  --fade-stop: 9%;
+
   /* THE TOP EDGE IS A DISSOLVE, NOT A CUT. A message on its way out used to
      be fully opaque right up to the pixel where the box clipped it, which
      reads as content being severed rather than leaving. The box carries a
@@ -4553,15 +4560,29 @@ em,
      arrived, and nothing in the middle of the box, ever softens. */
   -webkit-mask-image: linear-gradient(to bottom,
                         rgba(0, 0, 0, 0) 0,
-                        rgba(0, 0, 0, 0.5) 3.5%,
-                        rgba(0, 0, 0, 1) 9%,
+                        rgba(0, 0, 0, 0.5) calc(var(--fade-stop) * 0.39),
+                        rgba(0, 0, 0, 1) var(--fade-stop),
                         rgba(0, 0, 0, 1) 100%);
           mask-image: linear-gradient(to bottom,
                         rgba(0, 0, 0, 0) 0,
-                        rgba(0, 0, 0, 0.5) 3.5%,
-                        rgba(0, 0, 0, 1) 9%,
+                        rgba(0, 0, 0, 0.5) calc(var(--fade-stop) * 0.39),
+                        rgba(0, 0, 0, 1) var(--fade-stop),
                         rgba(0, 0, 0, 1) 100%);
 }
+
+/* THE TOP OF THE ARCHIVE IS NOT THE TOP OF THE FADE.
+
+   Scrolled all the way back, the first thing said should read as cleanly as
+   the last — and with the dissolve sitting on the box's top edge, it did not:
+   "Hello" arrived at the top of the scroll with the band across it, softened
+   at the exact moment it is meant to be the beginning.
+
+   So the conversation starts lower than the box does. The archive carries a
+   band of clearance above its first message, deeper than the dissolve, and
+   the only thing the fade has to work on at the top of the scroll is that
+   empty band. Script sets the number, because the depth of the fade is a
+   fraction of a box whose height it does not know until it opens. */
+.hero__thread.is-windowed.is-archive { padding-top: var(--arch-top, 0px); }
 
 /* --------------------------------------------------------------------------
    ...AND STOPS CLIPPING ONCE THE CONVERSATION IS OVER
@@ -23053,6 +23074,14 @@ window.PF = window.PF || {};
   var POP_MS = 360;     /* the bubble's arrival, matched to the CSS */
   var GAP_MS = 1500;    /* the message stands, finished, before the next begins */
   var REACT_MS = 700;   /* after the last message has settled */
+  /* THE LAST MESSAGE GETS THE ROOM IT ASKS FOR. The closing line and the
+     reactions under it used to be talked over: the list of work started
+     revealing on the same frame the first chip landed, so the one moment the
+     sequence is building towards was competing with five project names
+     arriving underneath it. Now the chips run their course, and then the
+     finished thing — line, reactions and all — simply stands for a couple of
+     seconds before the work appears under it. */
+  var PROJECTS_MS = 2400;
   var SHIFT_MS = 700;   /* the window opening: matched to the CSS transition */
   var HOLD_MS = 5200;   /* the finished thread stands, reactions and all */
   var FADE_MS = 340;    /* the whole stack dims out together */
@@ -23408,8 +23437,10 @@ window.PF = window.PF || {};
       thread.classList.add('is-windowed');
 
       /* A resize re-measures the box from scratch, which would quietly undo an
-         archive that had already opened out into the card. Put it back. */
-      if (archived) expand();
+         archive that had already opened out into the card. Put it back, and
+         with it the clearance above the first message — the fade is a
+         fraction of a box that has just changed height. */
+      if (archived) { expand(); topRoom(archH, true); }
     }
 
     /* Which role the markup starts on decides how many rows are in play, and
@@ -23878,11 +23909,30 @@ window.PF = window.PF || {};
       var k = 0;
       (function nextRx() {
         if (k >= RX_PLAN.length) {
-          phase = 'hold';
           running = false;
-          /* THE END OF THE GUIDED PART. Everything has been said, the work is
-             listed, and from here the viewport belongs to the reader. */
-          openArchive();
+
+          /* The chips have finished. Nothing happens for a beat — this is the
+             end of what he has to say, with the reactions to it sitting under
+             it, and it is allowed to be looked at before the conversation
+             turns into a menu.
+
+             The phase stays 'react' through the whole tail, because burst()
+             sets absolute states and replays cleanly from the top: a reader
+             who scrolls away in the middle of this and comes back gets the
+             ending again rather than a half-built one. */
+          timer = setTimeout(function () {
+            /* And then the work, under the last thing said about it. */
+            showProjects();
+
+            /* THE END OF THE GUIDED PART. The rows arrive one after another;
+               the box belongs to the reader once the last of them has
+               landed. */
+            var n = plist ? plist.children.length : 0;
+            timer = setTimeout(function () {
+              phase = 'hold';
+              openArchive();
+            }, 90 * n + 560);
+          }, PROJECTS_MS);
           return;
         }
         var item = RX_PLAN[k++];
@@ -23968,9 +24018,11 @@ window.PF = window.PF || {};
             if (idx >= count) {
               timer = setTimeout(function () {
                 phase = 'react';
+                /* The reactions, and then — after they have been allowed to
+                   stand — the work. Both are burst()'s tail now: the list
+                   used to start on this same frame, underneath chips that
+                   were still arriving. */
                 burst();
-                /* The work itself, under the last thing said about it. */
-                showProjects();
               }, REACT_MS);
               return;
             }
@@ -24044,6 +24096,7 @@ window.PF = window.PF || {};
       archived = false;
       clearTimeout(idleTimer);
       thread.classList.remove('is-archive');
+      thread.style.removeProperty('--arch-top');
       thread.scrollTop = 0;
       /* Back to the box the sequence was measured for — instantly, because
          this runs while the stack is faded out and nothing about it should be
@@ -24076,6 +24129,40 @@ window.PF = window.PF || {};
        exactly as it was. */
     var BOX_TAIL = 24;   /* air between the opened window and the card's edge */
     var MIN_GROW = 48;   /* below this it is a twitch, not an opening */
+    var TOP_AIR  = 18;   /* clear of the dissolve, and visibly clear of it */
+    var archH = 0;       /* the height the archive settles at */
+
+    /* ---- the beginning is not in the fade --------------------------------
+
+       Scrolled back to the start, the opening lines have to be as clean as
+       everything else — which means they cannot begin where the dissolve
+       does. The fade is a fraction of the box, declared in the stylesheet and
+       read from it here so the two can never drift apart, and the archive
+       holds that much clearance above its first message plus a little more,
+       so at the top of the scroll the band has nothing but empty space to
+       work on.
+
+       The frame is kept while it is applied: the content moves down by
+       exactly the clearance, so the scroll offset moves with it and nothing
+       the reader is looking at shifts. */
+    function fadeDepth(h) {
+      var stop = parseFloat(
+        window.getComputedStyle(thread).getPropertyValue('--fade-stop')) || 9;
+      return Math.ceil(h * stop / 100);
+    }
+
+    function topRoom(h, keepFrame) {
+      var was = parseFloat(window.getComputedStyle(thread).paddingTop) || 0;
+      var pad = fadeDepth(h || thread.clientHeight) + TOP_AIR;
+      if (Math.abs(pad - was) < 1) return;
+      thread.style.setProperty('--arch-top', pad + 'px');
+      if (keepFrame) {
+        thread.style.scrollBehavior = 'auto';
+        thread.scrollTop = thread.scrollTop + (pad - was);
+        void thread.offsetHeight;
+        thread.style.scrollBehavior = '';
+      }
+    }
 
     /* `opening` is the difference between the one time this is a moment — the
        window unfolding as the conversation ends — and every time afterwards
@@ -24085,6 +24172,7 @@ window.PF = window.PF || {};
        leaves the reader exactly where they were. */
     function expand(opening) {
       var card = thread.closest('.section--hero');
+      archH = Math.ceil(boxH);
       if (!card || !boxH) return false;
 
       var base = Math.ceil(boxH);
@@ -24108,6 +24196,7 @@ window.PF = window.PF || {};
       if (room < MIN_GROW) return false;
 
       var target = base + room;
+      archH = target;
 
       if (!opening) {
         thread.style.transition = 'none';
@@ -24245,7 +24334,13 @@ window.PF = window.PF || {};
       /* The letterbox becomes a window: it takes whatever height the card is
          already holding open around it — and where it cannot, it at least
          opens on the end of the conversation rather than short of it. */
-      if (!expand(true)) settleToEnd();
+      var grew = expand(true);
+
+      /* And the top of the conversation is set clear of the dissolve, at the
+         height the window is settling at rather than the one it is leaving. */
+      topRoom(archH, true);
+
+      if (!grew) settleToEnd();
 
       /* And the clock on the archive starts here. */
       armIdle();
