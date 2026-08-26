@@ -25029,8 +25029,13 @@ window.PF = window.PF || {};
      to be about type: it lands as noise set in somebody else's face, changes
      face while it resolves, and settles into the pixel one the rest of the
      thread is set in. Slow enough to watch — the whole point is that you can
-     see it happening. */
-  ROLES.design[2].opt = { scramble: true, shuffle: true, dwell: 3800 };
+     see it happening.
+
+     And then it stands. The dwell covers the six seconds the line spends
+     writing itself and three more after the last word lands, because a
+     sentence that takes that long to arrive and is gone a beat later reads as
+     a loading state rather than as the thing being said. */
+  ROLES.design[2].opt = { scramble: true, shuffle: true, dwell: 6000 };
 
   function esc(t) {
     return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
