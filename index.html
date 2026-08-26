@@ -4438,6 +4438,19 @@ em,
    than the middle of the cluster.
    -------------------------------------------------------------------------- */
 
+/* The end state: a window the reader drives. The mask above still applies —
+   it is on the same element — so content dissolves into the top edge while it
+   is scrolled exactly as it did while it was animating. Scroll chaining is
+   left at its default, so reaching either end of the conversation carries on
+   scrolling the page rather than trapping the pointer. */
+.hero__thread.is-windowed.is-archive {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
 .hero__thread.is-windowed {
   overflow: hidden;
 
@@ -23543,12 +23556,49 @@ window.PF = window.PF || {};
         row.innerHTML = '<span class="plist__name"></span>' +
                         '<span class="plist__go" aria-hidden="true">\u2192</span>';
         row.querySelector('.plist__name').textContent = name;
+        wire(row, name);
         plist.appendChild(row);
       }
 
       if (!plist.children.length) { plist = null; return null; }
       track.appendChild(plist);
       return plist;
+    }
+
+    /* Pointing at a name brings that project up in the browser beside the
+       conversation. Announced rather than called: js/projects.js listens for
+       it and answers with its own `show()`, so the transition is the browser's
+       existing one and neither file has to know the other exists.
+
+       Keyboard gets the same thing on focus. Nothing happens on the way out —
+       the browser keeps whatever was asked for last, which is what its arrows
+       and its swipe already do.
+
+       WITHOUT HOVER, THE FIRST TAP IS THE LOOK. On a touch screen a row that
+       is not the one showing takes the tap to bring it up; tapping the same
+       row again follows the link, which is the browser's own CTA behaviour
+       arrived at from the other side. A pointer that can hover never sees
+       this: the link is a link on the first click. */
+    function announce(name) {
+      try {
+        document.dispatchEvent(new CustomEvent('pf:project', { detail: { name: name } }));
+      } catch (err) { /* no CustomEvent: the row is still a link */ }
+    }
+
+    var armed = null;
+
+    function wire(row, name) {
+      row.addEventListener('pointerenter', function () { announce(name); });
+      row.addEventListener('focus', function () { announce(name); });
+
+      row.addEventListener('click', function (e) {
+        var noHover = window.matchMedia &&
+                      window.matchMedia('(hover: none)').matches;
+        if (!noHover || armed === row) return;   /* follow the link */
+        e.preventDefault();
+        armed = row;
+        announce(name);
+      });
     }
 
     /* Revealed a row at a time, on the same easing as everything else, and
@@ -23588,6 +23638,7 @@ window.PF = window.PF || {};
 
     function hideProjects() {
       if (!plist) return;
+      armed = null;
       plist.setAttribute('hidden', '');
       for (var i = 0; i < plist.children.length; i++) {
         plist.children[i].classList.remove('is-in');
@@ -23713,7 +23764,9 @@ window.PF = window.PF || {};
         if (k >= RX_PLAN.length) {
           phase = 'hold';
           running = false;
-          arm();
+          /* THE END OF THE GUIDED PART. Everything has been said, the work is
+             listed, and from here the viewport belongs to the reader. */
+          openArchive();
           return;
         }
         var item = RX_PLAN[k++];
@@ -23811,6 +23864,51 @@ window.PF = window.PF || {};
       }, 0);
     }
 
+    /* ---- from narrative to archive ---------------------------------------
+
+       The sequence is guided: it positions its own content, and a reader
+       scrolling in the middle of that would be fighting it. So nothing is
+       scrollable until there is nothing left to say — and then everything is.
+
+       The switch is a swap of one mechanism for another at the same visual
+       position. The track has been carrying the content on a transform; that
+       offset becomes a scroll offset of exactly the same size and the
+       transform goes to zero, so the frame the reader is looking at does not
+       move by a pixel while the box changes from a stage into a window.
+
+       Everything that had left through the top comes back — they are messages
+       in a history now, not frames in an animation — and the box keeps its
+       mask, so content still dissolves into the top edge as it is scrolled
+       rather than being cut. It keeps its dimensions too: this is a window
+       onto the conversation, not the conversation unrolled.
+
+       The loop does not come round again. An archive that erases itself every
+       thirty seconds is not an archive. */
+    var archived = false;
+
+    function openArchive() {
+      if (archived || !track) return;
+      archived = true;
+      phase = 'archive';
+      clearTimeout(timer);
+      running = false;
+
+      /* Everything is readable again. */
+      for (var i = 0; i < count; i++) {
+        if (rows[i].getAttribute('data-state') === 'gone') {
+          rows[i].setAttribute('data-state', 'settled');
+        }
+      }
+
+      var y = Math.max(0, -offsetY);
+      track.style.transition = 'none';
+      track.style.transform = 'none';
+      thread.classList.add('is-archive');
+      thread.scrollTop = y;
+      void thread.offsetHeight;
+      track.style.transition = '';
+    }
+
     /* ---- the loop --------------------------------------------------------
 
        An introduction that plays once is an introduction most people miss, so
@@ -23870,6 +23968,10 @@ window.PF = window.PF || {};
     /* Re-arms whatever the current phase is waiting on. */
     function arm() {
       clearTimeout(timer);
+      /* Once the archive is open there is nothing left to re-arm: the reader
+         is in charge of the box, and a sequence restarting under them would
+         scroll the page out from under their hand. */
+      if (archived) return;
       if (phase === 'hold') timer = setTimeout(restart, HOLD_MS);
       else if (phase === 'reset') restart();
       /* The burst sets absolute states, so replaying it from the top is
@@ -23903,6 +24005,9 @@ window.PF = window.PF || {};
       /* The same content-aware rule, run once: the end of the conversation,
          parked on the anchor with whatever came before it above the edge. */
       place(true);
+      /* Nothing here is going to animate, so the box is a window from the
+         first frame: the whole conversation is there to be scrolled. */
+      openArchive();
       phase = 'hold';
       thread.setAttribute('data-reactions', 'on');
       for (q = 0; q < RX_PLAN.length; q++) {
@@ -24138,6 +24243,34 @@ window.PF = window.PF || {};
 
   document.addEventListener('pf:role', function (e) {
     setMode(e && e.detail && e.detail.role);
+  });
+
+  /* ---- driven from the thread's project list --------------------------
+
+     The list at the end of the conversation names the same projects this
+     browser holds, because both are read from the same cards. Pointing at a
+     name there brings the project up here — through the same `show()` every
+     arrow, key and swipe uses, so the transition is the one the browser
+     already has and there is nothing new to look at.
+
+     Matched by name rather than by index: the two sets are not the same
+     length or the same order, and a name is what a reader is pointing at. A
+     name with no slide in the current mode is simply ignored. */
+  function slideName(el) {
+    var t = el.querySelector('.pv__title');
+    return (t ? t.textContent : el.getAttribute('aria-label') || '').trim().toLowerCase();
+  }
+
+  document.addEventListener('pf:project', function (e) {
+    var want = e && e.detail && e.detail.name;
+    if (!want) return;
+    want = String(want).trim().toLowerCase();
+    for (var i = 0; i < slides.length; i++) {
+      if (slideName(slides[i]) !== want) continue;
+      if (i === at) return;
+      show(i, i > at ? 1 : -1);
+      return;
+    }
   });
 
   function step(dir) { show(at + dir, dir); }
