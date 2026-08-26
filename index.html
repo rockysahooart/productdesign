@@ -4090,7 +4090,13 @@ em,
    -------------------------------------------------------------------------- */
 
 .plist {
-  display: block;
+  /* A column that spends whatever height it is given: the rows keep their own
+     padding and the space left over is dealt out evenly between them, so the
+     list fills the viewport at every width without a number per breakpoint.
+     js/thread.js sets the height, because only it knows the box. */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   /* The pronounced pause. This is the seam between what he says and what he
      has made, and it is the largest interval in the whole composition —
      bigger than any gap between messages, so the change of subject is felt
@@ -4106,11 +4112,16 @@ em,
 
 .plist__row {
   display: flex;
-  align-items: baseline;
+  /* Centred, not baselined. The rows are tall enough now that a baseline puts
+     the name and the arrow slightly high in their own box; centring sits both
+     on the row's optical middle. */
+  align-items: center;
   gap: 16px;
-  /* A project is a thing you choose, not a line in a menu. The padding is
-     what makes each row a place to put a cursor rather than a small link. */
-  padding: 18px 2px;
+  /* A project is a thing you choose, not a line in a menu. The rows are sized
+     to spend the whole viewport between them: five of them fill the box, so
+     the list is the last full screen of the sequence rather than a footnote
+     under it. */
+  padding: clamp(16px, 1.6vw, 26px) 2px;
   border-top: 1px solid var(--border);
   color: var(--ink-secondary);
   text-decoration: none;
@@ -12757,7 +12768,7 @@ em,
               </span>
               <span class="msg" data-msg>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
-                  <em>Sarthak Sahoo</em> <span class="pxi-nb"><svg class="pxi" role="img" aria-label="introduction"><use href="#px-smiley"/></svg>,</span> a Product Designer
+                  <em>Sarthak Sahoo</em>, a Product Designer
                   <span class="pxi-nb"><svg class="pxi" role="img" aria-label="product"><use href="#px-phone"/></svg><svg class="pxi" role="img" aria-label="design"><use href="#px-laptop"/></svg></span> based in Austin, TX
                   <span class="pxi-nb"><svg class="pxi" role="img" aria-label="Austin"><use href="#px-pin"/></svg></span></span></span>
               </span>
@@ -22863,8 +22874,8 @@ window.PF = window.PF || {};
   var ROLES = {
     design: [
       [{ t: 'Hello :) nice to meet you' }],
-      [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true }, { t: ' ' },
-       { ic: 'smiley', lbl: 'introduction' }, { t: ', a Product Designer ' },
+      [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true },
+       { t: ', a Product Designer ' },
        { ic: 'phone', lbl: 'product' }, { ic: 'laptop', lbl: 'design' },
        { t: ' based in Austin, TX ' }, { ic: 'pin', lbl: 'Austin' }],
       [{ t: 'I design products that make ' }, { t: 'complex', k: 'complex' },
@@ -23454,7 +23465,12 @@ window.PF = window.PF || {};
          runs off the top, because that is. The crossover happens on its own,
          at whatever height the content reaches it — which is what makes this
          work for four messages, or ten, or four and a project list. */
-      var wantTop = Math.min(H * ZONE - s.h / 2, H * ANCHOR - s.h);
+      /* The list is the finale, and it is sized to fill the box: when it is
+         on screen it parks nearly flush with the bottom, so the five projects
+         occupy the whole viewport and the conversation above them has left
+         through the top. Every other state uses the reading anchor. */
+      var floor = (plist && !plist.hasAttribute('hidden')) ? 0.965 : ANCHOR;
+      var wantTop = Math.min(H * ZONE - s.h / 2, H * floor - s.h);
 
       /* Absolute, not incremental. Whatever the track was doing, this is where
          it belongs. */
@@ -23542,6 +23558,14 @@ window.PF = window.PF || {};
       var list = buildProjects();
       if (!list) return;
       list.removeAttribute('hidden');
+
+      /* The list takes the viewport. Its height is the box's, less a margin
+         at top and bottom, and the rows share the surplus between them — so
+         five projects fill a tall card and a short one equally, with no
+         per-width tuning anywhere. */
+      var H = thread.clientHeight;
+      if (H) list.style.minHeight = Math.round(H * 0.88) + 'px';
+
       var kids = list.children, i;
 
       if (instant || still) {
