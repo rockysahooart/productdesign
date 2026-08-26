@@ -25071,11 +25071,12 @@ window.PF = window.PF || {};
      seconds before the work appears under it. */
   var PROJECTS_MS = 2400;
   var SHIFT_MS = 700;   /* the window opening: matched to the CSS transition */
-  /* THE ENDING IS HELD. The closing line, its reactions and the list of work
-     are what the whole sequence is built to arrive at, so they stand for
-     fifteen seconds — long enough to read five project names and decide on
-     one — before the conversation starts over. */
-  var HOLD_MS = 15000;
+  /* THE ENDING IS HELD, AND IT IS THE ONLY THING THAT IS. The closing line,
+     its reactions and the invitation under them are what the whole sequence
+     is built to arrive at, so once the work is offered nothing moves for
+     sixteen seconds — the pause the introduction used to take, spent where
+     there is a reason to pause — before the conversation starts over. */
+  var HOLD_MS = 16400;
   var FADE_MS = 340;    /* the whole stack dims out together */
   var BLANK_MS = 640;   /* an empty beat, so the loop is a breath not a cut */
   var SCRAMBLE_MS = 1800; /* the decode: four words, one after another */
@@ -25097,14 +25098,13 @@ window.PF = window.PF || {};
   var WORD_HOLD = 1700;      /* each word stands, and is read, before the next */
   var WORD_SCRAMBLE = 620;   /* and the change between them is quick */
 
-  /* ONE MESSAGE HOLDS LONGER THAN ITS LENGTH ASKS FOR. The greeting does not:
-     "Hello :)" is two words and gets the two words' worth of pause the rule
-     above gives it, and anything more is a thread that looks stuck on its
-     first line. The introduction does: it is a name, a title and a city —
-     three facts in one line, and the only line in the sequence somebody might
-     want to write down — so it is held past its reading time before the next
-     one starts being written. */
-  var OPENING_DWELL = [0, 1400];
+  /* NOTHING IN THE OPENING IS HELD. The introduction used to be — a name, a
+     title and a city is three facts in one line — but it arrives on the
+     greeting's own frame now, and a pair that lands together and then waits
+     reads as a thread that has run out of things to say two lines in. The
+     pause it had belongs at the other end, where there is something to pause
+     for: see HOLD_MS, after the work is offered. */
+  var OPENING_DWELL = [0, 0];
 
   /* ---- the decode ---------------------------------------------------------
 
