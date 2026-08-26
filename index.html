@@ -4090,7 +4090,15 @@ em,
   line-height: 1.28;
   letter-spacing: -0.012em;
   font-weight: var(--fw-display);
-  max-width: 32ch;
+  /* THE COLUMN, NOT A MEASURE. The thread used to be capped at 32 characters,
+     which is the right rule for a paragraph and the wrong one for this: two
+     display-sized messages at that width wrap a plain sentence into four
+     lines, and the box grows taller to hold what is really a typesetting
+     problem. It now runs the full width of its column, which puts its right
+     edge on the same line as the theme and replay controls at the top of the
+     card — the conversation and the card's own furniture share one edge, and
+     a sentence gets to be a sentence. */
+  max-width: 100%;
   /* Air around the stack, and room for the reaction chips that hang below the
      last bubble. Constant from the first paint, so it reserves their space
      without ever shifting anything. */
@@ -13104,7 +13112,7 @@ em,
               <span class="msg-track" data-track>
               <span class="msg" data-msg data-cluster>
                 <span class="msg__from" aria-hidden="true">SS</span>
-                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">Hello :)</span></span>
+                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text"><span class="sc">Hello</span> :)</span></span>
               </span>
               <span class="msg" data-msg>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
@@ -23300,9 +23308,21 @@ window.PF = window.PF || {};
      screen across a role change rather than a message that gets rewritten. Only the two lines after it change, so
      the layout, the timing and the reactions are identical across all three
      and nothing below the thread moves when you switch. */
+  /* THE GREETING IS SAID IN SEVERAL LANGUAGES. It is the first thing on the
+     page and the one line that does not have to carry information, so it
+     spends that freedom on saying hello the way the people he has worked with
+     say it. Each one stands long enough to be read, then dissolves into the
+     next through the same decode the sentence about the work uses.
+
+     Latin script only, and deliberately: the thread is set in a pixel face
+     subset to latin, and a greeting rendered as empty boxes is not a
+     greeting. */
+  var GREETINGS = ['Hello', 'Hola', 'Bonjour', 'Ciao', 'Namaste',
+                   'Hallo', 'Salam', 'Merhaba', 'Aloha'];
+
   var ROLES = {
     design: [
-      [{ t: 'Hello :)' }],
+      [{ t: 'Hello', sc: true, cycle: GREETINGS }, { t: ' :)' }],
       [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true },
        { t: ', a Product Designer ' },
        { ic: 'phone', lbl: 'product' }, { ic: 'laptop', lbl: 'design' },
@@ -23423,6 +23443,8 @@ window.PF = window.PF || {};
   var FADE_MS = 340;    /* the whole stack dims out together */
   var BLANK_MS = 640;   /* an empty beat, so the loop is a breath not a cut */
   var SCRAMBLE_MS = 1800; /* the decode: four words, one after another */
+  var GREET_HOLD = 1700;  /* each hello stands, and is read, before the next */
+  var GREET_SCRAMBLE = 620;  /* and the change between them is quick */
 
   /* ONE MESSAGE HOLDS LONGER THAN ITS LENGTH ASKS FOR. The greeting does not:
      "Hello :)" is two words and gets the two words' worth of pause the rule
@@ -23666,6 +23688,8 @@ window.PF = window.PF || {};
           if (badge && badge.parentNode) badge.parentNode.removeChild(badge);
         }
 
+        if (i === 0) cycleWords = set[i][0] && set[i][0].cycle ? set[i][0].cycle : null;
+
         var opt = set[i].opt || {};
         if (opt.scramble) row.setAttribute('data-scramble', '');
         else row.removeAttribute('data-scramble');
@@ -23905,6 +23929,58 @@ window.PF = window.PF || {};
 
     var idx = 1, retired = 0, timer = null, running = false;
 
+    /* ---- the greeting, in several languages ------------------------------
+
+       The opening line is the one message that is not carrying information,
+       so it spends the time it has saying hello in the languages of the teams
+       he has worked with. Each one stands, dissolves into noise and comes back
+       as the next — the same decode the sentence about the work uses, on a
+       word rather than on a sentence, so nothing new had to be invented for
+       it.
+
+       It runs only while the greeting is on screen: the moment the row has
+       left through the top there is nothing to say hello in, and a timer
+       still firing behind it is work nobody can see. */
+    /* cycleWords is filled by shape(), which runs before this line does —
+       declared without a value so it is not wiped on the way past. */
+    var cycleWords;
+    var cycleTimer = null, cycleAt = 0, cancelGreet = null;
+
+    function stopCycle() {
+      clearTimeout(cycleTimer);
+      cycleTimer = null;
+      if (cancelGreet) { cancelGreet(); cancelGreet = null; }
+    }
+
+    function resetCycle() {
+      stopCycle();
+      cycleAt = 0;
+      var el = rows[0] && rows[0].querySelector('.sc');
+      if (el && cycleWords) el.textContent = cycleWords[0];
+    }
+
+    function startCycle() {
+      stopCycle();
+      if (still || !cycleWords || cycleWords.length < 2 || !rows[0]) return;
+      var el = rows[0].querySelector('.sc');
+      if (!el) return;
+
+      cycleTimer = setTimeout(function tick() {
+        var state = rows[0].getAttribute('data-state');
+        if (state === 'gone' || state === 'idle') { stopCycle(); return; }
+
+        cycleAt = (cycleAt + 1) % cycleWords.length;
+        el.textContent = cycleWords[cycleAt];
+
+        if (cancelGreet) cancelGreet();
+        cancelGreet = scramble(rows[0], GREET_SCRAMBLE, function () {
+          cancelGreet = null;
+        });
+
+        cycleTimer = setTimeout(tick, GREET_HOLD + GREET_SCRAMBLE);
+      }, GREET_HOLD);
+    }
+
     /* Where in the cycle we are. 'seq' is messages arriving; 'hold' is the
        finished thread standing with its reactions; 'reset' is the fade and the
        blank beat before it starts again. pause() clears whichever timer is
@@ -23977,6 +24053,12 @@ window.PF = window.PF || {};
       if (top === null) return null;
       if (plist && !plist.hasAttribute('hidden') && plist.offsetHeight) {
         bottom = plist.offsetTop - base + plist.offsetHeight;
+      }
+      /* The invitation is content too. It hangs below the last bubble, under
+         the reactions, and if the canvas does not know about it the box parks
+         the conversation perfectly and clips the one thing it wants clicked. */
+      if (ctaRow && !ctaRow.hasAttribute('hidden') && ctaRow.offsetHeight) {
+        bottom = ctaRow.offsetTop - base + ctaRow.offsetHeight;
       }
       return { top: top, bottom: bottom, h: bottom - top };
     }
@@ -24348,6 +24430,7 @@ window.PF = window.PF || {};
 
       pause();
       if (cancelScramble) { cancelScramble(); cancelScramble = null; }
+      resetCycle();
       thread.removeAttribute('data-reactions');
       resetReactions();
       rows[0].setAttribute('data-state', 'settled');
@@ -24614,6 +24697,9 @@ window.PF = window.PF || {};
         thread.classList.remove('is-open');
         exitList();
         hideCta();
+        /* Back to the first hello, so every cycle opens the way the first
+           one did. */
+        resetCycle();
         if (cancelScramble) { cancelScramble(); cancelScramble = null; }
         thread.removeAttribute('data-reactions');
         resetReactions();
@@ -24680,12 +24766,14 @@ window.PF = window.PF || {};
       if (phase !== 'seq') { arm(); return; }
       if (running || idx >= count) return;
       running = true;
+      startCycle();
       timer = setTimeout(next, gapAfter(idx - 1));
     }
 
     function pause() {
       running = false;
       clearTimeout(timer);
+      stopCycle();
     }
 
     /* Reduced motion stops here, and it stops on the ENDING rather than on the
