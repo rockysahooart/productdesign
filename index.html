@@ -6515,6 +6515,30 @@ em,
 }
 
 
+/* --------------------------------------------------------------------------
+   Small canvas, framed
+
+   In the project browser this document keeps its authored 1000 units and the
+   host paints the whole of it at a third of that. The type does not know: 24
+   was chosen to fit a 210-unit box at 1:1, with the parallelograms already
+   inside 16 units of touching — and at a third of the size that last margin
+   is what the eye loses first, so the labels read as sitting on the edges of
+   their shapes rather than inside them.
+
+   js/projects.js posts the scale it fitted the frame at and js/tagging.js
+   stamps it here. Two steps, both of them below the size the drawing was
+   drawn for, and nothing but the type changes.
+   -------------------------------------------------------------------------- */
+
+:root[data-tf-fit="tight"] .tf-label { font-size: 21px; }
+:root[data-tf-fit="tight"] .tf-annot-label { font-size: 15.5px; }
+:root[data-tf-fit="tight"] .tf-tag { font-size: 13.5px; }
+
+:root[data-tf-fit="tightest"] .tf-label { font-size: 19px; }
+:root[data-tf-fit="tightest"] .tf-annot-label { font-size: 14px; }
+:root[data-tf-fit="tightest"] .tf-tag { font-size: 12.5px; }
+
+
 /* ===== css/05-encryption.css ===== */
 /* ==========================================================================
    05-encryption.css — Cryptography card thumbnail
@@ -11411,6 +11435,38 @@ em,
   display: grid;
   gap: var(--s-4);
   container: ofstage / inline-size;
+
+  /* The page's own sizes, held on to before they are overwritten below — a
+     ceiling for the fluid scale, so this board can shrink its type but can
+     never set it larger than the rest of the page. */
+  --of-body-max: var(--fs-body);
+  --of-meta-max: var(--fs-meta);
+}
+
+/* TYPE THAT SHRINKS WITH THE BOARD, NOT WITH THE WINDOW.
+
+   Every box in here is a fraction of the board's width, and the board is a
+   fraction of the column — so by the time the column is a phone, a stage card
+   is 90px wide with a label in it sized for a card three times that. The page
+   scale barely moves between 1440 and 400 (12px to 13px is the whole range),
+   which is right for prose and wrong for a diagram whose boxes have lost two
+   thirds of their width.
+
+   So the scale is the board's own: cqi is a hundredth of the container's
+   inline size, and each step is a straight line through it, floored so it
+   never becomes unreadable and capped at what the page would have used
+   anyway. Set on the children because an element cannot query itself. */
+.of > * {
+  /* And a grid child sized by its own content is a grid child that cannot
+     wrap: below about 430 the legend and the transport were holding the board
+     19px wider than the column it sits in, and taking the page with them. */
+  min-width: 0;
+
+  --fs-body: min(var(--of-body-max), max(12.4px, 0.5cqi + 9.4px));
+  --fs-meta: min(var(--of-meta-max), max(10.2px, 0.45cqi + 8.4px));
+  /* The smallest tier in the component — accuracy figures, lane subtitles,
+     chip labels — which was a hard 11px in six places. */
+  --of-micro: min(11px, max(9.4px, 0.22cqi + 8.05px));
 }
 
 /* --- head: title, legend, transport --------------------------------------- */
@@ -11453,7 +11509,10 @@ em,
                  clip-path: polygon(16% 0, 100% 0, 84% 100%, 0 100%); }
 .of-key--fb    { border-style: dashed; border-color: var(--of-line); background: none; }
 
-.of-controls { display: flex; align-items: center; gap: var(--s-2); }
+/* The transport wraps rather than pushing the board wide: five controls in a
+   row is a row that does not fit a phone, and the progress bar is the piece
+   that can give — it takes a line of its own and the buttons keep theirs. */
+.of-controls { display: flex; align-items: center; flex-wrap: wrap; gap: var(--s-2); }
 .of-btn {
   display: inline-flex;
   align-items: center;
@@ -11532,7 +11591,7 @@ em,
 .of-lane__name small {
   display: block;
   margin-top: 5px;
-  font-size: 11px;
+  font-size: var(--of-micro, 11px);
   letter-spacing: var(--tr-meta);
   text-transform: none;
   font-weight: var(--fw-body);
@@ -11602,7 +11661,7 @@ em,
   transition: color var(--of-fast) var(--of-ease);
 }
 .of-stage__acc {
-  font-size: 11px;
+  font-size: var(--of-micro, 11px);
   letter-spacing: var(--tr-meta);
   color: var(--ink-muted);
   opacity: 0;
@@ -11636,7 +11695,7 @@ em,
   border-radius: 999px;
   background: var(--surface-raised);
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: var(--of-micro, 11px);
   letter-spacing: var(--tr-meta);
   color: var(--ink);
   white-space: nowrap;
@@ -11825,7 +11884,7 @@ em,
   color: var(--ink-muted);
 }
 .of-src b {
-  font-size: 11px;
+  font-size: var(--of-micro, 11px);
   letter-spacing: var(--tr-label);
   text-transform: uppercase;
   color: var(--ink-muted);
@@ -11852,7 +11911,7 @@ em,
 .of-sec {
   margin: 0 0 8px;
   font-family: var(--font-sans);
-  font-size: 11px;
+  font-size: var(--of-micro, 11px);
   letter-spacing: var(--tr-label);
   text-transform: uppercase;
   font-weight: var(--fw-strong);
@@ -11897,7 +11956,7 @@ em,
   padding: 5px 11px;
   border: 1px solid var(--border-strong);
   border-radius: 999px;
-  font-size: 11px;
+  font-size: var(--of-micro, 11px);
   letter-spacing: var(--tr-label);
   text-transform: uppercase;
   font-weight: var(--fw-strong);
@@ -17472,6 +17531,30 @@ em,
   .tf-scene text { font-size: 34px; }
 }
 
+
+/* --------------------------------------------------------------------------
+   Small canvas, framed
+
+   In the project browser this document keeps its authored 1000 units and the
+   host paints the whole of it at a third of that. The type does not know: 24
+   was chosen to fit a 210-unit box at 1:1, with the parallelograms already
+   inside 16 units of touching — and at a third of the size that last margin
+   is what the eye loses first, so the labels read as sitting on the edges of
+   their shapes rather than inside them.
+
+   js/projects.js posts the scale it fitted the frame at and js/tagging.js
+   stamps it here. Two steps, both of them below the size the drawing was
+   drawn for, and nothing but the type changes.
+   -------------------------------------------------------------------------- */
+
+:root[data-tf-fit=&quot;tight&quot;] .tf-label { font-size: 21px; }
+:root[data-tf-fit=&quot;tight&quot;] .tf-annot-label { font-size: 15.5px; }
+:root[data-tf-fit=&quot;tight&quot;] .tf-tag { font-size: 13.5px; }
+
+:root[data-tf-fit=&quot;tightest&quot;] .tf-label { font-size: 19px; }
+:root[data-tf-fit=&quot;tightest&quot;] .tf-annot-label { font-size: 14px; }
+:root[data-tf-fit=&quot;tightest&quot;] .tf-tag { font-size: 12.5px; }
+
 &lt;/style&gt;
 &lt;style&gt;
   /* Transparent, so the hero card behind the frame is the ground. */
@@ -18084,6 +18167,33 @@ em,
     clearTimeout(zt);
     zt = setTimeout(function () { zoom = zoomFit(); }, 150);
   });
+
+  /* ---- how small this is actually being drawn ---------------------------
+
+     The document measures 1000 whatever the card does, so the host tells it:
+     js/projects.js posts the scale it fitted the frame at, and the only thing
+     that changes here is the type. A label sized to sit inside its box at 1:1
+     has no margin left in it by the time the scene is a quarter of the width
+     — three lines of 24 in a parallelogram whose sides slant away from them —
+     so below two thirds of the authored size the labels step down and the
+     shapes get their clearance back. Nothing else moves: same camera, same
+     keyframes, same line breaks. */
+  window.addEventListener(&#x27;message&#x27;, function (e) {
+    if (!e || !e.data || typeof e.data.pfScale !== &#x27;number&#x27;) return;
+    var s = e.data.pfScale;
+    var el = document.documentElement;
+    if (s &gt; 0 &amp;&amp; s &lt; 0.30) el.setAttribute(&#x27;data-tf-fit&#x27;, &#x27;tightest&#x27;);
+    else if (s &gt; 0 &amp;&amp; s &lt; 0.37) el.setAttribute(&#x27;data-tf-fit&#x27;, &#x27;tight&#x27;);
+    else el.removeAttribute(&#x27;data-tf-fit&#x27;);
+  });
+
+  /* Frames load at their own pace; this one may have missed the fit that ran
+     before it existed. */
+  try {
+    if (window.parent &amp;&amp; window.parent !== window) {
+      window.parent.postMessage({ pfScaleRequest: 1 }, &#x27;*&#x27;);
+    }
+  } catch (e) { /* not framed, or framed by something that will not answer */ }
 
   function update(elapsed){
     var cam = getCamera(elapsed);
@@ -24643,6 +24753,33 @@ window.PF = window.PF || {};
     zt = setTimeout(function () { zoom = zoomFit(); }, 150);
   });
 
+  /* ---- how small this is actually being drawn ---------------------------
+
+     The document measures 1000 whatever the card does, so the host tells it:
+     js/projects.js posts the scale it fitted the frame at, and the only thing
+     that changes here is the type. A label sized to sit inside its box at 1:1
+     has no margin left in it by the time the scene is a quarter of the width
+     — three lines of 24 in a parallelogram whose sides slant away from them —
+     so below two thirds of the authored size the labels step down and the
+     shapes get their clearance back. Nothing else moves: same camera, same
+     keyframes, same line breaks. */
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || typeof e.data.pfScale !== 'number') return;
+    var s = e.data.pfScale;
+    var el = document.documentElement;
+    if (s > 0 && s < 0.30) el.setAttribute('data-tf-fit', 'tightest');
+    else if (s > 0 && s < 0.37) el.setAttribute('data-tf-fit', 'tight');
+    else el.removeAttribute('data-tf-fit');
+  });
+
+  /* Frames load at their own pace; this one may have missed the fit that ran
+     before it existed. */
+  try {
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({ pfScaleRequest: 1 }, '*');
+    }
+  } catch (e) { /* not framed, or framed by something that will not answer */ }
+
   function update(elapsed){
     var cam = getCamera(elapsed);
     cam.z = cam.z * zoom;
@@ -25318,6 +25455,18 @@ window.PF = window.PF || {};
         if (opt.shuffle) row.setAttribute('data-shuffle', '');
         else row.removeAttribute('data-shuffle');
 
+        /* THE OPENING TWO ARE ONE BREATH. "Hello :)" and the line that says
+           who is saying it are not two turns of a conversation — nobody types
+           a greeting, waits, and then types their own name. So the second row
+           arrives on the first one's frame: one indicator before them, both
+           bubbles at once, and the thread starts by introducing itself rather
+           than by making you wait through a greeting for it.
+
+           A rule about position, not a flag in the data, because it is true
+           of every discipline's opening and always will be. */
+        if (i === 1) row.setAttribute('data-together', '');
+        else row.removeAttribute('data-together');
+
         /* A message can ask to be held after it lands, either by naming a
            dwell in the data or by being one of the opening two. */
         var dwell = opt.dwell || OPENING_DWELL[i] || 0;
@@ -25593,14 +25742,32 @@ window.PF = window.PF || {};
 
     /* The greeting is the opening state, not something that gets announced.
        It is live on the first frame — it still balloons in, but nothing is
-       "sent" before it. The indicator earns its place from the second message
-       on, where it is anticipation rather than preamble. */
-    if (!still) {
-      rows[0].setAttribute('data-state', 'live');
-      setTimeout(function () { rows[0].setAttribute('data-state', 'settled'); }, POP_MS);
+       "sent" before it. The indicator earns its place from the message after
+       the opening, where it is anticipation rather than preamble.
+
+       HOW MUCH IS THE OPENING. "Hello :)" and the line that says who is
+       saying it are one breath, not two turns: nobody types a greeting, waits
+       for the reply that is not coming, and then types their own name. So
+       every row marked to arrive with the one before it lands on that same
+       first frame, and the sequence starts after them. */
+    function opening() {
+      var n = 1;
+      while (n < count && rows[n].hasAttribute('data-together')) n++;
+      return n;
     }
 
-    var idx = 1, retired = 0, timer = null, running = false;
+    function openNow() {
+      var n = opening();
+      for (var i = 0; i < n; i++) rows[i].setAttribute('data-state', 'live');
+      setTimeout(function () {
+        for (var j = 0; j < n; j++) rows[j].setAttribute('data-state', 'settled');
+      }, POP_MS);
+      return n;
+    }
+
+    if (!still) openNow();
+
+    var idx = opening(), retired = 0, timer = null, running = false;
 
     /* ---- the face changes while the words resolve -------------------------
 
@@ -26291,8 +26458,13 @@ window.PF = window.PF || {};
       resetCycle();
       thread.removeAttribute('data-reactions');
       resetReactions();
-      rows[0].setAttribute('data-state', 'settled');
-      for (i = 1; i < rows.length; i++) rows[i].setAttribute('data-state', 'idle');
+      /* A switch is a cut, so the opening is simply already there — all of
+         it, greeting and introduction both, exactly as a fresh visit finds
+         them a moment after landing. */
+      var open = opening();
+      for (i = 0; i < rows.length; i++) {
+        rows[i].setAttribute('data-state', i < open ? 'settled' : 'idle');
+      }
       phase = 'seq';
       retired = 0;
       reserve();
@@ -26305,7 +26477,7 @@ window.PF = window.PF || {};
         void track.offsetWidth;
         track.style.transition = '';
       }
-      idx = 1;
+      idx = open;
       play();
     }
 
@@ -26566,9 +26738,9 @@ window.PF = window.PF || {};
         thread.removeAttribute('data-reactions');
         resetReactions();
         retired = 0;
-        idx = 1;
+        idx = opening();
         for (var i = 0; i < rows.length; i++) {
-          rows[i].setAttribute('data-state', i === 0 ? 'live' : 'idle');
+          rows[i].setAttribute('data-state', i < idx ? 'live' : 'idle');
         }
         if (track) {
           track.style.transition = 'none';
@@ -26581,10 +26753,7 @@ window.PF = window.PF || {};
 
         timer = setTimeout(function () {
           thread.classList.remove('is-clearing');
-          rows[0].setAttribute('data-state', 'live');
-          setTimeout(function () {
-            rows[0].setAttribute('data-state', 'settled');
-          }, POP_MS);
+          openNow();
           phase = 'seq';
           running = false;
           play();
@@ -26989,8 +27158,34 @@ window.PF = window.PF || {};
       if (!b.w || !b.h || !b.r.width) continue;
       var s = Math.min(b.r.width / b.w, b.r.height / b.h, 1);
       b.el.style.setProperty('--pv-scale', s.toFixed(4));
+      tell(b.el, s);
     }
   }
+
+  /* AND THE FRAME IS TOLD HOW SMALL IT ENDED UP.
+
+     A framed preview keeps its authored size — the document inside measures
+     1000 however narrow the card gets — so it has no way of knowing that it
+     is being painted at a third of that. Which is fine for a mock of a phone,
+     and not fine for a diagram: type sized to fit a box at 1:1 crowds the
+     same box's edges once the whole scene is a quarter of the width, and by
+     the composition breakpoint the labels are touching the shapes they sit
+     in. The number is known here, so it is sent — the same way the theme is,
+     since postMessage crosses an opaque origin and a direct property access
+     does not. What a document does with it is its own business. */
+  function tell(el, s) {
+    var frame = el.querySelector('iframe');
+    if (!frame || !frame.contentWindow) return;
+    try { frame.contentWindow.postMessage({ pfScale: +s.toFixed(4) }, '*'); }
+    catch (e) { /* a frame that is not ready yet asks for it itself */ }
+  }
+
+  /* A frame that loaded after the last fit() asks, rather than waiting for
+     the next resize. */
+  window.addEventListener('message', function (e) {
+    if (!e || !e.data || !e.data.pfScaleRequest) return;
+    fit();
+  });
 
   var ft;
   window.addEventListener('resize', function () {
