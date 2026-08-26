@@ -4136,7 +4136,39 @@ em,
 
 .plist__row.is-in { opacity: 1; transform: none; }
 
-.plist__name { flex: 1 1 auto; min-width: 0; }
+/* THE SLOT AND THE WORD. The slot holds the row's line — a fixed height, at
+   the list's own size, which the row is measured on. The word inside it is
+   what grows, and because the slot does not, a project can double in size
+   under the pointer without moving anything else on the page: no row shifts,
+   no gap collapses, no scroll position jumps.
+
+   It is a font-size change rather than a transform, deliberately. Scaling
+   would resample a pixel typeface into a blur; setting a size draws it again
+   at the size, on the grid, hard-edged. */
+.plist__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  height: 1.35em;
+  overflow: visible;
+}
+
+.plist__word {
+  display: inline-block;
+  white-space: nowrap;
+  line-height: 1;
+  transition: font-size 200ms cubic-bezier(0.2, 0.75, 0.25, 1),
+              color 140ms linear;
+}
+
+/* Emphatic on purpose: the name roughly doubles, capped so the longest one
+   still clears the arrow on a phone. */
+.plist__row:hover .plist__word,
+.plist__row:focus-visible .plist__word {
+  font-size: clamp(1.4em, 1.05em + 1.1vw, 2.05em);
+  color: var(--ink);
+}
 
 /* The arrow sits at the end of the row and steps out under the pointer. */
 .plist__go {
@@ -4147,7 +4179,8 @@ em,
 .plist__row:hover,
 .plist__row:focus-visible { color: var(--ink); }
 
-.plist__row:hover .plist__go { transform: translateX(4px); }
+.plist__row:hover .plist__go,
+.plist__row:focus-visible .plist__go { transform: translateX(6px); }
 
 .plist__row:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 
@@ -4443,12 +4476,64 @@ em,
    is scrolled exactly as it did while it was animating. Scroll chaining is
    left at its default, so reaching either end of the conversation carries on
    scrolling the page rather than trapping the pointer. */
+/* THE SCROLL SITS OUTSIDE THE CONVERSATION.
+
+   A scrollbar belongs to the box, not to the writing. Left alone it is drawn
+   hard against the right edge of the text column, a millimetre from the last
+   character of every line — which turns a piece of browser furniture into
+   part of the composition, and a long line into a line that looks like it is
+   touching something.
+
+   So the box grows a lane on its right, past the column the messages are set
+   in, and the scrollbar is put in it. The lane is opened with padding and
+   taken straight back with an equal negative margin, and the column's ceiling
+   is raised by exactly the same amount — so the text measures the same width
+   it measured a frame earlier, wraps identically, and nothing reflows when
+   the window becomes scrollable. The rail is thin and sits at the far side of
+   that lane, with the rest of it left as air between the two. */
 .hero__thread.is-windowed.is-archive {
+  --sb-lane: clamp(16px, 1.5vw, 26px);
+
   overflow-y: auto;
   overflow-x: hidden;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
+  scrollbar-color: var(--border-strong, var(--border)) transparent;
+
+  /* --sb-w is however much width the platform's scrollbar actually takes out
+     of the box: zero on the overlay scrollbars macOS and iOS use, a real
+     number on Windows, Linux and anywhere the reader has asked for permanent
+     scrollbars. It is measured once in script and written here, because the
+     lane has to absorb it — every pixel the rail takes is a pixel the
+     sentence would otherwise lose. Zero is the right default: with an overlay
+     rail there is nothing to absorb. */
+  max-width: calc(32ch + var(--sb-lane) + var(--sb-w, 0px));
+  padding-right: var(--sb-lane);
+  margin-right: calc(-1 * (var(--sb-lane) + var(--sb-w, 0px)));
+
+  /* The window opening out into the height the card is already holding for
+     it. Slow enough to read as the box changing job, not as a jump — script
+     sets the number, this is the only thing that animates it. */
+  transition: height 640ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__thread.is-windowed.is-archive { transition: none; }
+}
+
+.hero__thread.is-windowed.is-archive::-webkit-scrollbar {
+  width: 6px;
+}
+.hero__thread.is-windowed.is-archive::-webkit-scrollbar-track {
+  background: transparent;
+}
+.hero__thread.is-windowed.is-archive::-webkit-scrollbar-thumb {
+  background: var(--border-strong, var(--border));
+  border-radius: 999px;
+}
+.hero__thread.is-windowed.is-archive::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-tertiary, var(--ink-secondary));
 }
 
 .hero__thread.is-windowed {
@@ -23321,6 +23406,10 @@ window.PF = window.PF || {};
          composition as everybody else's. */
       thread.style.height = Math.ceil(boxH) + 'px';
       thread.classList.add('is-windowed');
+
+      /* A resize re-measures the box from scratch, which would quietly undo an
+         archive that had already opened out into the card. Put it back. */
+      if (archived) expand();
     }
 
     /* Which role the markup starts on decides how many rows are in play, and
@@ -23362,7 +23451,32 @@ window.PF = window.PF || {};
     window.addEventListener('resize', function () {
       clearTimeout(rt);
       rt = setTimeout(function () {
+        /* The reader's place in the archive is a scroll offset, and re-measuring
+           the box changes what that offset can be. Keep it across the
+           measurement rather than dropping them back at the top. */
+        var keep = archived ? thread.scrollTop : 0;
+
         reserve();
+
+        /* AN ARCHIVE IS NOT DRIVEN BY THE TRACK. Once the box is a window the
+           content is carried by its scroll offset and the track's transform is
+           none — re-placing it here would offset the same content twice, once
+           on each mechanism, and put the conversation a screen away from where
+           the reader left it. */
+        if (archived) {
+          if (track) {
+            track.style.transition = 'none';
+            track.style.transform = 'none';
+            void track.offsetWidth;
+            track.style.transition = '';
+          }
+          thread.style.scrollBehavior = 'auto';
+          thread.scrollTop = keep;
+          void thread.offsetHeight;
+          thread.style.scrollBehavior = '';
+          return;
+        }
+
         /* The track is measured in pixels, so a resize invalidates it. Put it
            back where it belongs for however many rows have retired. */
         if (track) {
@@ -23553,9 +23667,11 @@ window.PF = window.PF || {};
         if (link.hasAttribute('data-placeholder-link')) {
           row.setAttribute('data-placeholder-link', '');
         }
-        row.innerHTML = '<span class="plist__name"></span>' +
+        /* The name sits inside a slot of a fixed height so it can grow on
+           hover without the row growing with it. */
+        row.innerHTML = '<span class="plist__name"><span class="plist__word"></span></span>' +
                         '<span class="plist__go" aria-hidden="true">\u2192</span>';
-        row.querySelector('.plist__name').textContent = name;
+        row.querySelector('.plist__word').textContent = name;
         wire(row, name);
         plist.appendChild(row);
       }
@@ -23882,9 +23998,207 @@ window.PF = window.PF || {};
        rather than being cut. It keeps its dimensions too: this is a window
        onto the conversation, not the conversation unrolled.
 
-       The loop does not come round again. An archive that erases itself every
-       thirty seconds is not an archive. */
+       THE ARCHIVE IS A PAUSE, NOT AN ENDING. It used to be terminal: once the
+       reader had the box, the conversation never came round again. But most
+       people never touch it — they read the last message, look at the work,
+       and the hero sits frozen from then on, which reads as something that
+       has stopped working rather than as something that has finished. So the
+       archive holds only as long as somebody is using it. While the box is
+       being scrolled, or the pointer is inside it, or the keyboard focus is
+       in it, nothing happens; the moment all of that has been quiet for a
+       while, the conversation starts over and the loop carries on as before.
+
+       Scrolling is the signal, not a timer that ignores it: the one thing the
+       archive must never do is yank the page out from under a hand that is in
+       the middle of reading it. */
     var archived = false;
+
+    /* THE ENDING IS HELD. The last message and the list of work are the two
+       things the sequence exists to arrive at, so they stand for fifteen
+       seconds before anything happens to them — long enough to read five
+       project names and decide on one, and long enough that a pause to think
+       is never mistaken for leaving. The clock is restarted by any scroll, so
+       a reader who is using the box keeps it for as long as they are using
+       it; fifteen seconds after the last thing they did, the conversation
+       starts over. */
+    var IDLE_MS = 15000;
+    var idleTimer = null;
+    /* Somebody is in the box: a mouse over it, or the keyboard focus inside.
+       Only mouse pointers hold it — a touch that enters and never leaves
+       would hold the archive open forever, and on touch the scroll itself is
+       already the signal. */
+    var held = false;
+
+    function armIdle() {
+      clearTimeout(idleTimer);
+      if (!archived || still) return;
+      idleTimer = setTimeout(function () {
+        if (!archived) return;
+        if (held) { armIdle(); return; }
+        restart();
+      }, IDLE_MS);
+    }
+
+    function closeArchive() {
+      if (!archived) return;
+      archived = false;
+      clearTimeout(idleTimer);
+      thread.classList.remove('is-archive');
+      thread.scrollTop = 0;
+      /* Back to the box the sequence was measured for — instantly, because
+         this runs while the stack is faded out and nothing about it should be
+         a movement anybody sees. */
+      thread.style.transition = 'none';
+      thread.style.height = Math.ceil(boxH) + 'px';
+      void thread.offsetHeight;
+      thread.style.transition = '';
+    }
+
+    /* ---- the window opens out ---------------------------------------------
+
+       While the conversation is playing, the box is exactly two messages tall:
+       that is the frame the sequence was composed in, and it is what makes a
+       message arriving feel like a message arriving rather than a page filling
+       up. Reading back through it is a different job. A five-hundred-pixel
+       slot is a letterbox to scroll a whole conversation through, and the card
+       around it is nearly twice that tall — the middle column simply stops
+       partway down while the two side panels run to the bottom.
+
+       So when the box becomes a window, it takes that unused height. The card
+       does not grow by a pixel: the space was already there, held open by the
+       panels either side, and it goes back the moment the loop starts over.
+
+       How much is available is measured rather than assumed, and the
+       measurement is the thing itself — the height is set, the card is read,
+       and whatever the card grew by is handed straight back. On a phone,
+       where the column is the full width of the screen and there is content
+       below the conversation, that comes out at zero and the box stays
+       exactly as it was. */
+    var BOX_TAIL = 24;   /* air between the opened window and the card's edge */
+    var MIN_GROW = 48;   /* below this it is a twitch, not an opening */
+
+    /* `opening` is the difference between the one time this is a moment — the
+       window unfolding as the conversation ends — and every time afterwards
+       that it is only arithmetic, like a resize re-running the measurement
+       under a reader who is halfway down the archive. The moment animates and
+       holds the ending at the bottom edge; the arithmetic is instant and
+       leaves the reader exactly where they were. */
+    function expand(opening) {
+      var card = thread.closest('.section--hero');
+      if (!card || !boxH) return false;
+
+      var base = Math.ceil(boxH);
+      var h0 = Math.round(card.getBoundingClientRect().height);
+      var room = Math.floor(card.getBoundingClientRect().bottom -
+                            thread.getBoundingClientRect().bottom - BOX_TAIL);
+      if (room < MIN_GROW) return false;
+
+      /* Try the full opening with the transition suppressed, read what it did
+         to the card, and put the box back — all inside one frame, so nothing
+         of this rehearsal is ever painted. */
+      thread.style.transition = 'none';
+      thread.style.height = (base + room) + 'px';
+      void thread.offsetHeight;
+      var over = Math.round(card.getBoundingClientRect().height) - h0;
+      if (over > 0) room -= over;
+      thread.style.height = base + 'px';
+      void thread.offsetHeight;
+      thread.style.transition = '';
+
+      if (room < MIN_GROW) return false;
+
+      var target = base + room;
+
+      if (!opening) {
+        thread.style.transition = 'none';
+        thread.style.height = target + 'px';
+        void thread.offsetHeight;
+        thread.style.transition = '';
+        return true;
+      }
+
+      /* And now for real, on the next frame so the suppressed transition is
+         well and truly committed first. The scroll is at the end of the
+         conversation, so as the window grows the browser keeps it there and
+         the history slides into view above the last message. */
+      requestAnimationFrame(function () {
+        if (!archived) return;
+        thread.style.height = target + 'px';
+
+        /* The end of the conversation stays at the bottom edge while the
+           window opens, so what the growth reveals is history arriving above
+           it rather than the ending sliding away from the reader. The bottom
+           has to be re-taken every frame — the box's height, and with it the
+           furthest it can scroll, is changing on every one of them.
+
+           Instant, not smooth: this is the same offset being kept, not a
+           journey. And it stops the moment the reader touches the box, since
+           a hand on the wheel outranks the animation finishing. */
+        var t0 = null, ok = true;
+        function stop() { ok = false; }
+        thread.addEventListener('wheel', stop, { passive: true, once: true });
+        thread.addEventListener('touchstart', stop, { passive: true, once: true });
+        thread.addEventListener('keydown', stop, { once: true });
+
+        thread.style.scrollBehavior = 'auto';
+        (function pin(ts) {
+          if (!ok || !archived) { thread.style.scrollBehavior = ''; return; }
+          if (t0 === null) t0 = ts;
+          thread.scrollTop = thread.scrollHeight;
+          if (ts - t0 < 720) requestAnimationFrame(pin);
+          else {
+            thread.style.scrollBehavior = '';
+            thread.removeEventListener('wheel', stop);
+            thread.removeEventListener('touchstart', stop);
+            thread.removeEventListener('keydown', stop);
+          }
+        })();
+      });
+
+      return true;
+    }
+
+    /* WHERE THE ARCHIVE OPENS. On a card with room to spare the window grows
+       and holds the ending against its bottom edge, so nothing needs saying
+       here. On a phone there is no room: the box is the box, and the last
+       frame of the animation leaves the closing line at the anchor with the
+       list of work below the fold — which makes the one thing the sequence
+       was building towards the one thing you cannot see.
+
+       So the window settles onto the end of the conversation. Smoothly,
+       because it is a movement the reader should be able to follow back: the
+       history goes up, the work comes into view. */
+    function settleToEnd() {
+      var max = thread.scrollHeight - thread.clientHeight;
+      if (thread.scrollTop >= max - 2) return;
+      if (still) { thread.scrollTop = max; return; }
+      requestAnimationFrame(function () {
+        if (archived) thread.scrollTop = thread.scrollHeight;
+      });
+    }
+
+    thread.addEventListener('scroll', function () {
+      if (archived) armIdle();
+    }, { passive: true });
+
+    thread.addEventListener('pointerenter', function (e) {
+      if (e.pointerType && e.pointerType !== 'mouse') return;
+      held = true;
+      clearTimeout(idleTimer);
+    });
+    thread.addEventListener('pointerleave', function (e) {
+      if (e.pointerType && e.pointerType !== 'mouse') return;
+      held = false;
+      if (archived) armIdle();
+    });
+    thread.addEventListener('focusin', function () {
+      held = true;
+      clearTimeout(idleTimer);
+    });
+    thread.addEventListener('focusout', function () {
+      held = false;
+      if (archived) armIdle();
+    });
 
     function openArchive() {
       if (archived || !track) return;
@@ -23904,9 +24218,37 @@ window.PF = window.PF || {};
       track.style.transition = 'none';
       track.style.transform = 'none';
       thread.classList.add('is-archive');
+      /* The handover has to be invisible, and the archive is smooth-scrolling
+         from the frame the class lands — which would animate this first
+         assignment, rewinding the conversation to the top and scrolling it
+         back down in front of the reader. So the swap itself is instant, and
+         smooth is handed back immediately afterwards for the scrolling the
+         reader does. */
+      thread.style.scrollBehavior = 'auto';
       thread.scrollTop = y;
+      void thread.offsetWidth;
+      thread.style.scrollBehavior = '';
+
+      /* How much room the platform's rail takes, measured on the box itself
+         now that it is scrolling — nothing else can tell you, since it is
+         zero on overlay scrollbars and a real number everywhere else. The
+         lane in the stylesheet widens by exactly this, so the text column is
+         the width it was a frame ago either way. Measured once: the rail does
+         not change width, and the number the box grows by does not change the
+         difference being measured. */
+      var sb = thread.offsetWidth - thread.clientWidth;
+      thread.style.setProperty('--sb-w', (sb > 0 ? sb : 0) + 'px');
+
       void thread.offsetHeight;
       track.style.transition = '';
+
+      /* The letterbox becomes a window: it takes whatever height the card is
+         already holding open around it — and where it cannot, it at least
+         opens on the end of the conversation rather than short of it. */
+      if (!expand(true)) settleToEnd();
+
+      /* And the clock on the archive starts here. */
+      armIdle();
     }
 
     /* ---- the loop --------------------------------------------------------
@@ -23934,6 +24276,10 @@ window.PF = window.PF || {};
            cutting them off on the way out is the same fault as cutting them
            off on the way in. */
         thread.classList.remove('is-open');
+        /* The window becomes a stage again, invisibly: the stack is at
+           opacity 0 for this whole beat, so swapping the scroll offset back
+           for a transform is not something anybody can see. */
+        closeArchive();
         hideProjects();
         if (cancelScramble) { cancelScramble(); cancelScramble = null; }
         thread.removeAttribute('data-reactions');
@@ -23968,10 +24314,9 @@ window.PF = window.PF || {};
     /* Re-arms whatever the current phase is waiting on. */
     function arm() {
       clearTimeout(timer);
-      /* Once the archive is open there is nothing left to re-arm: the reader
-         is in charge of the box, and a sequence restarting under them would
-         scroll the page out from under their hand. */
-      if (archived) return;
+      /* While the archive is open the box belongs to the reader, so the only
+         thing to re-arm is the quiet clock that hands it back. */
+      if (archived) { armIdle(); return; }
       if (phase === 'hold') timer = setTimeout(restart, HOLD_MS);
       else if (phase === 'reset') restart();
       /* The burst sets absolute states, so replaying it from the top is
@@ -23990,6 +24335,9 @@ window.PF = window.PF || {};
     function pause() {
       running = false;
       clearTimeout(timer);
+      /* An archive that restarts itself while it is off screen wastes the one
+         cycle somebody might have come back for. */
+      clearTimeout(idleTimer);
     }
 
     /* Reduced motion stops here, and it stops on the ENDING rather than on the
