@@ -1454,9 +1454,10 @@ em,
 
    The glyph version sat at forty-five degrees whether or not anything was
    happening, which reads as a decoration on the label rather than as a
-   direction. This one points straight at the edge of the button and does
-   nothing until somebody is on their way: under the pointer it grows and
-   leaves diagonally, the way the angled glyph was only ever implying.
+   direction. This one points straight ahead and turns to the diagonal under
+   the pointer — the angle is the whole gesture. It does not travel and it
+   does not grow: a button that shifts under the cursor is a button that feels
+   like it moved away from the click.
 
    Drawn on the same nine-by-nine grid as the icons in the conversation, at
    twice their size, so the one piece of ornament on the button belongs to the
@@ -1470,14 +1471,15 @@ em,
   top: -0.06em;
   --pxi-fg: currentColor;
   shape-rendering: crispEdges;
-  transform-origin: 20% 50%;
+  /* Turning about its own middle, so nothing around it moves. */
+  transform-origin: 50% 50%;
   transition: transform 260ms cubic-bezier(0.2, 0.75, 0.25, 1);
 }
 
 :where(.cta:hover, .cta:focus-visible, .card--link:hover .cta) .cta__arrow--px,
 .hero__book:hover .cta__arrow--px,
 .hero__book:focus-visible .cta__arrow--px {
-  transform: translate(6px, -6px) scale(1.28);
+  transform: rotate(-45deg);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1715,6 +1717,12 @@ em,
   .hero-card .hero__clients,
   .hero-card .hero__tools { align-self: stretch; }
 
+  /* ...except while the tools card is open. It becomes a square then, and a
+     row governed by a square would stretch a five-logo rail into a
+     four-hundred-pixel panel beside it. The employers' strip keeps its own
+     height for the duration; js/tools.js sets the class. */
+  .hero-card.tools-open .hero__clients { align-self: start; }
+
   /* One surface, one hairline, one radius. Nothing else.
 
      Two-class selectors because the base rules for these same regions live
@@ -1913,6 +1921,7 @@ em,
     vertical-align: middle;
     position: relative;
     top: -0.06em;
+    transform-origin: 50% 50%;
     transition: transform 260ms cubic-bezier(0.2, 0.75, 0.25, 1);
   }
 
@@ -1921,11 +1930,11 @@ em,
     border-color: var(--ink-secondary);
   }
 
-  /* Under the pointer it grows and leaves diagonally — the direction the
-     angled glyph used to imply while standing still. */
+  /* Under the pointer it turns to the diagonal, in place. Nothing moves but
+     the angle. */
   .hero-card .hero-tile--profile .hero__book:hover .cta__arrow--px,
   .hero-card .hero-tile--profile .hero__book:focus-visible .cta__arrow--px {
-    transform: translate(6px, -6px) scale(1.28);
+    transform: rotate(-45deg);
   }
 
   .hero-card .hero-tile--profile .hero__book:focus-visible {
@@ -3488,41 +3497,127 @@ em,
    HOW I WORK
    -------------------------------------------------------------------------- */
 
+/* --------------------------------------------------------------------------
+   HOW I WORK — three steps, in order
+
+   The old version was three centred columns of three words each: at a third
+   of a row they were legible and said almost nothing, and at a phone's width
+   they became three stacked labels with no relationship between them.
+
+   This one is a numbered list. Each step carries its number, its name, a line
+   saying what actually happens in it, and the things it is made of — so the
+   hierarchy inside a step is the same at every width, and the only thing the
+   breakpoint changes is how many steps sit side by side.
+
+   Left-aligned throughout: a bulleted list centred under a heading is a shape,
+   not a list.
+   -------------------------------------------------------------------------- */
+
 .process {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--s-1);
+  gap: var(--s-2);
   margin: var(--s-3) 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
 }
 
 .process__step {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--s-1);
-  padding: var(--s-2) var(--s-1);
+  align-items: flex-start;
+  gap: 6px;
+  padding: calc(var(--s-2) - 2px) var(--s-2);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
-  text-align: center;
+  text-align: left;
   min-width: 0;
+}
+
+/* The number, the name and the mark share one line: the number is the step's
+   place in the sequence, the name is the step, the mark is what it is about.
+   Three lines became one, which is most of the height this card gave back. */
+.process__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.process__head .process__title { flex: 1 1 auto; min-width: 0; }
+.process__head .icon-tile { flex: 0 0 auto; margin-left: auto; }
+
+.process__n {
+  font-family: var(--font-body);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.12em;
+  line-height: 1;
+  color: var(--ink-muted);
 }
 
 .process__title {
+  font-family: var(--font-display);
   font-size: var(--fs-body);
-  font-weight: var(--fw-strong);
-  letter-spacing: var(--tr-body);
+  font-weight: var(--fw-display);
+  letter-spacing: var(--tr-card);
+  line-height: 1.2;
   color: var(--ink);
 }
 
-.process__tags {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
+/* One line on what happens in this step. It is the difference between a label
+   and a step. */
+.process__note {
   font-size: var(--fs-meta);
-  line-height: 1.5;
+  line-height: 1.45;
+  color: var(--ink-secondary);
+  text-wrap: pretty;
+}
+
+/* THE SPECIFICS RUN ON ONE LINE, NOT THREE.
+
+   A stacked bullet list is three lines per step and nine for the section,
+   which turned a card you take in at a glance into a card you scroll. The
+   items keep their bullets — they are still a list, and it still reads as
+   one — but they sit on the same line and wrap only if they have to. */
+.process__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 0;
+  margin: 2px 0 0;
+  padding: 0;
+  min-width: 0;
+  list-style: none;
+  font-size: var(--fs-meta);
+  line-height: 1.4;
   color: var(--ink-secondary);
 }
+
+/* A drawn bullet between items rather than a marker in front of them: it sits
+   on the line's optical centre at any size, and the first item does not need
+   one because nothing precedes it. */
+.process__list li {
+  position: relative;
+  padding-left: 15px;
+  white-space: nowrap;
+}
+
+.process__list li:first-child { padding-left: 0; }
+
+.process__list li::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 0.62em;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--ink-muted);
+}
+
+.process__list li:first-child::before { display: none; }
 
 /* --------------------------------------------------------------------------
    CREATIVE / PERSONAL
@@ -6537,8 +6632,13 @@ em,
   opacity: 0.95;
 }
 
-/* A mark that is a picture rather than a path, because it is more than one
-   colour. Same box as the drawn ones; its own aspect ratio inside it. */
+/* A MARK THAT IS A FILE, IN TWO KINDS.
+
+   --img is a picture: more than one colour, painted as it was drawn.
+   --ink is a silhouette: a single-colour mark cut out of its own file and
+   filled with the row's ink, so it follows the theme exactly the way the
+   drawn glyphs beside it do rather than turning into a hole on a dark
+   ground. */
 .tools__logo--img {
   background-repeat: no-repeat;
   background-position: center;
@@ -6549,6 +6649,23 @@ em,
 .tools__logo--axure {
   width: calc(clamp(20px, 1.5vw, 24px) * 0.87);
   background-image: url("data:image/png;base64,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");
+}
+
+.tools__logo--ink {
+  height: clamp(20px, 1.5vw, 24px);
+  background-color: var(--tl, var(--ink-secondary));
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.tools__logo--chatgpt {
+  --tl: #0F0F0F;
+  width: calc(clamp(20px, 1.5vw, 24px) * 0.98);
+  mask-image: url("data:image/png;base64,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");
 }
 
 /* A name where there is no mark, at the size the marks read at. */
@@ -6571,23 +6688,22 @@ em,
 .tools__logo--claude     { --tl: #D97757; }
 .tools__logo--miro       { --tl: #050038; }
 .tools__logo--notion     { --tl: #0F0F0F; }
-.tools__logo--elevenlabs { --tl: #0F0F0F; }
 .tools__logo--gemini     { --tl: #8E75B2; }
 .tools__logo--github     { --tl: #181717; }
 .tools__logo--cursor     { --tl: #0F0F0F; }
 
+:root[data-theme="dark"] .tools__logo--chatgpt,
 :root[data-theme="dark"] .tools__logo--wisprflow,
 :root[data-theme="dark"] .tools__logo--miro,
 :root[data-theme="dark"] .tools__logo--notion,
-:root[data-theme="dark"] .tools__logo--elevenlabs,
 :root[data-theme="dark"] .tools__logo--github,
 :root[data-theme="dark"] .tools__logo--cursor { --tl: #EDEDED; }
 
 @media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .tools__logo--chatgpt,
   :root:not([data-theme="light"]) .tools__logo--wisprflow,
   :root:not([data-theme="light"]) .tools__logo--miro,
   :root:not([data-theme="light"]) .tools__logo--notion,
-  :root:not([data-theme="light"]) .tools__logo--elevenlabs,
   :root:not([data-theme="light"]) .tools__logo--github,
   :root:not([data-theme="light"]) .tools__logo--cursor { --tl: #EDEDED; }
 }
@@ -6606,6 +6722,140 @@ em,
     width: 100%;
   }
   .tools__track[data-clients-clone] { display: none; }
+}
+
+
+/* ==========================================================================
+   THE TOOLS CARD OPENS INTO A RING
+
+   At rest it is a rail. Under the pointer it becomes a square — it grows
+   downward and takes the room, pushing the page below it down rather than
+   floating over anything — and the same twelve marks arrange themselves on a
+   circle and turn.
+
+   The square and the radius are the card's own width, measured in js/tools.js
+   because CSS cannot ask an element about itself. Everything else is here.
+   ========================================================================== */
+
+.hero__tools {
+  position: relative;
+  /* The card clips itself. The rail inside it is wider than the card by
+     design — that is what makes it a rail — and while the label is out of
+     the flow for the open state there is a frame where the row can push past
+     the card's edge and take the page with it. Nothing here should ever be
+     visible outside this rectangle anyway. */
+  overflow: hidden;
+  transition: min-height 520ms cubic-bezier(0.22, 0.68, 0.24, 1);
+}
+
+/* The rail steps aside rather than being cut: it is the same twelve marks, so
+   two of them on screen at once would read as a duplicate rather than as a
+   transition. */
+.tools__marquee {
+  transition: opacity 220ms linear;
+}
+
+.hero__tools.is-open .tools__marquee {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero__tools.is-open { min-height: var(--tools-square, 0px); }
+
+/* The label stays where it was and lets the ring have the rest. */
+.hero__tools.is-open .tools__label {
+  position: absolute;
+  top: clamp(22px, 1.8vw, 30px);
+  left: var(--tile-pad, 22px);
+  margin: 0;
+}
+
+.tools__orbit {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms linear 60ms;
+}
+
+.hero__tools.is-open .tools__orbit { opacity: 1; }
+
+.tools__ring {
+  /* The whole square, so a seat can be placed at its centre with per-cent
+     rather than against a one-pixel box. */
+  position: absolute;
+  inset: 0;
+  /* Slow. A ring of logos going round quickly is a loading spinner. */
+  animation: tools-orbit 30s linear infinite;
+  animation-play-state: paused;
+}
+
+.hero__tools.is-open .tools__ring { animation-play-state: running; }
+
+.tools__seat {
+  --seat: clamp(34px, 3.2vw, 48px);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--seat);
+  height: var(--seat);
+  /* Sized rather than shrink-to-fit: an auto-width box inside an absolutely
+     positioned ring has nothing to measure itself against. */
+  margin: calc(var(--seat) / -2);
+  display: grid;
+  place-items: center;
+  /* Its seat on the circle: turn to the angle, step out by the radius, and
+     the mark inside turns back. */
+  transform: rotate(var(--a)) translateY(calc(-1 * var(--tools-r, 120px)));
+}
+
+.tools__spin {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  /* Back the other way, at the same rate, so a logo is never upside down. */
+  transform: rotate(calc(-1 * var(--a)));
+  animation: tools-orbit-back 30s linear infinite;
+  animation-play-state: paused;
+}
+
+.hero__tools.is-open .tools__spin { animation-play-state: running; }
+
+/* The marks are bigger in the ring than in the rail: there is room, and this
+   is the state where somebody is actually looking at them. */
+.tools__orbit .tools__logo {
+  width: clamp(26px, 2.4vw, 34px);
+  height: clamp(26px, 2.4vw, 34px);
+}
+
+.tools__orbit .tools__logo--axure { width: calc(clamp(26px, 2.4vw, 34px) * 0.87); }
+.tools__orbit .tools__logo--chatgpt { width: calc(clamp(26px, 2.4vw, 34px) * 0.98); }
+
+.tools__orbit .tools__word {
+  font-size: clamp(13px, 1vw, 15px);
+  color: var(--ink);
+}
+
+@keyframes tools-orbit {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* The counter-turn carries the seat's own angle with it, so each mark starts
+   upright and stays upright. */
+@keyframes tools-orbit-back {
+  from { transform: rotate(calc(-1 * var(--a))); }
+  to   { transform: rotate(calc(-1 * var(--a) - 360deg)); }
+}
+
+/* Nothing opens under reduced motion — js/tools.js never builds the ring —
+   and this is the belt to those braces. */
+@media (prefers-reduced-motion: reduce) {
+  .hero__tools { transition: none; }
+  .tools__orbit { display: none; }
 }
 
 
@@ -12217,9 +12467,20 @@ em,
   .card__copy > .cta { display: none; }
 }
 
+/* THE THREE STEPS GO SINGLE-FILE EARLY.
+
+   Three side by side need about a hundred and seventy pixels each before a
+   sentence in one of them stops being three words a line. Below that the card
+   stacks them: the same block, full width, still numbered — three of these in
+   a column read as one, two, three, which three columns squeezed to ninety
+   pixels never did. */
+@container cell (max-width: 520px) {
+  .process { grid-template-columns: minmax(0, 1fr); }
+  .process__step { padding: var(--s-2) var(--s-2) calc(var(--s-2) - 2px); }
+}
+
 /* Band 4 cells simplify their inner grids before their type shrinks. */
 @container cell (max-width: 260px) {
-  .process { grid-template-columns: minmax(0, 1fr); }
   .creative__labels { grid-template-columns: minmax(0, 1fr); }
   .creative__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .creative__grid > :last-child { display: none; }
@@ -13158,7 +13419,6 @@ em,
     <symbol id="tl-claude" viewBox="0 0 24 24"><path d="m4.7144 15.9555 4.7174-2.6471.079-.2307-.079-.1275h-.2307l-.7893-.0486-2.6956-.0729-2.3375-.0971-2.2646-.1214-.5707-.1215-.5343-.7042.0546-.3522.4797-.3218.686.0608 1.5179.1032 2.2767.1578 1.6514.0972 2.4468.255h.3886l.0546-.1579-.1336-.0971-.1032-.0972L6.973 9.8356l-2.55-1.6879-1.3356-.9714-.7225-.4918-.3643-.4614-.1578-1.0078.6557-.7225.8803.0607.2246.0607.8925.686 1.9064 1.4754 2.4893 1.8336.3643.3035.1457-.1032.0182-.0728-.164-.2733-1.3539-2.4467-1.445-2.4893-.6435-1.032-.17-.6194c-.0607-.255-.1032-.4674-.1032-.7285L6.287.1335 6.6997 0l.9957.1336.419.3642.6192 1.4147 1.0018 2.2282 1.5543 3.0296.4553.8985.2429.8318.091.255h.1579v-.1457l.1275-1.706.2368-2.0947.2307-2.6957.0789-.7589.3764-.9107.7468-.4918.5828.2793.4797.686-.0668.4433-.2853 1.8517-.5586 2.9021-.3643 1.9429h.2125l.2429-.2429.9835-1.3053 1.6514-2.0643.7286-.8196.85-.9046.5464-.4311h1.0321l.759 1.1293-.34 1.1657-1.0625 1.3478-.8804 1.1414-1.2628 1.7-.7893 1.36.0729.1093.1882-.0183 2.8535-.607 1.5421-.2794 1.8396-.3157.8318.3886.091.3946-.3278.8075-1.967.4857-2.3072.4614-3.4364.8136-.0425.0304.0486.0607 1.5482.1457.6618.0364h1.621l3.0175.2247.7892.522.4736.6376-.079.4857-1.2142.6193-1.6393-.3886-3.825-.9107-1.3113-.3279h-.1822v.1093l1.0929 1.0686 2.0035 1.8092 2.5075 2.3314.1275.5768-.3218.4554-.34-.0486-2.2039-1.6575-.85-.7468-1.9246-1.621h-.1275v.17l.4432.6496 2.3436 3.5214.1214 1.0807-.17.3521-.6071.2125-.6679-.1214-1.3721-1.9246L14.38 17.959l-1.1414-1.9428-.1397.079-.674 7.2552-.3156.3703-.7286.2793-.6071-.4614-.3218-.7468.3218-1.4753.3886-1.9246.3157-1.53.2853-1.9004.17-.6314-.0121-.0425-.1397.0182-1.4328 1.9672-2.1796 2.9446-1.7243 1.8456-.4128.164-.7164-.3704.0667-.6618.4008-.5889 2.386-3.0357 1.4389-1.882.929-1.0868-.0062-.1579h-.0546l-6.3385 4.1164-1.1293.1457-.4857-.4554.0608-.7467.2307-.2429 1.9064-1.3114Z"/></symbol>
     <symbol id="tl-miro" viewBox="0 0 24 24"><path d="M17.392 0H13.9L17 4.808 10.444 0H6.949l3.102 6.3L3.494 0H0l3.05 8.131L0 24h3.494L10.05 6.985 6.949 24h3.494L17 5.494 13.899 24h3.493L24 3.672 17.392 0z"/></symbol>
     <symbol id="tl-notion" viewBox="0 0 24 24"><path d="M4.459 4.208c.746.606 1.026.56 2.428.466l13.215-.793c.28 0 .047-.28-.046-.326L17.86 1.968c-.42-.326-.981-.7-2.055-.607L3.01 2.295c-.466.046-.56.28-.374.466zm.793 3.08v13.904c0 .747.373 1.027 1.214.98l14.523-.84c.841-.046.935-.56.935-1.167V6.354c0-.606-.233-.933-.748-.887l-15.177.887c-.56.047-.747.327-.747.933zm14.337.745c.093.42 0 .84-.42.888l-.7.14v10.264c-.608.327-1.168.514-1.635.514-.748 0-.935-.234-1.495-.933l-4.577-7.186v6.952L12.21 19s0 .84-1.168.84l-3.222.186c-.093-.186 0-.653.327-.746l.84-.233V9.854L7.822 9.76c-.094-.42.14-1.026.793-1.073l3.456-.233 4.764 7.279v-6.44l-1.215-.139c-.093-.514.28-.887.747-.933zM1.936 1.035l13.31-.98c1.634-.14 2.055-.047 3.082.7l4.249 2.986c.7.513.934.653.934 1.213v16.378c0 1.026-.373 1.634-1.68 1.726l-15.458.934c-.98.047-1.448-.093-1.962-.747l-3.129-4.06c-.56-.747-.793-1.306-.793-1.96V2.667c0-.839.374-1.54 1.447-1.632z"/></symbol>
-    <symbol id="tl-elevenlabs" viewBox="0 0 24 24"><path d="M4.6035 0v24h4.9317V0zm9.8613 0v24h4.9317V0z"/></symbol>
     <symbol id="tl-gemini" viewBox="0 0 24 24"><path d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81"/></symbol>
     <symbol id="tl-github" viewBox="0 0 24 24"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></symbol>
     <symbol id="tl-cursor" viewBox="0 0 24 24"><path d="M11.503.131 1.891 5.678a.84.84 0 0 0-.42.726v11.188c0 .3.162.575.42.724l9.609 5.55a1 1 0 0 0 .998 0l9.61-5.55a.84.84 0 0 0 .42-.724V6.404a.84.84 0 0 0-.42-.726L12.497.131a1.01 1.01 0 0 0-.996 0M2.657 6.338h18.55c.263 0 .43.287.297.515L12.23 22.918c-.062.107-.229.064-.229-.06V12.335a.59.59 0 0 0-.295-.51l-9.11-5.257c-.109-.063-.064-.23.061-.23"/></symbol>
@@ -19242,13 +19502,13 @@ em,
                 <svg class="tools__logo tools__logo--notion" role="img" aria-label="Notion"><use href="#tl-notion"/></svg>
               </li>
               <li class="tools__item">
-                <svg class="tools__logo tools__logo--elevenlabs" role="img" aria-label="ElevenLabs"><use href="#tl-elevenlabs"/></svg>
+                <span class="tools__word">ElevenLabs</span>
               </li>
               <li class="tools__item">
                 <span class="tools__word">DALL·E 2</span>
               </li>
               <li class="tools__item">
-                <span class="tools__word">ChatGPT</span>
+                <span class="tools__logo tools__logo--chatgpt tools__logo--ink" role="img" aria-label="ChatGPT"></span>
               </li>
               <li class="tools__item">
                 <svg class="tools__logo tools__logo--gemini" role="img" aria-label="Gemini"><use href="#tl-gemini"/></svg>
@@ -19287,8 +19547,8 @@ em,
                     <span class="timeline__dot" aria-hidden="true"></span>
                     <span class="timeline__years">2026</span>
                     <span>
-                      <span class="timeline__org">Independent Developer Tooling</span>
-                      <span class="timeline__role">Product Designer / Front-End</span>
+                      <span class="timeline__org">Sahoo &amp; Co. Design Agency</span>
+                      <span class="timeline__role">Product Designer / Multiple Clients</span>
                     </span>
                   </li>
                   <li class="timeline__item">
@@ -19338,23 +19598,48 @@ em,
               <div class="card__stack">
                 <h3 class="t-card card__title">how i <em>work</em></h3>
 
-                <div class="process">
-                  <div class="process__step">
-                    <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-understand"/></svg></span>
-                    <p class="process__title">Understand</p>
-                    <p class="process__tags"><span>Systems</span><span>Workflows</span><span>People</span></p>
-                  </div>
-                  <div class="process__step">
-                    <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-prototype"/></svg></span>
-                    <p class="process__title">Prototype</p>
-                    <p class="process__tags"><span>Figma</span><span>HTML / CSS</span><span>AI-assisted</span></p>
-                  </div>
-                  <div class="process__step">
-                    <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-ship"/></svg></span>
-                    <p class="process__title">Ship</p>
-                    <p class="process__tags"><span>Product + Eng</span><span>Docs</span><span>Validation</span></p>
-                  </div>
-                </div>
+                
+                <ol class="process">
+                  <li class="process__step">
+                    <div class="process__head">
+                      <span class="process__n" aria-hidden="true">01</span>
+                      <p class="process__title">Understand</p>
+                      <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-understand"/></svg></span>
+                    </div>
+                    <p class="process__note">Map what the system does before deciding what it should do.</p>
+                    <ul class="process__list">
+                      <li>Systems</li>
+                      <li>Workflows</li>
+                      <li>People</li>
+                    </ul>
+                  </li>
+                  <li class="process__step">
+                    <div class="process__head">
+                      <span class="process__n" aria-hidden="true">02</span>
+                      <p class="process__title">Prototype</p>
+                      <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-prototype"/></svg></span>
+                    </div>
+                    <p class="process__note">Make it real early, while it is still cheap to be wrong.</p>
+                    <ul class="process__list">
+                      <li>Figma</li>
+                      <li>HTML / CSS</li>
+                      <li>AI-assisted</li>
+                    </ul>
+                  </li>
+                  <li class="process__step">
+                    <div class="process__head">
+                      <span class="process__n" aria-hidden="true">03</span>
+                      <p class="process__title">Ship</p>
+                      <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-ship"/></svg></span>
+                    </div>
+                    <p class="process__note">Hand it over so it survives contact with engineering.</p>
+                    <ul class="process__list">
+                      <li>Product + Eng</li>
+                      <li>Docs</li>
+                      <li>Validation</li>
+                    </ul>
+                  </li>
+                </ol>
 
                 <a class="cta cta--ink" href="#" data-placeholder-link>
                   My process <span class="cta__arrow" aria-hidden="true">→</span>
@@ -26305,6 +26590,147 @@ window.PF = window.PF || {};
       });
     }, { rootMargin: '120px 0px' }).observe(marquee);
   }
+})();
+
+
+/* ===== js/tools.js ===== */
+/* ==========================================================================
+   tools.js — the tools card opens into a ring
+
+   At rest the card is a rail: twelve marks going past, on the same line as its
+   label, the same height as the employers' strip beside it. That is the right
+   shape for something you read out of the corner of your eye.
+
+   Under the pointer it becomes the other thing it could be. The card grows
+   down into a square — pushing everything below it down the page, which is the
+   point: it is taking the room, not floating over the top of anything — and
+   the same twelve marks arrange themselves on a circle and turn.
+
+   Three things this file does and nothing else:
+
+     1. Build the ring once, from the marks already in the rail, so there is
+        one list of tools in the markup rather than two that can drift.
+     2. Measure the square and the radius, because both are the card's own
+        width and CSS cannot ask an element about itself.
+     3. Open and close it — on hover for a pointer, on tap for a finger, and
+        never at all when the reader has asked for reduced motion, since a card
+        that resizes the page and spins is the exact thing that setting is for.
+   ========================================================================== */
+
+(function () {
+  'use strict';
+
+  var card = document.querySelector('.hero__tools');
+  if (!card) return;
+
+  var rail = card.querySelector('.tools__marquee');
+  var source = card.querySelector('.tools__track');
+  if (!rail || !source) return;
+
+  var still = !!(window.matchMedia &&
+                 window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  if (still) return;
+
+  /* ---- the ring --------------------------------------------------------- */
+
+  var marks = source.children;
+  if (marks.length < 3) return;
+
+  var orbit = document.createElement('div');
+  orbit.className = 'tools__orbit';
+  orbit.setAttribute('aria-hidden', 'true');   /* the rail is the real list */
+
+  var ring = document.createElement('div');
+  ring.className = 'tools__ring';
+
+  var n = marks.length;
+  for (var i = 0; i < n; i++) {
+    var seat = document.createElement('span');
+    seat.className = 'tools__seat';
+    seat.style.setProperty('--a', (i * (360 / n)).toFixed(3) + 'deg');
+
+    /* The mark itself counter-turns, so it stays upright while its seat goes
+       round — a logo that rotates with the ring is a logo upside down for half
+       of every revolution. */
+    var spin = document.createElement('span');
+    spin.className = 'tools__spin';
+    spin.appendChild(marks[i].firstElementChild.cloneNode(true));
+
+    seat.appendChild(spin);
+    ring.appendChild(seat);
+  }
+
+  orbit.appendChild(ring);
+  card.appendChild(orbit);
+
+  /* ---- the square ------------------------------------------------------- */
+
+  /* The open card is as tall as it is wide, and the ring's radius is a
+     fraction of the same number. Both are measured rather than guessed,
+     because the card's width is a grid column and changes with the window. */
+  function measure() {
+    var w = card.getBoundingClientRect().width;
+    if (!w) return;
+    card.style.setProperty('--tools-square', Math.round(w) + 'px');
+    card.style.setProperty('--tools-r', Math.round(w * 0.33) + 'px');
+  }
+
+  measure();
+  var rt;
+  window.addEventListener('resize', function () {
+    clearTimeout(rt);
+    rt = setTimeout(measure, 120);
+  });
+
+  /* ---- opening and closing ---------------------------------------------- */
+
+  var open = false;
+
+  function set(next) {
+    if (next === open) return;
+    open = next;
+    measure();
+    card.classList.toggle('is-open', open);
+    /* The employers' strip is the same height as this card by default. While
+       this one is a square, that would stretch a five-logo rail into a
+       four-hundred-pixel panel, so the row stops governing it for the
+       duration. */
+    var host = card.closest('.hero-card');
+    if (host) host.classList.toggle('tools-open', open);
+    /* Nothing is going past while the ring is up; nothing turns while the rail
+       is. One animation at a time, always. */
+    rail.toggleAttribute('data-paused', open);
+  }
+
+  var fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+  card.addEventListener('pointerenter', function (e) {
+    if (e.pointerType && e.pointerType !== 'mouse') return;
+    if (fine.matches) set(true);
+  });
+
+  card.addEventListener('pointerleave', function (e) {
+    if (e.pointerType && e.pointerType !== 'mouse') return;
+    set(false);
+  });
+
+  /* A finger has no hover, so the card is a toggle: one tap opens the ring,
+     the next closes it, and a tap anywhere else closes it too. */
+  card.addEventListener('click', function () {
+    if (fine.matches) return;
+    set(!open);
+  });
+
+  document.addEventListener('click', function (e) {
+    if (fine.matches || !open) return;
+    if (!card.contains(e.target)) set(false);
+  });
+
+  /* Keyboard: the card opens while the focus is inside it. */
+  card.addEventListener('focusin', function () { set(true); });
+  card.addEventListener('focusout', function (e) {
+    if (!card.contains(e.relatedTarget)) set(false);
+  });
 })();
 
 
