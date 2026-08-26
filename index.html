@@ -25520,6 +25520,8 @@ window.PF = window.PF || {};
          Measured rather than guessed, and measured through the same hidden
          attribute it lives behind the rest of the time. */
       if (count < VISIBLE) {
+        /* The inset place() parks the stack at, top and bottom. */
+        boxH += STILL_PAD * 2;
         var cta = buildCta();
         if (cta) {
           var was = cta.hasAttribute('hidden');
@@ -25930,6 +25932,10 @@ window.PF = window.PF || {};
        seventh message is added to the array. */
     var ZONE = 0.55;     /* where a comfortable stack is centred */
     var ANCHOR = 0.81;   /* where a tall stack's bottom parks */
+    /* And where a stack that never has to move sits: a fixed inset from the
+       top of the box, above and below. Only used when the whole conversation
+       fits — see place(). */
+    var STILL_PAD = 26;
 
     var offsetY = 0;
     var cancelScramble = null;
@@ -25991,14 +25997,22 @@ window.PF = window.PF || {};
       var floor = (plist && !plist.hasAttribute('hidden')) ? 0.965 : ANCHOR;
       var wantTop = Math.min(H * ZONE - s.h / 2, H * floor - s.h);
 
-      /* AND A STACK THAT FITS NEVER LEAVES THE TOP. The anchor is a rule about
-         where a stack too tall for the box should park its bottom, and it was
-         being applied to one that was not: on a phone the conversation is two
-         messages, its reactions and the invitation — twenty pixels short of
-         the box — and parking that at four fifths of the height pushed the
-         greeting out through the top to leave a gap under the button. Nothing
-         has to go anywhere if everything is already in. */
-      if (s.h <= H) wantTop = Math.max(0, wantTop);
+      /* A CONVERSATION THAT FITS ITS BOX DOES NOT MOVE IN IT.
+
+         The two rules above are both about a stack taller than the box: centre
+         it while it is short, park its bottom on the anchor once it is not.
+         Applied to a phone — where the whole thread is two messages, their
+         reactions and the invitation, and the box has been reserved for all of
+         it — they made the messages jump 36px the moment the invitation
+         appeared, because the span it belongs to got taller and the answer
+         moved with it.
+
+         So when nothing will ever have to leave, the stack is simply parked:
+         one fixed inset from the top of the box, from the first frame to the
+         last. The room under the invitation is reserved whether the invitation
+         is there yet or not, which is what makes the arrival a fade rather
+         than a shove. */
+      if (count < VISIBLE) wantTop = STILL_PAD;
 
       /* Absolute, not incremental. Whatever the track was doing, this is where
          it belongs. */
