@@ -1461,51 +1461,84 @@ em,
               color var(--dur-fast) var(--ease);
 }
 
+/* --------------------------------------------------------------------------
+   THE THREE LINKS THAT LEAVE THE PAGE
+
+   LinkedIn, Schedule a call, View case study. Three links, one job — this
+   takes you somewhere else — and they had three treatments: a hairline under
+   one, an underline under another, a filled pill for the third.
+
+   One treatment now. Nothing is underlined at rest, because a page with three
+   underlined phrases in three different cards reads as a page with a
+   formatting problem; what marks them as links is the diagonal arrow, which
+   is the same character in all three and means the same thing in all three.
+
+   The underline is the hover state, arriving with a small step up in size —
+   the link acknowledging the pointer rather than the pointer having to find
+   the link. Scale rather than font-size, so nothing around it reflows.
+   -------------------------------------------------------------------------- */
+
+.link-out,
+.pv__cta,
+.hero__book {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+}
+
+.link-out,
+.hero__contact a,
+.pv__cta,
+.hero__book {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  text-decoration: none;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transform-origin: left center;
+  transition: color 130ms linear,
+              transform 180ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+.link-out:hover,
+.link-out:focus-visible,
+.hero__contact a:hover,
+.hero__contact a:focus-visible,
+.pv__cta:hover,
+.pv__cta:focus-visible,
+.hero__book:hover,
+.hero__book:focus-visible {
+  text-decoration: underline;
+  transform: scale(1.045);
+}
+
+/* The arrow belongs to the last word, and it does not move on its own: the
+   whole link is what grows. */
 .cta__arrow {
   display: inline-block;
   transition: transform var(--dur) var(--ease-out);
 }
+
 :where(.cta:hover, .card--link:hover .cta) .cta__arrow { transform: translateX(4px); }
 
-/* THE BOOKING ARROW IS DRAWN, NOT TYPED.
-
-   The glyph version sat at forty-five degrees whether or not anything was
-   happening, which reads as a decoration on the label rather than as a
-   direction. This one points straight ahead and turns to the diagonal under
-   the pointer — the angle is the whole gesture. It does not travel and it
-   does not grow: a button that shifts under the cursor is a button that feels
-   like it moved away from the click.
-
-   Drawn on the same nine-by-nine grid as the icons in the conversation, at
-   twice their size, so the one piece of ornament on the button belongs to the
-   same hand as everything else. */
-.cta__arrow--px {
-  /* Smaller than the label's cap height and drawn with a one-unit stroke, so
-     its line weight is the type's line weight rather than a heavier mark
-     sitting next to it. */
-  height: 0.62em;
-  width: auto;
-  aspect-ratio: 14 / 7;
-  /* Centred on the label rather than sitting on its baseline. */
-  vertical-align: middle;
-  position: relative;
-  top: -0.06em;
-  --pxi-fg: currentColor;
-  shape-rendering: crispEdges;
-  /* Turning about its own middle, so nothing around it moves. */
-  transform-origin: 50% 50%;
-  transition: transform 260ms cubic-bezier(0.2, 0.75, 0.25, 1);
-}
-
-:where(.cta:hover, .cta:focus-visible, .card--link:hover .cta) .cta__arrow--px,
-.hero__book:hover .cta__arrow--px,
-.hero__book:focus-visible .cta__arrow--px {
-  transform: rotate(-45deg);
-}
+.hero__contact a .cta__arrow,
+.pv__cta .cta__arrow,
+.hero__book .cta__arrow { transform: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .cta__arrow--px { transition: none; }
-  :where(.cta:hover, .card--link:hover .cta) .cta__arrow--px { transform: none; }
+  .link-out,
+  .hero__contact a,
+  .pv__cta,
+  .hero__book { transition: none; }
+
+  .link-out:hover,
+  .hero__contact a:hover,
+  .pv__cta:hover,
+  .hero__book:hover { transform: none; }
 }
 
 /* One primary treatment everywhere: a filled button.
@@ -1854,6 +1887,13 @@ em,
     color: var(--ink-secondary);
   }
 
+  /* Except the one that leaves the page: it is a call to action sitting in a
+     list of details, and it reads at the same strength as the other two. */
+  .hero-card .hero-tile--profile .hero__contact a.link-out {
+    display: inline-flex;
+    color: var(--ink);
+  }
+
   /* Skills: present, and clearly secondary. Two deliberately ragged columns of
      plain text rather than ten pills — a pill is a control, and none of these
      does anything. */
@@ -1929,36 +1969,9 @@ em,
     text-align: left;
     text-transform: none;
     color: var(--ink);
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 3px;
-    text-decoration-color: var(--border-strong, var(--ink-muted));
-    transition: text-underline-offset 160ms var(--ease),
-                text-decoration-color 160ms var(--ease);
-  }
-
-  /* Attached to the words, on their baseline. */
-  .hero-card .hero-tile--profile .hero__book .cta__arrow--px {
-    display: inline-block;
-    margin-left: 0;
-    vertical-align: baseline;
-    position: relative;
-    top: 0;
-    transform-origin: 50% 50%;
-    transition: transform 260ms cubic-bezier(0.2, 0.75, 0.25, 1);
-  }
-
-  .hero-card .hero-tile--profile .hero__book:hover,
-  .hero-card .hero-tile--profile .hero__book:focus-visible {
-    text-underline-offset: 5px;
-    text-decoration-color: var(--ink);
-    background: none;
-  }
-
-  /* The angle is still the whole gesture: the line does not move. */
-  .hero-card .hero-tile--profile .hero__book:hover .cta__arrow--px,
-  .hero-card .hero-tile--profile .hero__book:focus-visible .cta__arrow--px {
-    transform: rotate(-45deg);
+    /* The rest — no underline at rest, an underline and a small step up on
+       hover, the arrow attached to the last word — is the shared treatment
+       further up this file, the one LinkedIn and View case study use. */
   }
 
   .hero-card .hero-tile--profile .hero__book:focus-visible {
@@ -2377,12 +2390,8 @@ em,
     letter-spacing: 0;
     text-transform: none;
     color: var(--ink);
-    text-decoration: underline;
-    text-decoration-thickness: 1px;
-    text-underline-offset: 3px;
-    text-decoration-color: var(--border-strong, var(--ink-muted));
-    transition: text-underline-offset 160ms var(--ease),
-                text-decoration-color 160ms var(--ease);
+    /* No underline at rest and a step up on hover: the shared treatment for
+       the three links that leave the page. */
   }
 
   .pv__cta .cta__arrow {
@@ -2394,13 +2403,7 @@ em,
   }
 
   .pv__cta:hover,
-  .pv__cta:focus-visible {
-    text-underline-offset: 5px;
-    text-decoration-color: var(--ink);
-  }
-
-  .pv__cta:hover .cta__arrow,
-  .pv__cta:focus-visible .cta__arrow { transform: translate(2px, -2px); }
+  .pv__cta:focus-visible { text-decoration: underline; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -13927,7 +13930,7 @@ em,
               </span>
               <span class="hero__field">
                 <span class="hero__lbl">LinkedIn</span>
-                <a href="#" data-placeholder-link>LinkedIn <span aria-hidden="true">&#8599;</span></a>
+                <a class="link-out" href="#" data-placeholder-link>LinkedIn <span class="cta__arrow" aria-hidden="true">&#8599;</span></a>
               </span>
             </address>
 
@@ -13957,7 +13960,7 @@ em,
 
             
             <a class="hero__book" href="#" data-placeholder-link>
-              Schedule a call <svg class="cta__arrow cta__arrow--px" role="img" aria-hidden="true"><use href="#px-arrow"/></svg>
+              Schedule a call <span class="cta__arrow" aria-hidden="true">&#8599;</span>
             </a>
 
           </div>
@@ -13999,8 +14002,7 @@ em,
               </span>
               <span class="msg" data-msg>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
-                  <em class="kw kw--name">Sarthak Sahoo</em>, a Product Designer
-                  <span class="pxi-nb"><svg class="pxi" data-px="phone" role="img" aria-label="product"><use href="#px-phone"/></svg><svg class="pxi" data-px="laptop" role="img" aria-label="design"><use href="#px-laptop"/></svg></span> based in Austin, TX</span></span>
+                  <em class="kw kw--name">Sarthak Sahoo</em>, a Product <span class="pxi-nb">Designer&nbsp;<svg class="pxi" data-px="phone" role="img" aria-label="product"><use href="#px-phone"/></svg><svg class="pxi" data-px="laptop" role="img" aria-label="design"><use href="#px-laptop"/></svg></span> based in Austin, TX</span></span>
               </span>
               <span class="msg" data-msg data-cluster>
                 <span class="msg__from" aria-hidden="true">SS</span>
@@ -14009,8 +14011,7 @@ em,
               </span>
               <span class="msg" data-msg>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;ve worked in
-                  healthcare <span class="pxi-nb"><svg class="pxi" data-px="caduceus" role="img" aria-label="healthcare"><use href="#px-caduceus"/></svg>,</span> biotech <span class="pxi-nb"><svg class="pxi" data-px="dna" role="img" aria-label="biotechnology"><use href="#px-dna"/></svg>,</span> finance
-                  <span class="pxi-nb"><svg class="pxi" data-px="dollar" role="img" aria-label="financial services"><use href="#px-dollar"/></svg></span> and enterprise <span class="pxi-nb"><svg class="pxi" data-px="building" role="img" aria-label="enterprise systems"><use href="#px-building"/></svg>,</span> turning <span class="kw kw--complex">complex</span> workflows
+                  <span class="pxi-nb">healthcare&nbsp;<svg class="pxi" data-px="caduceus" role="img" aria-label="healthcare"><use href="#px-caduceus"/></svg>,</span> <span class="pxi-nb">biotech&nbsp;<svg class="pxi" data-px="dna" role="img" aria-label="biotechnology"><use href="#px-dna"/></svg>,</span> <span class="pxi-nb">finance&nbsp;<svg class="pxi" data-px="dollar" role="img" aria-label="financial services"><use href="#px-dollar"/></svg></span> and <span class="pxi-nb">enterprise&nbsp;<svg class="pxi" data-px="building" role="img" aria-label="enterprise systems"><use href="#px-building"/></svg>,</span> turning <span class="kw kw--complex">complex</span> workflows
                   into <span class="kw kw--clearer">clearer</span> products.</span></span>
               </span>
               
@@ -21426,7 +21427,7 @@ em,
 
         <div class="contact__meta">
           <span>Austin, TX</span>
-          <a href="#" data-placeholder-link>LinkedIn ↗</a>
+          <a class="link-out" href="#" data-placeholder-link>LinkedIn <span class="cta__arrow" aria-hidden="true">&#8599;</span></a>
           <a href="#" data-placeholder-link>Résumé ↗</a>
         </div>
       </div>
@@ -24608,6 +24609,11 @@ window.PF = window.PF || {};
     return out.replace(
       /(<svg class="pxi"[^>]*><use[^>]*\/><\/svg>)\u2060([,.]*)/g,
       '<span class="pxi-nb">$1$2</span>')
+      /* AND THE WORD IN FRONT OF IT. An icon belongs to the word it follows —
+         "healthcare" and its mark are one thing being named — so a line break
+         between them is the same fault as a comma stranded after it. The word
+         joins the unbreakable unit rather than the unit standing on its own. */
+      .replace(/(\S+)\s+<span class="pxi-nb">/g, '<span class="pxi-nb">$1&nbsp;')
       /* Two icons side by side are one unit as well. */
       .replace(/<\/span><span class="pxi-nb">/g, '');
   }
