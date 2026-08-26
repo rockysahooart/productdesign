@@ -24530,6 +24530,13 @@ window.PF = window.PF || {};
      greeting above, on the word the sentence turns on. */
   var QUALITIES = ['clarity', 'trust', 'performance'];
 
+  /* THE QUALITIES STAND LONGER THAN THE GREETINGS. A hello is a word you
+     recognise before you have finished reading it; clarity, trust and
+     performance are the claim the sentence is making, and each one wants a
+     beat of its own after it lands — long enough to be read as a statement
+     rather than as a word being cycled through. */
+  var QUALITY_HOLD = 2800;
+
   var ROLES = {
     design: [
       [{ t: 'Hello', sc: true, cycle: GREETINGS }, { t: ' :)' }],
@@ -24547,7 +24554,8 @@ window.PF = window.PF || {};
        { t: ' workflows into ' }, { t: 'clearer', k: 'clearer' },
        { t: ' products.' }],
       [{ t: 'I focus on building for ' },
-       { t: 'clarity', k: 'craft', sc: true, cycle: QUALITIES }, { t: '.' }],
+       { t: 'clarity', k: 'craft', sc: true, cycle: QUALITIES, hold: QUALITY_HOLD },
+       { t: '.' }],
       [{ t: 'I could keep explaining, but hiring me is ' },
        { t: 'faster', k: 'faster' }, { t: '.' }]
     ],
@@ -24929,7 +24937,11 @@ window.PF = window.PF || {};
 
         /* Any run in any message can name a list of words it cycles through. */
         for (var c = 0; c < set[i].length; c++) {
-          if (set[i][c].cycle) cyclers.push({ i: i, words: set[i][c].cycle, at: 0, timer: null, cancel: null });
+          if (set[i][c].cycle) {
+            cyclers.push({ i: i, words: set[i][c].cycle,
+                           hold: set[i][c].hold || WORD_HOLD,
+                           at: 0, timer: null, cancel: null });
+          }
         }
 
         var opt = set[i].opt || {};
@@ -25270,6 +25282,8 @@ window.PF = window.PF || {};
         var el = row.querySelector('.sc');
         if (!el) return;
 
+        var hold = c.hold || WORD_HOLD;
+
         c.timer = setTimeout(function tick() {
           var state = row.getAttribute('data-state');
           /* Once the row has left the top there is nothing to change. Before
@@ -25279,7 +25293,7 @@ window.PF = window.PF || {};
              still waiting to be sent. */
           if (state === 'gone') { c.timer = null; return; }
           if (state === 'idle' || state === 'loading') {
-            c.timer = setTimeout(tick, WORD_HOLD);
+            c.timer = setTimeout(tick, hold);
             return;
           }
 
@@ -25289,8 +25303,8 @@ window.PF = window.PF || {};
           if (c.cancel) c.cancel();
           c.cancel = scramble(row, WORD_SCRAMBLE, function () { c.cancel = null; });
 
-          c.timer = setTimeout(tick, WORD_HOLD + WORD_SCRAMBLE);
-        }, WORD_HOLD);
+          c.timer = setTimeout(tick, hold + WORD_SCRAMBLE);
+        }, hold);
       }
     }
 
