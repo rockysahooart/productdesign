@@ -1713,8 +1713,8 @@ em,
       minmax(0, 1fr)
       clamp(300px, 32vw, 462px);
     grid-template-areas:
-      "identity copy    work"
-      "clients  clients tools";
+      "identity copy work"
+      "band     band tools";
     /* The two cards take the row's height — which is the profile's, because
        the profile is the tallest thing in it — so the left and right edges of
        the composition finish on the same line. The conversation in the middle
@@ -1744,26 +1744,31 @@ em,
   .hero__identity { grid-area: identity; }
   .hero__copy     { grid-area: copy; }
   .hero__work     { grid-area: work; }
-  /* Two classes deep, because the base rule further down this file gives the
-     strip `grid-column: 1 / -1` for the single-column layouts and would
+  /* Two classes deep, because the base rules further down this file give these
+     regions `grid-column: 1 / -1` for the single-column layouts and would
      otherwise win on source order. */
-  .hero-card .hero__clients { grid-area: clients; grid-column: 1 / 3; }
-  .hero-card .hero__tools   { grid-area: tools;   grid-column: 3 / 4; grid-row: 2; }
+  /* TWO CARDS IN ONE COLUMN, BESIDE THE RING. The strip is a band and keeps
+     its own height; the timeline takes everything under it. They are wrapped
+     in one grid item rather than given a row each, because a card spanning two
+     auto rows gets a say in how tall each of them is — the ring was making the
+     employers' row 36px taller than the strip in it, which read as a gutter
+     that had lost its nerve. Inside the wrapper there is nothing to negotiate
+     with: one gap, and the rest is the timeline's. */
+  .hero-card .hero__band {
+    grid-area: band;
+    grid-column: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    gap: var(--tile-gap);
+    min-width: 0;
+  }
+  .hero-card .hero__clients { flex: 0 0 auto; }
+  .hero-card .hero__past { flex: 1 1 auto; }
 
-  /* ONE BAND, TWO PANELS. The employers and the tools sit in the same row and
-     say the same kind of thing — where the work was done, what it was made
-     with — so they are the same height whatever their contents measure. The
-     row is as tall as the taller of them and both stretch into it; their
-     content is centred rather than parked at the top, so a shorter rail reads
-     as a rail with air around it rather than as a card that stopped early. */
-  .hero-card .hero__clients,
+  .hero-card .hero__tools   { grid-area: tools; grid-column: 3 / 4; grid-row: 2; }
+
+  .hero-card .hero__band,
   .hero-card .hero__tools { align-self: stretch; }
-
-  /* ...except while the tools card is open. It becomes a square then, and a
-     row governed by a square would stretch a five-logo rail into a
-     four-hundred-pixel panel beside it. The employers' strip keeps its own
-     height for the duration; js/tools.js sets the class. */
-  .hero-card.tools-open .hero__clients { align-self: start; }
 
   /* One surface, one hairline, one radius. Nothing else.
 
@@ -1776,6 +1781,12 @@ em,
     border-radius: var(--r-lg);
     background: var(--surface);
   }
+
+  /* A little more room at the top and bottom than the shared padding above:
+     this tile is a heading, a diagram and an action, where the others are a
+     rail and a ring. After that rule, not before it — same specificity, and
+     the later one is the one that lands. */
+  .hero-card .hero__past { padding-block: clamp(24px, 2vw, 32px); }
 
   /* The open middle. Same internal padding as a card so its content sits on
      the same inner grid, and a little more of it horizontally because there is
@@ -3608,258 +3619,205 @@ em,
    EXPERIENCE
    -------------------------------------------------------------------------- */
 
-/* A LIST SORTED INTO AN ANSWER.
+/* --------------------------------------------------------------------------
+   ABOUT ME — one card, two columns
 
-   Five roles in date order is a record, not an answer. The question the card
-   is actually asked is what he is doing now, and after that, what he did
-   before — so the list is cut in two at that seam and each half is labelled.
-   The current role gets the first band to itself, which is the whole point of
-   a band: it is what "now" looks like when it is one thing.
+   It was a third of a row beside two other cards. Both of those have gone —
+   one up into the header, one entirely — and a lone card in a three-column
+   band is a card with two thirds of nothing beside it, so it takes the width.
 
-   Everything else is the same five entries. The card is the height it was —
-   the two labels and the spine take the room the list was leaving empty under
-   the last date. */
+   Which is a problem of its own: prose set across 1385px is a hundred and
+   fifty characters a line, and nobody reads that twice. So the card splits.
+   The heading and the action hold the left, the writing takes a column of its
+   own at a measure you can actually read, and the width is spent on structure
+   rather than on line length.
+   -------------------------------------------------------------------------- */
 
-.timeline__era:first-of-type { margin-top: var(--s-2); }
-.timeline__era + .timeline__era { margin-top: var(--s-4); }
+@media (min-width: 1120px) {
+  .cell--about .card__stack {
+    display: grid;
+    grid-template-columns: minmax(0, 0.42fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    column-gap: var(--s-5);
+    align-items: start;
+  }
 
-.timeline__era-label {
-  font-size: var(--fs-meta);
-  font-weight: var(--fw-strong);
-  letter-spacing: .1em;
+  .cell--about .card__title { grid-column: 1; grid-row: 1; margin-bottom: 0; }
+  .cell--about .about__body {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    max-width: 64ch;
+  }
+  /* Under the heading rather than under the writing: the two things the reader
+     is being offered — who this is, and where to read more — belong in the
+     same column. */
+  .cell--about .cta {
+    grid-column: 1;
+    grid-row: 2;
+    /* A grid item fills its column unless it is told not to, and a button as
+       wide as a heading is a banner. */
+    justify-self: start;
+    align-self: start;
+    margin-top: var(--s-3);
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   WHERE I'VE BEEN — a line, read left to right
+
+   Five roles are a sequence in time, and a column of them is a list that
+   happens to be in order. Laid along a line, oldest first, the order is the
+   form: you read the shape before you read a word of it, the gaps between
+   dates are visible, and the line runs off the right-hand end of the last
+   stop, which is the only honest way to draw a job somebody still has.
+
+   It lives in the header's composition now, beside the ring and under the
+   employers' strip, which is why it is built out of the header's tile parts
+   rather than the index card's.
+   -------------------------------------------------------------------------- */
+
+.past__label {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: var(--fw-medium);
+  letter-spacing: .12em;
   text-transform: uppercase;
   color: var(--ink-muted);
-  margin: 0 0 var(--s-2);
 }
 
-/* The entries are spaced on the scale's next step up rather than the one the
-   flat list used: five rows in a card this tall were sitting in the top two
-   thirds with a hole under them, and the room was already paid for. */
-.timeline {
-  position: relative;
+/* THE WRAPPER IS ONLY A BOX IN THE BENTO. Below the composition breakpoint
+   the header is one column and every region places itself — with its own
+   order, its own rules and its own spacing — so a box around two of them
+   would be a box that takes their place in that arrangement. `contents`
+   removes it from the layout without removing it from the markup: at those
+   widths the strip and the timeline are direct children again, exactly as
+   they were before either of them shared a column. */
+.hero__band { display: contents; }
+
+.hero__past {
+  grid-column: 1 / -1;   /* single-column layouts; the bento overrides it */
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
-  margin: 0;
+  /* A floor under every gap in the card, whatever the row does to its height.
+     The action used to be given its clearance with padding, which is the
+     button's own box — so at the widths where the card is shortest the gap
+     collapsed to nothing and the button grew instead. A gap cannot be
+     squeezed and cannot be mistaken for part of the thing below it. */
+  gap: var(--s-4);
+  min-width: 0;
 }
 
-/* The spine. It is what makes a column of dots a timeline rather than a set
-   of bullets, and it stops at the first and last dot rather than running the
-   full height of the list — a line that starts above the first entry implies
-   a role the card is not showing. */
-.timeline::before {
-  content: "";
-  position: absolute;
-  left: 2px;
-  top: 9px;
-  bottom: 9px;
-  width: 1px;
-  background: var(--border);
-}
-.timeline__era:first-of-type .timeline::before { display: none; }
+/* The action sits at the foot of the card whatever height the row gives it,
+   which is what makes the card's lower edge line up with the ring's. */
+.past__cta { margin-top: auto; align-self: start; }
 
-.timeline__item {
+.tl {
   display: grid;
-  grid-template-columns: 7px 58px minmax(0, 1fr);
-  align-items: start;
-  gap: var(--s-2);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* The card is as tall as the ring beside it and the line needs less than
+     that, so the slack goes above and below rather than all of it under the
+     last row: label at the top, action at the foot, timeline centred in what
+     is left. Pinning each column's field to the floor instead left a hole in
+     the middle of every one of them. */
+  flex: 0 0 auto;
+  margin-block: auto;
 }
 
-.timeline__what { display: block; min-width: 0; }
-
-/* The employer and the field it was in share a line, the field pushed to the
-   far edge. If the column is too narrow to hold both, the field drops to its
-   own line instead of being cut — nothing here is ever truncated. */
-.timeline__line {
+.tl__stop {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0 var(--s-2);
+  flex-direction: column;
+  min-width: 0;
+  /* The text keeps clear of the next stop; the rule does not, or the line
+     would arrive at each dot in pieces. */
+  padding-right: var(--s-3);
 }
 
-.timeline__field {
+.tl__years {
   font-size: var(--fs-meta);
-  line-height: 1.35;
+  line-height: 1.4;
+  letter-spacing: var(--tr-meta);
   color: var(--ink-muted);
   white-space: nowrap;
 }
 
-.timeline__dot {
-  width: 5px; height: 5px;
-  margin-top: 7px;
+/* THE LINE IS THE STOPS' OWN EDGES. Each stop draws its own segment, full
+   bleed across its column, with the dot on the left end of it — so five
+   segments meet at their boundaries and the result is one unbroken rule with
+   the dots sitting on it, without a single absolute position anywhere. */
+.tl__mark {
+  position: relative;
+  display: block;
+  height: 1px;
+  /* Back out over the stop's own right padding so five segments meet at their
+     boundaries and read as one rule. */
+  margin: 10px calc(var(--s-3) * -1) 16px 0;
+  background: var(--border);
+}
+
+/* And the last one runs out of the card rather than stopping inside it: the
+   job is not over, so neither is the line. */
+.tl__stop:last-child .tl__mark {
+  margin-right: calc(var(--tile-pad, 22px) * -1);
+}
+
+.tl__dot {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--border-strong);
-  /* The dot sits on the spine, so it needs the card's own surface behind it
-     to read as a stop on the line rather than a bead threaded onto it. */
+  transform: translate(-1px, -50%);
+  /* The card's own surface behind it, so the dot reads as a stop on the line
+     rather than a bead threaded onto it. */
   box-shadow: 0 0 0 3px var(--surface);
 }
 
-/* Now is a filled dot with a ring around it: the only entry on the card that
-   has not finished. */
-.timeline__item.is-current .timeline__dot {
+/* Now is filled and ringed: the only stop on the line that has not finished,
+   and the only one whose segment carries on past the card. */
+.tl__stop.is-current .tl__dot {
   background: var(--ink);
   box-shadow: 0 0 0 3px var(--surface), 0 0 0 4px var(--ink);
 }
-.timeline__item.is-current .timeline__org { color: var(--ink); }
-
-/* The wider spacing is paid for by the card's own slack, and the slack only
-   exists while the card is one of three in a row and its height is set by the
-   tallest of them. Stacked, the card is exactly as tall as its contents and
-   there is nothing spare to spend, so the list closes back up. */
-@media (max-width: 1119px) {
-  .timeline { gap: var(--s-2); }
-  .timeline__era + .timeline__era { margin-top: var(--s-3); }
+.tl__stop.is-current .tl__years { color: var(--ink); }
+.tl__stop.is-current .tl__mark {
+  background: linear-gradient(to right, var(--border) 55%, transparent);
 }
 
-.timeline__years {
-  font-size: var(--fs-meta);
-  line-height: 1.5;
-  color: var(--ink-muted);
-  white-space: nowrap;
-}
-
-.timeline__org {
+.tl__org {
   display: block;
+  /* Two lines' worth whether the name needs them or not, so every role below
+     sits on the same line however long the employer is. */
+  min-height: calc(2 * 1.3em);
   font-size: var(--fs-body);
   font-weight: var(--fw-strong);
   letter-spacing: var(--tr-body);
-  line-height: 1.35;
+  line-height: 1.3;
   color: var(--ink);
 }
 
-.timeline__role {
+.tl__role {
   display: block;
-  font-size: var(--fs-meta);
-  line-height: 1.45;
-  color: var(--ink-secondary);
-}
-
-/* --------------------------------------------------------------------------
-   HOW I WORK
-   -------------------------------------------------------------------------- */
-
-/* --------------------------------------------------------------------------
-   HOW I WORK — three steps, in order
-
-   The old version was three centred columns of three words each: at a third
-   of a row they were legible and said almost nothing, and at a phone's width
-   they became three stacked labels with no relationship between them.
-
-   This one is a numbered list. Each step carries its number, its name, a line
-   saying what actually happens in it, and the things it is made of — so the
-   hierarchy inside a step is the same at every width, and the only thing the
-   breakpoint changes is how many steps sit side by side.
-
-   Left-aligned throughout: a bulleted list centred under a heading is a shape,
-   not a list.
-   -------------------------------------------------------------------------- */
-
-.process {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--s-2);
-  margin: var(--s-3) 0;
-  padding: 0;
-  list-style: none;
-  counter-reset: step;
-}
-
-.process__step {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  padding: calc(var(--s-2) - 2px) var(--s-2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  text-align: left;
-  min-width: 0;
-}
-
-/* The number, the name and the mark share one line: the number is the step's
-   place in the sequence, the name is the step, the mark is what it is about.
-   Three lines became one, which is most of the height this card gave back. */
-.process__head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-}
-
-.process__head .process__title { flex: 1 1 auto; min-width: 0; }
-.process__head .icon-tile { flex: 0 0 auto; margin-left: auto; }
-
-.process__n {
-  font-family: var(--font-body);
-  font-size: var(--fs-micro);
-  font-weight: var(--fw-medium);
-  letter-spacing: 0.12em;
-  line-height: 1;
-  color: var(--ink-muted);
-}
-
-.process__title {
-  font-family: var(--font-display);
-  font-size: var(--fs-body);
-  font-weight: var(--fw-display);
-  letter-spacing: var(--tr-card);
-  line-height: 1.2;
-  color: var(--ink);
-}
-
-/* One line on what happens in this step. It is the difference between a label
-   and a step. */
-.process__note {
-  font-size: var(--fs-meta);
-  line-height: 1.45;
-  color: var(--ink-secondary);
-  text-wrap: pretty;
-}
-
-/* THE SPECIFICS RUN ON ONE LINE, NOT THREE.
-
-   A stacked bullet list is three lines per step and nine for the section,
-   which turned a card you take in at a glance into a card you scroll. The
-   items keep their bullets — they are still a list, and it still reads as
-   one — but they sit on the same line and wrap only if they have to. */
-.process__list {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px 0;
-  margin: 2px 0 0;
-  padding: 0;
-  min-width: 0;
-  list-style: none;
+  margin-top: 2px;
   font-size: var(--fs-meta);
   line-height: 1.4;
   color: var(--ink-secondary);
 }
 
-/* A drawn bullet between items rather than a marker in front of them: it sits
-   on the line's optical centre at any size, and the first item does not need
-   one because nothing precedes it. */
-.process__list li {
-  position: relative;
-  padding-left: 15px;
-  white-space: nowrap;
+.tl__field {
+  display: block;
+  margin-top: var(--s-2);
+  font-size: var(--fs-meta);
+  line-height: 1.4;
+  color: var(--ink-muted);
 }
-
-.process__list li:first-child { padding-left: 0; }
-
-.process__list li::before {
-  content: "";
-  position: absolute;
-  left: 6px;
-  top: 0.62em;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--ink-muted);
-}
-
-.process__list li:first-child::before { display: none; }
 
 /* --------------------------------------------------------------------------
    CREATIVE / PERSONAL
@@ -12989,8 +12947,6 @@ em,
    a column read as one, two, three, which three columns squeezed to ninety
    pixels never did. */
 @container cell (max-width: 520px) {
-  .process { grid-template-columns: minmax(0, 1fr); }
-  .process__step { padding: var(--s-2) var(--s-2) calc(var(--s-2) - 2px); }
 }
 
 /* Band 4 cells simplify their inner grids before their type shrinks. */
@@ -13485,11 +13441,46 @@ em,
      label on its own line, the rail beneath — because at this width a label
      beside twelve marks leaves the marks a slot barely wider than three of
      them. */
+  /* The timeline follows the strip: same band, same idea — where the work was
+     done, then when. It is a column at this width rather than a line; five
+     stops across a phone is five stops nobody can read. */
+  .hero__past {
+    order: 4;
+    grid-column: 1 / -1;
+    margin-top: 22px;
+    padding-block: 26px 30px;
+    padding-inline: 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .past__label {
+    margin: 0 0 16px;
+    font-size: clamp(12px, 2.6vw, 14px);
+    color: var(--ink-secondary);
+  }
+
+  .hero__past .tl {
+    grid-template-columns: minmax(0, 1fr);
+    margin-block: 0;
+    gap: var(--s-3);
+  }
+
+  /* Stacked, the rule turns back into a spine: it runs down the left of each
+     stop rather than across the top of it. */
+  .hero__past .tl__stop { padding-right: 0; }
+  .hero__past .tl__mark { margin: 8px 0 10px; }
+  /* The card has no side padding at this width, so a dot centred on the
+     line's first pixel loses its left half over the edge. It sits just inside
+     instead — enough for the ring on the current one to clear too. */
+  .hero__past .tl__dot { left: 5px; transform: translate(0, -50%); }
+  .hero__past .tl__org { min-height: 0; }
+  .hero__past .tl__stop:last-child .tl__mark { margin-right: 0; }
+
   .hero__tools {
     /* The same order as the strip above it, so it lands directly under it in
        source order rather than after the contact block. The two bands are one
        idea — where the work was done, and what it was made with. */
-    order: 4;
+    order: 5;
     grid-column: 1 / -1;
     margin-top: 22px;
     padding-block: 26px 30px;
@@ -13523,7 +13514,7 @@ em,
      Every row is a tap target at the 44px floor and nothing is a button. The
      left edge is the same left edge as everything above it. */
   .hero__contact {
-    order: 5;
+    order: 6;
     grid-column: 1 / -1;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -20116,6 +20107,8 @@ em,
           </div>
 
           
+          
+          <div class="hero__band">
           <div class="hero__clients hero-tile hero-tile--clients">
             
             <p class="clients__label">Worked with</p>
@@ -20144,6 +20137,54 @@ em,
               </ul>
             </div>
 
+          </div>
+
+          
+          <div class="hero__past hero-tile hero-tile--past">
+            <p class="past__label">Where I&rsquo;ve been</p>
+
+            <ol class="tl">
+              <li class="tl__stop">
+                <span class="tl__years">2022</span>
+                <span class="tl__mark" aria-hidden="true"><i class="tl__dot"></i></span>
+                <span class="tl__org">CVS Health</span>
+                <span class="tl__role">Junior UI Developer</span>
+                <span class="tl__field">Healthcare</span>
+              </li>
+              <li class="tl__stop">
+                <span class="tl__years">2023&ndash;24</span>
+                <span class="tl__mark" aria-hidden="true"><i class="tl__dot"></i></span>
+                <span class="tl__org">CG Infinity</span>
+                <span class="tl__role">UX Consultant</span>
+                <span class="tl__field">Enterprise</span>
+              </li>
+              <li class="tl__stop">
+                <span class="tl__years">2024&ndash;25</span>
+                <span class="tl__mark" aria-hidden="true"><i class="tl__dot"></i></span>
+                <span class="tl__org">PNC Bank</span>
+                <span class="tl__role">Product Designer</span>
+                <span class="tl__field">Finance</span>
+              </li>
+              <li class="tl__stop">
+                <span class="tl__years">2025&ndash;26</span>
+                <span class="tl__mark" aria-hidden="true"><i class="tl__dot"></i></span>
+                <span class="tl__org">Natera</span>
+                <span class="tl__role">Product / UX Designer</span>
+                <span class="tl__field">Biotech</span>
+              </li>
+              <li class="tl__stop is-current">
+                <span class="tl__years">2026 &middot; Now</span>
+                <span class="tl__mark" aria-hidden="true"><i class="tl__dot"></i></span>
+                <span class="tl__org">Sahoo &amp; Co. Design Agency</span>
+                <span class="tl__role">Product Designer</span>
+                <span class="tl__field">Multiple clients</span>
+              </li>
+            </ol>
+
+            <a class="cta cta--ink past__cta" href="#" data-placeholder-link>
+              View r&eacute;sum&eacute; <span class="cta__arrow" aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
           </div>
 
           
@@ -20200,6 +20241,7 @@ em,
             </ul>
           </div>
 
+          </div>
 
         </div>
       </div>
@@ -20211,145 +20253,9 @@ em,
   
   <section class="section" id="background" aria-label="Background">
     <div class="bento">
-  <div class="row row--trio row--index">
+  
+  <div class="row row--solo row--index">
 
-          
-          <article class="cell cell--experience">
-            <div class="card card--index">
-              <div class="card__stack">
-                <h3 class="t-card card__title">where i’ve <em>been</em></h3>
-
-                
-                <div class="timeline__era">
-                  <p class="timeline__era-label">Now</p>
-                  <ol class="timeline">
-                    <li class="timeline__item is-current">
-                      <span class="timeline__dot" aria-hidden="true"></span>
-                      <span class="timeline__years">2026</span>
-                      <span class="timeline__what">
-                        <span class="timeline__line">
-                          <span class="timeline__org">Sahoo &amp; Co. Design Agency</span>
-                        </span>
-                        <span class="timeline__role">Product Designer / Multiple Clients</span>
-                      </span>
-                    </li>
-                  </ol>
-                </div>
-
-                <div class="timeline__era">
-                  <p class="timeline__era-label">Before</p>
-                  <ol class="timeline">
-                    <li class="timeline__item">
-                      <span class="timeline__dot" aria-hidden="true"></span>
-                      <span class="timeline__years">2025–26</span>
-                      <span class="timeline__what">
-                        <span class="timeline__line">
-                          <span class="timeline__org">Natera</span>
-                          <span class="timeline__field">Biotech</span>
-                        </span>
-                        <span class="timeline__role">Product / UX Designer</span>
-                      </span>
-                    </li>
-                    <li class="timeline__item">
-                      <span class="timeline__dot" aria-hidden="true"></span>
-                      <span class="timeline__years">2024–25</span>
-                      <span class="timeline__what">
-                        <span class="timeline__line">
-                          <span class="timeline__org">PNC Bank</span>
-                          <span class="timeline__field">Finance</span>
-                        </span>
-                        <span class="timeline__role">Product Designer</span>
-                      </span>
-                    </li>
-                    <li class="timeline__item">
-                      <span class="timeline__dot" aria-hidden="true"></span>
-                      <span class="timeline__years">2023–24</span>
-                      <span class="timeline__what">
-                        <span class="timeline__line">
-                          <span class="timeline__org">CG Infinity</span>
-                          <span class="timeline__field">Enterprise</span>
-                        </span>
-                        <span class="timeline__role">UX Consultant</span>
-                      </span>
-                    </li>
-                    <li class="timeline__item">
-                      <span class="timeline__dot" aria-hidden="true"></span>
-                      <span class="timeline__years">2022</span>
-                      <span class="timeline__what">
-                        <span class="timeline__line">
-                          <span class="timeline__org">CVS Health</span>
-                          <span class="timeline__field">Healthcare</span>
-                        </span>
-                        <span class="timeline__role">Junior UI Developer</span>
-                      </span>
-                    </li>
-                  </ol>
-                </div>
-
-                <a class="cta cta--ink" href="#" data-placeholder-link>
-                  View résumé <span class="cta__arrow" aria-hidden="true">→</span>
-                </a>
-              </div>
-            </div>
-          </article>
-
-          
-          <article class="cell cell--process">
-            <div class="card card--index">
-              <div class="card__stack">
-                <h3 class="t-card card__title">how i <em>work</em></h3>
-
-                
-                <ol class="process">
-                  <li class="process__step">
-                    <div class="process__head">
-                      <span class="process__n" aria-hidden="true">01</span>
-                      <p class="process__title">Understand</p>
-                      <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-understand"/></svg></span>
-                    </div>
-                    <p class="process__note">Map what the system does before deciding what it should do.</p>
-                    <ul class="process__list">
-                      <li>Systems</li>
-                      <li>Workflows</li>
-                      <li>People</li>
-                    </ul>
-                  </li>
-                  <li class="process__step">
-                    <div class="process__head">
-                      <span class="process__n" aria-hidden="true">02</span>
-                      <p class="process__title">Prototype</p>
-                      <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-prototype"/></svg></span>
-                    </div>
-                    <p class="process__note">Make it real early, while it is still cheap to be wrong.</p>
-                    <ul class="process__list">
-                      <li>Figma</li>
-                      <li>HTML / CSS</li>
-                      <li>AI-assisted</li>
-                    </ul>
-                  </li>
-                  <li class="process__step">
-                    <div class="process__head">
-                      <span class="process__n" aria-hidden="true">03</span>
-                      <p class="process__title">Ship</p>
-                      <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-ship"/></svg></span>
-                    </div>
-                    <p class="process__note">Hand it over so it survives contact with engineering.</p>
-                    <ul class="process__list">
-                      <li>Product + Eng</li>
-                      <li>Docs</li>
-                      <li>Validation</li>
-                    </ul>
-                  </li>
-                </ol>
-
-                <a class="cta cta--ink" href="#" data-placeholder-link>
-                  My process <span class="cta__arrow" aria-hidden="true">→</span>
-                </a>
-              </div>
-            </div>
-          </article>
-
-          
           <article class="cell cell--about">
             <div class="card card--index">
               <div class="card__stack">
@@ -27717,11 +27623,6 @@ window.PF = window.PF || {};
     open = next;
     measure();
     card.classList.toggle('is-open', open);
-    /* The employers' strip is the same height as this card by default, and a
-       square would stretch a five-logo rail into a four-hundred-pixel panel,
-       so the row stops governing it. */
-    var host = card.closest('.hero-card');
-    if (host) host.classList.toggle('tools-open', open);
     /* Nothing is going past while the ring is up; nothing turns while the rail
        is. One animation at a time, always. */
     rail.toggleAttribute('data-paused', open);
