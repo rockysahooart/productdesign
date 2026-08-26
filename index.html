@@ -3110,6 +3110,60 @@ em,
 
 .theme-toggle:hover { color: var(--ink); border-color: var(--border-strong); }
 
+/* --------------------------------------------------------------------------
+   REPLAY
+
+   The same object as the theme control, one place to its left: same size,
+   same border, same hover. Two controls that belong to the card rather than
+   to the conversation, sitting together where neither is in the way of it.
+
+   The glyph is a character rather than a drawn icon, for the same reason the
+   arrow in the project list is: it is set in the same face as everything else
+   here, so it is the typeface's own mark and not an approximation of one.
+   -------------------------------------------------------------------------- */
+.hero__replay {
+  position: absolute;
+  top: clamp(var(--s-2), 2vw, var(--s-3));
+  right: calc(clamp(var(--s-2), 2vw, var(--s-3)) + 46px);
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--ink-secondary);
+  transition: color var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease),
+              background-color var(--dur-fast) var(--ease);
+}
+
+.hero__replay[hidden] { display: none; }
+
+.hero__replay:hover { color: var(--ink); border-color: var(--border-strong); }
+
+.hero__replay-glyph {
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1;
+  /* The glyph sits a hair high in its own box at this size. */
+  transform: translateY(-0.5px);
+  transition: transform 420ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+/* One turn on the way in — the control says what it does by doing it. */
+.hero__replay:hover .hero__replay-glyph,
+.hero__replay:focus-visible .hero__replay-glyph {
+  transform: translateY(-0.5px) rotate(-360deg);
+}
+
+.hero__replay:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__replay-glyph,
+  .hero__replay:hover .hero__replay-glyph { transition: none; transform: none; }
+}
+
 .theme-toggle .icon { width: 18px; height: 18px; }
 
 /* Only one glyph shows at a time — the one for the theme you would get. */
@@ -4089,6 +4143,118 @@ em,
    on the card this list was read from.
    -------------------------------------------------------------------------- */
 
+/* --------------------------------------------------------------------------
+   THE INVITATION, AND THE VIEW IT OPENS
+
+   The conversation ends by offering the work rather than by listing it. A
+   button under the last message, in the same box, and taking it turns the
+   viewport into the list — one rectangle showing two things, so nothing
+   outside it moves and the card never changes size.
+
+   The button is the role chip's twin: same height, same border, same uppercase
+   mono label. It belongs to the conversation, so it sits where the last
+   message left off rather than centred under it.
+   -------------------------------------------------------------------------- */
+.msg-cta {
+  display: block;
+  /* Under the reactions, which hang below the last bubble — this is the gap
+     after them, not after the text. */
+  margin-top: 1.5em;
+  padding-left: var(--hx-3);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 340ms linear,
+              transform 340ms cubic-bezier(0.2, 0.75, 0.25, 1);
+}
+
+.msg-cta[hidden] { display: none; }
+.msg-cta.is-in { opacity: 1; transform: none; }
+
+.msg-cta__btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 15px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-btn);
+  background: var(--surface-raised);
+
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--ink);
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease),
+              background-color var(--dur-fast) var(--ease);
+}
+
+.msg-cta__btn span { transition: transform 180ms cubic-bezier(0.2, 0.75, 0.25, 1); }
+.msg-cta__btn:hover { border-color: var(--ink); }
+.msg-cta__btn:hover span { transform: translateX(4px); }
+.msg-cta__btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+/* THE LIST VIEW. The same box, showing only the work: the conversation is not
+   scrolled away, it is simply not what this view is for. The track fills the
+   box, the nav sits at the top of it and the list takes everything under it,
+   which is what lets five rows spread across the whole viewport and three
+   rows spread across the same one. */
+.hero__thread.is-list .msg,
+.hero__thread.is-list .msg-cta { display: none; }
+
+.hero__thread.is-list .msg-track { height: 100%; }
+
+.plist-view { display: none; }
+
+.hero__thread.is-list .plist-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.hero__thread.is-list .plist {
+  /* The seam before the list belongs to the conversation. In this view the
+     list IS the view, so it starts where the nav ends. */
+  margin-top: 18px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.plist-view__nav { display: block; }
+
+.plist-view__back {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 12px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-btn);
+  background: transparent;
+
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease);
+}
+
+.plist-view__back span { transition: transform 180ms cubic-bezier(0.2, 0.75, 0.25, 1); }
+.plist-view__back:hover { color: var(--ink); border-color: var(--border-strong); }
+.plist-view__back:hover span { transform: translateX(-4px); }
+.plist-view__back:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
 .plist {
   /* A column that spends whatever height it is given: the rows keep their own
      padding and the space left over is dealt out evenly between them, so the
@@ -4471,79 +4637,10 @@ em,
    than the middle of the cluster.
    -------------------------------------------------------------------------- */
 
-/* The end state: a window the reader drives. The mask above still applies —
-   it is on the same element — so content dissolves into the top edge while it
-   is scrolled exactly as it did while it was animating. Scroll chaining is
-   left at its default, so reaching either end of the conversation carries on
-   scrolling the page rather than trapping the pointer. */
-/* THE SCROLL SITS OUTSIDE THE CONVERSATION.
-
-   A scrollbar belongs to the box, not to the writing. Left alone it is drawn
-   hard against the right edge of the text column, a millimetre from the last
-   character of every line — which turns a piece of browser furniture into
-   part of the composition, and a long line into a line that looks like it is
-   touching something.
-
-   So the box grows a lane on its right, past the column the messages are set
-   in, and the scrollbar is put in it. The lane is opened with padding and
-   taken straight back with an equal negative margin, and the column's ceiling
-   is raised by exactly the same amount — so the text measures the same width
-   it measured a frame earlier, wraps identically, and nothing reflows when
-   the window becomes scrollable. The rail is thin and sits at the far side of
-   that lane, with the rest of it left as air between the two. */
-.hero__thread.is-windowed.is-archive {
-  --sb-lane: clamp(16px, 1.5vw, 26px);
-
-  overflow-y: auto;
-  overflow-x: hidden;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-strong, var(--border)) transparent;
-
-  /* --sb-w is however much width the platform's scrollbar actually takes out
-     of the box: zero on the overlay scrollbars macOS and iOS use, a real
-     number on Windows, Linux and anywhere the reader has asked for permanent
-     scrollbars. It is measured once in script and written here, because the
-     lane has to absorb it — every pixel the rail takes is a pixel the
-     sentence would otherwise lose. Zero is the right default: with an overlay
-     rail there is nothing to absorb. */
-  max-width: calc(32ch + var(--sb-lane) + var(--sb-w, 0px));
-  padding-right: var(--sb-lane);
-  margin-right: calc(-1 * (var(--sb-lane) + var(--sb-w, 0px)));
-
-  /* The window opening out into the height the card is already holding for
-     it. Slow enough to read as the box changing job, not as a jump — script
-     sets the number, this is the only thing that animates it. */
-  transition: height 640ms cubic-bezier(0.2, 0.75, 0.25, 1);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero__thread.is-windowed.is-archive { transition: none; }
-}
-
-.hero__thread.is-windowed.is-archive::-webkit-scrollbar {
-  width: 6px;
-}
-.hero__thread.is-windowed.is-archive::-webkit-scrollbar-track {
-  background: transparent;
-}
-.hero__thread.is-windowed.is-archive::-webkit-scrollbar-thumb {
-  background: var(--border-strong, var(--border));
-  border-radius: 999px;
-}
-.hero__thread.is-windowed.is-archive::-webkit-scrollbar-thumb:hover {
-  background: var(--ink-tertiary, var(--ink-secondary));
-}
-
 .hero__thread.is-windowed {
   overflow: hidden;
 
-  /* Where the dissolve finishes, as a fraction of the box. It is declared
-     once, here, because two things depend on it: the mask below, and the
-     clearance the archive leaves above its first message so that scrolling
-     to the top of the conversation puts the opening lines fully clear of the
-     fade rather than half inside it. */
+  /* Where the dissolve finishes, as a fraction of the box. */
   --fade-stop: 9%;
 
   /* THE TOP EDGE IS A DISSOLVE, NOT A CUT. A message on its way out used to
@@ -4570,19 +4667,6 @@ em,
                         rgba(0, 0, 0, 1) 100%);
 }
 
-/* THE TOP OF THE ARCHIVE IS NOT THE TOP OF THE FADE.
-
-   Scrolled all the way back, the first thing said should read as cleanly as
-   the last — and with the dissolve sitting on the box's top edge, it did not:
-   "Hello" arrived at the top of the scroll with the band across it, softened
-   at the exact moment it is meant to be the beginning.
-
-   So the conversation starts lower than the box does. The archive carries a
-   band of clearance above its first message, deeper than the dissolve, and
-   the only thing the fade has to work on at the top of the scroll is that
-   empty band. Script sets the number, because the depth of the fade is a
-   fraction of a box whose height it does not know until it opens. */
-.hero__thread.is-windowed.is-archive { padding-top: var(--arch-top, 0px); }
 
 /* --------------------------------------------------------------------------
    ...AND STOPS CLIPPING ONCE THE CONVERSATION IS OVER
@@ -12867,6 +12951,12 @@ em,
             </button>
 
             
+            <button class="hero__replay" type="button" data-replay hidden
+                    aria-label="Play the introduction again" title="Replay">
+              <span class="hero__replay-glyph" aria-hidden="true">&#8635;</span>
+            </button>
+
+            
             <div class="t-meta hero__eyebrow" role="tablist"
                  aria-label="Choose a discipline">
               <button type="button" class="hero__role" data-role="design"
@@ -12883,7 +12973,7 @@ em,
               <span class="msg-track" data-track>
               <span class="msg" data-msg data-cluster>
                 <span class="msg__from" aria-hidden="true">SS</span>
-                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">Hello :) nice to meet you</span></span>
+                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">Hello :)</span></span>
               </span>
               <span class="msg" data-msg>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
@@ -22992,7 +23082,7 @@ window.PF = window.PF || {};
      and nothing below the thread moves when you switch. */
   var ROLES = {
     design: [
-      [{ t: 'Hello :) nice to meet you' }],
+      [{ t: 'Hello :)' }],
       [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true },
        { t: ', a Product Designer ' },
        { ic: 'phone', lbl: 'product' }, { ic: 'laptop', lbl: 'design' },
@@ -23083,10 +23173,24 @@ window.PF = window.PF || {};
      seconds before the work appears under it. */
   var PROJECTS_MS = 2400;
   var SHIFT_MS = 700;   /* the window opening: matched to the CSS transition */
-  var HOLD_MS = 5200;   /* the finished thread stands, reactions and all */
+  /* THE ENDING IS HELD. The closing line, its reactions and the list of work
+     are what the whole sequence is built to arrive at, so they stand for
+     fifteen seconds — long enough to read five project names and decide on
+     one — before the conversation starts over. */
+  var HOLD_MS = 15000;
   var FADE_MS = 340;    /* the whole stack dims out together */
   var BLANK_MS = 640;   /* an empty beat, so the loop is a breath not a cut */
   var SCRAMBLE_MS = 1500; /* the decode: long enough to read as resolving */
+
+  /* THE OPENING IS SLOWER THAN THE REST. The first two lines are a greeting
+     and an introduction — a name, a title and a city — and they are read by
+     somebody who has just arrived and is still deciding whether to stay.
+     Everything after them is a point being made to a reader who is already
+     reading; those two are the moment of meeting, and they hold longer than
+     the standard gap so the name has time to land before the next line starts
+     being written. It is the opening of any of the three conversations, not a
+     property of one of them, so it belongs here rather than in the data. */
+  var OPENING_DWELL = [1500, 1300];
 
   /* ---- the decode ---------------------------------------------------------
 
@@ -23254,8 +23358,16 @@ window.PF = window.PF || {};
        new sender group every two messages, and the badge belongs to the row
        that starts one. Per-message options come from the data beside it. */
     function shape(set) {
-      for (var i = 0; i < set.length && i < rows.length; i++) {
+      /* Every row, not only the ones this role uses: a set with fewer
+         messages must not inherit the last one's scramble or its dwell from
+         the role before it. */
+      for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
+        if (i >= set.length) {
+          row.removeAttribute('data-scramble');
+          row.removeAttribute('data-dwell');
+          continue;
+        }
         var opens = i % 2 === 0;
         var badge = row.querySelector('.msg__from');
 
@@ -23276,7 +23388,11 @@ window.PF = window.PF || {};
         var opt = set[i].opt || {};
         if (opt.scramble) row.setAttribute('data-scramble', '');
         else row.removeAttribute('data-scramble');
-        if (opt.dwell) row.setAttribute('data-dwell', opt.dwell);
+
+        /* A message can ask to be held after it lands, either by naming a
+           dwell in the data or by being one of the opening two. */
+        var dwell = opt.dwell || OPENING_DWELL[i] || 0;
+        if (dwell) row.setAttribute('data-dwell', dwell);
         else row.removeAttribute('data-dwell');
       }
     }
@@ -23435,12 +23551,6 @@ window.PF = window.PF || {};
          composition as everybody else's. */
       thread.style.height = Math.ceil(boxH) + 'px';
       thread.classList.add('is-windowed');
-
-      /* A resize re-measures the box from scratch, which would quietly undo an
-         archive that had already opened out into the card. Put it back, and
-         with it the clearance above the first message — the fade is a
-         fraction of a box that has just changed height. */
-      if (archived) { expand(); topRoom(archH, true); }
     }
 
     /* Which role the markup starts on decides how many rows are in play, and
@@ -23448,6 +23558,10 @@ window.PF = window.PF || {};
     var startBtn = document.querySelector('[data-role][aria-selected="true"]');
     var startKey = (startBtn && startBtn.getAttribute('data-role')) || 'design';
     var startSet = ROLES[startKey] || ROLES.design;
+    /* Which discipline is being talked about. The list of work under the last
+       message is built for it, so it is tracked here rather than only inside
+       the click handler. */
+    var role = ROLES[startKey] ? startKey : 'design';
     grow(startSet.length);
     shape(startSet);
     setCount(startSet.length);
@@ -23482,31 +23596,7 @@ window.PF = window.PF || {};
     window.addEventListener('resize', function () {
       clearTimeout(rt);
       rt = setTimeout(function () {
-        /* The reader's place in the archive is a scroll offset, and re-measuring
-           the box changes what that offset can be. Keep it across the
-           measurement rather than dropping them back at the top. */
-        var keep = archived ? thread.scrollTop : 0;
-
         reserve();
-
-        /* AN ARCHIVE IS NOT DRIVEN BY THE TRACK. Once the box is a window the
-           content is carried by its scroll offset and the track's transform is
-           none — re-placing it here would offset the same content twice, once
-           on each mechanism, and put the conversation a screen away from where
-           the reader left it. */
-        if (archived) {
-          if (track) {
-            track.style.transition = 'none';
-            track.style.transform = 'none';
-            void track.offsetWidth;
-            track.style.transition = '';
-          }
-          thread.style.scrollBehavior = 'auto';
-          thread.scrollTop = keep;
-          void thread.offsetHeight;
-          thread.style.scrollBehavior = '';
-          return;
-        }
 
         /* The track is measured in pixels, so a resize invalidates it. Put it
            back where it belongs for however many rows have retired. */
@@ -23676,40 +23766,86 @@ window.PF = window.PF || {};
        eyebrow is where the project is named, the headline is what it did. */
     var plist = null;
 
+    /* THE LIST IS THE WORK FOR THE DISCIPLINE BEING TALKED ABOUT.
+
+       The conversation changes with the role selector and so does the browser
+       beside it, so a list of design case studies under a conversation about
+       drawing would name five things the browser cannot show. Design reads
+       its rows from the work section, where the case studies live with their
+       real links; the other disciplines read theirs from the browser's own
+       slides for that mode, which is where those pieces exist. Either way the
+       list and the browser are naming the same set, which is what makes
+       pointing at a row work at all.
+
+       Built per role and thrown away when the role changes — five rows are
+       cheap, and a stale list is not. */
+    function projectSource(key) {
+      var out = [], i;
+      if (key === 'design') {
+        var cards = document.querySelectorAll('#work .card--project');
+        for (i = 0; i < cards.length; i++) {
+          var link = cards[i].querySelector('a[href]');
+          var eyebrow = cards[i].querySelector('.card__eyebrow');
+          if (!link || !eyebrow) continue;
+          var nm = eyebrow.textContent.split('\u00b7')[0].trim();
+          if (!nm) continue;
+          out.push({ name: nm, href: link.getAttribute('href'),
+                     placeholder: link.hasAttribute('data-placeholder-link') });
+        }
+        return out;
+      }
+
+      var slides = document.querySelectorAll('.pv__slide[data-mode="' + key + '"]');
+      for (i = 0; i < slides.length; i++) {
+        var t = slides[i].querySelector('.pv__title');
+        var nm2 = t ? t.textContent.trim() : '';
+        if (!nm2) continue;
+        out.push({ name: nm2, href: slides[i].getAttribute('data-href') || '#',
+                   placeholder: slides[i].hasAttribute('data-placeholder-link') });
+      }
+      return out;
+    }
+
     function buildProjects() {
       if (plist) return plist;
-      var cards = document.querySelectorAll('#work .card--project');
-      if (!cards.length) return null;
+      var items = projectSource(role);
+      if (!items.length) return null;
 
       plist = document.createElement('span');
       plist.className = 'plist';
       plist.setAttribute('hidden', '');
 
-      for (var i = 0; i < cards.length; i++) {
-        var link = cards[i].querySelector('a[href]');
-        var eyebrow = cards[i].querySelector('.card__eyebrow');
-        if (!link || !eyebrow) continue;
-        var name = eyebrow.textContent.split('\u00b7')[0].trim();
-        if (!name) continue;
-
+      for (var i = 0; i < items.length; i++) {
         var row = document.createElement('a');
         row.className = 'plist__row';
-        row.setAttribute('href', link.getAttribute('href'));
-        if (link.hasAttribute('data-placeholder-link')) {
-          row.setAttribute('data-placeholder-link', '');
-        }
+        row.setAttribute('href', items[i].href);
+        if (items[i].placeholder) row.setAttribute('data-placeholder-link', '');
         /* The name sits inside a slot of a fixed height so it can grow on
            hover without the row growing with it. */
         row.innerHTML = '<span class="plist__name"><span class="plist__word"></span></span>' +
                         '<span class="plist__go" aria-hidden="true">\u2192</span>';
-        row.querySelector('.plist__word').textContent = name;
-        wire(row, name);
+        row.querySelector('.plist__word').textContent = items[i].name;
+        wire(row, items[i].name);
         plist.appendChild(row);
       }
 
       if (!plist.children.length) { plist = null; return null; }
       track.appendChild(plist);
       return plist;
+    }
+
+    /* A role change invalidates the list outright: different work, different
+       rows. It is removed rather than emptied, so nothing of the old set is
+       left in the accessibility tree either. */
+    function dropProjects() {
+      armed = null;
+      /* The whole view goes, not just the rows inside it: it was built around
+         this role's list and there is nothing in it worth keeping. */
+      if (view && view.parentNode) view.parentNode.removeChild(view);
+      else if (plist && plist.parentNode) plist.parentNode.removeChild(plist);
+      view = null;
+      backRow = null;
+      plist = null;
     }
 
     /* Pointing at a name brings that project up in the browser beside the
@@ -23751,36 +23887,136 @@ window.PF = window.PF || {};
     /* Revealed a row at a time, on the same easing as everything else, and
        the canvas re-balances as it grows — so the list fills the space under
        the last message instead of the message being shoved up to make way. */
-    function showProjects(instant) {
+    /* ---- from the conversation to the work --------------------------------
+
+       The list used to arrive underneath the last message, which made the end
+       of the conversation a page that kept growing. It is a different thing
+       to look at, so it is now a different view of the same box: the
+       conversation ends with an invitation, and taking it swaps what the
+       viewport is showing. Nothing outside the box moves for any of it — this
+       is one rectangle showing two things, not a page changing size.
+
+       The invitation is a button under the last message, which is where the
+       reader's eye already is when the reactions have finished. */
+    var ctaRow = null, view = null, backRow = null;
+
+    function buildCta() {
+      if (ctaRow) return ctaRow;
+      ctaRow = document.createElement('span');
+      ctaRow.className = 'msg-cta';
+      ctaRow.setAttribute('hidden', '');
+      ctaRow.innerHTML = '<button type="button" class="msg-cta__btn">' +
+                         'See the work <span aria-hidden="true">\u2192</span></button>';
+      ctaRow.querySelector('button').addEventListener('click', openList);
+      track.appendChild(ctaRow);
+      return ctaRow;
+    }
+
+    function showCta() {
+      var el = buildCta();
+      el.removeAttribute('hidden');
+      /* One more thing in the flow, so the canvas answers for it. */
+      place();
+      requestAnimationFrame(function () { el.classList.add('is-in'); });
+    }
+
+    function hideCta() {
+      if (!ctaRow) return;
+      ctaRow.classList.remove('is-in');
+      ctaRow.setAttribute('hidden', '');
+    }
+
+    /* The list view: the work, and a way back to the conversation. Built once
+       per role, around whatever list the role produced. */
+    function buildView() {
       var list = buildProjects();
-      if (!list) return;
-      list.removeAttribute('hidden');
+      if (!list) return null;
+      if (view && view.contains(list)) return view;
 
-      /* The list takes the viewport. Its height is the box's, less a margin
-         at top and bottom, and the rows share the surplus between them — so
-         five projects fill a tall card and a short one equally, with no
-         per-width tuning anywhere. */
-      var H = thread.clientHeight;
-      if (H) list.style.minHeight = Math.round(H * 0.88) + 'px';
+      view = document.createElement('span');
+      view.className = 'plist-view';
 
-      var kids = list.children, i;
+      backRow = document.createElement('span');
+      backRow.className = 'plist-view__nav';
+      backRow.innerHTML = '<button type="button" class="plist-view__back">' +
+                          '<span aria-hidden="true">\u2190</span> Back</button>';
+      backRow.querySelector('button').addEventListener('click', function () {
+        /* Back is back to the beginning, not back to where it left off: the
+           conversation is a sequence, and dropping somebody into the middle
+           of one is worse than starting it. */
+        closeList(!still);
+      });
 
-      if (instant || still) {
+      view.appendChild(backRow);
+      view.appendChild(list);
+      track.appendChild(view);
+      return view;
+    }
+
+    function openList() {
+      var v = buildView();
+      if (!v) return;
+
+      phase = 'list';
+      clearTimeout(timer);
+      running = false;
+      if (cancelScramble) { cancelScramble(); cancelScramble = null; }
+
+      plist.removeAttribute('hidden');
+      plist.style.minHeight = '';
+      hideCta();
+
+      /* The box shows one thing now, from its own top: no transform, and the
+         only offset is enough clearance for the dissolve to have nothing but
+         air to work on. */
+      thread.classList.add('is-list');
+      thread.style.paddingTop = topClear() + 'px';
+      if (track) {
+        track.style.transition = 'none';
+        track.style.transform = 'translateY(0)';
+        void track.offsetWidth;
+        track.style.transition = '';
+      }
+
+      var kids = plist.children, i;
+      for (i = 0; i < kids.length; i++) kids[i].classList.remove('is-in');
+      if (still) {
         for (i = 0; i < kids.length; i++) kids[i].classList.add('is-in');
-        place(true);
         return;
       }
-
-      place();
       for (i = 0; i < kids.length; i++) {
         (function (el, n) {
-          setTimeout(function () {
-            el.classList.add('is-in');
-            /* Each row is more content; the canvas answers for it. */
-            place();
-          }, 90 * n);
+          setTimeout(function () { el.classList.add('is-in'); }, 70 * n);
         })(kids[i], i);
       }
+    }
+
+    /* How far below the top edge the view has to start so that nothing in it
+       is ever inside the dissolve. The depth of the fade is a fraction of the
+       box, declared in the stylesheet and read from it, so the two cannot
+       drift apart. */
+    function topClear() {
+      var stop = parseFloat(
+        window.getComputedStyle(thread).getPropertyValue('--fade-stop')) || 9;
+      return Math.ceil(thread.clientHeight * stop / 100) + 10;
+    }
+
+    function exitList() {
+      thread.classList.remove('is-list');
+      thread.style.paddingTop = '';
+      hideProjects();
+    }
+
+    function closeList(replay) {
+      if (phase !== 'list') return;
+      exitList();
+      if (replay) { restart(); return; }
+      /* Reduced motion has nothing to play: put the finished conversation
+         back, with its invitation. */
+      for (var i = 0; i < count; i++) rows[i].setAttribute('data-state', 'settled');
+      showCta();
+      place(true);
+      phase = 'hold';
     }
 
     function hideProjects() {
@@ -23802,6 +24038,11 @@ window.PF = window.PF || {};
     function setRole(key, replay) {
       var set = ROLES[key];
       if (!set) return;
+      role = key;
+      /* The old discipline's work goes with it, view and all. */
+      exitList();
+      hideCta();
+      dropProjects();
       for (var i = 0; i < roleBtns.length; i++) {
         roleBtns[i].setAttribute('aria-selected',
           roleBtns[i].getAttribute('data-role') === key ? 'true' : 'false');
@@ -23825,21 +24066,23 @@ window.PF = window.PF || {};
       if (!replay) return;
 
       pause();
+      if (cancelScramble) { cancelScramble(); cancelScramble = null; }
       thread.removeAttribute('data-reactions');
       resetReactions();
       rows[0].setAttribute('data-state', 'settled');
       for (i = 1; i < rows.length; i++) rows[i].setAttribute('data-state', 'idle');
-      /* Back to the top of the track, with no animation: this is a cut, not a
-         scroll. */
       phase = 'seq';
       retired = 0;
+      reserve();
+      /* Back to the opening state, with no animation: this is a cut, not a
+         scroll. Centred the way a fresh visit is, since that is what this is —
+         the same conversation, on a different subject, from the top. */
       if (track) {
         track.style.transition = 'none';
-        track.style.transform = 'translateY(0)';
+        centreOpening();
         void track.offsetWidth;
         track.style.transition = '';
       }
-      reserve();
       idx = 1;
       play();
     }
@@ -23850,6 +24093,26 @@ window.PF = window.PF || {};
           setRole(btn.getAttribute('data-role'), !still);
         });
       })(roleBtns[r]);
+    }
+
+    /* ---- play it again ----------------------------------------------------
+
+       The conversation loops on its own, but a visitor who arrives halfway
+       through it, or who wants a line back that has just left the top, should
+       not have to wait out a cycle. The button starts the current discipline
+       over from Hello — the same reset the loop uses, so there is one way for
+       this thread to begin and the tenth replay looks like the first.
+
+       It only exists where it can work: hidden in the markup, shown here, and
+       left hidden entirely when motion is off, since nothing would play. */
+    var replayBtn = document.querySelector('[data-replay]');
+    if (replayBtn && !still) {
+      replayBtn.removeAttribute('hidden');
+      replayBtn.addEventListener('click', function () {
+        pause();
+        if (cancelScramble) { cancelScramble(); cancelScramble = null; }
+        restart();
+      });
     }
 
     /* ---- reactions ------------------------------------------------------
@@ -23917,21 +24180,15 @@ window.PF = window.PF || {};
              turns into a menu.
 
              The phase stays 'react' through the whole tail, because burst()
-             sets absolute states and replays cleanly from the top: a reader
-             who scrolls away in the middle of this and comes back gets the
-             ending again rather than a half-built one. */
+             sets absolute states and replays cleanly from the top: a thread
+             that goes off screen in the middle of this and comes back gets
+             the ending again rather than a half-built one. */
           timer = setTimeout(function () {
-            /* And then the work, under the last thing said about it. */
-            showProjects();
-
-            /* THE END OF THE GUIDED PART. The rows arrive one after another;
-               the box belongs to the reader once the last of them has
-               landed. */
-            var n = plist ? plist.children.length : 0;
-            timer = setTimeout(function () {
-              phase = 'hold';
-              openArchive();
-            }, 90 * n + 560);
+            /* And then the invitation, under the last thing said. The work
+               itself is a view away, not a list that grows out of the bottom
+               of the conversation. */
+            showCta();
+            timer = setTimeout(settle, 520);
           }, PROJECTS_MS);
           return;
         }
@@ -24026,324 +24283,27 @@ window.PF = window.PF || {};
               }, REACT_MS);
               return;
             }
-            timer = setTimeout(next, GAP_MS);
+            timer = setTimeout(next, GAP_MS + dwellOf(idx - 1));
           }, POP_MS);
         }, DOTS_MS);
       }, 0);
     }
 
-    /* ---- from narrative to archive ---------------------------------------
+    /* ---- the ending -------------------------------------------------------
 
-       The sequence is guided: it positions its own content, and a reader
-       scrolling in the middle of that would be fighting it. So nothing is
-       scrollable until there is nothing left to say — and then everything is.
-
-       The switch is a swap of one mechanism for another at the same visual
-       position. The track has been carrying the content on a transform; that
-       offset becomes a scroll offset of exactly the same size and the
-       transform goes to zero, so the frame the reader is looking at does not
-       move by a pixel while the box changes from a stage into a window.
-
-       Everything that had left through the top comes back — they are messages
-       in a history now, not frames in an animation — and the box keeps its
-       mask, so content still dissolves into the top edge as it is scrolled
-       rather than being cut. It keeps its dimensions too: this is a window
-       onto the conversation, not the conversation unrolled.
-
-       THE ARCHIVE IS A PAUSE, NOT AN ENDING. It used to be terminal: once the
-       reader had the box, the conversation never came round again. But most
-       people never touch it — they read the last message, look at the work,
-       and the hero sits frozen from then on, which reads as something that
-       has stopped working rather than as something that has finished. So the
-       archive holds only as long as somebody is using it. While the box is
-       being scrolled, or the pointer is inside it, or the keyboard focus is
-       in it, nothing happens; the moment all of that has been quiet for a
-       while, the conversation starts over and the loop carries on as before.
-
-       Scrolling is the signal, not a timer that ignores it: the one thing the
-       archive must never do is yank the page out from under a hand that is in
-       the middle of reading it. */
-    var archived = false;
-
-    /* THE ENDING IS HELD. The last message and the list of work are the two
-       things the sequence exists to arrive at, so they stand for fifteen
-       seconds before anything happens to them — long enough to read five
-       project names and decide on one, and long enough that a pause to think
-       is never mistaken for leaving. The clock is restarted by any scroll, so
-       a reader who is using the box keeps it for as long as they are using
-       it; fifteen seconds after the last thing they did, the conversation
-       starts over. */
-    var IDLE_MS = 15000;
-    var idleTimer = null;
-    /* Somebody is in the box: a mouse over it, or the keyboard focus inside.
-       Only mouse pointers hold it — a touch that enters and never leaves
-       would hold the archive open forever, and on touch the scroll itself is
-       already the signal. */
-    var held = false;
-
-    function armIdle() {
-      clearTimeout(idleTimer);
-      if (!archived || still) return;
-      idleTimer = setTimeout(function () {
-        if (!archived) return;
-        if (held) { armIdle(); return; }
-        restart();
-      }, IDLE_MS);
-    }
-
-    function closeArchive() {
-      if (!archived) return;
-      archived = false;
-      clearTimeout(idleTimer);
-      thread.classList.remove('is-archive');
-      thread.style.removeProperty('--arch-top');
-      thread.scrollTop = 0;
-      /* Back to the box the sequence was measured for — instantly, because
-         this runs while the stack is faded out and nothing about it should be
-         a movement anybody sees. */
-      thread.style.transition = 'none';
-      thread.style.height = Math.ceil(boxH) + 'px';
-      void thread.offsetHeight;
-      thread.style.transition = '';
-    }
-
-    /* ---- the window opens out ---------------------------------------------
-
-       While the conversation is playing, the box is exactly two messages tall:
-       that is the frame the sequence was composed in, and it is what makes a
-       message arriving feel like a message arriving rather than a page filling
-       up. Reading back through it is a different job. A five-hundred-pixel
-       slot is a letterbox to scroll a whole conversation through, and the card
-       around it is nearly twice that tall — the middle column simply stops
-       partway down while the two side panels run to the bottom.
-
-       So when the box becomes a window, it takes that unused height. The card
-       does not grow by a pixel: the space was already there, held open by the
-       panels either side, and it goes back the moment the loop starts over.
-
-       How much is available is measured rather than assumed, and the
-       measurement is the thing itself — the height is set, the card is read,
-       and whatever the card grew by is handed straight back. On a phone,
-       where the column is the full width of the screen and there is content
-       below the conversation, that comes out at zero and the box stays
-       exactly as it was. */
-    var BOX_TAIL = 24;   /* air between the opened window and the card's edge */
-    var MIN_GROW = 48;   /* below this it is a twitch, not an opening */
-    var TOP_AIR  = 18;   /* clear of the dissolve, and visibly clear of it */
-    var archH = 0;       /* the height the archive settles at */
-
-    /* ---- the beginning is not in the fade --------------------------------
-
-       Scrolled back to the start, the opening lines have to be as clean as
-       everything else — which means they cannot begin where the dissolve
-       does. The fade is a fraction of the box, declared in the stylesheet and
-       read from it here so the two can never drift apart, and the archive
-       holds that much clearance above its first message plus a little more,
-       so at the top of the scroll the band has nothing but empty space to
-       work on.
-
-       The frame is kept while it is applied: the content moves down by
-       exactly the clearance, so the scroll offset moves with it and nothing
-       the reader is looking at shifts. */
-    function fadeDepth(h) {
-      var stop = parseFloat(
-        window.getComputedStyle(thread).getPropertyValue('--fade-stop')) || 9;
-      return Math.ceil(h * stop / 100);
-    }
-
-    function topRoom(h, keepFrame) {
-      var was = parseFloat(window.getComputedStyle(thread).paddingTop) || 0;
-      var pad = fadeDepth(h || thread.clientHeight) + TOP_AIR;
-      if (Math.abs(pad - was) < 1) return;
-      thread.style.setProperty('--arch-top', pad + 'px');
-      if (keepFrame) {
-        thread.style.scrollBehavior = 'auto';
-        thread.scrollTop = thread.scrollTop + (pad - was);
-        void thread.offsetHeight;
-        thread.style.scrollBehavior = '';
-      }
-    }
-
-    /* `opening` is the difference between the one time this is a moment — the
-       window unfolding as the conversation ends — and every time afterwards
-       that it is only arithmetic, like a resize re-running the measurement
-       under a reader who is halfway down the archive. The moment animates and
-       holds the ending at the bottom edge; the arithmetic is instant and
-       leaves the reader exactly where they were. */
-    function expand(opening) {
-      var card = thread.closest('.section--hero');
-      archH = Math.ceil(boxH);
-      if (!card || !boxH) return false;
-
-      var base = Math.ceil(boxH);
-      var h0 = Math.round(card.getBoundingClientRect().height);
-      var room = Math.floor(card.getBoundingClientRect().bottom -
-                            thread.getBoundingClientRect().bottom - BOX_TAIL);
-      if (room < MIN_GROW) return false;
-
-      /* Try the full opening with the transition suppressed, read what it did
-         to the card, and put the box back — all inside one frame, so nothing
-         of this rehearsal is ever painted. */
-      thread.style.transition = 'none';
-      thread.style.height = (base + room) + 'px';
-      void thread.offsetHeight;
-      var over = Math.round(card.getBoundingClientRect().height) - h0;
-      if (over > 0) room -= over;
-      thread.style.height = base + 'px';
-      void thread.offsetHeight;
-      thread.style.transition = '';
-
-      if (room < MIN_GROW) return false;
-
-      var target = base + room;
-      archH = target;
-
-      if (!opening) {
-        thread.style.transition = 'none';
-        thread.style.height = target + 'px';
-        void thread.offsetHeight;
-        thread.style.transition = '';
-        return true;
-      }
-
-      /* And now for real, on the next frame so the suppressed transition is
-         well and truly committed first. The scroll is at the end of the
-         conversation, so as the window grows the browser keeps it there and
-         the history slides into view above the last message. */
-      requestAnimationFrame(function () {
-        if (!archived) return;
-        thread.style.height = target + 'px';
-
-        /* The end of the conversation stays at the bottom edge while the
-           window opens, so what the growth reveals is history arriving above
-           it rather than the ending sliding away from the reader. The bottom
-           has to be re-taken every frame — the box's height, and with it the
-           furthest it can scroll, is changing on every one of them.
-
-           Instant, not smooth: this is the same offset being kept, not a
-           journey. And it stops the moment the reader touches the box, since
-           a hand on the wheel outranks the animation finishing. */
-        var t0 = null, ok = true;
-        function stop() { ok = false; }
-        thread.addEventListener('wheel', stop, { passive: true, once: true });
-        thread.addEventListener('touchstart', stop, { passive: true, once: true });
-        thread.addEventListener('keydown', stop, { once: true });
-
-        thread.style.scrollBehavior = 'auto';
-        (function pin(ts) {
-          if (!ok || !archived) { thread.style.scrollBehavior = ''; return; }
-          if (t0 === null) t0 = ts;
-          thread.scrollTop = thread.scrollHeight;
-          if (ts - t0 < 720) requestAnimationFrame(pin);
-          else {
-            thread.style.scrollBehavior = '';
-            thread.removeEventListener('wheel', stop);
-            thread.removeEventListener('touchstart', stop);
-            thread.removeEventListener('keydown', stop);
-          }
-        })();
-      });
-
-      return true;
-    }
-
-    /* WHERE THE ARCHIVE OPENS. On a card with room to spare the window grows
-       and holds the ending against its bottom edge, so nothing needs saying
-       here. On a phone there is no room: the box is the box, and the last
-       frame of the animation leaves the closing line at the anchor with the
-       list of work below the fold — which makes the one thing the sequence
-       was building towards the one thing you cannot see.
-
-       So the window settles onto the end of the conversation. Smoothly,
-       because it is a movement the reader should be able to follow back: the
-       history goes up, the work comes into view. */
-    function settleToEnd() {
-      var max = thread.scrollHeight - thread.clientHeight;
-      if (thread.scrollTop >= max - 2) return;
-      if (still) { thread.scrollTop = max; return; }
-      requestAnimationFrame(function () {
-        if (archived) thread.scrollTop = thread.scrollHeight;
-      });
-    }
-
-    thread.addEventListener('scroll', function () {
-      if (archived) armIdle();
-    }, { passive: true });
-
-    thread.addEventListener('pointerenter', function (e) {
-      if (e.pointerType && e.pointerType !== 'mouse') return;
-      held = true;
-      clearTimeout(idleTimer);
-    });
-    thread.addEventListener('pointerleave', function (e) {
-      if (e.pointerType && e.pointerType !== 'mouse') return;
-      held = false;
-      if (archived) armIdle();
-    });
-    thread.addEventListener('focusin', function () {
-      held = true;
-      clearTimeout(idleTimer);
-    });
-    thread.addEventListener('focusout', function () {
-      held = false;
-      if (archived) armIdle();
-    });
-
-    function openArchive() {
-      if (archived || !track) return;
-      archived = true;
-      phase = 'archive';
+       The box is never handed over. It plays, it holds the ending for as long
+       as the hold lasts, and it starts again: nothing in here scrolls, nothing
+       waits to be driven, and nothing survives a reload — a visit always opens
+       on Hello. Everything is autoplay. */
+    function settle() {
+      phase = 'hold';
       clearTimeout(timer);
       running = false;
 
-      /* Everything is readable again. */
-      for (var i = 0; i < count; i++) {
-        if (rows[i].getAttribute('data-state') === 'gone') {
-          rows[i].setAttribute('data-state', 'settled');
-        }
-      }
-
-      var y = Math.max(0, -offsetY);
-      track.style.transition = 'none';
-      track.style.transform = 'none';
-      thread.classList.add('is-archive');
-      /* The handover has to be invisible, and the archive is smooth-scrolling
-         from the frame the class lands — which would animate this first
-         assignment, rewinding the conversation to the top and scrolling it
-         back down in front of the reader. So the swap itself is instant, and
-         smooth is handed back immediately afterwards for the scrolling the
-         reader does. */
-      thread.style.scrollBehavior = 'auto';
-      thread.scrollTop = y;
-      void thread.offsetWidth;
-      thread.style.scrollBehavior = '';
-
-      /* How much room the platform's rail takes, measured on the box itself
-         now that it is scrolling — nothing else can tell you, since it is
-         zero on overlay scrollbars and a real number everywhere else. The
-         lane in the stylesheet widens by exactly this, so the text column is
-         the width it was a frame ago either way. Measured once: the rail does
-         not change width, and the number the box grows by does not change the
-         difference being measured. */
-      var sb = thread.offsetWidth - thread.clientWidth;
-      thread.style.setProperty('--sb-w', (sb > 0 ? sb : 0) + 'px');
-
-      void thread.offsetHeight;
-      track.style.transition = '';
-
-      /* The letterbox becomes a window: it takes whatever height the card is
-         already holding open around it — and where it cannot, it at least
-         opens on the end of the conversation rather than short of it. */
-      var grew = expand(true);
-
-      /* And the top of the conversation is set clear of the dissolve, at the
-         height the window is settling at rather than the one it is leaving. */
-      topRoom(archH, true);
-
-      if (!grew) settleToEnd();
-
-      /* And the clock on the archive starts here. */
-      armIdle();
+      /* The hold is the last thing the sequence does, so it is armed the same
+         way every other wait is: through arm(), which is what a thread coming
+         back on screen re-arms too. */
+      arm();
     }
 
     /* ---- the loop --------------------------------------------------------
@@ -24371,11 +24331,8 @@ window.PF = window.PF || {};
            cutting them off on the way out is the same fault as cutting them
            off on the way in. */
         thread.classList.remove('is-open');
-        /* The window becomes a stage again, invisibly: the stack is at
-           opacity 0 for this whole beat, so swapping the scroll offset back
-           for a transform is not something anybody can see. */
-        closeArchive();
-        hideProjects();
+        exitList();
+        hideCta();
         if (cancelScramble) { cancelScramble(); cancelScramble = null; }
         thread.removeAttribute('data-reactions');
         resetReactions();
@@ -24409,9 +24366,9 @@ window.PF = window.PF || {};
     /* Re-arms whatever the current phase is waiting on. */
     function arm() {
       clearTimeout(timer);
-      /* While the archive is open the box belongs to the reader, so the only
-         thing to re-arm is the quiet clock that hands it back. */
-      if (archived) { armIdle(); return; }
+      /* The list is a place the reader chose to be. Nothing takes them out
+         of it but their own hand on Back or Replay. */
+      if (phase === 'list') return;
       if (phase === 'hold') timer = setTimeout(restart, HOLD_MS);
       else if (phase === 'reset') restart();
       /* The burst sets absolute states, so replaying it from the top is
@@ -24420,19 +24377,25 @@ window.PF = window.PF || {};
       else if (phase === 'react') burst();
     }
 
+    /* How long the message that has just landed asked to be left alone, on top
+       of the standard gap. Read from the row rather than from the data, so a
+       role change and a replay both get it without anything being passed
+       around. */
+    function dwellOf(i) {
+      if (i < 0 || i >= rows.length) return 0;
+      return parseInt(rows[i].getAttribute('data-dwell'), 10) || 0;
+    }
+
     function play() {
       if (phase !== 'seq') { arm(); return; }
       if (running || idx >= count) return;
       running = true;
-      timer = setTimeout(next, GAP_MS);
+      timer = setTimeout(next, GAP_MS + dwellOf(idx - 1));
     }
 
     function pause() {
       running = false;
       clearTimeout(timer);
-      /* An archive that restarts itself while it is off screen wastes the one
-         cycle somebody might have come back for. */
-      clearTimeout(idleTimer);
     }
 
     /* Reduced motion stops here, and it stops on the ENDING rather than on the
@@ -24444,13 +24407,12 @@ window.PF = window.PF || {};
     if (still) {
       for (var q = 0; q < count; q++) rows[q].setAttribute('data-state', 'settled');
       idx = count;
-      showProjects(true);
+      /* The invitation is there from the first frame: with nothing to play,
+         this IS the ending, and the work has to be reachable from it. */
+      showCta();
       /* The same content-aware rule, run once: the end of the conversation,
          parked on the anchor with whatever came before it above the edge. */
       place(true);
-      /* Nothing here is going to animate, so the box is a window from the
-         first frame: the whole conversation is there to be scrolled. */
-      openArchive();
       phase = 'hold';
       thread.setAttribute('data-reactions', 'on');
       for (q = 0; q < RX_PLAN.length; q++) {
