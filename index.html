@@ -3716,6 +3716,13 @@ em,
   padding-right: var(--s-3);
 }
 
+/* THE FIVE PARTS OF A STOP EACH GET A LINE OF THEIR OWN AIR.
+
+   Date, rule, mark, role, field: five things stacked in a column, and with
+   the intervals they had they read as one block of five rather than as five
+   facts. The card has the height — it is as tall as the ring beside it and
+   the line was using a third of that — so it is spent here, on the distance
+   between one fact and the next, rather than left as air above and below. */
 .tl__years {
   font-size: var(--fs-meta);
   line-height: 1.4;
@@ -3734,7 +3741,7 @@ em,
   height: 1px;
   /* Back out over the stop's own right padding so five segments meet at their
      boundaries and read as one rule. */
-  margin: 10px calc(var(--s-3) * -1) 16px 0;
+  margin: clamp(18px, 1.95vw, 28px) calc(var(--s-3) * -1) clamp(26px, 3.05vw, 44px) 0;
   background: var(--border);
 }
 
@@ -3787,9 +3794,10 @@ em,
 .tl__org {
   display: flex;
   align-items: flex-end;
-  /* Two lines' worth whether the mark needs them or not, so every role below
-     sits on the same line however tall the employer's mark is. */
-  min-height: calc(2 * 1.3em);
+  /* A band for the mark rather than a line of type, so five logos drawn at
+     five different heights all sit on the same floor and every role below
+     them starts on the same line. */
+  min-height: clamp(30px, 2.6vw, 40px);
   font-size: var(--fs-body);
   font-weight: var(--fw-strong);
   letter-spacing: var(--tr-body);
@@ -3805,15 +3813,19 @@ em,
 
 .tl__role {
   display: block;
-  margin-top: 2px;
+  margin-top: clamp(18px, 1.95vw, 28px);
   font-size: var(--fs-meta);
   line-height: 1.4;
   color: var(--ink-secondary);
 }
 
+/* The field sits on the floor of the tallest stop, so five of them line up
+   however many lines the role above them needed — with a floor under the gap
+   as well, for the width where every role is one line and auto is nothing. */
 .tl__field {
   display: block;
-  margin-top: var(--s-2);
+  margin-top: auto;
+  padding-top: clamp(20px, 2.4vw, 34px);
   font-size: var(--fs-meta);
   line-height: 1.4;
   color: var(--ink-muted);
@@ -13375,8 +13387,16 @@ em,
     grid-row: 1;
     min-height: 0;
   }
-  .hero__past .tl__role  { grid-column: 3; grid-row: 2; }
-  .hero__past .tl__field { grid-column: 3; grid-row: 3; margin-top: 6px; }
+  /* The stacked form has its own rhythm: the intervals that give the line its
+     air on a wide card would make every stop three times as tall here, and a
+     column of five of those is a scroll rather than a card. */
+  .hero__past .tl__role  { grid-column: 3; grid-row: 2; margin-top: 4px; }
+  .hero__past .tl__field {
+    grid-column: 3;
+    grid-row: 3;
+    margin-top: 8px;
+    padding-top: 0;
+  }
 }
 
 @media (min-width: 720px) and (max-width: 959px) {
