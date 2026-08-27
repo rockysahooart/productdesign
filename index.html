@@ -7378,16 +7378,16 @@ em,
 
 .tools__wire line {
   stroke: var(--ink);
-  stroke-width: 0.75;
+  stroke-width: 1.1;
   stroke-linecap: round;
-  opacity: 0.26;
+  opacity: 0.3;
 }
 
 /* The joint. A line that stops in mid-air reads as unfinished; the same line
    with a dot on the end reads as attached to what it stopped at. */
 .tools__wire circle {
   fill: var(--ink);
-  opacity: 0.34;
+  opacity: 0.4;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -28440,7 +28440,7 @@ window.PF = window.PF || {};
       if (!(to[i] in seatOf)) continue;   /* a tool that is not on this rail */
       var line = document.createElementNS(SVGNS, 'line');
       var dot = document.createElementNS(SVGNS, 'circle');
-      dot.setAttribute('r', '1.9');
+      dot.setAttribute('r', '2.1');
       wireG.appendChild(line);
       wireG.appendChild(dot);
       wires.push({ line: line, dot: dot, seat: seatOf[to[i]] });
