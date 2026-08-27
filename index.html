@@ -834,15 +834,101 @@ body::before {
   to   { background-position: 100% 40%, 0% 60%,   50% 0%; }
 }
 
-/* The dark theme keeps its flat ground. */
-:root[data-theme="dark"] body::before { display: none; }
+/* --------------------------------------------------------------------------
+   AND IN THE DARK IT IS A DIFFERENT WALL
+
+   The light theme's ground is a painted wall: flat colour, fine grain, two
+   grey washes drifting across it. Black takes none of that — a three percent
+   grey wash on #121212 is either invisible or a band — so the dark theme gets
+   its own version of the same idea rather than a copy of it or nothing at all.
+
+   THREE THINGS, ON ONE LAYER.
+
+   Colour, barely. Three washes at four or five percent, and tinted rather than
+   grey: the violet the thread's keywords are set in, the blue beside it, and
+   the amber the greeting carries. On a near-black ground that is about one
+   value step each — enough that the gutters between the cards are a field
+   rather than a void, nowhere near enough to read as colour.
+
+   Grain, more of it than the light theme carries. The body's own 150px tile is
+   grey and reads the same in both themes; this is a second, coarser tile over
+   the top, which is what stops four huge soft gradients on a dark screen
+   banding into rings. Noise is the cheapest dither there is.
+
+   And all of it moves. The washes cross a plane twice the screen's size over
+   a minute, and the grain crawls a tile and a half on its own vector while
+   they do — so the texture drifts rather than the picture sliding. Background
+   position only: nothing here transforms, repaints the content above it, or
+   costs a frame in the hero.
+   -------------------------------------------------------------------------- */
+
+:root[data-theme="dark"] body::before,
+:root[data-theme="dark"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  display: block;
+}
+
+:root[data-theme="dark"] body::before {
+  background-image:
+    radial-gradient(62% 48% at 20% 16%, rgba(158, 156, 255, 0.075) 0%, rgba(158, 156, 255, 0) 64%),
+    radial-gradient(56% 46% at 84% 32%, rgba(127, 180, 255, 0.058) 0%, rgba(127, 180, 255, 0) 62%),
+    radial-gradient(68% 54% at 48% 94%, rgba(247, 166, 75, 0.045) 0%, rgba(247, 166, 75, 0) 66%);
+  background-size: 200% 200%;
+  animation: wall-drift 58s ease-in-out infinite alternate;
+  will-change: background-position;
+}
+
+/* The grain, on its own layer so it can crawl on its own clock. */
+:root[data-theme="dark"] body::after {
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='180'%20height='180'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.72'%20numOctaves='4'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='180'%20height='180'%20filter='url%28%23n%29'%20opacity='0.14'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  background-repeat: repeat;
+  opacity: 0.72;
+  animation: wall-grain 41s linear infinite;
+  will-change: background-position;
+}
+
+@keyframes wall-grain {
+  from { background-position: 0 0; }
+  to   { background-position: 180px 180px; }
+}
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) body::before { display: none; }
+  :root:not([data-theme="light"]) body::before,
+  :root:not([data-theme="light"]) body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    display: block;
+  }
+
+  :root:not([data-theme="light"]) body::before {
+    background-image:
+      radial-gradient(62% 48% at 20% 16%, rgba(158, 156, 255, 0.075) 0%, rgba(158, 156, 255, 0) 64%),
+      radial-gradient(56% 46% at 84% 32%, rgba(127, 180, 255, 0.058) 0%, rgba(127, 180, 255, 0) 62%),
+      radial-gradient(68% 54% at 48% 94%, rgba(247, 166, 75, 0.045) 0%, rgba(247, 166, 75, 0) 66%);
+    background-size: 200% 200%;
+    animation: wall-drift 58s ease-in-out infinite alternate;
+  }
+
+  :root:not([data-theme="light"]) body::after {
+    background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='180'%20height='180'%3E%3Cfilter%20id='n'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.72'%20numOctaves='4'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='180'%20height='180'%20filter='url%28%23n%29'%20opacity='0.14'/%3E%3C/svg%3E");
+    background-size: 180px 180px;
+    background-repeat: repeat;
+    opacity: 0.72;
+    animation: wall-grain 41s linear infinite;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body::before { animation: none; }
+  body::before,
+  body::after { animation: none; }
 }
 
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
@@ -14126,7 +14212,34 @@ em,
      that the strip used to. */
   /* Zone 5 — the one action, with room in front of it so it arrives as a
      conclusion rather than as the next item. */
-  .hero__mobile-cta { order: 6; grid-column: 1 / -1; margin-top: 34px; }
+  /* ---- the invitation is a line at the foot of the screen ----------------
+
+     Not a filled slab under the conversation. At this width it is the last
+     thing on the first screen — a scroll cue where a thumb already is — and a
+     black bar down there reads as a fixed bottom bar in an app, which is the
+     one thing this is not: it scrolls away with the page.
+
+     So it is the text and the arrow, on the same left edge as everything else,
+     ordered to follow the thread and pushed to the bottom edge by placeCta()
+     in js/thread.js. */
+  .hero__mobile-cta {
+    order: 3;
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    width: auto;
+    min-height: 0;
+    padding: 0;
+    margin-top: 34px;
+    margin-bottom: 44px;
+    background: none;
+    border: 0;
+    color: var(--ink);
+  }
+
+  .hero__mobile-cta:hover,
+  .hero__mobile-cta:focus-visible { background: none; }
+
+  .hero__mobile-cta .cta__arrow { margin-left: 2px; }
 
   /* ---- the invitation stands on the card's own left edge -----------------
 
@@ -14137,31 +14250,6 @@ em,
      width of an avatar reads as one item out of line rather than as part of
      the conversation. */
   .msg-cta { padding-left: 0; }
-
-  /* ---- the invitation moves into the box --------------------------------
-
-     js/thread.js moves "View key industry projects" inside the message canvas
-     at this width and the thread's own "See the work" is never built: the work
-     is a section further down this page rather than a view inside the
-     conversation, so there is one link to it and it sits with the messages it
-     follows. Spaced like the last thing said rather than like a section under
-     the card. */
-  .msg-track > .hero__mobile-cta {
-    /* Measured from the CHIPS, not from the bubble. The reaction tray hangs
-       off the last message's corner rather than sitting in the flow under it,
-       so a gap that looks generous against the bubble's edge is a button
-       almost touching a row of emoji. */
-    margin-top: 46px;
-    margin-bottom: 0;
-    /* And it arrives the way the thread's own invitation does: after the
-       reactions, into room that was reserved for it before it was there. */
-    opacity: 0;
-    transform: translateY(6px);
-    transition: opacity 340ms linear,
-                transform 340ms cubic-bezier(0.2, 0.75, 0.25, 1);
-  }
-
-  .msg-track > .hero__mobile-cta.is-in { opacity: 1; transform: none; }
 
   /* [hidden] is a UA rule and loses to the button's own display. */
   .hero__mobile-cta[hidden] { display: none; }
@@ -15552,15 +15640,101 @@ body::before {
   to   { background-position: 100% 40%, 0% 60%,   50% 0%; }
 }
 
-/* The dark theme keeps its flat ground. */
-:root[data-theme=&quot;dark&quot;] body::before { display: none; }
+/* --------------------------------------------------------------------------
+   AND IN THE DARK IT IS A DIFFERENT WALL
+
+   The light theme&#x27;s ground is a painted wall: flat colour, fine grain, two
+   grey washes drifting across it. Black takes none of that — a three percent
+   grey wash on #121212 is either invisible or a band — so the dark theme gets
+   its own version of the same idea rather than a copy of it or nothing at all.
+
+   THREE THINGS, ON ONE LAYER.
+
+   Colour, barely. Three washes at four or five percent, and tinted rather than
+   grey: the violet the thread&#x27;s keywords are set in, the blue beside it, and
+   the amber the greeting carries. On a near-black ground that is about one
+   value step each — enough that the gutters between the cards are a field
+   rather than a void, nowhere near enough to read as colour.
+
+   Grain, more of it than the light theme carries. The body&#x27;s own 150px tile is
+   grey and reads the same in both themes; this is a second, coarser tile over
+   the top, which is what stops four huge soft gradients on a dark screen
+   banding into rings. Noise is the cheapest dither there is.
+
+   And all of it moves. The washes cross a plane twice the screen&#x27;s size over
+   a minute, and the grain crawls a tile and a half on its own vector while
+   they do — so the texture drifts rather than the picture sliding. Background
+   position only: nothing here transforms, repaints the content above it, or
+   costs a frame in the hero.
+   -------------------------------------------------------------------------- */
+
+:root[data-theme=&quot;dark&quot;] body::before,
+:root[data-theme=&quot;dark&quot;] body::after {
+  content: &quot;&quot;;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  display: block;
+}
+
+:root[data-theme=&quot;dark&quot;] body::before {
+  background-image:
+    radial-gradient(62% 48% at 20% 16%, rgba(158, 156, 255, 0.075) 0%, rgba(158, 156, 255, 0) 64%),
+    radial-gradient(56% 46% at 84% 32%, rgba(127, 180, 255, 0.058) 0%, rgba(127, 180, 255, 0) 62%),
+    radial-gradient(68% 54% at 48% 94%, rgba(247, 166, 75, 0.045) 0%, rgba(247, 166, 75, 0) 66%);
+  background-size: 200% 200%;
+  animation: wall-drift 58s ease-in-out infinite alternate;
+  will-change: background-position;
+}
+
+/* The grain, on its own layer so it can crawl on its own clock. */
+:root[data-theme=&quot;dark&quot;] body::after {
+  background-image: url(&quot;data:image/svg+xml,%3Csvg%20xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%20width=&#x27;180&#x27;%20height=&#x27;180&#x27;%3E%3Cfilter%20id=&#x27;n&#x27;%3E%3CfeTurbulence%20type=&#x27;fractalNoise&#x27;%20baseFrequency=&#x27;0.72&#x27;%20numOctaves=&#x27;4&#x27;%20stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix%20type=&#x27;saturate&#x27;%20values=&#x27;0&#x27;/%3E%3C/filter%3E%3Crect%20width=&#x27;180&#x27;%20height=&#x27;180&#x27;%20filter=&#x27;url%28%23n%29&#x27;%20opacity=&#x27;0.14&#x27;/%3E%3C/svg%3E&quot;);
+  background-size: 180px 180px;
+  background-repeat: repeat;
+  opacity: 0.72;
+  animation: wall-grain 41s linear infinite;
+  will-change: background-position;
+}
+
+@keyframes wall-grain {
+  from { background-position: 0 0; }
+  to   { background-position: 180px 180px; }
+}
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme=&quot;light&quot;]) body::before { display: none; }
+  :root:not([data-theme=&quot;light&quot;]) body::before,
+  :root:not([data-theme=&quot;light&quot;]) body::after {
+    content: &quot;&quot;;
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    display: block;
+  }
+
+  :root:not([data-theme=&quot;light&quot;]) body::before {
+    background-image:
+      radial-gradient(62% 48% at 20% 16%, rgba(158, 156, 255, 0.075) 0%, rgba(158, 156, 255, 0) 64%),
+      radial-gradient(56% 46% at 84% 32%, rgba(127, 180, 255, 0.058) 0%, rgba(127, 180, 255, 0) 62%),
+      radial-gradient(68% 54% at 48% 94%, rgba(247, 166, 75, 0.045) 0%, rgba(247, 166, 75, 0) 66%);
+    background-size: 200% 200%;
+    animation: wall-drift 58s ease-in-out infinite alternate;
+  }
+
+  :root:not([data-theme=&quot;light&quot;]) body::after {
+    background-image: url(&quot;data:image/svg+xml,%3Csvg%20xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%20width=&#x27;180&#x27;%20height=&#x27;180&#x27;%3E%3Cfilter%20id=&#x27;n&#x27;%3E%3CfeTurbulence%20type=&#x27;fractalNoise&#x27;%20baseFrequency=&#x27;0.72&#x27;%20numOctaves=&#x27;4&#x27;%20stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix%20type=&#x27;saturate&#x27;%20values=&#x27;0&#x27;/%3E%3C/filter%3E%3Crect%20width=&#x27;180&#x27;%20height=&#x27;180&#x27;%20filter=&#x27;url%28%23n%29&#x27;%20opacity=&#x27;0.14&#x27;/%3E%3C/svg%3E&quot;);
+    background-size: 180px 180px;
+    background-repeat: repeat;
+    opacity: 0.72;
+    animation: wall-grain 41s linear infinite;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body::before { animation: none; }
+  body::before,
+  body::after { animation: none; }
 }
 
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
@@ -16227,7 +16401,8 @@ em,
      preview a ground the card behind it does not have. The frame is
      transparent and the component brings its own surfaces; nothing here has a
      background of its own. */
-  body::before { display: none; }
+  body::before,
+  body::after { display: none; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -17329,15 +17504,101 @@ body::before {
   to   { background-position: 100% 40%, 0% 60%,   50% 0%; }
 }
 
-/* The dark theme keeps its flat ground. */
-:root[data-theme=&quot;dark&quot;] body::before { display: none; }
+/* --------------------------------------------------------------------------
+   AND IN THE DARK IT IS A DIFFERENT WALL
+
+   The light theme&#x27;s ground is a painted wall: flat colour, fine grain, two
+   grey washes drifting across it. Black takes none of that — a three percent
+   grey wash on #121212 is either invisible or a band — so the dark theme gets
+   its own version of the same idea rather than a copy of it or nothing at all.
+
+   THREE THINGS, ON ONE LAYER.
+
+   Colour, barely. Three washes at four or five percent, and tinted rather than
+   grey: the violet the thread&#x27;s keywords are set in, the blue beside it, and
+   the amber the greeting carries. On a near-black ground that is about one
+   value step each — enough that the gutters between the cards are a field
+   rather than a void, nowhere near enough to read as colour.
+
+   Grain, more of it than the light theme carries. The body&#x27;s own 150px tile is
+   grey and reads the same in both themes; this is a second, coarser tile over
+   the top, which is what stops four huge soft gradients on a dark screen
+   banding into rings. Noise is the cheapest dither there is.
+
+   And all of it moves. The washes cross a plane twice the screen&#x27;s size over
+   a minute, and the grain crawls a tile and a half on its own vector while
+   they do — so the texture drifts rather than the picture sliding. Background
+   position only: nothing here transforms, repaints the content above it, or
+   costs a frame in the hero.
+   -------------------------------------------------------------------------- */
+
+:root[data-theme=&quot;dark&quot;] body::before,
+:root[data-theme=&quot;dark&quot;] body::after {
+  content: &quot;&quot;;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  display: block;
+}
+
+:root[data-theme=&quot;dark&quot;] body::before {
+  background-image:
+    radial-gradient(62% 48% at 20% 16%, rgba(158, 156, 255, 0.075) 0%, rgba(158, 156, 255, 0) 64%),
+    radial-gradient(56% 46% at 84% 32%, rgba(127, 180, 255, 0.058) 0%, rgba(127, 180, 255, 0) 62%),
+    radial-gradient(68% 54% at 48% 94%, rgba(247, 166, 75, 0.045) 0%, rgba(247, 166, 75, 0) 66%);
+  background-size: 200% 200%;
+  animation: wall-drift 58s ease-in-out infinite alternate;
+  will-change: background-position;
+}
+
+/* The grain, on its own layer so it can crawl on its own clock. */
+:root[data-theme=&quot;dark&quot;] body::after {
+  background-image: url(&quot;data:image/svg+xml,%3Csvg%20xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%20width=&#x27;180&#x27;%20height=&#x27;180&#x27;%3E%3Cfilter%20id=&#x27;n&#x27;%3E%3CfeTurbulence%20type=&#x27;fractalNoise&#x27;%20baseFrequency=&#x27;0.72&#x27;%20numOctaves=&#x27;4&#x27;%20stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix%20type=&#x27;saturate&#x27;%20values=&#x27;0&#x27;/%3E%3C/filter%3E%3Crect%20width=&#x27;180&#x27;%20height=&#x27;180&#x27;%20filter=&#x27;url%28%23n%29&#x27;%20opacity=&#x27;0.14&#x27;/%3E%3C/svg%3E&quot;);
+  background-size: 180px 180px;
+  background-repeat: repeat;
+  opacity: 0.72;
+  animation: wall-grain 41s linear infinite;
+  will-change: background-position;
+}
+
+@keyframes wall-grain {
+  from { background-position: 0 0; }
+  to   { background-position: 180px 180px; }
+}
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme=&quot;light&quot;]) body::before { display: none; }
+  :root:not([data-theme=&quot;light&quot;]) body::before,
+  :root:not([data-theme=&quot;light&quot;]) body::after {
+    content: &quot;&quot;;
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    display: block;
+  }
+
+  :root:not([data-theme=&quot;light&quot;]) body::before {
+    background-image:
+      radial-gradient(62% 48% at 20% 16%, rgba(158, 156, 255, 0.075) 0%, rgba(158, 156, 255, 0) 64%),
+      radial-gradient(56% 46% at 84% 32%, rgba(127, 180, 255, 0.058) 0%, rgba(127, 180, 255, 0) 62%),
+      radial-gradient(68% 54% at 48% 94%, rgba(247, 166, 75, 0.045) 0%, rgba(247, 166, 75, 0) 66%);
+    background-size: 200% 200%;
+    animation: wall-drift 58s ease-in-out infinite alternate;
+  }
+
+  :root:not([data-theme=&quot;light&quot;]) body::after {
+    background-image: url(&quot;data:image/svg+xml,%3Csvg%20xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%20width=&#x27;180&#x27;%20height=&#x27;180&#x27;%3E%3Cfilter%20id=&#x27;n&#x27;%3E%3CfeTurbulence%20type=&#x27;fractalNoise&#x27;%20baseFrequency=&#x27;0.72&#x27;%20numOctaves=&#x27;4&#x27;%20stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix%20type=&#x27;saturate&#x27;%20values=&#x27;0&#x27;/%3E%3C/filter%3E%3Crect%20width=&#x27;180&#x27;%20height=&#x27;180&#x27;%20filter=&#x27;url%28%23n%29&#x27;%20opacity=&#x27;0.14&#x27;/%3E%3C/svg%3E&quot;);
+    background-size: 180px 180px;
+    background-repeat: repeat;
+    opacity: 0.72;
+    animation: wall-grain 41s linear infinite;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  body::before { animation: none; }
+  body::before,
+  body::after { animation: none; }
 }
 
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
@@ -18095,7 +18356,8 @@ em,
      preview a ground the card behind it does not have. The frame is
      transparent and the component brings its own surfaces; nothing here has a
      background of its own. */
-  body::before { display: none; }
+  body::before,
+  body::after { display: none; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -19481,7 +19743,8 @@ em,
      preview a ground the card behind it does not have. The frame is
      transparent and the component brings its own surfaces; nothing here has a
      background of its own. */
-  body::before { display: none; }
+  body::before,
+  body::after { display: none; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -20116,7 +20379,8 @@ em,
      preview a ground the card behind it does not have. The frame is
      transparent and the component brings its own surfaces; nothing here has a
      background of its own. */
-  body::before { display: none; }
+  body::before,
+  body::after { display: none; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -21610,7 +21874,8 @@ em,
      preview a ground the card behind it does not have. The frame is
      transparent and the component brings its own surfaces; nothing here has a
      background of its own. */
-  body::before { display: none; }
+  body::before,
+  body::after { display: none; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -25944,11 +26209,14 @@ window.PF = window.PF || {};
        messages need width and nothing has to know how many any role has. */
     var narrow = window.matchMedia('(max-width: 719px)');
 
+    /* EVERY WIDTH GETS THE WHOLE CONVERSATION. The phone used to stop at the
+       introduction — the sentence about the work is the longest thing in the
+       set and the box was two bubbles tall — but the box is sized to what it
+       holds now rather than to a window of three, so the third message costs
+       height rather than costing one of the others. Nothing is trimmed and
+       nothing is faded out to make room for it. */
     function fits(set) {
-      var n = set.length;
-      if (!narrow.matches) return n;
-      while (n > 1 && set[n - 1].opt && set[n - 1].opt.wide) n--;
-      return n;
+      return set.length;
     }
 
     /* How many of the rows in the markup this role actually uses. Product
@@ -26066,7 +26334,17 @@ window.PF = window.PF || {};
       /* The tallest window the sequence produces, measured with the gaps that
          actually fall inside each one. */
       boxH = 0;
-      for (i = 0; i + VISIBLE <= count; i++) {
+
+      /* THE BOX IS ALL OF IT, OR IT IS A WINDOW ONTO IT. A phone shows the
+         whole conversation at once — three messages, their reactions and the
+         invitation, none of which ever leaves — so its box is the sum of what
+         it holds, measured with the real gaps rather than the sizing interval
+         a sliding window uses. Anywhere else the box is the tallest window of
+         three the sequence produces and the rest is retired through the top. */
+      if (whole()) {
+        for (i = 0; i < count; i++) boxH += heights[i] + gaps[i];
+      }
+      for (i = 0; !whole() && i + VISIBLE <= count; i++) {
         /* THE BOX IS SIZED ON THE MESSAGES, NOT ON THE AIR BETWEEN THEM.
            The gap in the stylesheet is now a composition decision — generous,
            and free to grow — and if the box were measured with it, every
@@ -26112,7 +26390,7 @@ window.PF = window.PF || {};
 
          Measured rather than guessed, and measured through the same hidden
          attribute it lives behind the rest of the time. */
-      if (count < VISIBLE) {
+      if (whole()) {
         /* The inset place() parks the stack at. Less underneath than above:
            what sits at the bottom of this box is a button, and a button
            carries its own optical margin in a way a line of type does not. */
@@ -26121,9 +26399,16 @@ window.PF = window.PF || {};
         if (cta) {
           var was = cta.hasAttribute('hidden');
           if (was) cta.removeAttribute('hidden');
+          /* Measured without the push, or the room the box keeps for it would
+             be the whole of the screen it has been sent to the bottom of. */
+          var held = cta.style.marginTop;
+          if (phone()) cta.style.marginTop = '';
           var ch = cta.getBoundingClientRect().height;
-          var cm = parseFloat(window.getComputedStyle(cta).marginTop) || 0;
+          var cm = phone() ? CTA_ROOM
+                           : (parseFloat(window.getComputedStyle(cta).marginTop) || 0);
+          if (phone()) cta.style.marginTop = held;
           if (was) cta.setAttribute('hidden', '');
+          ctaH = ch || ctaH;
           if (ch) {
             boxH += Math.ceil(ch + cm);
             /* THE CHIPS HANG INTO THE INVITATION'S OWN GAP. The tray overhangs
@@ -26164,6 +26449,9 @@ window.PF = window.PF || {};
          uncapped centre would put a hundred and fifty pixels of nothing
          between somebody's name and the first thing he says. */
       centreOnScreen();
+      /* And the invitation to the foot of the screen, which is a question
+         about where the box ended up rather than about how tall it is. */
+      placeCta();
 
       /* ...AND THEN TAKES THE REST OF THE COLUMN. The measurement above is a
          floor, not a design: it is the tallest window of three the sequence
@@ -26183,6 +26471,42 @@ window.PF = window.PF || {};
 
     /* How far the box is allowed to be pushed down the screen. */
     var CENTRE_MAX = 120;
+    /* The room the box goes on keeping where the invitation used to sit, so
+       that sending it to the bottom of the screen moves nothing above it. */
+    var CTA_ROOM = 46;
+    /* And how far its foot stands off the bottom edge of the screen. */
+    var CTA_TAIL = 34;
+    var ctaH = 0;
+
+    /* THE INVITATION SITS AT THE BOTTOM OF THE FIRST SCREEN. Not pinned there —
+       it scrolls away with everything else — simply placed, once, where the
+       screen ends, so that a phone landing on this page has the conversation
+       in the middle of it and the way onwards under the thumb.
+
+       Document coordinates on both sides: the hero is at the top of the page,
+       so the screen's foot and the box's are the same ruler. */
+    function placeCta() {
+      if (!mobCta) return;
+      if (!phone()) { mobCta.style.marginTop = ''; return; }
+
+      /* Measured where it would actually stand, with the push off and the
+         element on screen for the length of one read — deriving the answer
+         from the box above it instead was out by whatever the grid puts
+         between the two, which is a number neither of them knows. */
+      var was = mobCta.hasAttribute('hidden');
+      if (was) mobCta.removeAttribute('hidden');
+      mobCta.style.marginTop = '';
+
+      var base = parseFloat(window.getComputedStyle(mobCta).marginTop) || 0;
+      var scrolled = window.scrollY || window.pageYOffset || 0;
+      var box = mobCta.getBoundingClientRect();
+      if (box.height) ctaH = box.height;
+      var push = Math.round(window.innerHeight - CTA_TAIL - ctaH -
+                            (box.top + scrolled));
+      if (push > 0) mobCta.style.marginTop = (base + push) + 'px';
+
+      if (was) mobCta.setAttribute('hidden', '');
+    }
 
     function centreOnScreen() {
       if (!phone()) { thread.style.marginTop = ''; return; }
@@ -26619,6 +26943,15 @@ window.PF = window.PF || {};
      else. What differs at this width is the room around it and which button
      ends it: see FLAT_PAD below, and ctaEl(). */
   function phone() { return !still && narrow.matches; }
+
+  /* WHEN NOTHING IS EVER GOING TO LEAVE. A set shorter than the window has
+     nothing to retire by definition; a phone has nothing to retire by
+     decision, because at that width the box is the whole first screen and a
+     message sliding out of the top of it is a message somebody has to scroll
+     back up to nothing to find. Both get the same treatment: a box the height
+     of everything in it, and a stack parked at one inset from the first frame
+     to the last. */
+  function whole() { return count < VISIBLE || phone(); }
   /* Even air above and below. Twice what the box used to hold: at this width
      the thread is the first screen rather than one panel of it, and the room
      around it is what makes it read as the whole of what there is to read
@@ -26703,7 +27036,7 @@ window.PF = window.PF || {};
          last. The room under the invitation is reserved whether the invitation
          is there yet or not, which is what makes the arrival a fade rather
          than a shove. */
-      if (count < VISIBLE) wantTop = phone() ? FLAT_PAD : STILL_PAD;
+      if (whole()) wantTop = phone() ? FLAT_PAD : STILL_PAD;
 
       /* Absolute, not incremental. Whatever the track was doing, this is where
          it belongs. */
@@ -26903,12 +27236,19 @@ window.PF = window.PF || {};
          box is measured is a box measured around the wrong button. */
       if (!mobCta) mobCta = document.querySelector('.hero__mobile-cta');
       if (phone() && mobCta) {
-        if (track && mobCta.parentNode !== track) {
-          track.appendChild(mobCta);
-          /* Put away on arrival. It is a link in the markup, on all the time
-             wherever it happens to be sitting; inside the conversation it is
-             the last thing said, so it waits for the end of it like the
-             thread's own invitation does. */
+        /* NOT INSIDE THE BOX ANY MORE. At this width the invitation belongs at
+           the foot of the SCREEN rather than at the foot of the conversation —
+           a scroll cue where a thumb already is — and the box clips whatever
+           leaves it. So it stays where the markup put it, ordered to follow
+           the thread and pushed down to the bottom edge by placeCta(). The
+           room it used to take inside the box is kept anyway, so nothing above
+           it moves on the way out.
+
+           Put away on first sight: it is a link in the markup, on all the time,
+           and here it waits for the end of the thread like the thread's own
+           invitation does. */
+        if (!mobCta.hasAttribute('data-th-cta')) {
+          mobCta.setAttribute('data-th-cta', '');
           mobCta.setAttribute('hidden', '');
         }
         return mobCta;
@@ -26943,7 +27283,7 @@ window.PF = window.PF || {};
         ctaRow.classList.remove('is-in');
         ctaRow.setAttribute('hidden', '');
       }
-      if (mobCta && track && mobCta.parentNode === track) {
+      if (mobCta) {
         mobCta.classList.remove('is-in');
         mobCta.setAttribute('hidden', '');
       }
