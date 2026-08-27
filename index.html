@@ -199,6 +199,7 @@
      already legible without help. */
   --cursor-glow:    rgba(0, 0, 0, 0.032);
   --glow-near:      transparent;
+  --glow-mid:       transparent;
   --glow-far:       transparent;
   --torch-core:     transparent;
   --torch-edge:     transparent;
@@ -343,8 +344,9 @@
   --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
-  --glow-near:      rgba(214, 212, 255, 0.42);
-  --glow-far:       rgba(158, 156, 255, 0.55);
+  --glow-near:      rgba(232, 231, 255, 0.85);
+  --glow-mid:       rgba(186, 184, 255, 0.70);
+  --glow-far:       rgba(146, 143, 255, 0.80);
   /* And the torch itself: a core and the edge it falls off to. */
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
@@ -456,8 +458,9 @@
     --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
-  --glow-near:      rgba(214, 212, 255, 0.42);
-  --glow-far:       rgba(158, 156, 255, 0.55);
+  --glow-near:      rgba(232, 231, 255, 0.85);
+  --glow-mid:       rgba(186, 184, 255, 0.70);
+  --glow-far:       rgba(146, 143, 255, 0.80);
   /* And the torch itself: a core and the edge it falls off to. */
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
@@ -997,9 +1000,13 @@ body::before {
    -------------------------------------------------------------------------- */
 
 ::highlight(pf-glow) {
+  /* Three stops rather than two, because a glow is a falloff and two of them
+     is a smudge: a tight one that thickens the glyph, a middle one that is the
+     bloom, and a wide one that is the light in the air around it. */
   text-shadow:
     0 0 1px var(--glow-near),
-    0 0 14px var(--glow-far);
+    0 0 7px var(--glow-mid),
+    0 0 22px var(--glow-far);
 }
 
 /* --------------------------------------------------------------------------
@@ -15167,6 +15174,7 @@ em,
      already legible without help. */
   --cursor-glow:    rgba(0, 0, 0, 0.032);
   --glow-near:      transparent;
+  --glow-mid:       transparent;
   --glow-far:       transparent;
   --torch-core:     transparent;
   --torch-edge:     transparent;
@@ -15311,8 +15319,9 @@ em,
   --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
-  --glow-near:      rgba(214, 212, 255, 0.42);
-  --glow-far:       rgba(158, 156, 255, 0.55);
+  --glow-near:      rgba(232, 231, 255, 0.85);
+  --glow-mid:       rgba(186, 184, 255, 0.70);
+  --glow-far:       rgba(146, 143, 255, 0.80);
   /* And the torch itself: a core and the edge it falls off to. */
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
@@ -15424,8 +15433,9 @@ em,
     --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
-  --glow-near:      rgba(214, 212, 255, 0.42);
-  --glow-far:       rgba(158, 156, 255, 0.55);
+  --glow-near:      rgba(232, 231, 255, 0.85);
+  --glow-mid:       rgba(186, 184, 255, 0.70);
+  --glow-far:       rgba(146, 143, 255, 0.80);
   /* And the torch itself: a core and the edge it falls off to. */
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
@@ -15965,9 +15975,13 @@ body::before {
    -------------------------------------------------------------------------- */
 
 ::highlight(pf-glow) {
+  /* Three stops rather than two, because a glow is a falloff and two of them
+     is a smudge: a tight one that thickens the glyph, a middle one that is the
+     bloom, and a wide one that is the light in the air around it. */
   text-shadow:
     0 0 1px var(--glow-near),
-    0 0 14px var(--glow-far);
+    0 0 7px var(--glow-mid),
+    0 0 22px var(--glow-far);
 }
 
 /* --------------------------------------------------------------------------
@@ -17186,6 +17200,7 @@ em,
      already legible without help. */
   --cursor-glow:    rgba(0, 0, 0, 0.032);
   --glow-near:      transparent;
+  --glow-mid:       transparent;
   --glow-far:       transparent;
   --torch-core:     transparent;
   --torch-edge:     transparent;
@@ -17330,8 +17345,9 @@ em,
   --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
-  --glow-near:      rgba(214, 212, 255, 0.42);
-  --glow-far:       rgba(158, 156, 255, 0.55);
+  --glow-near:      rgba(232, 231, 255, 0.85);
+  --glow-mid:       rgba(186, 184, 255, 0.70);
+  --glow-far:       rgba(146, 143, 255, 0.80);
   /* And the torch itself: a core and the edge it falls off to. */
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
@@ -17443,8 +17459,9 @@ em,
     --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
-  --glow-near:      rgba(214, 212, 255, 0.42);
-  --glow-far:       rgba(158, 156, 255, 0.55);
+  --glow-near:      rgba(232, 231, 255, 0.85);
+  --glow-mid:       rgba(186, 184, 255, 0.70);
+  --glow-far:       rgba(146, 143, 255, 0.80);
   /* And the torch itself: a core and the edge it falls off to. */
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
@@ -17984,9 +18001,13 @@ body::before {
    -------------------------------------------------------------------------- */
 
 ::highlight(pf-glow) {
+  /* Three stops rather than two, because a glow is a falloff and two of them
+     is a smudge: a tight one that thickens the glyph, a middle one that is the
+     bloom, and a wide one that is the light in the air around it. */
   text-shadow:
     0 0 1px var(--glow-near),
-    0 0 14px var(--glow-far);
+    0 0 7px var(--glow-mid),
+    0 0 22px var(--glow-far);
 }
 
 /* --------------------------------------------------------------------------
