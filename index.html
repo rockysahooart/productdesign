@@ -3741,7 +3741,7 @@ em,
   height: 1px;
   /* Back out over the stop's own right padding so five segments meet at their
      boundaries and read as one rule. */
-  margin: clamp(18px, 1.95vw, 28px) calc(var(--s-3) * -1) clamp(26px, 3.05vw, 44px) 0;
+  margin: clamp(18px, 1.95vw, 28px) calc(var(--s-3) * -1) clamp(20px, 2.2vw, 32px) 0;
   background: var(--border);
 }
 
@@ -3805,13 +3805,58 @@ em,
   color: var(--ink);
 }
 
+/* THE ONE EMPLOYER WITH NO MARK GETS ONE.
+
+   Four of the five are somebody else's logo, drawn to somebody else's rules.
+   The fifth is his own agency, so its mark is the page's: the badge is the
+   one the messages already use for him — ink, rounded, a single letter — and
+   the name beside it is set in the face the headings are set in. Built rather
+   than drawn, so it takes the theme, the type and the pixel grid the rest of
+   the site is on, and so it is the same mark at any size.
+
+   Sized off the same height the four images are, which is what puts all five
+   on one line. */
+.tl__own {
+  --own-h: clamp(21px, 2.1vw, 30px);
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--own-h) * 0.3);
+}
+
+.tl__own-badge {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--own-h);
+  height: var(--own-h);
+  border-radius: calc(var(--own-h) * 0.28);
+  background: var(--ink);
+  color: var(--surface);
+  font-family: var(--font-pixel);
+  font-size: calc(var(--own-h) * 0.56);
+  line-height: 1;
+  /* The badge is a square of ink with a letter knocked out of it; the letter
+     sits a hair high on the pixel grid without this. */
+  padding-top: calc(var(--own-h) * 0.03);
+}
+
+.tl__own-word {
+  font-family: var(--font-pixel);
+  font-size: calc(var(--own-h) * 0.62);
+  /* The pixel face is drawn on a fixed advance, which is right for a line of
+     type and loose for a name that has to read as one object. */
+  letter-spacing: -0.035em;
+  line-height: 1;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
 .tl__mark-logo {
   /* Bigger than the strip ever set them: there are five here rather than a
      row going past, they are the employer rather than a credential beside
      one, and the column each sits in is wide enough to carry it. */
   --logo-h: clamp(21px, 2.1vw, 30px);
   opacity: 1;
-  margin-bottom: 2px;
 }
 
 .tl__role {
@@ -20247,7 +20292,7 @@ em,
               <li class="tl__stop is-current">
                 <span class="tl__years">2026 <span class="tl__now">Now</span></span>
                 <span class="tl__mark" aria-hidden="true"><i class="tl__dot"></i></span>
-                <span class="tl__org">Sahoo &amp; Co. Design Agency</span>
+                <span class="tl__org"><span class="tl__own" aria-hidden="true"><span class="tl__own-badge">S</span><span class="tl__own-word">Sahoo&nbsp;&amp;&nbsp;Co.</span></span><span class="visually-hidden">Sahoo &amp; Co. Design Agency</span></span>
                 <span class="tl__role">Product Designer</span>
                 <span class="tl__field">Multiple clients</span>
               </li>
