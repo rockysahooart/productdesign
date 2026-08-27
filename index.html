@@ -1714,7 +1714,7 @@ em,
       clamp(300px, 32vw, 462px);
     grid-template-areas:
       "identity copy work"
-      "band     band tools";
+      "past     past tools";
     /* The two cards take the row's height — which is the profile's, because
        the profile is the tallest thing in it — so the left and right edges of
        the composition finish on the same line. The conversation in the middle
@@ -1747,27 +1747,14 @@ em,
   /* Two classes deep, because the base rules further down this file give these
      regions `grid-column: 1 / -1` for the single-column layouts and would
      otherwise win on source order. */
-  /* TWO CARDS IN ONE COLUMN, BESIDE THE RING. The strip is a band and keeps
-     its own height; the timeline takes everything under it. They are wrapped
-     in one grid item rather than given a row each, because a card spanning two
-     auto rows gets a say in how tall each of them is — the ring was making the
-     employers' row 36px taller than the strip in it, which read as a gutter
-     that had lost its nerve. Inside the wrapper there is nothing to negotiate
-     with: one gap, and the rest is the timeline's. */
-  .hero-card .hero__band {
-    grid-area: band;
-    grid-column: 1 / 3;
-    display: flex;
-    flex-direction: column;
-    gap: var(--tile-gap);
-    min-width: 0;
-  }
-  .hero-card .hero__clients { flex: 0 0 auto; }
-  .hero-card .hero__past { flex: 1 1 auto; }
+  /* THE LOWER BAND IS TWO CARDS. The timeline holds the left two columns and
+     the ring the right one, and they are the same height because the row is.
+     The employers' strip that used to sit above the timeline is gone: its five
+     marks are on the roles they belong to, inside the timeline itself. */
+  .hero-card .hero__past  { grid-area: past;  grid-column: 1 / 3; grid-row: 2; }
+  .hero-card .hero__tools { grid-area: tools; grid-column: 3 / 4; grid-row: 2; }
 
-  .hero-card .hero__tools   { grid-area: tools; grid-column: 3 / 4; grid-row: 2; }
-
-  .hero-card .hero__band,
+  .hero-card .hero__past,
   .hero-card .hero__tools { align-self: stretch; }
 
   /* One surface, one hairline, one radius. Nothing else.
@@ -3687,15 +3674,6 @@ em,
   color: var(--ink-muted);
 }
 
-/* THE WRAPPER IS ONLY A BOX IN THE BENTO. Below the composition breakpoint
-   the header is one column and every region places itself — with its own
-   order, its own rules and its own spacing — so a box around two of them
-   would be a box that takes their place in that arrangement. `contents`
-   removes it from the layout without removing it from the markup: at those
-   widths the strip and the timeline are direct children again, exactly as
-   they were before either of them shared a column. */
-.hero__band { display: contents; }
-
 .hero__past {
   grid-column: 1 / -1;   /* single-column layouts; the bento overrides it */
   display: flex;
@@ -3796,16 +3774,33 @@ em,
   background: linear-gradient(to right, var(--border) 55%, transparent);
 }
 
+/* THE EMPLOYER IS ITS MARK. The logos used to go past on a strip of their
+   own above this card — one row of credentials, and a second telling you when
+   each of them was. They are the same five facts, so they are one row now:
+   the mark sits where the name was, on the role it belongs to.
+
+   A fixed height rather than a fixed box, so five marks drawn at five
+   different proportions sit on one optical line — the ratio and the by-eye
+   scale each one carries are the strip's own numbers, kept with the marks.
+
+   The name is still there for anything that cannot see the mark. */
 .tl__org {
-  display: block;
-  /* Two lines' worth whether the name needs them or not, so every role below
-     sits on the same line however long the employer is. */
+  display: flex;
+  align-items: flex-end;
+  /* Two lines' worth whether the mark needs them or not, so every role below
+     sits on the same line however tall the employer's mark is. */
   min-height: calc(2 * 1.3em);
   font-size: var(--fs-body);
   font-weight: var(--fw-strong);
   letter-spacing: var(--tr-body);
   line-height: 1.3;
   color: var(--ink);
+}
+
+.tl__mark-logo {
+  --logo-h: clamp(17px, 1.5vw, 22px);
+  opacity: 1;
+  margin-bottom: 2px;
 }
 
 .tl__role {
@@ -20194,38 +20189,6 @@ em,
 
           
           
-          <div class="hero__band">
-          <div class="hero__clients hero-tile hero-tile--clients">
-            
-            <p class="clients__label">Worked with</p>
-            <div class="clients__marquee" data-marquee>
-              <ul class="clients__track">
-              <li class="clients__item">
-                <span class="clients__logo clients__logo--cg" aria-hidden="true"></span>
-                <span class="visually-hidden">CG</span>
-              </li>
-              <li class="clients__item">
-                <span class="clients__logo clients__logo--cvs-health" aria-hidden="true"></span>
-                <span class="visually-hidden">CVS Health</span>
-              </li>
-              <li class="clients__item">
-                <span class="clients__logo clients__logo--first-united" aria-hidden="true"></span>
-                <span class="visually-hidden">First United</span>
-              </li>
-              <li class="clients__item">
-                <span class="clients__logo clients__logo--pnc" aria-hidden="true"></span>
-                <span class="visually-hidden">PNC</span>
-              </li>
-              <li class="clients__item">
-                <span class="clients__logo clients__logo--natera" aria-hidden="true"></span>
-                <span class="visually-hidden">Natera</span>
-              </li>
-              </ul>
-            </div>
-
-          </div>
-
-          
           <div class="hero__past hero-tile hero-tile--past">
             <p class="past__label">Where I&rsquo;ve been</p>
 
@@ -20233,28 +20196,28 @@ em,
               <li class="tl__stop">
                 <span class="tl__years">2022</span>
                 <span class="tl__mark" aria-hidden="true"><i class="tl__dot"></i></span>
-                <span class="tl__org">CVS Health</span>
+                <span class="tl__org"><span class="tl__mark-logo clients__logo clients__logo--cvs-health" aria-hidden="true"></span><span class="visually-hidden">CVS Health</span></span>
                 <span class="tl__role">Junior UI Developer</span>
                 <span class="tl__field">Healthcare</span>
               </li>
               <li class="tl__stop">
                 <span class="tl__years">2023&ndash;24</span>
                 <span class="tl__mark" aria-hidden="true"><i class="tl__dot"></i></span>
-                <span class="tl__org">CG Infinity</span>
+                <span class="tl__org"><span class="tl__mark-logo clients__logo clients__logo--cg" aria-hidden="true"></span><span class="visually-hidden">CG Infinity</span></span>
                 <span class="tl__role">UX Consultant</span>
                 <span class="tl__field">Enterprise</span>
               </li>
               <li class="tl__stop">
                 <span class="tl__years">2024&ndash;25</span>
                 <span class="tl__mark" aria-hidden="true"><i class="tl__dot"></i></span>
-                <span class="tl__org">PNC Bank</span>
+                <span class="tl__org"><span class="tl__mark-logo clients__logo clients__logo--pnc" aria-hidden="true"></span><span class="visually-hidden">PNC Bank</span></span>
                 <span class="tl__role">Product Designer</span>
                 <span class="tl__field">Finance</span>
               </li>
               <li class="tl__stop">
                 <span class="tl__years">2025&ndash;26</span>
                 <span class="tl__mark" aria-hidden="true"><i class="tl__dot"></i></span>
-                <span class="tl__org">Natera</span>
+                <span class="tl__org"><span class="tl__mark-logo clients__logo clients__logo--natera" aria-hidden="true"></span><span class="visually-hidden">Natera</span></span>
                 <span class="tl__role">Product / UX Designer</span>
                 <span class="tl__field">Biotech</span>
               </li>
@@ -20270,7 +20233,6 @@ em,
             <a class="cta cta--ink past__cta" href="#" data-placeholder-link>
               View r&eacute;sum&eacute; <span class="cta__arrow" aria-hidden="true">&rarr;</span>
             </a>
-          </div>
           </div>
 
           
