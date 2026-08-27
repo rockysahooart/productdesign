@@ -3797,7 +3797,7 @@ em,
   /* A band for the mark rather than a line of type, so five logos drawn at
      five different heights all sit on the same floor and every role below
      them starts on the same line. */
-  min-height: clamp(30px, 2.6vw, 40px);
+  min-height: clamp(34px, 3vw, 44px);
   font-size: var(--fs-body);
   font-weight: var(--fw-strong);
   letter-spacing: var(--tr-body);
@@ -3806,7 +3806,10 @@ em,
 }
 
 .tl__mark-logo {
-  --logo-h: clamp(17px, 1.5vw, 22px);
+  /* Bigger than the strip ever set them: there are five here rather than a
+     row going past, they are the employer rather than a credential beside
+     one, and the column each sits in is wide enough to carry it. */
+  --logo-h: clamp(21px, 2.1vw, 30px);
   opacity: 1;
   margin-bottom: 2px;
 }
