@@ -4948,10 +4948,14 @@ em,
   background: color-mix(in srgb, var(--surface-raised) 78%, transparent);
   -webkit-backdrop-filter: blur(16px) saturate(1.35);
   backdrop-filter: blur(16px) saturate(1.35);
+  /* THE EDGE, NOT THE CAST. A pane is read by the light along its top edge and
+     by what is blurred behind it, not by how far it is floating off the page —
+     a deep shadow under a bubble that is already translucent reads as two
+     effects arguing. What is left is the hairline and enough of a cast to seat
+     it. The lift belongs to the reaction chips, which ARE off the surface. */
   box-shadow:
     inset 0 1px 0 var(--glass-edge),
-    0 1px 2px rgba(0, 0, 0, 0.05),
-    0 10px 26px -14px var(--glass-cast);
+    0 1px 2px -1px var(--glass-cast);
 }
 
 /* No backdrop-filter, no translucency: an unblurred window onto a moving wall
@@ -5730,18 +5734,36 @@ em,
   border: 0;
   border-radius: 999px;
   background: var(--rx-fill, #FFFFFF);
-  box-shadow: var(--shadow-card);
+  /* HELD OFF THE BUBBLE. These are the one thing in the thread that is not
+     part of the message — somebody else's hand, landing on top of it — so they
+     are the one thing that casts. Two shadows: a tight one that seats the chip
+     on whatever is under it, and a wider soft one under that which is the
+     height. Both are short and offset downward, so the light stays where the
+     pane's own top edge says it is. */
+  box-shadow:
+    0 1px 2px var(--rx-cast-near, rgba(0, 0, 0, 0.10)),
+    0 6px 14px -4px var(--rx-cast-far, rgba(0, 0, 0, 0.16));
   line-height: 1;
   user-select: none;
   cursor: pointer;
-  transition: box-shadow 130ms linear;
+  transition: box-shadow 130ms linear, transform 130ms linear;
 }
 
-/* Dark: the same object, on the surface that lifts rather than on white. */
-[data-theme="dark"] .msg__reactions { --rx-fill: var(--surface-raised); }
+/* Dark: the same object, on the surface that lifts rather than on white — and
+   a deeper cast, because a shadow on a dark ground has less room to be read
+   in. */
+[data-theme="dark"] .msg__reactions {
+  --rx-fill: var(--surface-raised);
+  --rx-cast-near: rgba(0, 0, 0, 0.5);
+  --rx-cast-far: rgba(0, 0, 0, 0.55);
+}
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .msg__reactions { --rx-fill: var(--surface-raised); }
+  :root:not([data-theme="light"]) .msg__reactions {
+    --rx-fill: var(--surface-raised);
+    --rx-cast-near: rgba(0, 0, 0, 0.5);
+    --rx-cast-far: rgba(0, 0, 0, 0.55);
+  }
 }
 
 /* Explicit, so the emoji is a designed object rather than a line of text at
