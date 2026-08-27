@@ -30555,7 +30555,10 @@ window.PF = window.PF || {};
   var WIRE_FADE = 400;   /* matches the transition in 07-clients.css */
   var wireHide = null;
   var wireDown = true;   /* down, and no longer worth a frame */
-  var TIP = 6;           /* clear of the mark's own edge */
+  /* CLEAR OF THE MARK'S OWN EDGE, and then some. A dot that lands right on the
+     logo's boundary reads as stuck to it; the wire should stop short and let
+     the last stretch be the pointing. */
+  var TIP = 15;
   /* AND WELL CLEAR OF THE PHRASE. A line that starts a few pixels off the type
      reads as growing out of the word rather than pointing at something from
      it — the gap is what makes the phrase an object the wires arrive at. */
