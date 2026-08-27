@@ -30555,14 +30555,18 @@ window.PF = window.PF || {};
   var WIRE_FADE = 400;   /* matches the transition in 07-clients.css */
   var wireHide = null;
   var wireDown = true;   /* down, and no longer worth a frame */
-  /* CLEAR OF THE MARK'S OWN EDGE, and then some. A dot that lands right on the
-     logo's boundary reads as stuck to it; the wire should stop short and let
-     the last stretch be the pointing. */
-  var TIP = 15;
+  /* CLEAR OF THE MARK'S OWN EDGE, and then some. A dot that lands on the logo's
+     boundary reads as stuck to it; the wire should stop well short and let the
+     empty last stretch do the pointing. Held to a share of the ring so the gap
+     stays the same SIZE OF GAP at every width rather than eating the whole run
+     once the card shrinks. */
+  var TIP_MIN = 12, TIP_MAX = 30, TIP_R = 0.19;
   /* AND WELL CLEAR OF THE PHRASE. A line that starts a few pixels off the type
      reads as growing out of the word rather than pointing at something from
      it — the gap is what makes the phrase an object the wires arrive at. */
-  var LEAD = 24;
+  var LEAD_MIN = 14, LEAD_MAX = 24, LEAD_R = 0.14;
+  /* Below this a wire is a speck, not a line. Better absent than a stub. */
+  var MIN_RUN = 14;
 
   function ringAngle() {
     var t = window.getComputedStyle(ring).transform;
@@ -30574,7 +30578,7 @@ window.PF = window.PF || {};
   /* The one measurement that is not the ring's angle: how big the phrase is
      and how big a mark is. Both change with the window and with the phrase, so
      it is taken when either does rather than every frame. */
-  var geom = { cx: 0, cy: 0, r: 0, hw: 0, hh: 0, tip: 0 };
+  var geom = { cx: 0, cy: 0, r: 0, hw: 0, hh: 0, tip: 0, lead: 24 };
 
   function measureWires() {
     var ob = orbit.getBoundingClientRect();
@@ -30587,7 +30591,9 @@ window.PF = window.PF || {};
              Math.round(ob.width * 0.33);
     geom.hw = cb.width / 2;
     geom.hh = cb.height / 2;
-    geom.tip = (lb ? Math.max(lb.width, lb.height) / 2 : 16) + TIP;
+    geom.tip = (lb ? Math.max(lb.width, lb.height) / 2 : 16) +
+               Math.max(TIP_MIN, Math.min(TIP_MAX, geom.r * TIP_R));
+    geom.lead = Math.max(LEAD_MIN, Math.min(LEAD_MAX, geom.r * LEAD_R));
   }
 
   function drawWires() {
@@ -30608,9 +30614,9 @@ window.PF = window.PF || {};
       var t = Math.min(
         Math.abs(dx) > 1e-4 ? geom.hw / Math.abs(dx) : 1e9,
         Math.abs(dy) > 1e-4 ? geom.hh / Math.abs(dy) : 1e9
-      ) + LEAD;
+      ) + geom.lead;
       var e = geom.r - geom.tip;
-      if (e <= t) {
+      if (e - t < MIN_RUN) {
         w.line.setAttribute('opacity', '0');
         w.dot.setAttribute('opacity', '0');
         if (w.pulse) w.pulse.setAttribute('opacity', '0');
