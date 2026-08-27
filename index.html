@@ -15367,9 +15367,9 @@ em,
 
             <div class="pv__stage" data-pv-stage>
               <article class="pv__slide" data-pv-slide data-mode="design" data-href="#/carry"
-                       role="tabpanel" aria-label="Carry">
+                       role="tabpanel" aria-label="Carry" data-pv-name="Carry">
                 <div class="pv__head">
-                  <h3 class="pv__title">Carry</h3>
+                  <h3 class="pv__title">Carry: A Patient Companion Extension</h3>
                   <p class="pv__sub">A production-bound extension of an existing patient experience that captures visits to improve patient recall and continuity of care.</p>
                 </div>
                 <div class="pv__vis"><div class="pv__embed pv__embed--carry">
@@ -29480,7 +29480,14 @@ window.PF = window.PF || {};
      Matched by name rather than by index: the two sets are not the same
      length or the same order, and a name is what a reader is pointing at. A
      name with no slide in the current mode is simply ignored. */
+  /* THE NAME IS NOT ALWAYS THE HEADING. A slide can carry a title that says
+     more than the project is called — "Carry: A Patient Companion Extension"
+     is a heading, "Carry" is what the card below it is named — and the two
+     sets are matched by name. So a slide may declare one, and the heading is
+     only the fallback for a slide that has not. */
   function slideName(el) {
+    var given = el.getAttribute('data-pv-name');
+    if (given) return given.trim().toLowerCase();
     var t = el.querySelector('.pv__title');
     return (t ? t.textContent : el.getAttribute('aria-label') || '').trim().toLowerCase();
   }
