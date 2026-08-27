@@ -190,6 +190,12 @@
      The project hues below are NOT greyed, in either theme. They live only
      inside the artifact previews, which are their own worlds. */
 
+  /* The pane: the light along a glass edge, and the shadow it casts. */
+  --glass-edge:     rgba(255, 255, 255, 0.75);
+  --glass-cast:     rgba(0, 0, 0, 0.35);
+  /* And the light the cursor drags across the wall. */
+  --cursor-glow:    rgba(0, 0, 0, 0.032);
+
   --canvas:         #E9E9E9;
   --surface:        #F7F7F7;   /* cards lift 1.13:1 */
   --surface-sunken: #DEDEDE;
@@ -321,23 +327,34 @@
      ignore the site theme entirely. Greying these would change nothing on
      screen except the Carry thumbnail, which is not what "the system" means. */
 
-  --canvas:         #121212;   /* neutral, not the kit's green */
-  --surface:        #242424;   /* cards lift 1.21:1 */
-  --surface-sunken: #0C0C0C;
-  --surface-raised: #303030;
+  /* THE CARDS HAVE TO WIN AGAINST THE WALL. The ground is not a flat value any
+     more — three tinted washes and a moving grain lift it wherever they happen
+     to be — so the old 1.21:1 card lift was being eaten from underneath and the
+     structure went soft. The ground drops and the card rises: 13 against 42 in
+     eight-bit terms rather than 18 against 36, which is a step that survives a
+     wash. Body copy on a card is 11.6:1, AAA twice over. */
+  --glass-edge:     rgba(255, 255, 255, 0.09);
+  --glass-cast:     rgba(0, 0, 0, 0.8);
+  --cursor-glow:    rgba(168, 166, 255, 0.11);
+
+  --canvas:         #0D0D0E;   /* neutral, not the kit's green */
+  --surface:        #2A2A2C;   /* cards lift 1.42:1 */
+  --surface-sunken: #08080A;
+  --surface-raised: #35353A;
 
   --ink:            #EDEDED;   /* 16.00:1 on canvas, 13.26:1 on a card */
   --ink-secondary:  #D2D2D2;   /* 11.42:1 on a card — body copy was reading as
                                   a muted tier against a 13.26:1 title; this is
                                   the same step the light theme has, 1.16x
                                   rather than 1.65x below the ink */
-  --ink-muted:      #A2A2A2;   /* 7.62:1 on canvas, 6.31:1 on a card — the card
-                                  is the tighter of the two, so it is the one
-                                  the value is set against */
+  --ink-muted:      #ADADAD;   /* 6.15:1 on the lifted card, which is the tier
+                                  it is measured against — the card came up a
+                                  step, so this came up with it rather than
+                                  letting the muted tier slide under AA */
   --on-ink:         #121212;
 
-  --border:         #333333;
-  --border-strong:  #4C4C4C;
+  --border:         #3D3D42;
+  --border-strong:  #55555C;
 
   --accent:         #C8C8C8;   /* the emphasis value; no hue to emphasise with */
   --accent-hover:   #DEDEDE;
@@ -424,23 +441,28 @@
     color-scheme: dark;
 
     /* Mirror of the block above; see the note there. */
-    --canvas:         #121212;   /* neutral, not the kit's green */
-    --surface:        #242424;   /* cards lift 1.21:1 */
-    --surface-sunken: #0C0C0C;
-    --surface-raised: #303030;
+    --glass-edge:     rgba(255, 255, 255, 0.09);
+  --glass-cast:     rgba(0, 0, 0, 0.8);
+  --cursor-glow:    rgba(168, 166, 255, 0.11);
+
+  --canvas:         #0D0D0E;   /* neutral, not the kit's green */
+    --surface:        #2A2A2C;   /* cards lift 1.42:1 */
+    --surface-sunken: #08080A;
+    --surface-raised: #35353A;
 
     --ink:            #EDEDED;   /* 16.00:1 on canvas, 13.26:1 on a card */
     --ink-secondary:  #D2D2D2;   /* 11.42:1 on a card — body copy was reading as
                                   a muted tier against a 13.26:1 title; this is
                                   the same step the light theme has, 1.16x
                                   rather than 1.65x below the ink */
-    --ink-muted:      #A2A2A2;   /* 7.62:1 on canvas, 6.31:1 on a card — the card
-                                  is the tighter of the two, so it is the one
-                                  the value is set against */
+    --ink-muted:      #ADADAD;   /* 6.15:1 on the lifted card, which is the tier
+                                  it is measured against — the card came up a
+                                  step, so this came up with it rather than
+                                  letting the muted tier slide under AA */
     --on-ink:         #121212;
 
-    --border:         #333333;
-    --border-strong:  #4C4C4C;
+    --border:         #3D3D42;
+    --border-strong:  #55555C;
 
     --accent:         #C8C8C8;   /* the emphasis value; no hue to emphasise with */
     --accent-hover:   #DEDEDE;
@@ -776,9 +798,19 @@ html {
 body {
   margin: 0;
   background-color: var(--canvas);
-  background-image: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='150'%20height='150'%3E%3Cfilter%20id='w'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.86'%20numOctaves='3'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='150'%20height='150'%20filter='url%28%23w%29'%20opacity='0.085'/%3E%3C/svg%3E");
-  background-size: 150px 150px;
-  background-repeat: repeat;
+  /* THE LIGHT FOLLOWS THE POINTER. One soft radial on the ground, centred on
+     wherever the cursor is — js/main.js writes --px and --py, eased, and does
+     nothing at all on a touch screen where there is no pointer to follow. It
+     is attached to the viewport rather than the document, so it is a light in
+     the room rather than a mark on the page, and it sits under the wall's own
+     washes so the two read as one ground. */
+  background-image:
+    radial-gradient(42vmax 42vmax at var(--px, 50%) var(--py, 8%),
+                    var(--cursor-glow, transparent) 0%, transparent 68%),
+    url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='150'%20height='150'%3E%3Cfilter%20id='w'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.86'%20numOctaves='3'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='150'%20height='150'%20filter='url%28%23w%29'%20opacity='0.085'/%3E%3C/svg%3E");
+  background-size: auto, 150px 150px;
+  background-repeat: no-repeat, repeat;
+  background-attachment: fixed, scroll;
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--fs-body);
@@ -4886,6 +4918,26 @@ em,
   user-select: none;
 }
 
+/* GLASS, AND STILL AAA.
+
+   The bubbles are panes rather than plates: three quarters of the raised
+   surface with the wall showing through the last quarter, blurred and lifted a
+   little in saturation behind them, a hairline of light along the top edge and
+   a soft shadow under them. On a ground that now moves and carries colour,
+   that is the difference between a message sitting ON the page and a message
+   cut out of it.
+
+   THE ALPHA IS THE ACCESSIBILITY. Everything behind a bubble is either the
+   card or the wall on the card, and both are within a couple of steps of each
+   other — so at 0.78 the composited pane can never drift more than about one
+   value step from the opaque colour these ratios were set against. Measured
+   rather than assumed: the message ink lands at 12.1:1 in dark and 15.3:1 in
+   light on the pane as it actually renders, which is AAA at any size. The
+   keyword gradients keep their own floor of 3:1 on the same pane.
+
+   backdrop-filter is progressive: where it is not supported the pane is simply
+   a slightly translucent surface, which is the same colour and the same
+   contrast without the blur. */
 .msg__bubble {
   position: relative;
   display: block;
@@ -4893,7 +4945,19 @@ em,
   padding: var(--hx-pad) var(--hx-padx);
   border: var(--hx-line);
   border-radius: var(--hx-radius);
-  background: var(--surface-raised);
+  background: color-mix(in srgb, var(--surface-raised) 78%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(1.35);
+  backdrop-filter: blur(16px) saturate(1.35);
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge),
+    0 1px 2px rgba(0, 0, 0, 0.05),
+    0 10px 26px -14px var(--glass-cast);
+}
+
+/* No backdrop-filter, no translucency: an unblurred window onto a moving wall
+   is a bubble with the page sliding about inside it. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .msg__bubble { background: var(--surface-raised); }
 }
 
 /* THE TAIL IS GONE. It was a notch pointing at the avatar beside each bubble,
@@ -14423,7 +14487,7 @@ em,
     /* Clearly separated from the conversation above and given room before the
        logos below, so it reads as navigation rather than as the end of the
        thread. */
-    margin-top: 32px;
+    margin-top: 24px;
     margin-bottom: 52px;
   }
 }
@@ -14996,6 +15060,12 @@ em,
      The project hues below are NOT greyed, in either theme. They live only
      inside the artifact previews, which are their own worlds. */
 
+  /* The pane: the light along a glass edge, and the shadow it casts. */
+  --glass-edge:     rgba(255, 255, 255, 0.75);
+  --glass-cast:     rgba(0, 0, 0, 0.35);
+  /* And the light the cursor drags across the wall. */
+  --cursor-glow:    rgba(0, 0, 0, 0.032);
+
   --canvas:         #E9E9E9;
   --surface:        #F7F7F7;   /* cards lift 1.13:1 */
   --surface-sunken: #DEDEDE;
@@ -15127,23 +15197,34 @@ em,
      ignore the site theme entirely. Greying these would change nothing on
      screen except the Carry thumbnail, which is not what &quot;the system&quot; means. */
 
-  --canvas:         #121212;   /* neutral, not the kit&#x27;s green */
-  --surface:        #242424;   /* cards lift 1.21:1 */
-  --surface-sunken: #0C0C0C;
-  --surface-raised: #303030;
+  /* THE CARDS HAVE TO WIN AGAINST THE WALL. The ground is not a flat value any
+     more — three tinted washes and a moving grain lift it wherever they happen
+     to be — so the old 1.21:1 card lift was being eaten from underneath and the
+     structure went soft. The ground drops and the card rises: 13 against 42 in
+     eight-bit terms rather than 18 against 36, which is a step that survives a
+     wash. Body copy on a card is 11.6:1, AAA twice over. */
+  --glass-edge:     rgba(255, 255, 255, 0.09);
+  --glass-cast:     rgba(0, 0, 0, 0.8);
+  --cursor-glow:    rgba(168, 166, 255, 0.11);
+
+  --canvas:         #0D0D0E;   /* neutral, not the kit&#x27;s green */
+  --surface:        #2A2A2C;   /* cards lift 1.42:1 */
+  --surface-sunken: #08080A;
+  --surface-raised: #35353A;
 
   --ink:            #EDEDED;   /* 16.00:1 on canvas, 13.26:1 on a card */
   --ink-secondary:  #D2D2D2;   /* 11.42:1 on a card — body copy was reading as
                                   a muted tier against a 13.26:1 title; this is
                                   the same step the light theme has, 1.16x
                                   rather than 1.65x below the ink */
-  --ink-muted:      #A2A2A2;   /* 7.62:1 on canvas, 6.31:1 on a card — the card
-                                  is the tighter of the two, so it is the one
-                                  the value is set against */
+  --ink-muted:      #ADADAD;   /* 6.15:1 on the lifted card, which is the tier
+                                  it is measured against — the card came up a
+                                  step, so this came up with it rather than
+                                  letting the muted tier slide under AA */
   --on-ink:         #121212;
 
-  --border:         #333333;
-  --border-strong:  #4C4C4C;
+  --border:         #3D3D42;
+  --border-strong:  #55555C;
 
   --accent:         #C8C8C8;   /* the emphasis value; no hue to emphasise with */
   --accent-hover:   #DEDEDE;
@@ -15230,23 +15311,28 @@ em,
     color-scheme: dark;
 
     /* Mirror of the block above; see the note there. */
-    --canvas:         #121212;   /* neutral, not the kit&#x27;s green */
-    --surface:        #242424;   /* cards lift 1.21:1 */
-    --surface-sunken: #0C0C0C;
-    --surface-raised: #303030;
+    --glass-edge:     rgba(255, 255, 255, 0.09);
+  --glass-cast:     rgba(0, 0, 0, 0.8);
+  --cursor-glow:    rgba(168, 166, 255, 0.11);
+
+  --canvas:         #0D0D0E;   /* neutral, not the kit&#x27;s green */
+    --surface:        #2A2A2C;   /* cards lift 1.42:1 */
+    --surface-sunken: #08080A;
+    --surface-raised: #35353A;
 
     --ink:            #EDEDED;   /* 16.00:1 on canvas, 13.26:1 on a card */
     --ink-secondary:  #D2D2D2;   /* 11.42:1 on a card — body copy was reading as
                                   a muted tier against a 13.26:1 title; this is
                                   the same step the light theme has, 1.16x
                                   rather than 1.65x below the ink */
-    --ink-muted:      #A2A2A2;   /* 7.62:1 on canvas, 6.31:1 on a card — the card
-                                  is the tighter of the two, so it is the one
-                                  the value is set against */
+    --ink-muted:      #ADADAD;   /* 6.15:1 on the lifted card, which is the tier
+                                  it is measured against — the card came up a
+                                  step, so this came up with it rather than
+                                  letting the muted tier slide under AA */
     --on-ink:         #121212;
 
-    --border:         #333333;
-    --border-strong:  #4C4C4C;
+    --border:         #3D3D42;
+    --border-strong:  #55555C;
 
     --accent:         #C8C8C8;   /* the emphasis value; no hue to emphasise with */
     --accent-hover:   #DEDEDE;
@@ -15582,9 +15668,19 @@ html {
 body {
   margin: 0;
   background-color: var(--canvas);
-  background-image: url(&quot;data:image/svg+xml,%3Csvg%20xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%3E%3Cfilter%20id=&#x27;w&#x27;%3E%3CfeTurbulence%20type=&#x27;fractalNoise&#x27;%20baseFrequency=&#x27;0.86&#x27;%20numOctaves=&#x27;3&#x27;%20stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix%20type=&#x27;saturate&#x27;%20values=&#x27;0&#x27;/%3E%3C/filter%3E%3Crect%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%20filter=&#x27;url%28%23w%29&#x27;%20opacity=&#x27;0.085&#x27;/%3E%3C/svg%3E&quot;);
-  background-size: 150px 150px;
-  background-repeat: repeat;
+  /* THE LIGHT FOLLOWS THE POINTER. One soft radial on the ground, centred on
+     wherever the cursor is — js/main.js writes --px and --py, eased, and does
+     nothing at all on a touch screen where there is no pointer to follow. It
+     is attached to the viewport rather than the document, so it is a light in
+     the room rather than a mark on the page, and it sits under the wall&#x27;s own
+     washes so the two read as one ground. */
+  background-image:
+    radial-gradient(42vmax 42vmax at var(--px, 50%) var(--py, 8%),
+                    var(--cursor-glow, transparent) 0%, transparent 68%),
+    url(&quot;data:image/svg+xml,%3Csvg%20xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%3E%3Cfilter%20id=&#x27;w&#x27;%3E%3CfeTurbulence%20type=&#x27;fractalNoise&#x27;%20baseFrequency=&#x27;0.86&#x27;%20numOctaves=&#x27;3&#x27;%20stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix%20type=&#x27;saturate&#x27;%20values=&#x27;0&#x27;/%3E%3C/filter%3E%3Crect%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%20filter=&#x27;url%28%23w%29&#x27;%20opacity=&#x27;0.085&#x27;/%3E%3C/svg%3E&quot;);
+  background-size: auto, 150px 150px;
+  background-repeat: no-repeat, repeat;
+  background-attachment: fixed, scroll;
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--fs-body);
@@ -16401,11 +16497,57 @@ em,
      preview a ground the card behind it does not have. The frame is
      transparent and the component brings its own surfaces; nothing here has a
      background of its own. */
+  /* !important because the dark theme&#x27;s own wall is written as
+     :root[data-theme=&quot;dark&quot;] body::before, which outranks a bare body::before
+     — and a second wall painted inside the frame is the pale rectangle the
+     frame used to leave on a dark page. */
   body::before,
-  body::after { display: none; }
+  body::after { display: none !important; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
+&lt;script&gt;
+(function(){
+  /* THE FRAME FOLLOWS THE PAGE&#x27;S THEME.
+
+     A framed document has its own root and hears nothing about the one it is
+     embedded in: left alone it reads the OS preference and renders light
+     inside a dark page, which is exactly the pale rectangle that showed where
+     the frame was. Two ways in, because neither works everywhere — the
+     attribute on the host&#x27;s root when the two documents are same origin, and
+     a message from js/theme.js when they are not (a build opened straight off
+     disk). Whichever arrives wins over the OS, which is only ever the
+     fallback for not knowing. */
+  var root = document.documentElement;
+  var mq = window.matchMedia(&#x27;(prefers-color-scheme: dark)&#x27;);
+  var host = null;
+  try { if (window.parent !== window) host = window.parent.document.documentElement; }
+  catch (e) { host = null; }
+
+  var told = null;
+
+  function read(){
+    var t = host &amp;&amp; host.getAttribute(&#x27;data-theme&#x27;);
+    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = told;
+    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = mq.matches ? &#x27;dark&#x27; : &#x27;light&#x27;;
+    root.setAttribute(&#x27;data-theme&#x27;, t);
+  }
+  read();
+  if (host &amp;&amp; window.MutationObserver){
+    new MutationObserver(read).observe(host, {attributes:true, attributeFilter:[&#x27;data-theme&#x27;]});
+  }
+  if (mq.addEventListener) mq.addEventListener(&#x27;change&#x27;, read);
+
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if (!e || !e.data || (e.data.pfTheme !== &#x27;dark&#x27; &amp;&amp; e.data.pfTheme !== &#x27;light&#x27;)) return;
+    told = e.data.pfTheme;
+    read();
+  });
+  if (window.parent !== window){
+    try { window.parent.postMessage({pfThemeRequest:true}, &#x27;*&#x27;); } catch (e2) {}
+  }
+})();
+&lt;/script&gt;
 &lt;div id=&quot;cfRoot&quot;&gt;
   &lt;div class=&quot;cf-page&quot;&gt;
     &lt;div class=&quot;cf-stage-wrap&quot;&gt;
@@ -16860,6 +17002,12 @@ em,
      The project hues below are NOT greyed, in either theme. They live only
      inside the artifact previews, which are their own worlds. */
 
+  /* The pane: the light along a glass edge, and the shadow it casts. */
+  --glass-edge:     rgba(255, 255, 255, 0.75);
+  --glass-cast:     rgba(0, 0, 0, 0.35);
+  /* And the light the cursor drags across the wall. */
+  --cursor-glow:    rgba(0, 0, 0, 0.032);
+
   --canvas:         #E9E9E9;
   --surface:        #F7F7F7;   /* cards lift 1.13:1 */
   --surface-sunken: #DEDEDE;
@@ -16991,23 +17139,34 @@ em,
      ignore the site theme entirely. Greying these would change nothing on
      screen except the Carry thumbnail, which is not what &quot;the system&quot; means. */
 
-  --canvas:         #121212;   /* neutral, not the kit&#x27;s green */
-  --surface:        #242424;   /* cards lift 1.21:1 */
-  --surface-sunken: #0C0C0C;
-  --surface-raised: #303030;
+  /* THE CARDS HAVE TO WIN AGAINST THE WALL. The ground is not a flat value any
+     more — three tinted washes and a moving grain lift it wherever they happen
+     to be — so the old 1.21:1 card lift was being eaten from underneath and the
+     structure went soft. The ground drops and the card rises: 13 against 42 in
+     eight-bit terms rather than 18 against 36, which is a step that survives a
+     wash. Body copy on a card is 11.6:1, AAA twice over. */
+  --glass-edge:     rgba(255, 255, 255, 0.09);
+  --glass-cast:     rgba(0, 0, 0, 0.8);
+  --cursor-glow:    rgba(168, 166, 255, 0.11);
+
+  --canvas:         #0D0D0E;   /* neutral, not the kit&#x27;s green */
+  --surface:        #2A2A2C;   /* cards lift 1.42:1 */
+  --surface-sunken: #08080A;
+  --surface-raised: #35353A;
 
   --ink:            #EDEDED;   /* 16.00:1 on canvas, 13.26:1 on a card */
   --ink-secondary:  #D2D2D2;   /* 11.42:1 on a card — body copy was reading as
                                   a muted tier against a 13.26:1 title; this is
                                   the same step the light theme has, 1.16x
                                   rather than 1.65x below the ink */
-  --ink-muted:      #A2A2A2;   /* 7.62:1 on canvas, 6.31:1 on a card — the card
-                                  is the tighter of the two, so it is the one
-                                  the value is set against */
+  --ink-muted:      #ADADAD;   /* 6.15:1 on the lifted card, which is the tier
+                                  it is measured against — the card came up a
+                                  step, so this came up with it rather than
+                                  letting the muted tier slide under AA */
   --on-ink:         #121212;
 
-  --border:         #333333;
-  --border-strong:  #4C4C4C;
+  --border:         #3D3D42;
+  --border-strong:  #55555C;
 
   --accent:         #C8C8C8;   /* the emphasis value; no hue to emphasise with */
   --accent-hover:   #DEDEDE;
@@ -17094,23 +17253,28 @@ em,
     color-scheme: dark;
 
     /* Mirror of the block above; see the note there. */
-    --canvas:         #121212;   /* neutral, not the kit&#x27;s green */
-    --surface:        #242424;   /* cards lift 1.21:1 */
-    --surface-sunken: #0C0C0C;
-    --surface-raised: #303030;
+    --glass-edge:     rgba(255, 255, 255, 0.09);
+  --glass-cast:     rgba(0, 0, 0, 0.8);
+  --cursor-glow:    rgba(168, 166, 255, 0.11);
+
+  --canvas:         #0D0D0E;   /* neutral, not the kit&#x27;s green */
+    --surface:        #2A2A2C;   /* cards lift 1.42:1 */
+    --surface-sunken: #08080A;
+    --surface-raised: #35353A;
 
     --ink:            #EDEDED;   /* 16.00:1 on canvas, 13.26:1 on a card */
     --ink-secondary:  #D2D2D2;   /* 11.42:1 on a card — body copy was reading as
                                   a muted tier against a 13.26:1 title; this is
                                   the same step the light theme has, 1.16x
                                   rather than 1.65x below the ink */
-    --ink-muted:      #A2A2A2;   /* 7.62:1 on canvas, 6.31:1 on a card — the card
-                                  is the tighter of the two, so it is the one
-                                  the value is set against */
+    --ink-muted:      #ADADAD;   /* 6.15:1 on the lifted card, which is the tier
+                                  it is measured against — the card came up a
+                                  step, so this came up with it rather than
+                                  letting the muted tier slide under AA */
     --on-ink:         #121212;
 
-    --border:         #333333;
-    --border-strong:  #4C4C4C;
+    --border:         #3D3D42;
+    --border-strong:  #55555C;
 
     --accent:         #C8C8C8;   /* the emphasis value; no hue to emphasise with */
     --accent-hover:   #DEDEDE;
@@ -17446,9 +17610,19 @@ html {
 body {
   margin: 0;
   background-color: var(--canvas);
-  background-image: url(&quot;data:image/svg+xml,%3Csvg%20xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%3E%3Cfilter%20id=&#x27;w&#x27;%3E%3CfeTurbulence%20type=&#x27;fractalNoise&#x27;%20baseFrequency=&#x27;0.86&#x27;%20numOctaves=&#x27;3&#x27;%20stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix%20type=&#x27;saturate&#x27;%20values=&#x27;0&#x27;/%3E%3C/filter%3E%3Crect%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%20filter=&#x27;url%28%23w%29&#x27;%20opacity=&#x27;0.085&#x27;/%3E%3C/svg%3E&quot;);
-  background-size: 150px 150px;
-  background-repeat: repeat;
+  /* THE LIGHT FOLLOWS THE POINTER. One soft radial on the ground, centred on
+     wherever the cursor is — js/main.js writes --px and --py, eased, and does
+     nothing at all on a touch screen where there is no pointer to follow. It
+     is attached to the viewport rather than the document, so it is a light in
+     the room rather than a mark on the page, and it sits under the wall&#x27;s own
+     washes so the two read as one ground. */
+  background-image:
+    radial-gradient(42vmax 42vmax at var(--px, 50%) var(--py, 8%),
+                    var(--cursor-glow, transparent) 0%, transparent 68%),
+    url(&quot;data:image/svg+xml,%3Csvg%20xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%3E%3Cfilter%20id=&#x27;w&#x27;%3E%3CfeTurbulence%20type=&#x27;fractalNoise&#x27;%20baseFrequency=&#x27;0.86&#x27;%20numOctaves=&#x27;3&#x27;%20stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix%20type=&#x27;saturate&#x27;%20values=&#x27;0&#x27;/%3E%3C/filter%3E%3Crect%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%20filter=&#x27;url%28%23w%29&#x27;%20opacity=&#x27;0.085&#x27;/%3E%3C/svg%3E&quot;);
+  background-size: auto, 150px 150px;
+  background-repeat: no-repeat, repeat;
+  background-attachment: fixed, scroll;
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--fs-body);
@@ -18356,11 +18530,57 @@ em,
      preview a ground the card behind it does not have. The frame is
      transparent and the component brings its own surfaces; nothing here has a
      background of its own. */
+  /* !important because the dark theme&#x27;s own wall is written as
+     :root[data-theme=&quot;dark&quot;] body::before, which outranks a bare body::before
+     — and a second wall painted inside the frame is the pale rectangle the
+     frame used to leave on a dark page. */
   body::before,
-  body::after { display: none; }
+  body::after { display: none !important; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
+&lt;script&gt;
+(function(){
+  /* THE FRAME FOLLOWS THE PAGE&#x27;S THEME.
+
+     A framed document has its own root and hears nothing about the one it is
+     embedded in: left alone it reads the OS preference and renders light
+     inside a dark page, which is exactly the pale rectangle that showed where
+     the frame was. Two ways in, because neither works everywhere — the
+     attribute on the host&#x27;s root when the two documents are same origin, and
+     a message from js/theme.js when they are not (a build opened straight off
+     disk). Whichever arrives wins over the OS, which is only ever the
+     fallback for not knowing. */
+  var root = document.documentElement;
+  var mq = window.matchMedia(&#x27;(prefers-color-scheme: dark)&#x27;);
+  var host = null;
+  try { if (window.parent !== window) host = window.parent.document.documentElement; }
+  catch (e) { host = null; }
+
+  var told = null;
+
+  function read(){
+    var t = host &amp;&amp; host.getAttribute(&#x27;data-theme&#x27;);
+    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = told;
+    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = mq.matches ? &#x27;dark&#x27; : &#x27;light&#x27;;
+    root.setAttribute(&#x27;data-theme&#x27;, t);
+  }
+  read();
+  if (host &amp;&amp; window.MutationObserver){
+    new MutationObserver(read).observe(host, {attributes:true, attributeFilter:[&#x27;data-theme&#x27;]});
+  }
+  if (mq.addEventListener) mq.addEventListener(&#x27;change&#x27;, read);
+
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if (!e || !e.data || (e.data.pfTheme !== &#x27;dark&#x27; &amp;&amp; e.data.pfTheme !== &#x27;light&#x27;)) return;
+    told = e.data.pfTheme;
+    read();
+  });
+  if (window.parent !== window){
+    try { window.parent.postMessage({pfThemeRequest:true}, &#x27;*&#x27;); } catch (e2) {}
+  }
+})();
+&lt;/script&gt;
 &lt;div id=&quot;tfRoot&quot;&gt;
 &lt;div class=&quot;tf-stage tf-stage--stacked&quot;&gt;
 &lt;div class=&quot;tf-frame&quot;&gt;
@@ -19743,11 +19963,57 @@ em,
      preview a ground the card behind it does not have. The frame is
      transparent and the component brings its own surfaces; nothing here has a
      background of its own. */
+  /* !important because the dark theme&#x27;s own wall is written as
+     :root[data-theme=&quot;dark&quot;] body::before, which outranks a bare body::before
+     — and a second wall painted inside the frame is the pale rectangle the
+     frame used to leave on a dark page. */
   body::before,
-  body::after { display: none; }
+  body::after { display: none !important; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
+&lt;script&gt;
+(function(){
+  /* THE FRAME FOLLOWS THE PAGE&#x27;S THEME.
+
+     A framed document has its own root and hears nothing about the one it is
+     embedded in: left alone it reads the OS preference and renders light
+     inside a dark page, which is exactly the pale rectangle that showed where
+     the frame was. Two ways in, because neither works everywhere — the
+     attribute on the host&#x27;s root when the two documents are same origin, and
+     a message from js/theme.js when they are not (a build opened straight off
+     disk). Whichever arrives wins over the OS, which is only ever the
+     fallback for not knowing. */
+  var root = document.documentElement;
+  var mq = window.matchMedia(&#x27;(prefers-color-scheme: dark)&#x27;);
+  var host = null;
+  try { if (window.parent !== window) host = window.parent.document.documentElement; }
+  catch (e) { host = null; }
+
+  var told = null;
+
+  function read(){
+    var t = host &amp;&amp; host.getAttribute(&#x27;data-theme&#x27;);
+    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = told;
+    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = mq.matches ? &#x27;dark&#x27; : &#x27;light&#x27;;
+    root.setAttribute(&#x27;data-theme&#x27;, t);
+  }
+  read();
+  if (host &amp;&amp; window.MutationObserver){
+    new MutationObserver(read).observe(host, {attributes:true, attributeFilter:[&#x27;data-theme&#x27;]});
+  }
+  if (mq.addEventListener) mq.addEventListener(&#x27;change&#x27;, read);
+
+  window.addEventListener(&#x27;message&#x27;, function(e){
+    if (!e || !e.data || (e.data.pfTheme !== &#x27;dark&#x27; &amp;&amp; e.data.pfTheme !== &#x27;light&#x27;)) return;
+    told = e.data.pfTheme;
+    read();
+  });
+  if (window.parent !== window){
+    try { window.parent.postMessage({pfThemeRequest:true}, &#x27;*&#x27;); } catch (e2) {}
+  }
+})();
+&lt;/script&gt;
 
 &lt;div id=&quot;dsa&quot; data-tok=&quot;light&quot; data-w=&quot;1280&quot;&gt;
 
@@ -20379,8 +20645,12 @@ em,
      preview a ground the card behind it does not have. The frame is
      transparent and the component brings its own surfaces; nothing here has a
      background of its own. */
+  /* !important because the dark theme&#x27;s own wall is written as
+     :root[data-theme=&quot;dark&quot;] body::before, which outranks a bare body::before
+     — and a second wall painted inside the frame is the pale rectangle the
+     frame used to leave on a dark page. */
   body::before,
-  body::after { display: none; }
+  body::after { display: none !important; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -21874,8 +22144,12 @@ em,
      preview a ground the card behind it does not have. The frame is
      transparent and the component brings its own surfaces; nothing here has a
      background of its own. */
+  /* !important because the dark theme&#x27;s own wall is written as
+     :root[data-theme=&quot;dark&quot;] body::before, which outranks a bare body::before
+     — and a second wall painted inside the frame is the pale rectangle the
+     frame used to leave on a dark page. */
   body::before,
-  body::after { display: none; }
+  body::after { display: none !important; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -26394,22 +26668,23 @@ window.PF = window.PF || {};
         /* The inset place() parks the stack at. Less underneath than above:
            what sits at the bottom of this box is a button, and a button
            carries its own optical margin in a way a line of type does not. */
-        boxH += phone() ? FLAT_PAD * 2 : STILL_PAD + STILL_TAIL;
+        boxH += phone() ? FLAT_PAD + FLAT_TAIL : STILL_PAD + STILL_TAIL;
+
         var cta = ctaEl();
         if (cta) {
           var was = cta.hasAttribute('hidden');
           if (was) cta.removeAttribute('hidden');
-          /* Measured without the push, or the room the box keeps for it would
-             be the whole of the screen it has been sent to the bottom of. */
-          var held = cta.style.marginTop;
-          if (phone()) cta.style.marginTop = '';
           var ch = cta.getBoundingClientRect().height;
-          var cm = phone() ? CTA_ROOM
-                           : (parseFloat(window.getComputedStyle(cta).marginTop) || 0);
-          if (phone()) cta.style.marginTop = held;
+          var cm = parseFloat(window.getComputedStyle(cta).marginTop) || 0;
           if (was) cta.setAttribute('hidden', '');
           ctaH = ch || ctaH;
-          if (ch) {
+          /* ON A PHONE IT IS NOT IN THE BOX. It follows the box in the card,
+             right under the conversation, so the room it needs is its own
+             margin rather than a reservation in here — and reserving for it
+             anyway is exactly the hole this used to leave between the last
+             message and it. */
+          if (ch && phone()) { ctaGap = Math.ceil(cm); }
+          else if (ch) {
             boxH += Math.ceil(ch + cm);
             /* THE CHIPS HANG INTO THE INVITATION'S OWN GAP. The tray overhangs
                the last bubble, and when the invitation follows that bubble the
@@ -26471,41 +26746,19 @@ window.PF = window.PF || {};
 
     /* How far the box is allowed to be pushed down the screen. */
     var CENTRE_MAX = 120;
-    /* The room the box goes on keeping where the invitation used to sit, so
-       that sending it to the bottom of the screen moves nothing above it. */
-    var CTA_ROOM = 46;
-    /* And how far its foot stands off the bottom edge of the screen. */
-    var CTA_TAIL = 34;
+    /* What the invitation measures, and the gap it keeps above itself. Both
+       read at reserve() time, so the composition below can be centred as one
+       object rather than as a box with something hanging off it. */
     var ctaH = 0;
+    var ctaGap = 0;
 
-    /* THE INVITATION SITS AT THE BOTTOM OF THE FIRST SCREEN. Not pinned there —
-       it scrolls away with everything else — simply placed, once, where the
-       screen ends, so that a phone landing on this page has the conversation
-       in the middle of it and the way onwards under the thumb.
-
-       Document coordinates on both sides: the hero is at the top of the page,
-       so the screen's foot and the box's are the same ruler. */
+    /* THE INVITATION IS A SUPPORTING ACTION, NOT A DESTINATION. It sat at the
+       foot of the screen for a while, which put half a screen of nothing
+       between the last thing said and the way onwards — so it is back under
+       the conversation, at its own margin, reading as part of it. Nothing to
+       place any more; the stylesheet has the whole answer. */
     function placeCta() {
-      if (!mobCta) return;
-      if (!phone()) { mobCta.style.marginTop = ''; return; }
-
-      /* Measured where it would actually stand, with the push off and the
-         element on screen for the length of one read — deriving the answer
-         from the box above it instead was out by whatever the grid puts
-         between the two, which is a number neither of them knows. */
-      var was = mobCta.hasAttribute('hidden');
-      if (was) mobCta.removeAttribute('hidden');
-      mobCta.style.marginTop = '';
-
-      var base = parseFloat(window.getComputedStyle(mobCta).marginTop) || 0;
-      var scrolled = window.scrollY || window.pageYOffset || 0;
-      var box = mobCta.getBoundingClientRect();
-      if (box.height) ctaH = box.height;
-      var push = Math.round(window.innerHeight - CTA_TAIL - ctaH -
-                            (box.top + scrolled));
-      if (push > 0) mobCta.style.marginTop = (base + push) + 'px';
-
-      if (was) mobCta.setAttribute('hidden', '');
+      if (mobCta) mobCta.style.marginTop = '';
     }
 
     function centreOnScreen() {
@@ -26519,7 +26772,10 @@ window.PF = window.PF || {};
       var base = parseFloat(window.getComputedStyle(thread).marginTop) || 0;
       var box = thread.getBoundingClientRect();
       var top = box.top + (window.scrollY || window.pageYOffset || 0);
-      var want = (window.innerHeight - box.height) / 2;
+      /* The invitation is under the box rather than inside it, and it is part
+         of the picture being centred — otherwise the conversation sits in the
+         middle of the screen with its own action hanging below the middle. */
+      var want = (window.innerHeight - (box.height + ctaGap + ctaH)) / 2;
       var push = Math.round(Math.min(CENTRE_MAX, want - top));
       if (push > 0) thread.style.marginTop = (base + push) + 'px';
     }
@@ -26957,6 +27213,12 @@ window.PF = window.PF || {};
      around it is what makes it read as the whole of what there is to read
      before you scroll. */
   var FLAT_PAD = 60;
+  /* Almost nothing underneath, because what follows the box is the invitation
+     rather than the edge of the composition — and the reaction tray's own
+     overhang is already reserved under the last bubble. The distance the eye
+     actually reads between the chips and the invitation is that overhang plus
+     this plus the invitation's own margin. */
+  var FLAT_TAIL = 6;
 
   var STILL_PAD = 26;
   var STILL_TAIL = 14;   /* and under it, where the invitation sits */
@@ -29649,6 +29911,61 @@ window.PF = window.PF || {};
     boot();
   }
 })(window.PF);
+
+/* ==========================================================================
+   The light follows the pointer
+
+   One soft radial on the page's ground, centred on the cursor. The gradient
+   itself is in 02-base.css on the body; all this does is keep two custom
+   properties up to date — which means no layout, no repaint of anything above
+   the ground, and one composited background paint per frame at most.
+
+   Eased rather than tracked. A glow pinned exactly to the cursor reads as a
+   cursor accessory; one that follows a beat behind reads as light in a room,
+   which is the whole idea. The easing runs on rAF and stops itself the moment
+   it has caught up, so a still pointer costs nothing.
+
+   Pointer only. A touch screen has no cursor to follow and a finger is on top
+   of the thing it would light, so coarse pointers never start it — and neither
+   does a visit that has asked for reduced motion.
+   ========================================================================== */
+
+(function () {
+  'use strict';
+
+  if (!window.matchMedia) return;
+  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var root = document.documentElement;
+  var toX = 50, toY = 8;     /* where the pointer is, in per cent */
+  var atX = 50, atY = 8;     /* where the light has got to */
+  var raf = 0;
+
+  function frame() {
+    /* A fifth of the remaining distance a frame: quick enough to keep up with
+       a slow read, slow enough that a flick across the page is a sweep rather
+       than a jump. */
+    atX += (toX - atX) * 0.075;
+    atY += (toY - atY) * 0.075;
+
+    root.style.setProperty('--px', atX.toFixed(2) + '%');
+    root.style.setProperty('--py', atY.toFixed(2) + '%');
+
+    if (Math.abs(toX - atX) > 0.05 || Math.abs(toY - atY) > 0.05) {
+      raf = window.requestAnimationFrame(frame);
+    } else {
+      raf = 0;
+    }
+  }
+
+  window.addEventListener('pointermove', function (e) {
+    if (e.pointerType && e.pointerType !== 'mouse') return;
+    toX = (e.clientX / window.innerWidth) * 100;
+    toY = (e.clientY / window.innerHeight) * 100;
+    if (!raf) raf = window.requestAnimationFrame(frame);
+  }, { passive: true });
+})();
 
 </script>
 </body>
