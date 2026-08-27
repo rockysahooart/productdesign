@@ -5027,26 +5027,52 @@ em,
   transition: opacity var(--dur-fast) var(--ease);
 }
 
-/* The whole card is the link, so hovering anywhere on it arms the action. */
-.card--project .cta--fill:hover,
-.card--project .cta--ink:hover,
-.card--project.card--link:hover .cta--fill,
-.card--project.card--link:hover .cta--ink,
-.card--link:hover .card--project .cta--fill { color: var(--cta-label); }
+/* The whole card is the link, so hovering anywhere on it arms the action.
 
-.card--project .cta--fill:hover::before,
-.card--project .cta--ink:hover::before,
-.card--project.card--link:hover .cta--fill::before,
-.card--project.card--link:hover .cta--ink::before { opacity: 1; }
+   ONLY WHERE HOVERING IS A THING. A touch screen has no hover, and what it
+   does instead is worse than nothing: the first tap latches :hover, so the
+   plate fills, the label inverts, the arrow turns — and then all of it STAYS
+   that way until something else is tapped. A state that means "you are about
+   to do this" left standing on a page after you have done it is a lie about
+   where you are. A tap is the whole interaction there; it needs no rehearsal.
+
+   Gated on the query rather than on a width, because the question is whether
+   the device can hover, not how wide it is. */
+@media (hover: hover) and (pointer: fine) {
+  .card--project .cta--fill:hover,
+  .card--project .cta--ink:hover,
+  .card--project.card--link:hover .cta--fill,
+  .card--project.card--link:hover .cta--ink,
+  .card--link:hover .card--project .cta--fill { color: var(--cta-label); }
+
+  .card--project .cta--fill:hover::before,
+  .card--project .cta--ink:hover::before,
+  .card--project.card--link:hover .cta--fill::before,
+  .card--project.card--link:hover .cta--ink::before { opacity: 1; }
+
+  .card--project .cta--fill:hover .cta__arrow,
+  .card--project .cta--ink:hover .cta__arrow,
+  .card--project.card--link:hover .cta__arrow { transform: rotate(-45deg); }
+}
+
+/* KEYBOARD GETS IT EVERYWHERE. :focus-visible is the one signal that means a
+   person is navigating rather than pointing, and it is the one thing a tap
+   does not set — so this can sit outside the query and be true at every
+   width. Where :has() is missing nothing shows, which is what happened here
+   before this rule existed. */
+.card--project.card--link:has(:focus-visible) .cta--fill,
+.card--project.card--link:has(:focus-visible) .cta--ink { color: var(--cta-label); }
+
+.card--project.card--link:has(:focus-visible) .cta--fill::before,
+.card--project.card--link:has(:focus-visible) .cta--ink::before { opacity: 1; }
+
+.card--project.card--link:has(:focus-visible) .cta__arrow { transform: rotate(-45deg); }
 
 /* The arrow turns up and to the right — the "opens elsewhere" gesture —
    instead of nudging along the line it already points down. */
 .card--project .cta__arrow {
   transition: transform var(--dur) var(--ease-out);
 }
-.card--project .cta--fill:hover .cta__arrow,
-.card--project .cta--ink:hover .cta__arrow,
-.card--project.card--link:hover .cta__arrow { transform: rotate(-45deg); }
 
 /* --------------------------------------------------------------------------
    OptiFlow thumbnail — fill the band it sits in
