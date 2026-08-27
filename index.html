@@ -205,6 +205,19 @@
      the hotspot holds through about 31px, a little under half the light is
      left at 90, an eighth at 134, and it is gone by 172. Centred in the box the beam carries with it,
      which is parked off screen until the pointer moves. */
+  /* THE REVEAL. Alpha here is how much of the dark room is left standing, so
+     it runs the other way from the beam's: nothing at the centre, everything
+     outside. Nineteen vmax of radius is a light about thirty-eight across, and
+     the stops put most of the usable light inside the first half of it and
+     spend the rest on a falloff long enough that there is no edge to find. */
+  --reveal: radial-gradient(circle 19vmax at var(--px, 50%) var(--py, 8%),
+              rgba(0, 0, 0, 0) 0%,
+              rgba(0, 0, 0, 0.05) 13%,
+              rgba(0, 0, 0, 0.30) 33%,
+              rgba(0, 0, 0, 0.68) 58%,
+              rgba(0, 0, 0, 0.93) 82%,
+              rgba(0, 0, 0, 1) 100%);
+
   --beam: radial-gradient(circle 172px at 50% 50%,
             rgba(0, 0, 0, 1) 0%,
             rgba(0, 0, 0, 0.92) 18%,
@@ -353,6 +366,14 @@
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
   /* And the torch itself: a core and the edge it falls off to. */
+  /* THE ROOM IS DARK. The veil is a multiply, not a black film: multiplying
+       keeps the ratios between what is under it, so the page recedes toward
+       black with its structure intact — a card is still lighter than the wall
+       behind it and a title is still lighter than the copy under it, all of it
+       at a fifth of the value. A flat black at the same strength would flatten
+       every one of those differences into the same nothing. */
+  --veil:           #35353C;
+
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
 
@@ -464,6 +485,14 @@
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
   /* And the torch itself: a core and the edge it falls off to. */
+  /* THE ROOM IS DARK. The veil is a multiply, not a black film: multiplying
+       keeps the ratios between what is under it, so the page recedes toward
+       black with its structure intact — a card is still lighter than the wall
+       behind it and a title is still lighter than the copy under it, all of it
+       at a fifth of the value. A flat black at the same strength would flatten
+       every one of those differences into the same nothing. */
+  --veil:           #35353C;
+
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
 
@@ -986,6 +1015,62 @@ body::before {
 }
 
 /* --------------------------------------------------------------------------
+   THE DARK ROOM
+
+   The dark theme is not a page with a light on it any more: it is a page in
+   the dark, and the pointer is what is lighting it. Everything below is scoped
+   to `.has-torch[data-theme="dark"]` — the class js/main.js only adds on a fine
+   pointer, with motion allowed and contrast not requested. Light mode is not
+   touched by a single declaration in this section, and neither is a phone, a
+   reader who has asked for less movement, or a page whose script never ran.
+
+   THE VEIL IS A MULTIPLY, NOT A BLACK FILM. Multiplying keeps the ratios
+   between whatever is underneath: a card stays lighter than the wall, a title
+   stays lighter than the copy under it, an illustration keeps its shape — all
+   of it at about a fifth of the value it had. Flat black at the same strength
+   would flatten every one of those differences into the same nothing, and the
+   layout would stop being readable as a layout. What is left is silhouettes:
+   enough to know where things are, not enough to read them.
+
+   AND THE MASK IS THE REVEAL, NOT A LIGHT. Nothing is painted bright here.
+   Where the mask is clear the veil is simply not applied and what shows is the
+   page's own dark-mode colour, its own contrast, its own gradients — the
+   interface as it was, not an interface with a white circle on it. The hole is
+   nineteen vmax of radius with a long feathered falloff, centred on the eased
+   --px/--py, so the light has weight and arrives a beat after the hand.
+
+   It sits on main.page, which is how the framed previews are excluded without
+   a rule: they have no page of their own to veil, and the one out here covers
+   them along with everything else.
+   -------------------------------------------------------------------------- */
+
+:root.has-torch[data-theme="dark"] main.page::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  pointer-events: none;
+  background: var(--veil);
+  mix-blend-mode: multiply;
+  -webkit-mask-image: var(--reveal);
+  mask-image: var(--reveal);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root.has-torch:not([data-theme="light"]) main.page::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    pointer-events: none;
+    background: var(--veil);
+    mix-blend-mode: multiply;
+    -webkit-mask-image: var(--reveal);
+    mask-image: var(--reveal);
+  }
+}
+
+/* --------------------------------------------------------------------------
    THE BEAM ON THE TYPE
 
    The torch above lights the surface. This lights what is PRINTED on it — and
@@ -1029,7 +1114,7 @@ body::before {
    all. -------------------------------------------------------------------- */
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  :root[data-theme="dark"]::before {
+  :root.has-torch[data-theme="dark"]::before {
       content: "";
     position: fixed;
     left: 0;
@@ -1053,7 +1138,7 @@ body::before {
   }
 
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"])::before {
+    :root.has-torch:not([data-theme="light"])::before {
       content: "";
     position: fixed;
     left: 0;
@@ -1108,21 +1193,21 @@ body::before {
    and this paints nothing at all.
    -------------------------------------------------------------------------- */
 
-:root::after {
+:root.has-torch::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 40;
   pointer-events: none;
-  background: radial-gradient(26vmax 26vmax at var(--px, 50%) var(--py, 8%),
+  /* Inside the hole the veil has already stepped aside, so this is not what
+     makes the page visible — it is the beam's own falloff on top of the reveal:
+     a little more light at the middle than at the edge of it, which is what
+     keeps the hotspot reading as a hotspot rather than as a flat window. */
+  background: radial-gradient(19vmax 19vmax at var(--px, 50%) var(--py, 8%),
                               var(--torch-core, transparent) 0%,
                               var(--torch-edge, transparent) 44%,
                               transparent 72%);
   mix-blend-mode: screen;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :root::after { display: none; }
 }
 
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
@@ -14717,7 +14802,7 @@ em,
       </feComponentTransfer>
       <feGaussianBlur in="pf-ink" stdDeviation="4.5" result="pf-halo"/>
       <feComposite in="pf-halo" in2="SourceGraphic"
-                   operator="arithmetic" k1="0" k2="1" k3="1.35" k4="0"/>
+                   operator="arithmetic" k1="0" k2="1" k3="1.1" k4="0"/>
     </filter>
 
     <symbol id="i-pin" viewBox="0 0 20 20">
@@ -15272,6 +15357,19 @@ em,
      the hotspot holds through about 31px, a little under half the light is
      left at 90, an eighth at 134, and it is gone by 172. Centred in the box the beam carries with it,
      which is parked off screen until the pointer moves. */
+  /* THE REVEAL. Alpha here is how much of the dark room is left standing, so
+     it runs the other way from the beam&#x27;s: nothing at the centre, everything
+     outside. Nineteen vmax of radius is a light about thirty-eight across, and
+     the stops put most of the usable light inside the first half of it and
+     spend the rest on a falloff long enough that there is no edge to find. */
+  --reveal: radial-gradient(circle 19vmax at var(--px, 50%) var(--py, 8%),
+              rgba(0, 0, 0, 0) 0%,
+              rgba(0, 0, 0, 0.05) 13%,
+              rgba(0, 0, 0, 0.30) 33%,
+              rgba(0, 0, 0, 0.68) 58%,
+              rgba(0, 0, 0, 0.93) 82%,
+              rgba(0, 0, 0, 1) 100%);
+
   --beam: radial-gradient(circle 172px at 50% 50%,
             rgba(0, 0, 0, 1) 0%,
             rgba(0, 0, 0, 0.92) 18%,
@@ -15420,6 +15518,14 @@ em,
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
   /* And the torch itself: a core and the edge it falls off to. */
+  /* THE ROOM IS DARK. The veil is a multiply, not a black film: multiplying
+       keeps the ratios between what is under it, so the page recedes toward
+       black with its structure intact — a card is still lighter than the wall
+       behind it and a title is still lighter than the copy under it, all of it
+       at a fifth of the value. A flat black at the same strength would flatten
+       every one of those differences into the same nothing. */
+  --veil:           #35353C;
+
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
 
@@ -15531,6 +15637,14 @@ em,
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
   /* And the torch itself: a core and the edge it falls off to. */
+  /* THE ROOM IS DARK. The veil is a multiply, not a black film: multiplying
+       keeps the ratios between what is under it, so the page recedes toward
+       black with its structure intact — a card is still lighter than the wall
+       behind it and a title is still lighter than the copy under it, all of it
+       at a fifth of the value. A flat black at the same strength would flatten
+       every one of those differences into the same nothing. */
+  --veil:           #35353C;
+
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
 
@@ -16053,6 +16167,62 @@ body::before {
 }
 
 /* --------------------------------------------------------------------------
+   THE DARK ROOM
+
+   The dark theme is not a page with a light on it any more: it is a page in
+   the dark, and the pointer is what is lighting it. Everything below is scoped
+   to `.has-torch[data-theme=&quot;dark&quot;]` — the class js/main.js only adds on a fine
+   pointer, with motion allowed and contrast not requested. Light mode is not
+   touched by a single declaration in this section, and neither is a phone, a
+   reader who has asked for less movement, or a page whose script never ran.
+
+   THE VEIL IS A MULTIPLY, NOT A BLACK FILM. Multiplying keeps the ratios
+   between whatever is underneath: a card stays lighter than the wall, a title
+   stays lighter than the copy under it, an illustration keeps its shape — all
+   of it at about a fifth of the value it had. Flat black at the same strength
+   would flatten every one of those differences into the same nothing, and the
+   layout would stop being readable as a layout. What is left is silhouettes:
+   enough to know where things are, not enough to read them.
+
+   AND THE MASK IS THE REVEAL, NOT A LIGHT. Nothing is painted bright here.
+   Where the mask is clear the veil is simply not applied and what shows is the
+   page&#x27;s own dark-mode colour, its own contrast, its own gradients — the
+   interface as it was, not an interface with a white circle on it. The hole is
+   nineteen vmax of radius with a long feathered falloff, centred on the eased
+   --px/--py, so the light has weight and arrives a beat after the hand.
+
+   It sits on main.page, which is how the framed previews are excluded without
+   a rule: they have no page of their own to veil, and the one out here covers
+   them along with everything else.
+   -------------------------------------------------------------------------- */
+
+:root.has-torch[data-theme=&quot;dark&quot;] main.page::after {
+  content: &quot;&quot;;
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  pointer-events: none;
+  background: var(--veil);
+  mix-blend-mode: multiply;
+  -webkit-mask-image: var(--reveal);
+  mask-image: var(--reveal);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root.has-torch:not([data-theme=&quot;light&quot;]) main.page::after {
+    content: &quot;&quot;;
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    pointer-events: none;
+    background: var(--veil);
+    mix-blend-mode: multiply;
+    -webkit-mask-image: var(--reveal);
+    mask-image: var(--reveal);
+  }
+}
+
+/* --------------------------------------------------------------------------
    THE BEAM ON THE TYPE
 
    The torch above lights the surface. This lights what is PRINTED on it — and
@@ -16096,7 +16266,7 @@ body::before {
    all. -------------------------------------------------------------------- */
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  :root[data-theme=&quot;dark&quot;]::before {
+  :root.has-torch[data-theme=&quot;dark&quot;]::before {
       content: &quot;&quot;;
     position: fixed;
     left: 0;
@@ -16120,7 +16290,7 @@ body::before {
   }
 
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme=&quot;light&quot;])::before {
+    :root.has-torch:not([data-theme=&quot;light&quot;])::before {
       content: &quot;&quot;;
     position: fixed;
     left: 0;
@@ -16175,21 +16345,21 @@ body::before {
    and this paints nothing at all.
    -------------------------------------------------------------------------- */
 
-:root::after {
+:root.has-torch::after {
   content: &quot;&quot;;
   position: fixed;
   inset: 0;
   z-index: 40;
   pointer-events: none;
-  background: radial-gradient(26vmax 26vmax at var(--px, 50%) var(--py, 8%),
+  /* Inside the hole the veil has already stepped aside, so this is not what
+     makes the page visible — it is the beam&#x27;s own falloff on top of the reveal:
+     a little more light at the middle than at the edge of it, which is what
+     keeps the hotspot reading as a hotspot rather than as a flat window. */
+  background: radial-gradient(19vmax 19vmax at var(--px, 50%) var(--py, 8%),
                               var(--torch-core, transparent) 0%,
                               var(--torch-edge, transparent) 44%,
                               transparent 72%);
   mix-blend-mode: screen;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :root::after { display: none; }
 }
 
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
@@ -17378,6 +17548,19 @@ em,
      the hotspot holds through about 31px, a little under half the light is
      left at 90, an eighth at 134, and it is gone by 172. Centred in the box the beam carries with it,
      which is parked off screen until the pointer moves. */
+  /* THE REVEAL. Alpha here is how much of the dark room is left standing, so
+     it runs the other way from the beam&#x27;s: nothing at the centre, everything
+     outside. Nineteen vmax of radius is a light about thirty-eight across, and
+     the stops put most of the usable light inside the first half of it and
+     spend the rest on a falloff long enough that there is no edge to find. */
+  --reveal: radial-gradient(circle 19vmax at var(--px, 50%) var(--py, 8%),
+              rgba(0, 0, 0, 0) 0%,
+              rgba(0, 0, 0, 0.05) 13%,
+              rgba(0, 0, 0, 0.30) 33%,
+              rgba(0, 0, 0, 0.68) 58%,
+              rgba(0, 0, 0, 0.93) 82%,
+              rgba(0, 0, 0, 1) 100%);
+
   --beam: radial-gradient(circle 172px at 50% 50%,
             rgba(0, 0, 0, 1) 0%,
             rgba(0, 0, 0, 0.92) 18%,
@@ -17526,6 +17709,14 @@ em,
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
   /* And the torch itself: a core and the edge it falls off to. */
+  /* THE ROOM IS DARK. The veil is a multiply, not a black film: multiplying
+       keeps the ratios between what is under it, so the page recedes toward
+       black with its structure intact — a card is still lighter than the wall
+       behind it and a title is still lighter than the copy under it, all of it
+       at a fifth of the value. A flat black at the same strength would flatten
+       every one of those differences into the same nothing. */
+  --veil:           #35353C;
+
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
 
@@ -17637,6 +17828,14 @@ em,
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
   /* And the torch itself: a core and the edge it falls off to. */
+  /* THE ROOM IS DARK. The veil is a multiply, not a black film: multiplying
+       keeps the ratios between what is under it, so the page recedes toward
+       black with its structure intact — a card is still lighter than the wall
+       behind it and a title is still lighter than the copy under it, all of it
+       at a fifth of the value. A flat black at the same strength would flatten
+       every one of those differences into the same nothing. */
+  --veil:           #35353C;
+
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
 
@@ -18159,6 +18358,62 @@ body::before {
 }
 
 /* --------------------------------------------------------------------------
+   THE DARK ROOM
+
+   The dark theme is not a page with a light on it any more: it is a page in
+   the dark, and the pointer is what is lighting it. Everything below is scoped
+   to `.has-torch[data-theme=&quot;dark&quot;]` — the class js/main.js only adds on a fine
+   pointer, with motion allowed and contrast not requested. Light mode is not
+   touched by a single declaration in this section, and neither is a phone, a
+   reader who has asked for less movement, or a page whose script never ran.
+
+   THE VEIL IS A MULTIPLY, NOT A BLACK FILM. Multiplying keeps the ratios
+   between whatever is underneath: a card stays lighter than the wall, a title
+   stays lighter than the copy under it, an illustration keeps its shape — all
+   of it at about a fifth of the value it had. Flat black at the same strength
+   would flatten every one of those differences into the same nothing, and the
+   layout would stop being readable as a layout. What is left is silhouettes:
+   enough to know where things are, not enough to read them.
+
+   AND THE MASK IS THE REVEAL, NOT A LIGHT. Nothing is painted bright here.
+   Where the mask is clear the veil is simply not applied and what shows is the
+   page&#x27;s own dark-mode colour, its own contrast, its own gradients — the
+   interface as it was, not an interface with a white circle on it. The hole is
+   nineteen vmax of radius with a long feathered falloff, centred on the eased
+   --px/--py, so the light has weight and arrives a beat after the hand.
+
+   It sits on main.page, which is how the framed previews are excluded without
+   a rule: they have no page of their own to veil, and the one out here covers
+   them along with everything else.
+   -------------------------------------------------------------------------- */
+
+:root.has-torch[data-theme=&quot;dark&quot;] main.page::after {
+  content: &quot;&quot;;
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  pointer-events: none;
+  background: var(--veil);
+  mix-blend-mode: multiply;
+  -webkit-mask-image: var(--reveal);
+  mask-image: var(--reveal);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root.has-torch:not([data-theme=&quot;light&quot;]) main.page::after {
+    content: &quot;&quot;;
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    pointer-events: none;
+    background: var(--veil);
+    mix-blend-mode: multiply;
+    -webkit-mask-image: var(--reveal);
+    mask-image: var(--reveal);
+  }
+}
+
+/* --------------------------------------------------------------------------
    THE BEAM ON THE TYPE
 
    The torch above lights the surface. This lights what is PRINTED on it — and
@@ -18202,7 +18457,7 @@ body::before {
    all. -------------------------------------------------------------------- */
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  :root[data-theme=&quot;dark&quot;]::before {
+  :root.has-torch[data-theme=&quot;dark&quot;]::before {
       content: &quot;&quot;;
     position: fixed;
     left: 0;
@@ -18226,7 +18481,7 @@ body::before {
   }
 
   @media (prefers-color-scheme: dark) {
-    :root:not([data-theme=&quot;light&quot;])::before {
+    :root.has-torch:not([data-theme=&quot;light&quot;])::before {
       content: &quot;&quot;;
     position: fixed;
     left: 0;
@@ -18281,21 +18536,21 @@ body::before {
    and this paints nothing at all.
    -------------------------------------------------------------------------- */
 
-:root::after {
+:root.has-torch::after {
   content: &quot;&quot;;
   position: fixed;
   inset: 0;
   z-index: 40;
   pointer-events: none;
-  background: radial-gradient(26vmax 26vmax at var(--px, 50%) var(--py, 8%),
+  /* Inside the hole the veil has already stepped aside, so this is not what
+     makes the page visible — it is the beam&#x27;s own falloff on top of the reveal:
+     a little more light at the middle than at the edge of it, which is what
+     keeps the hotspot reading as a hotspot rather than as a flat window. */
+  background: radial-gradient(19vmax 19vmax at var(--px, 50%) var(--py, 8%),
                               var(--torch-core, transparent) 0%,
                               var(--torch-edge, transparent) 44%,
                               transparent 72%);
   mix-blend-mode: screen;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :root::after { display: none; }
 }
 
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
@@ -30467,8 +30722,22 @@ window.PF = window.PF || {};
   if (!window.matchMedia) return;
   if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  /* A room somebody has to light with a torch is the opposite of what more
+     contrast means. */
+  if (window.matchMedia('(prefers-contrast: more)').matches) return;
 
   var root = document.documentElement;
+
+  /* ONE GATE FOR THE WHOLE APPARATUS. The dark theme's veil, torch and beam
+     are three layers of one idea, and all three of them are worthless — worse,
+     the veil is actively harmful — without a pointer to move them. So the
+     stylesheet does not decide for itself: it waits for this class, which is
+     only ever added on a fine pointer, with motion allowed, and by a script
+     that has actually run. A page with no JavaScript, a phone, a reader who
+     has asked for less movement or more contrast: none of them are handed a
+     dark room they cannot light. */
+  root.classList.add('has-torch');
+
   var toX = 50, toY = 8;     /* where the pointer is, in per cent */
   var atX = 50, atY = 8;     /* where the light has got to */
   var rawX = -9999, rawY = -9999;   /* and where it is, in pixels, right now */
