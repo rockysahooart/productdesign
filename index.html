@@ -207,15 +207,28 @@
      which is parked off screen until the pointer moves. */
   /* THE REVEAL. Alpha here is how much of the dark room is left standing, so
      it runs the other way from the beam's: nothing at the centre, everything
-     outside. Nineteen vmax of radius is a light about thirty-eight across, and
-     the stops put most of the usable light inside the first half of it and
-     spend the rest on a falloff long enough that there is no edge to find. */
-  --reveal: radial-gradient(circle 19vmax at var(--px, 50%) var(--py, 8%),
+     outside.
+
+     A HAND-HELD FLASHLIGHT, NOT A SPOTLIGHT. Half a metre of radius rather
+     than the two hundred and seventy pixels it started at — about eleven
+     hundred across on a laptop — so what the light finds is several cards, a
+     paragraph and the layout around them at once, rather than one line of type
+     at a time. Clamped at both ends: it scales with the display and then stops,
+     because a beam that keeps growing with the monitor stops being a beam.
+
+     Seven stops, and the shape of them is the point. Near-nothing through the
+     first fifth (the hotspot, out to about 110px), still under a fifth of the
+     veil at 200, half of it by 300, and then a long atmospheric tail that does
+     not reach full dark until the edge. That tail is most of the radius: it is
+     what makes the transition read as distance rather than as a circle. */
+  --reveal: radial-gradient(circle clamp(420px, 36vmax, 600px)
+                            at var(--px, 50%) var(--py, 42%),
               rgba(0, 0, 0, 0) 0%,
-              rgba(0, 0, 0, 0.05) 13%,
-              rgba(0, 0, 0, 0.30) 33%,
-              rgba(0, 0, 0, 0.68) 58%,
-              rgba(0, 0, 0, 0.93) 82%,
+              rgba(0, 0, 0, 0.05) 20%,
+              rgba(0, 0, 0, 0.18) 38%,
+              rgba(0, 0, 0, 0.40) 56%,
+              rgba(0, 0, 0, 0.66) 74%,
+              rgba(0, 0, 0, 0.87) 88%,
               rgba(0, 0, 0, 1) 100%);
 
   --beam: radial-gradient(circle 172px at 50% 50%,
@@ -1015,6 +1028,72 @@ body::before {
 }
 
 /* --------------------------------------------------------------------------
+   AND NOWHERE NEAR A TOUCHSCREEN
+
+   The whole apparatus — the veil, the torch, the beam, and the wall it is all
+   painted over — belongs to a machine with a pointer on it. A phone has none:
+   there is nothing to follow, nothing to reveal with, and a light parked at a
+   fixed point on a page somebody is reading with their thumb is worse than no
+   light at all.
+
+   So a coarse pointer gets the dark theme AS IT WAS BEFORE ANY OF THIS: flat
+   canvas, the body's own grey noise tile, and nothing that moves or reacts.
+   The three cursor layers are already absent — js/main.js never adds the class
+   they hang off, so none of that CSS matches and no listener, no frame loop
+   and no property write ever happens. What this block turns off is the rest:
+   the drifting washes and the crawling grain that came in with the torch, and
+   the glow on the ground that reads --px, which without a pointer to write it
+   would sit at its default and become exactly the fixed-position flashlight
+   that has no business being there.
+
+   Light mode is untouched here, on every device. The wall it has always had is
+   its own and predates all of this.
+   -------------------------------------------------------------------------- */
+
+@media (hover: none), (pointer: coarse) {
+  :root[data-theme="dark"] {
+    --cursor-glow: transparent;
+  }
+
+  :root[data-theme="dark"] body::before,
+  :root[data-theme="dark"] body::after { display: none; }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --cursor-glow: transparent;
+    }
+
+    :root:not([data-theme="light"]) body::before,
+    :root:not([data-theme="light"]) body::after { display: none; }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   AND NOWHERE BUT THE LANDING PAGE
+
+   Every layer below is selected on [data-route="home"], which js/case.js sets
+   on the root as it switches views — so opening a case study drops all three
+   of them on the same frame the route changes, with no transition to sit
+   through and nothing left behind. A case study is a document somebody is
+   going to read; it gets the dark theme it always had.
+
+   This block is the belt to that braces. If a selector ever leaks off the
+   landing page, every value those layers paint with is already nothing: a
+   transparent veil, masks that are transparent at every stop, a torch with no
+   colour in it. The failure mode of a mistake here is an invisible layer
+   rather than a darkened case study.
+   -------------------------------------------------------------------------- */
+
+:root:not([data-route="home"]) {
+  --veil: transparent;
+  --reveal: radial-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+  --beam: radial-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+  --torch-core: transparent;
+  --torch-edge: transparent;
+  --cursor-glow: transparent;
+}
+
+/* --------------------------------------------------------------------------
    THE DARK ROOM
 
    The dark theme is not a page with a light on it any more: it is a page in
@@ -1044,7 +1123,7 @@ body::before {
    them along with everything else.
    -------------------------------------------------------------------------- */
 
-:root.has-torch[data-theme="dark"] main.page::after {
+:root.has-torch[data-route="home"][data-theme="dark"] main.page[data-view="home"]::after {
   content: "";
   position: fixed;
   inset: 0;
@@ -1057,7 +1136,7 @@ body::before {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root.has-torch:not([data-theme="light"]) main.page::after {
+  :root.has-torch[data-route="home"]:not([data-theme="light"]) main.page[data-view="home"]::after {
     content: "";
     position: fixed;
     inset: 0;
@@ -1114,7 +1193,7 @@ body::before {
    all. -------------------------------------------------------------------- */
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  :root.has-torch[data-theme="dark"]::before {
+  :root.has-torch[data-route="home"][data-theme="dark"]::before {
       content: "";
     position: fixed;
     left: 0;
@@ -1138,7 +1217,7 @@ body::before {
   }
 
   @media (prefers-color-scheme: dark) {
-    :root.has-torch:not([data-theme="light"])::before {
+    :root.has-torch[data-route="home"]:not([data-theme="light"])::before {
       content: "";
     position: fixed;
     left: 0;
@@ -1193,7 +1272,7 @@ body::before {
    and this paints nothing at all.
    -------------------------------------------------------------------------- */
 
-:root.has-torch::after {
+:root.has-torch[data-route="home"][data-theme="dark"]::after {
   content: "";
   position: fixed;
   inset: 0;
@@ -1203,11 +1282,32 @@ body::before {
      makes the page visible — it is the beam's own falloff on top of the reveal:
      a little more light at the middle than at the edge of it, which is what
      keeps the hotspot reading as a hotspot rather than as a flat window. */
-  background: radial-gradient(19vmax 19vmax at var(--px, 50%) var(--py, 8%),
+  background: radial-gradient(clamp(150px, 13vmax, 230px) clamp(150px, 13vmax, 230px)
+                              at var(--px, 50%) var(--py, 42%),
                               var(--torch-core, transparent) 0%,
                               var(--torch-edge, transparent) 44%,
                               transparent 72%);
   mix-blend-mode: screen;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root.has-torch[data-route="home"]:not([data-theme="light"])::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+    /* Inside the hole the veil has already stepped aside, so this is not what
+       makes the page visible — it is the beam's own falloff on top of the reveal:
+       a little more light at the middle than at the edge of it, which is what
+       keeps the hotspot reading as a hotspot rather than as a flat window. */
+    background: radial-gradient(clamp(150px, 13vmax, 230px) clamp(150px, 13vmax, 230px)
+                                at var(--px, 50%) var(--py, 42%),
+                                var(--torch-core, transparent) 0%,
+                                var(--torch-edge, transparent) 44%,
+                                transparent 72%);
+    mix-blend-mode: screen;
+  }
 }
 
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
@@ -15359,15 +15459,28 @@ em,
      which is parked off screen until the pointer moves. */
   /* THE REVEAL. Alpha here is how much of the dark room is left standing, so
      it runs the other way from the beam&#x27;s: nothing at the centre, everything
-     outside. Nineteen vmax of radius is a light about thirty-eight across, and
-     the stops put most of the usable light inside the first half of it and
-     spend the rest on a falloff long enough that there is no edge to find. */
-  --reveal: radial-gradient(circle 19vmax at var(--px, 50%) var(--py, 8%),
+     outside.
+
+     A HAND-HELD FLASHLIGHT, NOT A SPOTLIGHT. Half a metre of radius rather
+     than the two hundred and seventy pixels it started at — about eleven
+     hundred across on a laptop — so what the light finds is several cards, a
+     paragraph and the layout around them at once, rather than one line of type
+     at a time. Clamped at both ends: it scales with the display and then stops,
+     because a beam that keeps growing with the monitor stops being a beam.
+
+     Seven stops, and the shape of them is the point. Near-nothing through the
+     first fifth (the hotspot, out to about 110px), still under a fifth of the
+     veil at 200, half of it by 300, and then a long atmospheric tail that does
+     not reach full dark until the edge. That tail is most of the radius: it is
+     what makes the transition read as distance rather than as a circle. */
+  --reveal: radial-gradient(circle clamp(420px, 36vmax, 600px)
+                            at var(--px, 50%) var(--py, 42%),
               rgba(0, 0, 0, 0) 0%,
-              rgba(0, 0, 0, 0.05) 13%,
-              rgba(0, 0, 0, 0.30) 33%,
-              rgba(0, 0, 0, 0.68) 58%,
-              rgba(0, 0, 0, 0.93) 82%,
+              rgba(0, 0, 0, 0.05) 20%,
+              rgba(0, 0, 0, 0.18) 38%,
+              rgba(0, 0, 0, 0.40) 56%,
+              rgba(0, 0, 0, 0.66) 74%,
+              rgba(0, 0, 0, 0.87) 88%,
               rgba(0, 0, 0, 1) 100%);
 
   --beam: radial-gradient(circle 172px at 50% 50%,
@@ -16167,6 +16280,72 @@ body::before {
 }
 
 /* --------------------------------------------------------------------------
+   AND NOWHERE NEAR A TOUCHSCREEN
+
+   The whole apparatus — the veil, the torch, the beam, and the wall it is all
+   painted over — belongs to a machine with a pointer on it. A phone has none:
+   there is nothing to follow, nothing to reveal with, and a light parked at a
+   fixed point on a page somebody is reading with their thumb is worse than no
+   light at all.
+
+   So a coarse pointer gets the dark theme AS IT WAS BEFORE ANY OF THIS: flat
+   canvas, the body&#x27;s own grey noise tile, and nothing that moves or reacts.
+   The three cursor layers are already absent — js/main.js never adds the class
+   they hang off, so none of that CSS matches and no listener, no frame loop
+   and no property write ever happens. What this block turns off is the rest:
+   the drifting washes and the crawling grain that came in with the torch, and
+   the glow on the ground that reads --px, which without a pointer to write it
+   would sit at its default and become exactly the fixed-position flashlight
+   that has no business being there.
+
+   Light mode is untouched here, on every device. The wall it has always had is
+   its own and predates all of this.
+   -------------------------------------------------------------------------- */
+
+@media (hover: none), (pointer: coarse) {
+  :root[data-theme=&quot;dark&quot;] {
+    --cursor-glow: transparent;
+  }
+
+  :root[data-theme=&quot;dark&quot;] body::before,
+  :root[data-theme=&quot;dark&quot;] body::after { display: none; }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme=&quot;light&quot;]) {
+      --cursor-glow: transparent;
+    }
+
+    :root:not([data-theme=&quot;light&quot;]) body::before,
+    :root:not([data-theme=&quot;light&quot;]) body::after { display: none; }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   AND NOWHERE BUT THE LANDING PAGE
+
+   Every layer below is selected on [data-route=&quot;home&quot;], which js/case.js sets
+   on the root as it switches views — so opening a case study drops all three
+   of them on the same frame the route changes, with no transition to sit
+   through and nothing left behind. A case study is a document somebody is
+   going to read; it gets the dark theme it always had.
+
+   This block is the belt to that braces. If a selector ever leaks off the
+   landing page, every value those layers paint with is already nothing: a
+   transparent veil, masks that are transparent at every stop, a torch with no
+   colour in it. The failure mode of a mistake here is an invisible layer
+   rather than a darkened case study.
+   -------------------------------------------------------------------------- */
+
+:root:not([data-route=&quot;home&quot;]) {
+  --veil: transparent;
+  --reveal: radial-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+  --beam: radial-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+  --torch-core: transparent;
+  --torch-edge: transparent;
+  --cursor-glow: transparent;
+}
+
+/* --------------------------------------------------------------------------
    THE DARK ROOM
 
    The dark theme is not a page with a light on it any more: it is a page in
@@ -16196,7 +16375,7 @@ body::before {
    them along with everything else.
    -------------------------------------------------------------------------- */
 
-:root.has-torch[data-theme=&quot;dark&quot;] main.page::after {
+:root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;] main.page[data-view=&quot;home&quot;]::after {
   content: &quot;&quot;;
   position: fixed;
   inset: 0;
@@ -16209,7 +16388,7 @@ body::before {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root.has-torch:not([data-theme=&quot;light&quot;]) main.page::after {
+  :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;]) main.page[data-view=&quot;home&quot;]::after {
     content: &quot;&quot;;
     position: fixed;
     inset: 0;
@@ -16266,7 +16445,7 @@ body::before {
    all. -------------------------------------------------------------------- */
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  :root.has-torch[data-theme=&quot;dark&quot;]::before {
+  :root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;]::before {
       content: &quot;&quot;;
     position: fixed;
     left: 0;
@@ -16290,7 +16469,7 @@ body::before {
   }
 
   @media (prefers-color-scheme: dark) {
-    :root.has-torch:not([data-theme=&quot;light&quot;])::before {
+    :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;])::before {
       content: &quot;&quot;;
     position: fixed;
     left: 0;
@@ -16345,7 +16524,7 @@ body::before {
    and this paints nothing at all.
    -------------------------------------------------------------------------- */
 
-:root.has-torch::after {
+:root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;]::after {
   content: &quot;&quot;;
   position: fixed;
   inset: 0;
@@ -16355,11 +16534,32 @@ body::before {
      makes the page visible — it is the beam&#x27;s own falloff on top of the reveal:
      a little more light at the middle than at the edge of it, which is what
      keeps the hotspot reading as a hotspot rather than as a flat window. */
-  background: radial-gradient(19vmax 19vmax at var(--px, 50%) var(--py, 8%),
+  background: radial-gradient(clamp(150px, 13vmax, 230px) clamp(150px, 13vmax, 230px)
+                              at var(--px, 50%) var(--py, 42%),
                               var(--torch-core, transparent) 0%,
                               var(--torch-edge, transparent) 44%,
                               transparent 72%);
   mix-blend-mode: screen;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;])::after {
+    content: &quot;&quot;;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+    /* Inside the hole the veil has already stepped aside, so this is not what
+       makes the page visible — it is the beam&#x27;s own falloff on top of the reveal:
+       a little more light at the middle than at the edge of it, which is what
+       keeps the hotspot reading as a hotspot rather than as a flat window. */
+    background: radial-gradient(clamp(150px, 13vmax, 230px) clamp(150px, 13vmax, 230px)
+                                at var(--px, 50%) var(--py, 42%),
+                                var(--torch-core, transparent) 0%,
+                                var(--torch-edge, transparent) 44%,
+                                transparent 72%);
+    mix-blend-mode: screen;
+  }
 }
 
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
@@ -17550,15 +17750,28 @@ em,
      which is parked off screen until the pointer moves. */
   /* THE REVEAL. Alpha here is how much of the dark room is left standing, so
      it runs the other way from the beam&#x27;s: nothing at the centre, everything
-     outside. Nineteen vmax of radius is a light about thirty-eight across, and
-     the stops put most of the usable light inside the first half of it and
-     spend the rest on a falloff long enough that there is no edge to find. */
-  --reveal: radial-gradient(circle 19vmax at var(--px, 50%) var(--py, 8%),
+     outside.
+
+     A HAND-HELD FLASHLIGHT, NOT A SPOTLIGHT. Half a metre of radius rather
+     than the two hundred and seventy pixels it started at — about eleven
+     hundred across on a laptop — so what the light finds is several cards, a
+     paragraph and the layout around them at once, rather than one line of type
+     at a time. Clamped at both ends: it scales with the display and then stops,
+     because a beam that keeps growing with the monitor stops being a beam.
+
+     Seven stops, and the shape of them is the point. Near-nothing through the
+     first fifth (the hotspot, out to about 110px), still under a fifth of the
+     veil at 200, half of it by 300, and then a long atmospheric tail that does
+     not reach full dark until the edge. That tail is most of the radius: it is
+     what makes the transition read as distance rather than as a circle. */
+  --reveal: radial-gradient(circle clamp(420px, 36vmax, 600px)
+                            at var(--px, 50%) var(--py, 42%),
               rgba(0, 0, 0, 0) 0%,
-              rgba(0, 0, 0, 0.05) 13%,
-              rgba(0, 0, 0, 0.30) 33%,
-              rgba(0, 0, 0, 0.68) 58%,
-              rgba(0, 0, 0, 0.93) 82%,
+              rgba(0, 0, 0, 0.05) 20%,
+              rgba(0, 0, 0, 0.18) 38%,
+              rgba(0, 0, 0, 0.40) 56%,
+              rgba(0, 0, 0, 0.66) 74%,
+              rgba(0, 0, 0, 0.87) 88%,
               rgba(0, 0, 0, 1) 100%);
 
   --beam: radial-gradient(circle 172px at 50% 50%,
@@ -18358,6 +18571,72 @@ body::before {
 }
 
 /* --------------------------------------------------------------------------
+   AND NOWHERE NEAR A TOUCHSCREEN
+
+   The whole apparatus — the veil, the torch, the beam, and the wall it is all
+   painted over — belongs to a machine with a pointer on it. A phone has none:
+   there is nothing to follow, nothing to reveal with, and a light parked at a
+   fixed point on a page somebody is reading with their thumb is worse than no
+   light at all.
+
+   So a coarse pointer gets the dark theme AS IT WAS BEFORE ANY OF THIS: flat
+   canvas, the body&#x27;s own grey noise tile, and nothing that moves or reacts.
+   The three cursor layers are already absent — js/main.js never adds the class
+   they hang off, so none of that CSS matches and no listener, no frame loop
+   and no property write ever happens. What this block turns off is the rest:
+   the drifting washes and the crawling grain that came in with the torch, and
+   the glow on the ground that reads --px, which without a pointer to write it
+   would sit at its default and become exactly the fixed-position flashlight
+   that has no business being there.
+
+   Light mode is untouched here, on every device. The wall it has always had is
+   its own and predates all of this.
+   -------------------------------------------------------------------------- */
+
+@media (hover: none), (pointer: coarse) {
+  :root[data-theme=&quot;dark&quot;] {
+    --cursor-glow: transparent;
+  }
+
+  :root[data-theme=&quot;dark&quot;] body::before,
+  :root[data-theme=&quot;dark&quot;] body::after { display: none; }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme=&quot;light&quot;]) {
+      --cursor-glow: transparent;
+    }
+
+    :root:not([data-theme=&quot;light&quot;]) body::before,
+    :root:not([data-theme=&quot;light&quot;]) body::after { display: none; }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   AND NOWHERE BUT THE LANDING PAGE
+
+   Every layer below is selected on [data-route=&quot;home&quot;], which js/case.js sets
+   on the root as it switches views — so opening a case study drops all three
+   of them on the same frame the route changes, with no transition to sit
+   through and nothing left behind. A case study is a document somebody is
+   going to read; it gets the dark theme it always had.
+
+   This block is the belt to that braces. If a selector ever leaks off the
+   landing page, every value those layers paint with is already nothing: a
+   transparent veil, masks that are transparent at every stop, a torch with no
+   colour in it. The failure mode of a mistake here is an invisible layer
+   rather than a darkened case study.
+   -------------------------------------------------------------------------- */
+
+:root:not([data-route=&quot;home&quot;]) {
+  --veil: transparent;
+  --reveal: radial-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+  --beam: radial-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);
+  --torch-core: transparent;
+  --torch-edge: transparent;
+  --cursor-glow: transparent;
+}
+
+/* --------------------------------------------------------------------------
    THE DARK ROOM
 
    The dark theme is not a page with a light on it any more: it is a page in
@@ -18387,7 +18666,7 @@ body::before {
    them along with everything else.
    -------------------------------------------------------------------------- */
 
-:root.has-torch[data-theme=&quot;dark&quot;] main.page::after {
+:root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;] main.page[data-view=&quot;home&quot;]::after {
   content: &quot;&quot;;
   position: fixed;
   inset: 0;
@@ -18400,7 +18679,7 @@ body::before {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root.has-torch:not([data-theme=&quot;light&quot;]) main.page::after {
+  :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;]) main.page[data-view=&quot;home&quot;]::after {
     content: &quot;&quot;;
     position: fixed;
     inset: 0;
@@ -18457,7 +18736,7 @@ body::before {
    all. -------------------------------------------------------------------- */
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  :root.has-torch[data-theme=&quot;dark&quot;]::before {
+  :root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;]::before {
       content: &quot;&quot;;
     position: fixed;
     left: 0;
@@ -18481,7 +18760,7 @@ body::before {
   }
 
   @media (prefers-color-scheme: dark) {
-    :root.has-torch:not([data-theme=&quot;light&quot;])::before {
+    :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;])::before {
       content: &quot;&quot;;
     position: fixed;
     left: 0;
@@ -18536,7 +18815,7 @@ body::before {
    and this paints nothing at all.
    -------------------------------------------------------------------------- */
 
-:root.has-torch::after {
+:root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;]::after {
   content: &quot;&quot;;
   position: fixed;
   inset: 0;
@@ -18546,11 +18825,32 @@ body::before {
      makes the page visible — it is the beam&#x27;s own falloff on top of the reveal:
      a little more light at the middle than at the edge of it, which is what
      keeps the hotspot reading as a hotspot rather than as a flat window. */
-  background: radial-gradient(19vmax 19vmax at var(--px, 50%) var(--py, 8%),
+  background: radial-gradient(clamp(150px, 13vmax, 230px) clamp(150px, 13vmax, 230px)
+                              at var(--px, 50%) var(--py, 42%),
                               var(--torch-core, transparent) 0%,
                               var(--torch-edge, transparent) 44%,
                               transparent 72%);
   mix-blend-mode: screen;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;])::after {
+    content: &quot;&quot;;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    pointer-events: none;
+    /* Inside the hole the veil has already stepped aside, so this is not what
+       makes the page visible — it is the beam&#x27;s own falloff on top of the reveal:
+       a little more light at the middle than at the edge of it, which is what
+       keeps the hotspot reading as a hotspot rather than as a flat window. */
+    background: radial-gradient(clamp(150px, 13vmax, 230px) clamp(150px, 13vmax, 230px)
+                                at var(--px, 50%) var(--py, 42%),
+                                var(--torch-core, transparent) 0%,
+                                var(--torch-edge, transparent) 44%,
+                                transparent 72%);
+    mix-blend-mode: screen;
+  }
 }
 
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
@@ -30770,8 +31070,16 @@ window.PF = window.PF || {};
     }
   }
 
+  /* THE LANDING PAGE, AND NOWHERE ELSE. js/case.js writes the route on the
+     root as it switches views; the stylesheet reads the same attribute. This
+     is the other half of it: off the landing page nothing is tracked, nothing
+     is written and no frame is asked for, so a case study costs exactly what
+     it cost before any of this existed. */
+  function home() { return root.getAttribute('data-route') === 'home'; }
+
   function move(e) {
     if (e.pointerType && e.pointerType !== 'mouse') return;
+    if (!home()) return;
     rawX = e.clientX;
     rawY = e.clientY;
     toX = (rawX / window.innerWidth) * 100;
@@ -30790,6 +31098,21 @@ window.PF = window.PF || {};
   window.addEventListener('pointermove', move, { passive: true });
   window.addEventListener('pointerleave', away, { passive: true });
   window.addEventListener('blur', away);
+
+  /* Leaving the landing page puts the torch down: the properties are removed
+     rather than left at their last value, so nothing about where the pointer
+     happened to be when somebody clicked into a case study survives the
+     journey — and coming back starts from the page's own defaults until the
+     hand moves again. */
+  window.addEventListener('hashchange', function () {
+    if (home()) return;
+    rawX = -9999;
+    rawY = -9999;
+    root.style.removeProperty('--fx');
+    root.style.removeProperty('--fy');
+    root.style.removeProperty('--px');
+    root.style.removeProperty('--py');
+  });
 })();
 
 </script>
