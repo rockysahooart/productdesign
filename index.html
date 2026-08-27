@@ -193,8 +193,15 @@
   /* The pane: the light along a glass edge, and the shadow it casts. */
   --glass-edge:     rgba(255, 255, 255, 0.75);
   --glass-cast:     rgba(0, 0, 0, 0.35);
-  /* And the light the cursor drags across the wall. */
+  /* The light the cursor drags across the wall. In daylight that is all it is:
+     a room with a window in it, no torch and no glow on the words — a halo on
+     black type over a light ground reads as a printing fault, and the page is
+     already legible without help. */
   --cursor-glow:    rgba(0, 0, 0, 0.032);
+  --glow-near:      transparent;
+  --glow-far:       transparent;
+  --torch-core:     transparent;
+  --torch-edge:     transparent;
 
   --canvas:         #E9E9E9;
   --surface:        #F7F7F7;   /* cards lift 1.13:1 */
@@ -336,6 +343,11 @@
   --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
+  --glow-near:      rgba(214, 212, 255, 0.42);
+  --glow-far:       rgba(158, 156, 255, 0.55);
+  /* And the torch itself: a core and the edge it falls off to. */
+  --torch-core:     rgba(196, 194, 255, 0.085);
+  --torch-edge:     rgba(150, 148, 255, 0.030);
 
   --canvas:         #0D0D0E;   /* neutral, not the kit's green */
   --surface:        #2A2A2C;   /* cards lift 1.42:1 */
@@ -444,6 +456,11 @@
     --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
+  --glow-near:      rgba(214, 212, 255, 0.42);
+  --glow-far:       rgba(158, 156, 255, 0.55);
+  /* And the torch itself: a core and the edge it falls off to. */
+  --torch-core:     rgba(196, 194, 255, 0.085);
+  --torch-edge:     rgba(150, 148, 255, 0.030);
 
   --canvas:         #0D0D0E;   /* neutral, not the kit's green */
     --surface:        #2A2A2C;   /* cards lift 1.42:1 */
@@ -961,6 +978,65 @@ body::before {
 @media (prefers-reduced-motion: reduce) {
   body::before,
   body::after { animation: none; }
+}
+
+/* --------------------------------------------------------------------------
+   THE WORD UNDER THE CURSOR
+
+   js/main.js finds the word the pointer is over and hands its range to the
+   Custom Highlight API; this is what that range looks like. Two shadows: a
+   tight one that thickens the glyph a hair, and a wide soft one that is the
+   light. Nothing else — no colour change, no weight, no background — so the
+   ink stays exactly the ink every contrast ratio on this page was measured
+   against, and a word that lights up is still the word that was there.
+
+   Warmer than white in the dark and cooler than black in the light, because a
+   neutral halo on either ground reads as a printing fault rather than as
+   light. Where ::highlight is not supported the rule does nothing, which is
+   the right amount of nothing for a light that follows a mouse.
+   -------------------------------------------------------------------------- */
+
+::highlight(pf-glow) {
+  text-shadow:
+    0 0 1px var(--glow-near),
+    0 0 14px var(--glow-far);
+}
+
+/* --------------------------------------------------------------------------
+   THE TORCH
+
+   In the dark the cursor is a light rather than a pointer: a soft disc that
+   travels over everything — the wall, the cards, the type — instead of under
+   it, which is the difference between a page with a glow behind it and a page
+   being lit. It is the same two custom properties the ground's own wash uses,
+   so there is one thing following the pointer and two surfaces answering to
+   it.
+
+   SCREEN, NOT A WHITE FILM. A translucent white layer over a dark page greys
+   it; screen lifts what is already there and leaves black alone, so the cards
+   brighten as the light crosses them and the gutters between them brighten
+   more. The core is under nine per cent — measured on the brightest part of
+   the disc, body copy on a card is still 10.4:1, which is AAA.
+
+   Fixed, inert, and only in the dark. In daylight both stops are transparent
+   and this paints nothing at all.
+   -------------------------------------------------------------------------- */
+
+:root::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  background: radial-gradient(26vmax 26vmax at var(--px, 50%) var(--py, 8%),
+                              var(--torch-core, transparent) 0%,
+                              var(--torch-edge, transparent) 44%,
+                              transparent 72%);
+  mix-blend-mode: screen;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root::after { display: none; }
 }
 
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
@@ -5021,16 +5097,20 @@ em,
    thing you have to look for. Inverted, at the same height as the booking
    button on the card beside it, it is the only filled shape in the viewport —
    which is what a single call to action should be. */
+/* THE TEXT AND THE ARROW. It was a filled pill, which is a heavy object to
+   put at the end of a conversation made of panes — and the phone's version had
+   already dropped the box for the same reason. What carries it is the label:
+   uppercase, tracked out, in the page's own ink, with the arrow that moves on
+   hover. Still a 42px row, so it is still a target you can hit. */
 .msg-cta__btn {
   appearance: none;
   display: inline-flex;
   align-items: center;
   gap: 9px;
   min-height: 42px;
-  padding: 0 18px;
-  border: 1px solid var(--ink);
-  border-radius: var(--r-btn);
-  background: var(--ink);
+  padding: 0;
+  border: 0;
+  background: none;
 
   font-family: var(--font-body);
   font-size: var(--fs-label);
@@ -5039,19 +5119,15 @@ em,
   text-transform: uppercase;
   line-height: 1;
   white-space: nowrap;
-  color: var(--surface);
+  color: var(--ink);
   cursor: pointer;
-  transition: border-color var(--dur-fast) var(--ease),
-              background-color var(--dur-fast) var(--ease);
+  transition: color var(--dur-fast) var(--ease);
 }
 
 .msg-cta__btn span { transition: transform 180ms cubic-bezier(0.2, 0.75, 0.25, 1); }
 
 .msg-cta__btn:hover,
-.msg-cta__btn:focus-visible {
-  background: var(--ink-secondary);
-  border-color: var(--ink-secondary);
-}
+.msg-cta__btn:focus-visible { color: var(--ink-secondary); }
 
 .msg-cta__btn:hover span { transform: translateX(4px); }
 .msg-cta__btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
@@ -15085,8 +15161,15 @@ em,
   /* The pane: the light along a glass edge, and the shadow it casts. */
   --glass-edge:     rgba(255, 255, 255, 0.75);
   --glass-cast:     rgba(0, 0, 0, 0.35);
-  /* And the light the cursor drags across the wall. */
+  /* The light the cursor drags across the wall. In daylight that is all it is:
+     a room with a window in it, no torch and no glow on the words — a halo on
+     black type over a light ground reads as a printing fault, and the page is
+     already legible without help. */
   --cursor-glow:    rgba(0, 0, 0, 0.032);
+  --glow-near:      transparent;
+  --glow-far:       transparent;
+  --torch-core:     transparent;
+  --torch-edge:     transparent;
 
   --canvas:         #E9E9E9;
   --surface:        #F7F7F7;   /* cards lift 1.13:1 */
@@ -15228,6 +15311,11 @@ em,
   --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
+  --glow-near:      rgba(214, 212, 255, 0.42);
+  --glow-far:       rgba(158, 156, 255, 0.55);
+  /* And the torch itself: a core and the edge it falls off to. */
+  --torch-core:     rgba(196, 194, 255, 0.085);
+  --torch-edge:     rgba(150, 148, 255, 0.030);
 
   --canvas:         #0D0D0E;   /* neutral, not the kit&#x27;s green */
   --surface:        #2A2A2C;   /* cards lift 1.42:1 */
@@ -15336,6 +15424,11 @@ em,
     --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
+  --glow-near:      rgba(214, 212, 255, 0.42);
+  --glow-far:       rgba(158, 156, 255, 0.55);
+  /* And the torch itself: a core and the edge it falls off to. */
+  --torch-core:     rgba(196, 194, 255, 0.085);
+  --torch-edge:     rgba(150, 148, 255, 0.030);
 
   --canvas:         #0D0D0E;   /* neutral, not the kit&#x27;s green */
     --surface:        #2A2A2C;   /* cards lift 1.42:1 */
@@ -15853,6 +15946,65 @@ body::before {
 @media (prefers-reduced-motion: reduce) {
   body::before,
   body::after { animation: none; }
+}
+
+/* --------------------------------------------------------------------------
+   THE WORD UNDER THE CURSOR
+
+   js/main.js finds the word the pointer is over and hands its range to the
+   Custom Highlight API; this is what that range looks like. Two shadows: a
+   tight one that thickens the glyph a hair, and a wide soft one that is the
+   light. Nothing else — no colour change, no weight, no background — so the
+   ink stays exactly the ink every contrast ratio on this page was measured
+   against, and a word that lights up is still the word that was there.
+
+   Warmer than white in the dark and cooler than black in the light, because a
+   neutral halo on either ground reads as a printing fault rather than as
+   light. Where ::highlight is not supported the rule does nothing, which is
+   the right amount of nothing for a light that follows a mouse.
+   -------------------------------------------------------------------------- */
+
+::highlight(pf-glow) {
+  text-shadow:
+    0 0 1px var(--glow-near),
+    0 0 14px var(--glow-far);
+}
+
+/* --------------------------------------------------------------------------
+   THE TORCH
+
+   In the dark the cursor is a light rather than a pointer: a soft disc that
+   travels over everything — the wall, the cards, the type — instead of under
+   it, which is the difference between a page with a glow behind it and a page
+   being lit. It is the same two custom properties the ground&#x27;s own wash uses,
+   so there is one thing following the pointer and two surfaces answering to
+   it.
+
+   SCREEN, NOT A WHITE FILM. A translucent white layer over a dark page greys
+   it; screen lifts what is already there and leaves black alone, so the cards
+   brighten as the light crosses them and the gutters between them brighten
+   more. The core is under nine per cent — measured on the brightest part of
+   the disc, body copy on a card is still 10.4:1, which is AAA.
+
+   Fixed, inert, and only in the dark. In daylight both stops are transparent
+   and this paints nothing at all.
+   -------------------------------------------------------------------------- */
+
+:root::after {
+  content: &quot;&quot;;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  background: radial-gradient(26vmax 26vmax at var(--px, 50%) var(--py, 8%),
+                              var(--torch-core, transparent) 0%,
+                              var(--torch-edge, transparent) 44%,
+                              transparent 72%);
+  mix-blend-mode: screen;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root::after { display: none; }
 }
 
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
@@ -16524,7 +16676,8 @@ em,
      — and a second wall painted inside the frame is the pale rectangle the
      frame used to leave on a dark page. */
   body::before,
-  body::after { display: none !important; }
+  body::after,
+  html::after { display: none !important; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -17027,8 +17180,15 @@ em,
   /* The pane: the light along a glass edge, and the shadow it casts. */
   --glass-edge:     rgba(255, 255, 255, 0.75);
   --glass-cast:     rgba(0, 0, 0, 0.35);
-  /* And the light the cursor drags across the wall. */
+  /* The light the cursor drags across the wall. In daylight that is all it is:
+     a room with a window in it, no torch and no glow on the words — a halo on
+     black type over a light ground reads as a printing fault, and the page is
+     already legible without help. */
   --cursor-glow:    rgba(0, 0, 0, 0.032);
+  --glow-near:      transparent;
+  --glow-far:       transparent;
+  --torch-core:     transparent;
+  --torch-edge:     transparent;
 
   --canvas:         #E9E9E9;
   --surface:        #F7F7F7;   /* cards lift 1.13:1 */
@@ -17170,6 +17330,11 @@ em,
   --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
+  --glow-near:      rgba(214, 212, 255, 0.42);
+  --glow-far:       rgba(158, 156, 255, 0.55);
+  /* And the torch itself: a core and the edge it falls off to. */
+  --torch-core:     rgba(196, 194, 255, 0.085);
+  --torch-edge:     rgba(150, 148, 255, 0.030);
 
   --canvas:         #0D0D0E;   /* neutral, not the kit&#x27;s green */
   --surface:        #2A2A2C;   /* cards lift 1.42:1 */
@@ -17278,6 +17443,11 @@ em,
     --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
+  --glow-near:      rgba(214, 212, 255, 0.42);
+  --glow-far:       rgba(158, 156, 255, 0.55);
+  /* And the torch itself: a core and the edge it falls off to. */
+  --torch-core:     rgba(196, 194, 255, 0.085);
+  --torch-edge:     rgba(150, 148, 255, 0.030);
 
   --canvas:         #0D0D0E;   /* neutral, not the kit&#x27;s green */
     --surface:        #2A2A2C;   /* cards lift 1.42:1 */
@@ -17795,6 +17965,65 @@ body::before {
 @media (prefers-reduced-motion: reduce) {
   body::before,
   body::after { animation: none; }
+}
+
+/* --------------------------------------------------------------------------
+   THE WORD UNDER THE CURSOR
+
+   js/main.js finds the word the pointer is over and hands its range to the
+   Custom Highlight API; this is what that range looks like. Two shadows: a
+   tight one that thickens the glyph a hair, and a wide soft one that is the
+   light. Nothing else — no colour change, no weight, no background — so the
+   ink stays exactly the ink every contrast ratio on this page was measured
+   against, and a word that lights up is still the word that was there.
+
+   Warmer than white in the dark and cooler than black in the light, because a
+   neutral halo on either ground reads as a printing fault rather than as
+   light. Where ::highlight is not supported the rule does nothing, which is
+   the right amount of nothing for a light that follows a mouse.
+   -------------------------------------------------------------------------- */
+
+::highlight(pf-glow) {
+  text-shadow:
+    0 0 1px var(--glow-near),
+    0 0 14px var(--glow-far);
+}
+
+/* --------------------------------------------------------------------------
+   THE TORCH
+
+   In the dark the cursor is a light rather than a pointer: a soft disc that
+   travels over everything — the wall, the cards, the type — instead of under
+   it, which is the difference between a page with a glow behind it and a page
+   being lit. It is the same two custom properties the ground&#x27;s own wash uses,
+   so there is one thing following the pointer and two surfaces answering to
+   it.
+
+   SCREEN, NOT A WHITE FILM. A translucent white layer over a dark page greys
+   it; screen lifts what is already there and leaves black alone, so the cards
+   brighten as the light crosses them and the gutters between them brighten
+   more. The core is under nine per cent — measured on the brightest part of
+   the disc, body copy on a card is still 10.4:1, which is AAA.
+
+   Fixed, inert, and only in the dark. In daylight both stops are transparent
+   and this paints nothing at all.
+   -------------------------------------------------------------------------- */
+
+:root::after {
+  content: &quot;&quot;;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  background: radial-gradient(26vmax 26vmax at var(--px, 50%) var(--py, 8%),
+                              var(--torch-core, transparent) 0%,
+                              var(--torch-edge, transparent) 44%,
+                              transparent 72%);
+  mix-blend-mode: screen;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root::after { display: none; }
 }
 
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
@@ -18557,7 +18786,8 @@ em,
      — and a second wall painted inside the frame is the pale rectangle the
      frame used to leave on a dark page. */
   body::before,
-  body::after { display: none !important; }
+  body::after,
+  html::after { display: none !important; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -19990,7 +20220,8 @@ em,
      — and a second wall painted inside the frame is the pale rectangle the
      frame used to leave on a dark page. */
   body::before,
-  body::after { display: none !important; }
+  body::after,
+  html::after { display: none !important; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -20672,7 +20903,8 @@ em,
      — and a second wall painted inside the frame is the pale rectangle the
      frame used to leave on a dark page. */
   body::before,
-  body::after { display: none !important; }
+  body::after,
+  html::after { display: none !important; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -22171,7 +22403,8 @@ em,
      — and a second wall painted inside the frame is the pale rectangle the
      frame used to leave on a dark page. */
   body::before,
-  body::after { display: none !important; }
+  body::after,
+  html::after { display: none !important; }
 &lt;/style&gt;
 &lt;/head&gt;
 &lt;body&gt;
@@ -29987,6 +30220,136 @@ window.PF = window.PF || {};
     toY = (e.clientY / window.innerHeight) * 100;
     if (!raf) raf = window.requestAnimationFrame(frame);
   }, { passive: true });
+})();
+
+/* ==========================================================================
+   The word under the cursor lights up
+
+   Not the paragraph, not the element: the word. Reading a portfolio is a
+   pointer wandering over type, and a light that finds the word it is over
+   makes the page feel like it is being read rather than looked at.
+
+   NOTHING IS WRAPPED. The obvious way to do this is to put every word in a
+   span and hover them — which is thousands of extra nodes, a reflow on the
+   first paint, and an argument with every other thing on this page that owns
+   its own text nodes (the decode, the typeface shuffle, the scramble). So the
+   word is found where it lies: caretRangeFromPoint gives the character under
+   the pointer, the text node's own data gives the boundaries either side of
+   it, and the CSS Custom Highlight API paints that range without touching the
+   DOM at all. No nodes, no reflow, and nothing for the thread's own machinery
+   to trip over.
+
+   ONLY THE SHADOW. A highlight can change colour, and this one deliberately
+   does not: a glow is a text-shadow behind glyphs whose ink is exactly what it
+   was, so every contrast ratio on the page is the ratio it was measured at.
+
+   Where the API is missing the whole thing is absent, which is the correct
+   amount of fallback for a light that follows a mouse.
+   ========================================================================== */
+
+(function () {
+  'use strict';
+
+  if (!window.matchMedia) return;
+  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!window.CSS || !CSS.highlights || typeof Highlight !== 'function') return;
+
+  var NAME = 'pf-glow';
+  var lit = null;             /* the range that is currently lit */
+  var queued = null, raf = 0;
+
+  function word(ch) { return !!ch && !/\s/.test(ch); }
+
+  function clear() {
+    if (!lit) return;
+    lit = null;
+    CSS.highlights.delete(NAME);
+  }
+
+  /* The character under the pointer, in whichever spelling this engine has. */
+  function caret(x, y) {
+    if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
+    if (document.caretPositionFromPoint) {
+      var pos = document.caretPositionFromPoint(x, y);
+      if (!pos) return null;
+      var r = document.createRange();
+      r.setStart(pos.offsetNode, pos.offset);
+      r.setEnd(pos.offsetNode, pos.offset);
+      return r;
+    }
+    return null;
+  }
+
+  function find(x, y) {
+    var hit;
+    try { hit = caret(x, y); } catch (e) { return null; }
+    if (!hit) return null;
+
+    var node = hit.startContainer;
+    if (!node || node.nodeType !== 3) return null;
+
+    var text = node.nodeValue;
+    if (!text) return null;
+
+    /* An editable field is somebody typing, not somebody reading. */
+    var host = node.parentElement;
+    if (!host || host.closest('input, textarea, [contenteditable]')) return null;
+
+    var i = hit.startOffset;
+    if (i >= text.length) i = text.length - 1;
+    if (i < 0 || !word(text.charAt(i))) return null;
+
+    var a = i, b = i;
+    while (a > 0 && word(text.charAt(a - 1))) a--;
+    while (b < text.length && word(text.charAt(b))) b++;
+    if (b - a > 40) return null;      /* not a word; a wall of something */
+
+    var r = document.createRange();
+    r.setStart(node, a);
+    r.setEnd(node, b);
+
+    /* THE CARET IS NEAREST, NOT UNDER. caretRangeFromPoint answers with the
+       closest character to the point even when the point is in a card's
+       padding half a line away — so the word has to actually contain the
+       pointer, give or take the slack a descender needs. */
+    var rects = r.getClientRects();
+    for (var k = 0; k < rects.length; k++) {
+      var q = rects[k];
+      if (x >= q.left - 2 && x <= q.right + 2 && y >= q.top - 3 && y <= q.bottom + 3) return r;
+    }
+    return null;
+  }
+
+  function run() {
+    raf = 0;
+    if (!queued) return;
+    var x = queued[0], y = queued[1];
+    queued = null;
+
+    var r = find(x, y);
+    if (!r) { clear(); return; }
+
+    /* The same word twice is the pointer moving inside it: nothing to do, and
+       nothing repainted. */
+    if (lit &&
+        lit.startContainer === r.startContainer &&
+        lit.startOffset === r.startOffset &&
+        lit.endOffset === r.endOffset) return;
+
+    lit = r;
+    try { CSS.highlights.set(NAME, new Highlight(r)); } catch (e) { clear(); }
+  }
+
+  window.addEventListener('pointermove', function (e) {
+    if (e.pointerType && e.pointerType !== 'mouse') return;
+    queued = [e.clientX, e.clientY];
+    if (!raf) raf = window.requestAnimationFrame(run);
+  }, { passive: true });
+
+  window.addEventListener('pointerleave', clear, { passive: true });
+  window.addEventListener('blur', clear);
+  document.addEventListener('scroll', clear, { passive: true, capture: true });
 })();
 
 </script>
