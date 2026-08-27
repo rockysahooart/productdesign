@@ -198,11 +198,19 @@
      black type over a light ground reads as a printing fault, and the page is
      already legible without help. */
   --cursor-glow:    rgba(0, 0, 0, 0.032);
-  --glow-near:      transparent;
-  --glow-mid:       transparent;
-  --glow-far:       transparent;
   --torch-core:     transparent;
   --torch-edge:     transparent;
+
+  /* THE BEAM'S FALLOFF, written once. Five stops so there is no edge in it:
+     the hotspot holds through about 31px, a little under half the light is
+     left at 90, an eighth at 134, and it is gone by 172. Centred in the box the beam carries with it,
+     which is parked off screen until the pointer moves. */
+  --beam: radial-gradient(circle 172px at 50% 50%,
+            rgba(0, 0, 0, 1) 0%,
+            rgba(0, 0, 0, 0.92) 18%,
+            rgba(0, 0, 0, 0.44) 52%,
+            rgba(0, 0, 0, 0.13) 78%,
+            rgba(0, 0, 0, 0) 100%);
 
   --canvas:         #E9E9E9;
   --surface:        #F7F7F7;   /* cards lift 1.13:1 */
@@ -344,9 +352,6 @@
   --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
-  --glow-near:      rgba(232, 231, 255, 0.85);
-  --glow-mid:       rgba(186, 184, 255, 0.70);
-  --glow-far:       rgba(146, 143, 255, 0.80);
   /* And the torch itself: a core and the edge it falls off to. */
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
@@ -458,9 +463,6 @@
     --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
-  --glow-near:      rgba(232, 231, 255, 0.85);
-  --glow-mid:       rgba(186, 184, 255, 0.70);
-  --glow-far:       rgba(146, 143, 255, 0.80);
   /* And the torch itself: a core and the edge it falls off to. */
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
@@ -984,29 +986,106 @@ body::before {
 }
 
 /* --------------------------------------------------------------------------
-   THE WORD UNDER THE CURSOR
+   THE BEAM ON THE TYPE
 
-   js/main.js finds the word the pointer is over and hands its range to the
-   Custom Highlight API; this is what that range looks like. Two shadows: a
-   tight one that thickens the glyph a hair, and a wide soft one that is the
-   light. Nothing else — no colour change, no weight, no background — so the
-   ink stays exactly the ink every contrast ratio on this page was measured
-   against, and a word that lights up is still the word that was there.
+   The torch above lights the surface. This lights what is PRINTED on it — and
+   it does it by distance from the cursor rather than by which word the cursor
+   is technically inside, so a beam crossing a line catches the end of one word
+   and the start of the next exactly the way a real one would.
 
-   Warmer than white in the dark and cooler than black in the light, because a
-   neutral halo on either ground reads as a printing fault rather than as
-   light. Where ::highlight is not supported the rule does nothing, which is
-   the right amount of nothing for a light that follows a mouse.
-   -------------------------------------------------------------------------- */
+   HOW IT WORKS, AND WHY THERE IS NO SECOND COPY OF THE TEXT.
 
-::highlight(pf-glow) {
-  /* Three stops rather than two, because a glow is a falloff and two of them
-     is a smudge: a tight one that thickens the glyph, a middle one that is the
-     bloom, and a wide one that is the light in the air around it. */
-  text-shadow:
-    0 0 1px var(--glow-near),
-    0 0 7px var(--glow-mid),
-    0 0 22px var(--glow-far);
+   The obvious build is a duplicate of every text node, lit, masked, and kept
+   in sync. That is thousands of nodes, a reflow, and a permanent argument with
+   the three things on this page that rewrite their own text nodes while you
+   watch — the decode, the typeface shuffle and the scramble. So nothing is
+   duplicated. This is one fixed layer that filters WHAT IS ALREADY BEHIND IT:
+
+     contrast(2.6)  crushes the ground to black and leaves the ink standing.
+                    The card is 0.16 luminance and the type is 0.93, so one
+                    goes to nothing and the other goes to white. This is what
+                    separates the print from the paper without knowing what
+                    either of them says.
+     saturate(1.6)  so a keyword that carries a gradient throws coloured light
+                    rather than white.
+     blur(5px)      spreads what is left — which by now is only the type —
+                    into a halo around itself. A flat card blurs to the same
+                    flat card, so the ground contributes nothing at any radius.
+
+   plus-lighter then ADDS that to the page instead of covering it: the ink is
+   what it was plus the light landing on it, the paper is what it was plus
+   nothing. The foreground colour is never replaced, so every contrast ratio on
+   this page is the one it was measured at or better — the lit type is brighter
+   against a ground that has not moved.
+
+   THE MASK IS THE FALLOFF. Five stops on one radial, so there is no edge
+   anywhere in it: full through the first 30px, half of it at about 85px, a
+   sixth at 135px, gone at 175. Centred on --fx/--fy, which js/main.js writes
+   unsmoothed — the beam is on the letters the frame the pointer reaches them,
+   while the torch and the wall ease in behind it.
+
+   Dark only, and only where the browser can add light rather than paint over
+   it; a page in daylight does not need a torch and does not get this layer at
+   all. -------------------------------------------------------------------- */
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root[data-theme="dark"]::before {
+      content: "";
+    position: fixed;
+    left: 0;
+    top: 0;
+    /* A BOX THAT FOLLOWS THE POINTER RATHER THAN A FILTERED SCREEN. The filter
+       runs over whatever is behind this element, so the element is the size of
+       the light and not the size of the window: 380 square, moved on a
+       transform, which is a composited move rather than a full-viewport filter
+       pass every frame. */
+    width: 380px;
+    height: 380px;
+    transform: translate(calc(var(--fx, -50vw) - 190px),
+                         calc(var(--fy, -50vh) - 190px));
+    will-change: transform;
+    z-index: 41;
+    pointer-events: none;
+    -webkit-backdrop-filter: url(#pf-beam);
+    backdrop-filter: url(#pf-beam);
+    -webkit-mask-image: var(--beam);
+    mask-image: var(--beam);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"])::before {
+      content: "";
+    position: fixed;
+    left: 0;
+    top: 0;
+    /* A BOX THAT FOLLOWS THE POINTER RATHER THAN A FILTERED SCREEN. The filter
+       runs over whatever is behind this element, so the element is the size of
+       the light and not the size of the window: 380 square, moved on a
+       transform, which is a composited move rather than a full-viewport filter
+       pass every frame. */
+    width: 380px;
+    height: 380px;
+    transform: translate(calc(var(--fx, -50vw) - 190px),
+                         calc(var(--fy, -50vh) - 190px));
+    will-change: transform;
+    z-index: 41;
+    pointer-events: none;
+    -webkit-backdrop-filter: url(#pf-beam);
+    backdrop-filter: url(#pf-beam);
+    -webkit-mask-image: var(--beam);
+    mask-image: var(--beam);
+    }
+  }
+
+  /* A light that chases a pointer is exactly what reduced motion is for, and a
+     touch screen has no pointer to chase. */
+  @media (prefers-reduced-motion: reduce) {
+    :root::before { display: none; }
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    :root::before { display: none; }
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -14628,6 +14707,19 @@ em,
 
 <svg class="visually-hidden" aria-hidden="true" focusable="false">
   <defs>
+    
+    <filter id="pf-beam" color-interpolation-filters="sRGB"
+            x="-25%" y="-25%" width="150%" height="150%">
+      <feComponentTransfer result="pf-ink">
+        <feFuncR type="linear" slope="3" intercept="-1.2"/>
+        <feFuncG type="linear" slope="3" intercept="-1.2"/>
+        <feFuncB type="linear" slope="3" intercept="-1.2"/>
+      </feComponentTransfer>
+      <feGaussianBlur in="pf-ink" stdDeviation="4.5" result="pf-halo"/>
+      <feComposite in="pf-halo" in2="SourceGraphic"
+                   operator="arithmetic" k1="0" k2="1" k3="1.35" k4="0"/>
+    </filter>
+
     <symbol id="i-pin" viewBox="0 0 20 20">
       <path d="M10 17.5s5.6-5 5.6-9a5.6 5.6 0 1 0-11.2 0c0 4 5.6 9 5.6 9Z"/>
       <circle cx="10" cy="8.3" r="2.1"/>
@@ -15173,11 +15265,19 @@ em,
      black type over a light ground reads as a printing fault, and the page is
      already legible without help. */
   --cursor-glow:    rgba(0, 0, 0, 0.032);
-  --glow-near:      transparent;
-  --glow-mid:       transparent;
-  --glow-far:       transparent;
   --torch-core:     transparent;
   --torch-edge:     transparent;
+
+  /* THE BEAM&#x27;S FALLOFF, written once. Five stops so there is no edge in it:
+     the hotspot holds through about 31px, a little under half the light is
+     left at 90, an eighth at 134, and it is gone by 172. Centred in the box the beam carries with it,
+     which is parked off screen until the pointer moves. */
+  --beam: radial-gradient(circle 172px at 50% 50%,
+            rgba(0, 0, 0, 1) 0%,
+            rgba(0, 0, 0, 0.92) 18%,
+            rgba(0, 0, 0, 0.44) 52%,
+            rgba(0, 0, 0, 0.13) 78%,
+            rgba(0, 0, 0, 0) 100%);
 
   --canvas:         #E9E9E9;
   --surface:        #F7F7F7;   /* cards lift 1.13:1 */
@@ -15319,9 +15419,6 @@ em,
   --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
-  --glow-near:      rgba(232, 231, 255, 0.85);
-  --glow-mid:       rgba(186, 184, 255, 0.70);
-  --glow-far:       rgba(146, 143, 255, 0.80);
   /* And the torch itself: a core and the edge it falls off to. */
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
@@ -15433,9 +15530,6 @@ em,
     --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
-  --glow-near:      rgba(232, 231, 255, 0.85);
-  --glow-mid:       rgba(186, 184, 255, 0.70);
-  --glow-far:       rgba(146, 143, 255, 0.80);
   /* And the torch itself: a core and the edge it falls off to. */
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
@@ -15959,29 +16053,106 @@ body::before {
 }
 
 /* --------------------------------------------------------------------------
-   THE WORD UNDER THE CURSOR
+   THE BEAM ON THE TYPE
 
-   js/main.js finds the word the pointer is over and hands its range to the
-   Custom Highlight API; this is what that range looks like. Two shadows: a
-   tight one that thickens the glyph a hair, and a wide soft one that is the
-   light. Nothing else — no colour change, no weight, no background — so the
-   ink stays exactly the ink every contrast ratio on this page was measured
-   against, and a word that lights up is still the word that was there.
+   The torch above lights the surface. This lights what is PRINTED on it — and
+   it does it by distance from the cursor rather than by which word the cursor
+   is technically inside, so a beam crossing a line catches the end of one word
+   and the start of the next exactly the way a real one would.
 
-   Warmer than white in the dark and cooler than black in the light, because a
-   neutral halo on either ground reads as a printing fault rather than as
-   light. Where ::highlight is not supported the rule does nothing, which is
-   the right amount of nothing for a light that follows a mouse.
-   -------------------------------------------------------------------------- */
+   HOW IT WORKS, AND WHY THERE IS NO SECOND COPY OF THE TEXT.
 
-::highlight(pf-glow) {
-  /* Three stops rather than two, because a glow is a falloff and two of them
-     is a smudge: a tight one that thickens the glyph, a middle one that is the
-     bloom, and a wide one that is the light in the air around it. */
-  text-shadow:
-    0 0 1px var(--glow-near),
-    0 0 7px var(--glow-mid),
-    0 0 22px var(--glow-far);
+   The obvious build is a duplicate of every text node, lit, masked, and kept
+   in sync. That is thousands of nodes, a reflow, and a permanent argument with
+   the three things on this page that rewrite their own text nodes while you
+   watch — the decode, the typeface shuffle and the scramble. So nothing is
+   duplicated. This is one fixed layer that filters WHAT IS ALREADY BEHIND IT:
+
+     contrast(2.6)  crushes the ground to black and leaves the ink standing.
+                    The card is 0.16 luminance and the type is 0.93, so one
+                    goes to nothing and the other goes to white. This is what
+                    separates the print from the paper without knowing what
+                    either of them says.
+     saturate(1.6)  so a keyword that carries a gradient throws coloured light
+                    rather than white.
+     blur(5px)      spreads what is left — which by now is only the type —
+                    into a halo around itself. A flat card blurs to the same
+                    flat card, so the ground contributes nothing at any radius.
+
+   plus-lighter then ADDS that to the page instead of covering it: the ink is
+   what it was plus the light landing on it, the paper is what it was plus
+   nothing. The foreground colour is never replaced, so every contrast ratio on
+   this page is the one it was measured at or better — the lit type is brighter
+   against a ground that has not moved.
+
+   THE MASK IS THE FALLOFF. Five stops on one radial, so there is no edge
+   anywhere in it: full through the first 30px, half of it at about 85px, a
+   sixth at 135px, gone at 175. Centred on --fx/--fy, which js/main.js writes
+   unsmoothed — the beam is on the letters the frame the pointer reaches them,
+   while the torch and the wall ease in behind it.
+
+   Dark only, and only where the browser can add light rather than paint over
+   it; a page in daylight does not need a torch and does not get this layer at
+   all. -------------------------------------------------------------------- */
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root[data-theme=&quot;dark&quot;]::before {
+      content: &quot;&quot;;
+    position: fixed;
+    left: 0;
+    top: 0;
+    /* A BOX THAT FOLLOWS THE POINTER RATHER THAN A FILTERED SCREEN. The filter
+       runs over whatever is behind this element, so the element is the size of
+       the light and not the size of the window: 380 square, moved on a
+       transform, which is a composited move rather than a full-viewport filter
+       pass every frame. */
+    width: 380px;
+    height: 380px;
+    transform: translate(calc(var(--fx, -50vw) - 190px),
+                         calc(var(--fy, -50vh) - 190px));
+    will-change: transform;
+    z-index: 41;
+    pointer-events: none;
+    -webkit-backdrop-filter: url(#pf-beam);
+    backdrop-filter: url(#pf-beam);
+    -webkit-mask-image: var(--beam);
+    mask-image: var(--beam);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme=&quot;light&quot;])::before {
+      content: &quot;&quot;;
+    position: fixed;
+    left: 0;
+    top: 0;
+    /* A BOX THAT FOLLOWS THE POINTER RATHER THAN A FILTERED SCREEN. The filter
+       runs over whatever is behind this element, so the element is the size of
+       the light and not the size of the window: 380 square, moved on a
+       transform, which is a composited move rather than a full-viewport filter
+       pass every frame. */
+    width: 380px;
+    height: 380px;
+    transform: translate(calc(var(--fx, -50vw) - 190px),
+                         calc(var(--fy, -50vh) - 190px));
+    will-change: transform;
+    z-index: 41;
+    pointer-events: none;
+    -webkit-backdrop-filter: url(#pf-beam);
+    backdrop-filter: url(#pf-beam);
+    -webkit-mask-image: var(--beam);
+    mask-image: var(--beam);
+    }
+  }
+
+  /* A light that chases a pointer is exactly what reduced motion is for, and a
+     touch screen has no pointer to chase. */
+  @media (prefers-reduced-motion: reduce) {
+    :root::before { display: none; }
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    :root::before { display: none; }
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -16691,6 +16862,7 @@ em,
      frame used to leave on a dark page. */
   body::before,
   body::after,
+  html::before,
   html::after { display: none !important; }
 &lt;/style&gt;
 &lt;/head&gt;
@@ -17199,11 +17371,19 @@ em,
      black type over a light ground reads as a printing fault, and the page is
      already legible without help. */
   --cursor-glow:    rgba(0, 0, 0, 0.032);
-  --glow-near:      transparent;
-  --glow-mid:       transparent;
-  --glow-far:       transparent;
   --torch-core:     transparent;
   --torch-edge:     transparent;
+
+  /* THE BEAM&#x27;S FALLOFF, written once. Five stops so there is no edge in it:
+     the hotspot holds through about 31px, a little under half the light is
+     left at 90, an eighth at 134, and it is gone by 172. Centred in the box the beam carries with it,
+     which is parked off screen until the pointer moves. */
+  --beam: radial-gradient(circle 172px at 50% 50%,
+            rgba(0, 0, 0, 1) 0%,
+            rgba(0, 0, 0, 0.92) 18%,
+            rgba(0, 0, 0, 0.44) 52%,
+            rgba(0, 0, 0, 0.13) 78%,
+            rgba(0, 0, 0, 0) 100%);
 
   --canvas:         #E9E9E9;
   --surface:        #F7F7F7;   /* cards lift 1.13:1 */
@@ -17345,9 +17525,6 @@ em,
   --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
-  --glow-near:      rgba(232, 231, 255, 0.85);
-  --glow-mid:       rgba(186, 184, 255, 0.70);
-  --glow-far:       rgba(146, 143, 255, 0.80);
   /* And the torch itself: a core and the edge it falls off to. */
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
@@ -17459,9 +17636,6 @@ em,
     --glass-edge:     rgba(255, 255, 255, 0.09);
   --glass-cast:     rgba(0, 0, 0, 0.8);
   --cursor-glow:    rgba(168, 166, 255, 0.11);
-  --glow-near:      rgba(232, 231, 255, 0.85);
-  --glow-mid:       rgba(186, 184, 255, 0.70);
-  --glow-far:       rgba(146, 143, 255, 0.80);
   /* And the torch itself: a core and the edge it falls off to. */
   --torch-core:     rgba(196, 194, 255, 0.085);
   --torch-edge:     rgba(150, 148, 255, 0.030);
@@ -17985,29 +18159,106 @@ body::before {
 }
 
 /* --------------------------------------------------------------------------
-   THE WORD UNDER THE CURSOR
+   THE BEAM ON THE TYPE
 
-   js/main.js finds the word the pointer is over and hands its range to the
-   Custom Highlight API; this is what that range looks like. Two shadows: a
-   tight one that thickens the glyph a hair, and a wide soft one that is the
-   light. Nothing else — no colour change, no weight, no background — so the
-   ink stays exactly the ink every contrast ratio on this page was measured
-   against, and a word that lights up is still the word that was there.
+   The torch above lights the surface. This lights what is PRINTED on it — and
+   it does it by distance from the cursor rather than by which word the cursor
+   is technically inside, so a beam crossing a line catches the end of one word
+   and the start of the next exactly the way a real one would.
 
-   Warmer than white in the dark and cooler than black in the light, because a
-   neutral halo on either ground reads as a printing fault rather than as
-   light. Where ::highlight is not supported the rule does nothing, which is
-   the right amount of nothing for a light that follows a mouse.
-   -------------------------------------------------------------------------- */
+   HOW IT WORKS, AND WHY THERE IS NO SECOND COPY OF THE TEXT.
 
-::highlight(pf-glow) {
-  /* Three stops rather than two, because a glow is a falloff and two of them
-     is a smudge: a tight one that thickens the glyph, a middle one that is the
-     bloom, and a wide one that is the light in the air around it. */
-  text-shadow:
-    0 0 1px var(--glow-near),
-    0 0 7px var(--glow-mid),
-    0 0 22px var(--glow-far);
+   The obvious build is a duplicate of every text node, lit, masked, and kept
+   in sync. That is thousands of nodes, a reflow, and a permanent argument with
+   the three things on this page that rewrite their own text nodes while you
+   watch — the decode, the typeface shuffle and the scramble. So nothing is
+   duplicated. This is one fixed layer that filters WHAT IS ALREADY BEHIND IT:
+
+     contrast(2.6)  crushes the ground to black and leaves the ink standing.
+                    The card is 0.16 luminance and the type is 0.93, so one
+                    goes to nothing and the other goes to white. This is what
+                    separates the print from the paper without knowing what
+                    either of them says.
+     saturate(1.6)  so a keyword that carries a gradient throws coloured light
+                    rather than white.
+     blur(5px)      spreads what is left — which by now is only the type —
+                    into a halo around itself. A flat card blurs to the same
+                    flat card, so the ground contributes nothing at any radius.
+
+   plus-lighter then ADDS that to the page instead of covering it: the ink is
+   what it was plus the light landing on it, the paper is what it was plus
+   nothing. The foreground colour is never replaced, so every contrast ratio on
+   this page is the one it was measured at or better — the lit type is brighter
+   against a ground that has not moved.
+
+   THE MASK IS THE FALLOFF. Five stops on one radial, so there is no edge
+   anywhere in it: full through the first 30px, half of it at about 85px, a
+   sixth at 135px, gone at 175. Centred on --fx/--fy, which js/main.js writes
+   unsmoothed — the beam is on the letters the frame the pointer reaches them,
+   while the torch and the wall ease in behind it.
+
+   Dark only, and only where the browser can add light rather than paint over
+   it; a page in daylight does not need a torch and does not get this layer at
+   all. -------------------------------------------------------------------- */
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root[data-theme=&quot;dark&quot;]::before {
+      content: &quot;&quot;;
+    position: fixed;
+    left: 0;
+    top: 0;
+    /* A BOX THAT FOLLOWS THE POINTER RATHER THAN A FILTERED SCREEN. The filter
+       runs over whatever is behind this element, so the element is the size of
+       the light and not the size of the window: 380 square, moved on a
+       transform, which is a composited move rather than a full-viewport filter
+       pass every frame. */
+    width: 380px;
+    height: 380px;
+    transform: translate(calc(var(--fx, -50vw) - 190px),
+                         calc(var(--fy, -50vh) - 190px));
+    will-change: transform;
+    z-index: 41;
+    pointer-events: none;
+    -webkit-backdrop-filter: url(#pf-beam);
+    backdrop-filter: url(#pf-beam);
+    -webkit-mask-image: var(--beam);
+    mask-image: var(--beam);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme=&quot;light&quot;])::before {
+      content: &quot;&quot;;
+    position: fixed;
+    left: 0;
+    top: 0;
+    /* A BOX THAT FOLLOWS THE POINTER RATHER THAN A FILTERED SCREEN. The filter
+       runs over whatever is behind this element, so the element is the size of
+       the light and not the size of the window: 380 square, moved on a
+       transform, which is a composited move rather than a full-viewport filter
+       pass every frame. */
+    width: 380px;
+    height: 380px;
+    transform: translate(calc(var(--fx, -50vw) - 190px),
+                         calc(var(--fy, -50vh) - 190px));
+    will-change: transform;
+    z-index: 41;
+    pointer-events: none;
+    -webkit-backdrop-filter: url(#pf-beam);
+    backdrop-filter: url(#pf-beam);
+    -webkit-mask-image: var(--beam);
+    mask-image: var(--beam);
+    }
+  }
+
+  /* A light that chases a pointer is exactly what reduced motion is for, and a
+     touch screen has no pointer to chase. */
+  @media (prefers-reduced-motion: reduce) {
+    :root::before { display: none; }
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    :root::before { display: none; }
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -18808,6 +19059,7 @@ em,
      frame used to leave on a dark page. */
   body::before,
   body::after,
+  html::before,
   html::after { display: none !important; }
 &lt;/style&gt;
 &lt;/head&gt;
@@ -20242,6 +20494,7 @@ em,
      frame used to leave on a dark page. */
   body::before,
   body::after,
+  html::before,
   html::after { display: none !important; }
 &lt;/style&gt;
 &lt;/head&gt;
@@ -20925,6 +21178,7 @@ em,
      frame used to leave on a dark page. */
   body::before,
   body::after,
+  html::before,
   html::after { display: none !important; }
 &lt;/style&gt;
 &lt;/head&gt;
@@ -22425,6 +22679,7 @@ em,
      frame used to leave on a dark page. */
   body::before,
   body::after,
+  html::before,
   html::after { display: none !important; }
 &lt;/style&gt;
 &lt;/head&gt;
@@ -30216,9 +30471,20 @@ window.PF = window.PF || {};
   var root = document.documentElement;
   var toX = 50, toY = 8;     /* where the pointer is, in per cent */
   var atX = 50, atY = 8;     /* where the light has got to */
+  var rawX = -9999, rawY = -9999;   /* and where it is, in pixels, right now */
   var raf = 0;
 
   function frame() {
+    /* TWO CLOCKS, ON PURPOSE.
+
+       The beam on the type is written first and unsmoothed: it is the light
+       arriving at the surface, and light does not lag. The wash and the torch
+       ease in behind it, so the effect is layered rather than uniform — the
+       cursor reaches the letters, the letters catch it on the next frame, and
+       the wide light drifts up a moment later. */
+    root.style.setProperty('--fx', rawX.toFixed(1) + 'px');
+    root.style.setProperty('--fy', rawY.toFixed(1) + 'px');
+
     /* A fifth of the remaining distance a frame: quick enough to keep up with
        a slow read, slow enough that a flick across the page is a sweep rather
        than a jump. */
@@ -30235,142 +30501,26 @@ window.PF = window.PF || {};
     }
   }
 
-  window.addEventListener('pointermove', function (e) {
+  function move(e) {
     if (e.pointerType && e.pointerType !== 'mouse') return;
-    toX = (e.clientX / window.innerWidth) * 100;
-    toY = (e.clientY / window.innerHeight) * 100;
+    rawX = e.clientX;
+    rawY = e.clientY;
+    toX = (rawX / window.innerWidth) * 100;
+    toY = (rawY / window.innerHeight) * 100;
     if (!raf) raf = window.requestAnimationFrame(frame);
-  }, { passive: true });
-})();
-
-/* ==========================================================================
-   The word under the cursor lights up
-
-   Not the paragraph, not the element: the word. Reading a portfolio is a
-   pointer wandering over type, and a light that finds the word it is over
-   makes the page feel like it is being read rather than looked at.
-
-   NOTHING IS WRAPPED. The obvious way to do this is to put every word in a
-   span and hover them — which is thousands of extra nodes, a reflow on the
-   first paint, and an argument with every other thing on this page that owns
-   its own text nodes (the decode, the typeface shuffle, the scramble). So the
-   word is found where it lies: caretRangeFromPoint gives the character under
-   the pointer, the text node's own data gives the boundaries either side of
-   it, and the CSS Custom Highlight API paints that range without touching the
-   DOM at all. No nodes, no reflow, and nothing for the thread's own machinery
-   to trip over.
-
-   ONLY THE SHADOW. A highlight can change colour, and this one deliberately
-   does not: a glow is a text-shadow behind glyphs whose ink is exactly what it
-   was, so every contrast ratio on the page is the ratio it was measured at.
-
-   Where the API is missing the whole thing is absent, which is the correct
-   amount of fallback for a light that follows a mouse.
-   ========================================================================== */
-
-(function () {
-  'use strict';
-
-  if (!window.matchMedia) return;
-  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if (!window.CSS || !CSS.highlights || typeof Highlight !== 'function') return;
-
-  var NAME = 'pf-glow';
-  var lit = null;             /* the range that is currently lit */
-  var queued = null, raf = 0;
-
-  function word(ch) { return !!ch && !/\s/.test(ch); }
-
-  function clear() {
-    if (!lit) return;
-    lit = null;
-    CSS.highlights.delete(NAME);
   }
 
-  /* The character under the pointer, in whichever spelling this engine has. */
-  function caret(x, y) {
-    if (document.caretRangeFromPoint) return document.caretRangeFromPoint(x, y);
-    if (document.caretPositionFromPoint) {
-      var pos = document.caretPositionFromPoint(x, y);
-      if (!pos) return null;
-      var r = document.createRange();
-      r.setStart(pos.offsetNode, pos.offset);
-      r.setEnd(pos.offsetNode, pos.offset);
-      return r;
-    }
-    return null;
+  /* Off the window, off the surface. A beam parked where the pointer left is a
+     torch somebody put down on the page and walked away from. */
+  function away() {
+    rawX = -9999;
+    rawY = -9999;
+    if (!raf) raf = window.requestAnimationFrame(frame);
   }
 
-  function find(x, y) {
-    var hit;
-    try { hit = caret(x, y); } catch (e) { return null; }
-    if (!hit) return null;
-
-    var node = hit.startContainer;
-    if (!node || node.nodeType !== 3) return null;
-
-    var text = node.nodeValue;
-    if (!text) return null;
-
-    /* An editable field is somebody typing, not somebody reading. */
-    var host = node.parentElement;
-    if (!host || host.closest('input, textarea, [contenteditable]')) return null;
-
-    var i = hit.startOffset;
-    if (i >= text.length) i = text.length - 1;
-    if (i < 0 || !word(text.charAt(i))) return null;
-
-    var a = i, b = i;
-    while (a > 0 && word(text.charAt(a - 1))) a--;
-    while (b < text.length && word(text.charAt(b))) b++;
-    if (b - a > 40) return null;      /* not a word; a wall of something */
-
-    var r = document.createRange();
-    r.setStart(node, a);
-    r.setEnd(node, b);
-
-    /* THE CARET IS NEAREST, NOT UNDER. caretRangeFromPoint answers with the
-       closest character to the point even when the point is in a card's
-       padding half a line away — so the word has to actually contain the
-       pointer, give or take the slack a descender needs. */
-    var rects = r.getClientRects();
-    for (var k = 0; k < rects.length; k++) {
-      var q = rects[k];
-      if (x >= q.left - 2 && x <= q.right + 2 && y >= q.top - 3 && y <= q.bottom + 3) return r;
-    }
-    return null;
-  }
-
-  function run() {
-    raf = 0;
-    if (!queued) return;
-    var x = queued[0], y = queued[1];
-    queued = null;
-
-    var r = find(x, y);
-    if (!r) { clear(); return; }
-
-    /* The same word twice is the pointer moving inside it: nothing to do, and
-       nothing repainted. */
-    if (lit &&
-        lit.startContainer === r.startContainer &&
-        lit.startOffset === r.startOffset &&
-        lit.endOffset === r.endOffset) return;
-
-    lit = r;
-    try { CSS.highlights.set(NAME, new Highlight(r)); } catch (e) { clear(); }
-  }
-
-  window.addEventListener('pointermove', function (e) {
-    if (e.pointerType && e.pointerType !== 'mouse') return;
-    queued = [e.clientX, e.clientY];
-    if (!raf) raf = window.requestAnimationFrame(run);
-  }, { passive: true });
-
-  window.addEventListener('pointerleave', clear, { passive: true });
-  window.addEventListener('blur', clear);
-  document.addEventListener('scroll', clear, { passive: true, capture: true });
+  window.addEventListener('pointermove', move, { passive: true });
+  window.addEventListener('pointerleave', away, { passive: true });
+  window.addEventListener('blur', away);
 })();
 
 </script>
