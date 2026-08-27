@@ -14136,6 +14136,28 @@ em,
      card below — starts at the card's left edge, and a button indented by the
      width of an avatar reads as one item out of line rather than as part of
      the conversation. */
+  /* ---- the first screen is the introduction, and nothing else ------------
+
+     A phone landing on this page should see one thing: who this is, what he
+     says, and the way to the work. Not a slice of the next band under it —
+     half a rule and the top of a logo is the page telling you to keep
+     scrolling before you have read the reason to.
+
+     So the message box grows to whatever is left of the screen. The messages
+     stay parked where they are, at the top of it (see FLAT_PAD in
+     js/thread.js), and the room this adds falls under the invitation — which
+     is where the page wants a gap anyway, since what follows it is a new band.
+
+     176px is what sits above and below the box: 136 to the top of it from the
+     top of the page, and the 40 between its foot and the rule under it. svh
+     rather than vh, because the question is what fits on screen WITH the
+     browser's own chrome up, which is what somebody landing here has. */
+  .hero__thread { min-height: calc(100vh - 176px); }
+
+  @supports (height: 100svh) {
+    .hero__thread { min-height: calc(100svh - 176px); }
+  }
+
   .msg-cta { padding-left: 0; }
 
   /* ---- the invitation moves into the box --------------------------------
@@ -14768,7 +14790,7 @@ em,
               <span class="msg" data-msg data-cluster data-scramble data-shuffle data-dwell="700">
                 <span class="msg__from" aria-hidden="true">SS</span>
                 <span class="msg__bubble msg__bubble--reacted"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I design around
-                  <span class="sc"><span class="kw kw--craft">clarity</span>,</span> <span class="sc sc--enc"><span class="kw kw--craft">trust</span>,</span> <span class="sc">and</span> <span class="sc"><span class="kw kw--craft">performance</span>.</span></span><span class="msg__reactions"><button type="button" class="rx" data-rx="fire" aria-label="React with fire"><span class="rx__e" aria-hidden="true">🔥</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="clap" aria-label="React with applause"><span class="rx__e" aria-hidden="true">👏</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hundred" aria-label="React with hundred"><span class="rx__e" aria-hidden="true">💯</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hands" aria-label="React with raised hands"><span class="rx__e" aria-hidden="true">🙌</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="rocket" aria-label="React with rocket"><span class="rx__e" aria-hidden="true">🚀</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="heart" aria-label="React with heart"><span class="rx__e" aria-hidden="true">❤️</span><span class="rx__n" aria-hidden="true"></span></button></span></span>
+                  <span class="sc"><span class="kw kw--craft">clarity</span>,</span> <span class="sc sc--enc"><span class="kw kw--craft">trust</span>,</span> <span class="sc sc--plain">and</span> <span class="sc"><span class="kw kw--craft">performance</span>.</span></span><span class="msg__reactions"><button type="button" class="rx" data-rx="fire" aria-label="React with fire"><span class="rx__e" aria-hidden="true">🔥</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="clap" aria-label="React with applause"><span class="rx__e" aria-hidden="true">👏</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hundred" aria-label="React with hundred"><span class="rx__e" aria-hidden="true">💯</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hands" aria-label="React with raised hands"><span class="rx__e" aria-hidden="true">🙌</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="rocket" aria-label="React with rocket"><span class="rx__e" aria-hidden="true">🚀</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="heart" aria-label="React with heart"><span class="rx__e" aria-hidden="true">❤️</span><span class="rx__n" aria-hidden="true"></span></button></span></span>
               </span>
               </span>
             </h1>
@@ -25418,7 +25440,11 @@ window.PF = window.PF || {};
        /* Trust does not come out of noise, it comes out of ciphertext. */
        { t: 'trust', k: 'craft', sc: true, post: ',', enc: true },
        { t: ' ' },
-       { t: 'and', sc: true },
+       /* Marked, so it waits its turn and is not standing in the line giving
+          away an ending that has not been said yet — but plain, because it is
+          not one of the three things being named. A conjunction coming out of
+          noise is the sentence's grammar performing. */
+       { t: 'and', sc: true, plain: true },
        { t: ' ' },
        { t: 'performance', k: 'craft', sc: true, post: '.' }]
     ],
@@ -25487,7 +25513,8 @@ window.PF = window.PF || {};
          carries, so the gradient span inside is left exactly as it was.
          `enc` asks for ciphertext rather than noise \u2014 digits, in the one face
          that has always meant a machine. */
-      if (r.sc) piece = '<span class="sc' + (r.enc ? ' sc--enc' : '') + '">' +
+      if (r.sc) piece = '<span class="sc' + (r.enc ? ' sc--enc' : '') +
+                        (r.plain ? ' sc--plain' : '') + '">' +
                         piece + (r.post ? esc(r.post) : '') + '</span>';
       out += piece;
     }
@@ -25668,15 +25695,19 @@ window.PF = window.PF || {};
     /* One group can be ciphertext instead of noise: it stands in for its
        letters with digits and resolves out of them, which reads as something
        being decrypted rather than something being typed. */
-    var enc = [];
+    var enc = [], plain = [];
     if (marks.length) {
       for (g = 0; g < marks.length; g++) {
         groups.push(textNodes(marks[g], []));
         enc.push(marks[g].classList.contains('sc--enc'));
+        /* And one can ask for no noise at all: it still waits for its turn and
+           is still hidden until then, it simply arrives as itself. */
+        plain.push(marks[g].classList.contains('sc--plain'));
       }
     } else {
       groups.push(textNodes(host, []));
       enc.push(false);
+      plain.push(false);
     }
     for (g = 0; g < groups.length; g++) nodes = nodes.concat(groups[g]);
 
@@ -25693,6 +25724,7 @@ window.PF = window.PF || {};
       var pool = [];
       for (j = 0; j < text.length; j++) {
         var ch = text.charAt(j);
+        if (plain[gi]) { pool.push(null); continue; }
         if (enc[gi]) {
           /* Ciphertext: every letter is a digit until it is not. Width is not
              held by the stand-in here — the word is boxed at its own width
@@ -26390,8 +26422,13 @@ window.PF = window.PF || {};
       for (var k = 0; k < words.length; k++) {
         (function (el, at) {
           var cipher = el.classList.contains('sc--enc');
+          /* A plain run keeps its beat and loses its performance: it is shown
+             on the frame its turn starts and that is all that happens to it —
+             no faces, no noise, no scale. */
+          var bare = el.classList.contains('sc--plain');
           timers.push(setTimeout(function () {
             el.style.visibility = '';
+            if (bare) return;
             /* The scale is the scramble being SEEN — a word comes apart a size
                up and settles back down into the line as it resolves, so what
                is happening reads from across the room rather than only if you
@@ -26400,7 +26437,7 @@ window.PF = window.PF || {};
             el.classList.add('is-noise');
             if (cipher) el.style.fontFamily = CIPHER_FACE;
           }, at * cycle));
-          if (!cipher) {
+          if (!cipher && !bare) {
             for (var f = 0; f < SHUFFLE_TRIES; f++) {
               (function (face, when) {
                 timers.push(setTimeout(function () {
@@ -26565,9 +26602,11 @@ window.PF = window.PF || {};
      to be written. So the messages and the invitation are simply there, and
      the only thing that moves is the reactions to them. */
   function flat() { return !still && narrow.matches; }
-  /* Even air above and below, because the stack is centred in the box rather
-     than parked in the top of it. */
-  var FLAT_PAD = 30;
+  /* Even air above and below. Twice what the box used to hold: at this width
+     the thread is the first screen rather than one panel of it, and the room
+     around it is what makes it read as the whole of what there is to read
+     before you scroll. */
+  var FLAT_PAD = 60;
 
   var STILL_PAD = 26;
   var STILL_TAIL = 14;   /* and under it, where the invitation sits */
