@@ -7973,27 +7973,27 @@ em,
 
 .tools__wire line {
   stroke: var(--ink);
-  stroke-width: 1.1;
+  stroke-width: 0.8;
   stroke-linecap: round;
-  opacity: 0.3;
+  opacity: 0.2;
 }
 
 /* The joint. A line that stops in mid-air reads as unfinished; the same line
    with a dot on the end reads as attached to what it stopped at. */
 .tools__wire circle {
   fill: var(--ink);
-  opacity: 0.4;
+  opacity: 0.28;
 }
 
 /* ONE OF THEM IS THE POINT. A list of equal connections says the phrase is
    about all of these; one line with weight on it says which of them it is
    really about, and the others become its company. */
 .tools__wire line.is-key {
-  stroke-width: 2;
-  opacity: 0.5;
+  stroke-width: 1.4;
+  opacity: 0.34;
 }
 
-.tools__wire circle.is-key { opacity: 0.62; }
+.tools__wire circle.is-key { opacity: 0.44; }
 
 /* And it is live: a ring going out of the joint, over and over. transform-box
    keeps the scale about the circle's own centre rather than about the SVG's
@@ -8002,7 +8002,7 @@ em,
 .tools__pulse {
   fill: none;
   stroke: var(--ink);
-  stroke-width: 1.4;
+  stroke-width: 1;
   transform-box: fill-box;
   transform-origin: center;
   animation: tools-pulse 1.9s cubic-bezier(0.25, 0.6, 0.3, 1) infinite;
@@ -13957,19 +13957,28 @@ em,
   .card--project > .slot--embed,
   .card--project > img          { order: 8; grid-row: auto; grid-column: 1; margin-top: 16px; }
   .card--project .cta,
-  .card--project .card__cta--foot { order: 9; grid-row: auto; grid-column: 1; margin-top: 16px; }
+  .card--project .card__cta--foot { order: 9; grid-row: auto; grid-column: 1; }
 
-  /* The action gets a zone rather than a corner. 44px is the floor for a tap
-     target; the margin above it is what stops it sitting against the frame of
-     whatever it follows. */
+  /* THE ACTION GETS A ZONE RATHER THAN A CORNER, and the zone is most of what
+     makes it read as one. Full-bleed across the card, 54px of it — a floor of
+     44 is the minimum a thumb needs, not a size a primary action should be —
+     with a clear interval above it and the card's own padding again below.
+
+     The room matters more here than on a wide screen. On desktop the action
+     sits in a corner with the artefact beside it and the card's whole width
+     between them; stacked, it is a solid black bar directly under a picture,
+     and without the interval the two read as one object with a dark strip at
+     the bottom rather than as a thing and the way into it. */
   .card__cta--foot,
   .card--project .cta {
     align-self: stretch;
     justify-self: stretch;
     display: inline-flex;
     align-items: center;
-    min-height: 44px;
-    margin-top: 8px;
+    min-height: 54px;
+    margin-top: 30px;
+    /* On top of the card's own 24, so the bar is not sitting on the frame. */
+    margin-bottom: 8px;
   }
 
   .card--project .cta--fill { justify-content: center; }
@@ -14783,19 +14792,28 @@ em,
   .card--project > .slot--embed,
   .card--project > img          { order: 8; grid-row: auto; grid-column: 1; margin-top: 16px; }
   .card--project .cta,
-  .card--project .card__cta--foot { order: 9; grid-row: auto; grid-column: 1; margin-top: 16px; }
+  .card--project .card__cta--foot { order: 9; grid-row: auto; grid-column: 1; }
 
-  /* The action gets a zone rather than a corner. 44px is the floor for a tap
-     target; the margin above it is what stops it sitting against the frame of
-     whatever it follows. */
+  /* THE ACTION GETS A ZONE RATHER THAN A CORNER, and the zone is most of what
+     makes it read as one. Full-bleed across the card, 54px of it — a floor of
+     44 is the minimum a thumb needs, not a size a primary action should be —
+     with a clear interval above it and the card's own padding again below.
+
+     The room matters more here than on a wide screen. On desktop the action
+     sits in a corner with the artefact beside it and the card's whole width
+     between them; stacked, it is a solid black bar directly under a picture,
+     and without the interval the two read as one object with a dark strip at
+     the bottom rather than as a thing and the way into it. */
   .card__cta--foot,
   .card--project .cta {
     align-self: stretch;
     justify-self: stretch;
     display: inline-flex;
     align-items: center;
-    min-height: 44px;
-    margin-top: 8px;
+    min-height: 54px;
+    margin-top: 30px;
+    /* On top of the card's own 24, so the bar is not sitting on the frame. */
+    margin-bottom: 8px;
   }
 
   .card--project .cta--fill { justify-content: center; }
