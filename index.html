@@ -1028,13 +1028,19 @@ body::before {
 }
 
 /* --------------------------------------------------------------------------
-   AND NOWHERE NEAR A TOUCHSCREEN
+   AND NOWHERE BELOW A DESKTOP
 
    The whole apparatus — the veil, the torch, the beam, and the wall it is all
-   painted over — belongs to a machine with a pointer on it. A phone has none:
-   there is nothing to follow, nothing to reveal with, and a light parked at a
-   fixed point on a page somebody is reading with their thumb is worse than no
-   light at all.
+   painted over — belongs to a machine with a pointer on it and room to sweep
+   it across. A phone has neither: there is nothing to follow, nothing to
+   reveal with, and a light parked at a fixed point on a page somebody is
+   reading with their thumb is worse than no light at all. A window dragged
+   down to tablet width has the pointer but not the room — half the beam is
+   off the edge of the page — so it is treated the same.
+
+   Two conditions, either of which is enough to turn all of it off: a viewport
+   under 960 (the width where the bento becomes a column) or a pointer that is
+   not fine and hovering.
 
    So a coarse pointer gets the dark theme AS IT WAS BEFORE ANY OF THIS: flat
    canvas, the body's own grey noise tile, and nothing that moves or reacts.
@@ -1050,9 +1056,35 @@ body::before {
    its own and predates all of this.
    -------------------------------------------------------------------------- */
 
-@media (hover: none), (pointer: coarse) {
-  :root[data-theme="dark"] {
+@media (max-width: 959px), (hover: none), (pointer: coarse) {
+  /* BOTH THEMES LOSE THE ONE CURSOR-REACTIVE THING THEY SHARE. The wash on
+     the ground reads --px, and --px is only ever written while the apparatus
+     is bound — so below the breakpoint it would sit at its default and become
+     a soft blob parked near the top of the page for good. The light theme's
+     own wall, which predates all of this and follows nothing, is untouched:
+     what goes is the one layer that was following a pointer. */
+  :root {
     --cursor-glow: transparent;
+  }
+
+  :root[data-theme="dark"] {
+    /* Said again at this weight because the dark theme sets it at its own, and
+       a bare :root loses to [data-theme]. */
+    --cursor-glow: transparent;
+
+    /* AND THE VALUES THE WALL WAS THE REASON FOR. The ground dropped and the
+       cards rose because three washes and a grain were sitting on top of them
+       and eating the lift. None of that is here, so neither is the correction:
+       these are the values the dark theme had before any of it — the flat
+       canvas, the card at a 1.21:1 lift off it, and the inks and borders that
+       were measured against that card. */
+    --canvas:         #121212;
+    --surface:        #242424;
+    --surface-sunken: #0C0C0C;
+    --surface-raised: #303030;
+    --ink-muted:      #A2A2A2;
+    --border:         #333333;
+    --border-strong:  #4C4C4C;
   }
 
   :root[data-theme="dark"] body::before,
@@ -1061,6 +1093,14 @@ body::before {
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --cursor-glow: transparent;
+
+      --canvas:         #121212;
+      --surface:        #242424;
+      --surface-sunken: #0C0C0C;
+      --surface-raised: #303030;
+      --ink-muted:      #A2A2A2;
+      --border:         #333333;
+      --border-strong:  #4C4C4C;
     }
 
     :root:not([data-theme="light"]) body::before,
@@ -16280,13 +16320,19 @@ body::before {
 }
 
 /* --------------------------------------------------------------------------
-   AND NOWHERE NEAR A TOUCHSCREEN
+   AND NOWHERE BELOW A DESKTOP
 
    The whole apparatus — the veil, the torch, the beam, and the wall it is all
-   painted over — belongs to a machine with a pointer on it. A phone has none:
-   there is nothing to follow, nothing to reveal with, and a light parked at a
-   fixed point on a page somebody is reading with their thumb is worse than no
-   light at all.
+   painted over — belongs to a machine with a pointer on it and room to sweep
+   it across. A phone has neither: there is nothing to follow, nothing to
+   reveal with, and a light parked at a fixed point on a page somebody is
+   reading with their thumb is worse than no light at all. A window dragged
+   down to tablet width has the pointer but not the room — half the beam is
+   off the edge of the page — so it is treated the same.
+
+   Two conditions, either of which is enough to turn all of it off: a viewport
+   under 960 (the width where the bento becomes a column) or a pointer that is
+   not fine and hovering.
 
    So a coarse pointer gets the dark theme AS IT WAS BEFORE ANY OF THIS: flat
    canvas, the body&#x27;s own grey noise tile, and nothing that moves or reacts.
@@ -16302,9 +16348,35 @@ body::before {
    its own and predates all of this.
    -------------------------------------------------------------------------- */
 
-@media (hover: none), (pointer: coarse) {
-  :root[data-theme=&quot;dark&quot;] {
+@media (max-width: 959px), (hover: none), (pointer: coarse) {
+  /* BOTH THEMES LOSE THE ONE CURSOR-REACTIVE THING THEY SHARE. The wash on
+     the ground reads --px, and --px is only ever written while the apparatus
+     is bound — so below the breakpoint it would sit at its default and become
+     a soft blob parked near the top of the page for good. The light theme&#x27;s
+     own wall, which predates all of this and follows nothing, is untouched:
+     what goes is the one layer that was following a pointer. */
+  :root {
     --cursor-glow: transparent;
+  }
+
+  :root[data-theme=&quot;dark&quot;] {
+    /* Said again at this weight because the dark theme sets it at its own, and
+       a bare :root loses to [data-theme]. */
+    --cursor-glow: transparent;
+
+    /* AND THE VALUES THE WALL WAS THE REASON FOR. The ground dropped and the
+       cards rose because three washes and a grain were sitting on top of them
+       and eating the lift. None of that is here, so neither is the correction:
+       these are the values the dark theme had before any of it — the flat
+       canvas, the card at a 1.21:1 lift off it, and the inks and borders that
+       were measured against that card. */
+    --canvas:         #121212;
+    --surface:        #242424;
+    --surface-sunken: #0C0C0C;
+    --surface-raised: #303030;
+    --ink-muted:      #A2A2A2;
+    --border:         #333333;
+    --border-strong:  #4C4C4C;
   }
 
   :root[data-theme=&quot;dark&quot;] body::before,
@@ -16313,6 +16385,14 @@ body::before {
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme=&quot;light&quot;]) {
       --cursor-glow: transparent;
+
+      --canvas:         #121212;
+      --surface:        #242424;
+      --surface-sunken: #0C0C0C;
+      --surface-raised: #303030;
+      --ink-muted:      #A2A2A2;
+      --border:         #333333;
+      --border-strong:  #4C4C4C;
     }
 
     :root:not([data-theme=&quot;light&quot;]) body::before,
@@ -18571,13 +18651,19 @@ body::before {
 }
 
 /* --------------------------------------------------------------------------
-   AND NOWHERE NEAR A TOUCHSCREEN
+   AND NOWHERE BELOW A DESKTOP
 
    The whole apparatus — the veil, the torch, the beam, and the wall it is all
-   painted over — belongs to a machine with a pointer on it. A phone has none:
-   there is nothing to follow, nothing to reveal with, and a light parked at a
-   fixed point on a page somebody is reading with their thumb is worse than no
-   light at all.
+   painted over — belongs to a machine with a pointer on it and room to sweep
+   it across. A phone has neither: there is nothing to follow, nothing to
+   reveal with, and a light parked at a fixed point on a page somebody is
+   reading with their thumb is worse than no light at all. A window dragged
+   down to tablet width has the pointer but not the room — half the beam is
+   off the edge of the page — so it is treated the same.
+
+   Two conditions, either of which is enough to turn all of it off: a viewport
+   under 960 (the width where the bento becomes a column) or a pointer that is
+   not fine and hovering.
 
    So a coarse pointer gets the dark theme AS IT WAS BEFORE ANY OF THIS: flat
    canvas, the body&#x27;s own grey noise tile, and nothing that moves or reacts.
@@ -18593,9 +18679,35 @@ body::before {
    its own and predates all of this.
    -------------------------------------------------------------------------- */
 
-@media (hover: none), (pointer: coarse) {
-  :root[data-theme=&quot;dark&quot;] {
+@media (max-width: 959px), (hover: none), (pointer: coarse) {
+  /* BOTH THEMES LOSE THE ONE CURSOR-REACTIVE THING THEY SHARE. The wash on
+     the ground reads --px, and --px is only ever written while the apparatus
+     is bound — so below the breakpoint it would sit at its default and become
+     a soft blob parked near the top of the page for good. The light theme&#x27;s
+     own wall, which predates all of this and follows nothing, is untouched:
+     what goes is the one layer that was following a pointer. */
+  :root {
     --cursor-glow: transparent;
+  }
+
+  :root[data-theme=&quot;dark&quot;] {
+    /* Said again at this weight because the dark theme sets it at its own, and
+       a bare :root loses to [data-theme]. */
+    --cursor-glow: transparent;
+
+    /* AND THE VALUES THE WALL WAS THE REASON FOR. The ground dropped and the
+       cards rose because three washes and a grain were sitting on top of them
+       and eating the lift. None of that is here, so neither is the correction:
+       these are the values the dark theme had before any of it — the flat
+       canvas, the card at a 1.21:1 lift off it, and the inks and borders that
+       were measured against that card. */
+    --canvas:         #121212;
+    --surface:        #242424;
+    --surface-sunken: #0C0C0C;
+    --surface-raised: #303030;
+    --ink-muted:      #A2A2A2;
+    --border:         #333333;
+    --border-strong:  #4C4C4C;
   }
 
   :root[data-theme=&quot;dark&quot;] body::before,
@@ -18604,6 +18716,14 @@ body::before {
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme=&quot;light&quot;]) {
       --cursor-glow: transparent;
+
+      --canvas:         #121212;
+      --surface:        #242424;
+      --surface-sunken: #0C0C0C;
+      --surface-raised: #303030;
+      --ink-muted:      #A2A2A2;
+      --border:         #333333;
+      --border-strong:  #4C4C4C;
     }
 
     :root:not([data-theme=&quot;light&quot;]) body::before,
@@ -31083,11 +31203,18 @@ window.PF = window.PF || {};
      are three layers of one idea, and all three of them are worthless — worse,
      the veil is actively harmful — without a pointer to move them. So the
      stylesheet does not decide for itself: it waits for this class, which is
-     only ever added on a fine pointer, with motion allowed, and by a script
-     that has actually run. A page with no JavaScript, a phone, a reader who
+     only ever added on a fine pointer, with motion allowed, by a script that
+     has actually run, and at a width with room to sweep a beam across. A page
+     with no JavaScript, a phone, a tablet, a half-width window, a reader who
      has asked for less movement or more contrast: none of them are handed a
-     dark room they cannot light. */
-  root.classList.add('has-torch');
+     dark room they cannot light.
+
+     The other four conditions were settled above and cannot change; this one
+     can, because a window can be dragged. So it is watched rather than read
+     once, and crossing the breakpoint in either direction adds or removes the
+     whole apparatus — the class, the properties, the frame loop, and the
+     listeners themselves. Below it nothing is tracked and nothing is bound. */
+  var wide = window.matchMedia('(min-width: 960px)');
 
   var toX = 50, toY = 8;     /* where the pointer is, in per cent */
   var atX = 50, atY = 8;     /* where the light has got to */
@@ -31146,9 +31273,38 @@ window.PF = window.PF || {};
     if (!raf) raf = window.requestAnimationFrame(frame);
   }
 
-  window.addEventListener('pointermove', move, { passive: true });
-  window.addEventListener('pointerleave', away, { passive: true });
-  window.addEventListener('blur', away);
+  function bind() {
+    root.classList.add('has-torch');
+    window.addEventListener('pointermove', move, { passive: true });
+    window.addEventListener('pointerleave', away, { passive: true });
+    window.addEventListener('blur', away);
+  }
+
+  function unbind() {
+    root.classList.remove('has-torch');
+    window.removeEventListener('pointermove', move);
+    window.removeEventListener('pointerleave', away);
+    window.removeEventListener('blur', away);
+
+    /* Nothing is left holding a position. The properties come off rather than
+       being set to something harmless, the loop is cancelled rather than left
+       to notice, and the whole thing starts from the page's own defaults if
+       the window is dragged back out again. */
+    if (raf) { window.cancelAnimationFrame(raf); raf = 0; }
+    rawX = rawY = -9999;
+    toX = atX = 50;
+    toY = atY = 8;
+    root.style.removeProperty('--fx');
+    root.style.removeProperty('--fy');
+    root.style.removeProperty('--px');
+    root.style.removeProperty('--py');
+  }
+
+  function sync() { if (wide.matches) bind(); else unbind(); }
+
+  sync();
+  if (wide.addEventListener) wide.addEventListener('change', sync);
+  else if (wide.addListener) wide.addListener(sync);
 
   /* Leaving the landing page puts the torch down: the properties are removed
      rather than left at their last value, so nothing about where the pointer
