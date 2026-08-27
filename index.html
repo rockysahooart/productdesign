@@ -14136,28 +14136,6 @@ em,
      card below — starts at the card's left edge, and a button indented by the
      width of an avatar reads as one item out of line rather than as part of
      the conversation. */
-  /* ---- the first screen is the introduction, and nothing else ------------
-
-     A phone landing on this page should see one thing: who this is, what he
-     says, and the way to the work. Not a slice of the next band under it —
-     half a rule and the top of a logo is the page telling you to keep
-     scrolling before you have read the reason to.
-
-     So the message box grows to whatever is left of the screen. The messages
-     stay parked where they are, at the top of it (see FLAT_PAD in
-     js/thread.js), and the room this adds falls under the invitation — which
-     is where the page wants a gap anyway, since what follows it is a new band.
-
-     176px is what sits above and below the box: 136 to the top of it from the
-     top of the page, and the 40 between its foot and the rule under it. svh
-     rather than vh, because the question is what fits on screen WITH the
-     browser's own chrome up, which is what somebody landing here has. */
-  .hero__thread { min-height: calc(100vh - 176px); }
-
-  @supports (height: 100svh) {
-    .hero__thread { min-height: calc(100svh - 176px); }
-  }
-
   .msg-cta { padding-left: 0; }
 
   /* ---- the invitation moves into the box --------------------------------
@@ -14175,7 +14153,15 @@ em,
        almost touching a row of emoji. */
     margin-top: 46px;
     margin-bottom: 0;
+    /* And it arrives the way the thread's own invitation does: after the
+       reactions, into room that was reserved for it before it was there. */
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 340ms linear,
+                transform 340ms cubic-bezier(0.2, 0.75, 0.25, 1);
   }
+
+  .msg-track > .hero__mobile-cta.is-in { opacity: 1; transform: none; }
 
   /* [hidden] is a UA rule and loses to the button's own display. */
   .hero__mobile-cta[hidden] { display: none; }
@@ -26130,7 +26116,7 @@ window.PF = window.PF || {};
         /* The inset place() parks the stack at. Less underneath than above:
            what sits at the bottom of this box is a button, and a button
            carries its own optical margin in a way a line of type does not. */
-        boxH += flat() ? FLAT_PAD * 2 : STILL_PAD + STILL_TAIL;
+        boxH += phone() ? FLAT_PAD * 2 : STILL_PAD + STILL_TAIL;
         var cta = ctaEl();
         if (cta) {
           var was = cta.hasAttribute('hidden');
@@ -26166,6 +26152,19 @@ window.PF = window.PF || {};
       thread.style.height = Math.ceil(boxH) + 'px';
       thread.classList.add('is-windowed');
 
+      /* AND ON A PHONE, IN THE MIDDLE OF THE SCREEN. The box is the size of
+         what it holds — two messages, their reactions and the invitation —
+         which on a phone leaves it sitting in the top two thirds with the
+         whole of the rest of the screen under it. Pushed down until the
+         conversation is centred on the display it is being read on, which is
+         what makes the first screen a composition rather than a stack that
+         happens to start at the top.
+
+         Capped, because the point is a nudge: on a very tall screen an
+         uncapped centre would put a hundred and fifty pixels of nothing
+         between somebody's name and the first thing he says. */
+      centreOnScreen();
+
       /* ...AND THEN TAKES THE REST OF THE COLUMN. The measurement above is a
          floor, not a design: it is the tallest window of three the sequence
          produces, and it left the conversation sitting in the top half of a
@@ -26180,6 +26179,25 @@ window.PF = window.PF || {};
          screen and there is content below the thread, comes out at nothing
          and leaves the box exactly as it was measured. */
       fillColumn();
+    }
+
+    /* How far the box is allowed to be pushed down the screen. */
+    var CENTRE_MAX = 120;
+
+    function centreOnScreen() {
+      if (!phone()) { thread.style.marginTop = ''; return; }
+      /* Measured with the push off, so the answer is where the box WOULD sit
+         rather than where the last measurement put it. */
+      thread.style.marginTop = '';
+      /* The box already has a margin from the stylesheet, and an inline one
+         replaces it rather than adding to it — so the push is measured against
+         the stylesheet's value and written back on top of it. */
+      var base = parseFloat(window.getComputedStyle(thread).marginTop) || 0;
+      var box = thread.getBoundingClientRect();
+      var top = box.top + (window.scrollY || window.pageYOffset || 0);
+      var want = (window.innerHeight - box.height) / 2;
+      var push = Math.round(Math.min(CENTRE_MAX, want - top));
+      if (push > 0) thread.style.marginTop = (base + push) + 'px';
     }
 
     var BOX_TAIL = 24;   /* air between the box and the card's bottom edge */
@@ -26291,7 +26309,7 @@ window.PF = window.PF || {};
       return n;
     }
 
-    if (!still && !flat()) openNow();
+    if (!still) openNow();
 
     var idx = opening(), retired = 0, timer = null, running = false;
 
@@ -26596,12 +26614,11 @@ window.PF = window.PF || {};
     /* And where a stack that never has to move sits: a fixed inset from the
        top of the box, above and below. Only used when the whole conversation
        fits — see place(). */
-    /* A PHONE DOES NOT ANIMATE THE CONVERSATION. At this width the thread is not
-     a conversation happening beside a portfolio, it is the top of the page —
-     and a visitor arriving on a phone should be reading it, not waiting for it
-     to be written. So the messages and the invitation are simply there, and
-     the only thing that moves is the reactions to them. */
-  function flat() { return !still && narrow.matches; }
+    /* THE PHONE'S OWN COMPOSITION. Same conversation, written the same way — the
+     indicator, the sequence and the reactions are all as they are anywhere
+     else. What differs at this width is the room around it and which button
+     ends it: see FLAT_PAD below, and ctaEl(). */
+  function phone() { return !still && narrow.matches; }
   /* Even air above and below. Twice what the box used to hold: at this width
      the thread is the first screen rather than one panel of it, and the room
      around it is what makes it read as the whole of what there is to read
@@ -26686,7 +26703,7 @@ window.PF = window.PF || {};
          last. The room under the invitation is reserved whether the invitation
          is there yet or not, which is what makes the arrival a fade rather
          than a shove. */
-      if (count < VISIBLE) wantTop = flat() ? FLAT_PAD : STILL_PAD;
+      if (count < VISIBLE) wantTop = phone() ? FLAT_PAD : STILL_PAD;
 
       /* Absolute, not incremental. Whatever the track was doing, this is where
          it belongs. */
@@ -26885,8 +26902,15 @@ window.PF = window.PF || {};
          runs before this line does, and a var that is still undefined when the
          box is measured is a box measured around the wrong button. */
       if (!mobCta) mobCta = document.querySelector('.hero__mobile-cta');
-      if (flat() && mobCta) {
-        if (track && mobCta.parentNode !== track) track.appendChild(mobCta);
+      if (phone() && mobCta) {
+        if (track && mobCta.parentNode !== track) {
+          track.appendChild(mobCta);
+          /* Put away on arrival. It is a link in the markup, on all the time
+             wherever it happens to be sitting; inside the conversation it is
+             the last thing said, so it waits for the end of it like the
+             thread's own invitation does. */
+          mobCta.setAttribute('hidden', '');
+        }
         return mobCta;
       }
       return buildCta();
@@ -26909,7 +26933,6 @@ window.PF = window.PF || {};
       el.removeAttribute('hidden');
       /* One more thing in the flow, so the canvas answers for it. */
       place();
-      if (flat()) { el.classList.add('is-in'); return; }
       requestAnimationFrame(function () { el.classList.add('is-in'); });
     }
 
@@ -26920,7 +26943,7 @@ window.PF = window.PF || {};
         ctaRow.classList.remove('is-in');
         ctaRow.setAttribute('hidden', '');
       }
-      if (mobCta && mobCta.parentNode === track) {
+      if (mobCta && track && mobCta.parentNode === track) {
         mobCta.classList.remove('is-in');
         mobCta.setAttribute('hidden', '');
       }
@@ -27093,8 +27116,6 @@ window.PF = window.PF || {};
         void track.offsetWidth;
         track.style.transition = '';
       }
-      if (flat()) { flatten(); play(); return; }
-
       idx = open;
       play();
     }
@@ -27187,66 +27208,6 @@ window.PF = window.PF || {};
       ['rocket', '1', 210], ['heart', '1', 280],
       ['clap', '2', 420, 1.18, 440]
     ];
-
-    /* ---- the phone's version of all of this ------------------------------
-
-       Everything the sequence arrives at, arrived at already: both messages
-       settled, the invitation under them, the stack centred in the box. No
-       indicator, no pop, no decode, no loop — at this width the thread is the
-       top of the page rather than a thing happening beside it, and somebody who
-       has just landed should be reading it rather than watching it be typed.
-
-       The reactions are the exception, and they are the exception on purpose:
-       they are the only part of this that is somebody ELSE talking, so they are
-       the only part worth waiting a beat for. */
-    var rxAt = 0;
-
-    function flatten() {
-      pause();
-      if (cancelScramble) { cancelScramble(); cancelScramble = null; }
-      hideCta();
-      for (var i = 0; i < rows.length; i++) {
-        rows[i].setAttribute('data-state', i < count ? 'settled' : 'idle');
-      }
-      idx = count;
-      retired = 0;
-      showCta();
-      /* Measured with the invitation in the flow, then parked once. */
-      reserve();
-      place(true);
-      phase = 'flat';
-      rxAt = 0;
-      thread.removeAttribute('data-reactions');
-      resetReactions();
-    }
-
-    /* Resumable rather than replayable: it runs when the box comes on screen,
-       stops if it leaves, and carries on from the chip it had reached. Nothing
-       here repeats, because nothing here is a loop. */
-    function flatBurst() {
-      if (rxAt >= RX_PLAN.length) return;
-      thread.setAttribute('data-reactions', 'on');
-      (function step() {
-        if (rxAt >= RX_PLAN.length) return;
-        var item = RX_PLAN[rxAt++];
-        var chip = thread.querySelector('.rx[data-rx="' + item[0] + '"]');
-        if (chip) {
-          var first = !chip.classList.contains('is-in');
-          chip.classList.add('is-in', 'is-on');
-          chip.setAttribute('aria-pressed', 'true');
-          var n = chip.querySelector('.rx__n');
-          if (n) n.textContent = item[1];
-          if (!first && item[3]) {
-            chip.style.setProperty('--rx-peak', item[3]);
-            chip.style.setProperty('--rx-bump-ms', (item[4] || 460) + 'ms');
-            chip.classList.remove('is-bump');
-            void chip.offsetWidth;
-            chip.classList.add('is-bump');
-          }
-        }
-        timer = setTimeout(step, item[2]);
-      })();
-    }
 
     function burst() {
       thread.setAttribute('data-reactions', 'on');
@@ -27508,8 +27469,6 @@ window.PF = window.PF || {};
     }
 
     function play() {
-      /* Nothing to play but the chips. */
-      if (phase === 'flat') { flatBurst(); return; }
       if (phase !== 'seq') { arm(); return; }
       if (running) return;
       /* Nothing left to send. On a phone that is the ordinary case rather than
@@ -27553,11 +27512,6 @@ window.PF = window.PF || {};
       }
       return;
     }
-
-    /* A phone gets the finished thread from the first frame. The observer below
-       still runs — it is what holds the reactions until the box is actually on
-       screen — but there is no sequence under it. */
-    if (flat()) flatten();
 
     /* Nothing runs to an empty room. Once the last message has landed there is
        nothing left for either observer to start. */
