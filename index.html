@@ -24913,11 +24913,10 @@ window.PF = window.PF || {};
      thread is set in. Slow enough to watch — the whole point is that you can
      see it happening.
 
-     And then it stands. It is the last thing the thread says, so the pause
-     after it is the ending's rather than this message's: LINE_HOLD waits out
-     the decode and holds the finished sentence before the reactions arrive on
-     it. No dwell here — a dwell is the gap before the NEXT message, and there
-     is no next message. */
+     It is the last thing the thread says, so what follows it belongs to the
+     ending rather than to this message: the reactions wait out the writing and
+     arrive on the beat it stops. No dwell here — a dwell is the gap before the
+     NEXT message, and there is no next message. */
   ROLES.design[2].opt = { scramble: true, shuffle: true, wide: true };
 
   function esc(t) {
@@ -24990,11 +24989,14 @@ window.PF = window.PF || {};
   var GAP_MS = 900;         /* the beat every message gets */
   var READ_MS = 24;         /* per character of it */
   var GAP_MAX = 4600;       /* however long it is, it moves on */
-  var REACT_MS = 700;   /* after the last message has settled */
-  /* ...and longer than that when the last message is still writing itself:
-     the decode has to clear first, and then the sentence stands for this
-     before the chips arrive on it. */
-  var LINE_HOLD = 2400;
+  /* After the last message has settled — or, when that message is still
+     writing itself, after the writing stops. The reactions are a response to
+     the line, so they land on the beat it finishes rather than after a pause
+     that reads as the thread having nothing else to say. */
+  var REACT_MS = 700;
+  /* And that beat is exactly one: long enough not to be the same frame as the
+     last word resolving, short enough that nothing has happened in between. */
+  var TIGHT = 140;
   /* THE LAST MESSAGE GETS THE ROOM IT ASKS FOR. The closing line and the
      reactions under it used to be talked over: the list of work started
      revealing on the same frame the first chip landed, so the one moment the
@@ -26707,10 +26709,10 @@ window.PF = window.PF || {};
       return Math.min(GAP_MS + len * READ_MS, GAP_MAX) + dwellOf(i);
     }
 
-    /* THE LAST MESSAGE IS ALLOWED TO BE READ before anything happens to it. If
-       it arrived out of noise, that clock starts when the noise clears rather
-       than when the bubble landed — and it gets a beat of its own on top,
-       because a line that takes two seconds to write itself has earned one.
+    /* THE REACTIONS WAIT FOR THE WRITING, AND NOTHING ELSE. A message that
+       arrives out of noise is not finished when its bubble lands — it is
+       finished when the last word stops resolving — so the clock starts there
+       rather than a beat earlier, and it is the only thing the chips wait for.
 
        Reached from two places: the end of the sequence, and a thread whose
        whole content is its opening — which is what the narrow set is, two
@@ -26723,7 +26725,7 @@ window.PF = window.PF || {};
            the work. Both are burst()'s tail: the list used to start on this
            same frame, underneath chips that were still arriving. */
         burst();
-      }, left ? left + LINE_HOLD : REACT_MS);
+      }, left ? left + TIGHT : REACT_MS);
     }
 
     function play() {
