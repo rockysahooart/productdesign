@@ -27830,8 +27830,10 @@ window.PF = window.PF || {};
       fillColumn();
     }
 
-    /* How far the box is allowed to be pushed down the screen. */
+    /* How far the box is allowed to be pushed down the screen, and how far
+       above the true centre it settles once it is there. */
     var CENTRE_MAX = 120;
+    var CENTRE_LIFT = 44;
     /* What the invitation measures, and the gap it keeps above itself. Both
        read at reserve() time, so the composition below can be centred as one
        object rather than as a box with something hanging off it. */
@@ -27861,9 +27863,20 @@ window.PF = window.PF || {};
       /* The invitation is under the box rather than inside it, and it is part
          of the picture being centred — otherwise the conversation sits in the
          middle of the screen with its own action hanging below the middle. */
-      var want = (window.innerHeight - (box.height + ctaGap + ctaH)) / 2;
-      var push = Math.round(Math.min(CENTRE_MAX, want - top));
-      if (push > 0) thread.style.marginTop = (base + push) + 'px';
+      /* A shade above centre. Optically the conversation sits low when it is
+         mathematically centred — there is a name and a portrait above it and
+         nothing under it but the invitation — so the arithmetic gets a lift to
+         answer for the weight at the top. */
+      var want = (window.innerHeight - (box.height + ctaGap + ctaH)) / 2 - CENTRE_LIFT;
+      /* It can come up as well as go down. Where the conversation is tall
+         enough to fill the screen on its own there is nothing to push it into
+         — and the answer to "centre this" is then a small lift rather than
+         nothing at all. Floored at the margin the stylesheet gives it less
+         eight pixels, so the box can borrow from its own gap and never from
+         the name above it. */
+      var lift = -Math.max(0, base - 8);
+      var push = Math.round(Math.max(lift, Math.min(CENTRE_MAX, want - top)));
+      if (push) thread.style.marginTop = (base + push) + 'px';
     }
 
     var BOX_TAIL = 24;   /* air between the box and the card's bottom edge */
@@ -28897,6 +28910,23 @@ window.PF = window.PF || {};
       ['clap', '2', 420, 1.18, 440]
     ];
 
+    /* All of it, on one frame. Same states burst() ends at, set rather than
+       played: the chips go to their final counts together and the invitation
+       is shown on the same tick, so the three of them read as one arrival. */
+    function landTogether() {
+      thread.setAttribute('data-reactions', 'on');
+      resetReactions();
+      for (var i = 0; i < RX_PLAN.length; i++) {
+        var chip = thread.querySelector('.rx[data-rx="' + RX_PLAN[i][0] + '"]');
+        if (!chip) continue;
+        chip.classList.add('is-in', 'is-on');
+        chip.setAttribute('aria-pressed', 'true');
+        var n = chip.querySelector('.rx__n');
+        if (n) n.textContent = RX_PLAN[i][1];
+      }
+      showCta();
+    }
+
     function burst() {
       thread.setAttribute('data-reactions', 'on');
       resetReactions();
@@ -28979,6 +29009,17 @@ window.PF = window.PF || {};
           row.setAttribute('data-state', 'live');
           idx++;
 
+          /* ON A PHONE THE ENDING ARRIVES WITH THE MESSAGE THAT ENDS IT. On a
+             wide screen the last line lands, the chips answer it one at a
+             time, and the invitation follows a beat after that — a small
+             performance, and there is room for it. At this width the three of
+             them are one moment: the sentence about the work, the reaction to
+             it and the way onwards, on the same frame. Everything below the
+             fold is already waiting; making somebody watch six seconds of
+             punctuation before the button exists is the page performing at
+             them rather than for them. */
+          if (phone() && idx >= count) landTogether();
+
           /* A row can ask to arrive out of noise. The decode runs inside the
              bubble that has already landed — the arrival animation is
              untouched, and so is everything after it. */
@@ -29013,6 +29054,9 @@ window.PF = window.PF || {};
            indicator waits out the full gap after that. */
           timer = setTimeout(function () {
             row.setAttribute('data-state', 'settled');
+            /* Already ended, on the frame it arrived. Straight to the hold,
+               which is what the loop waits out. */
+            if (idx >= count && phone()) { settle(); return; }
             if (idx >= count) { ending(); return; }
             timer = setTimeout(next, gapAfter(idx - 1));
           }, POP_MS);
