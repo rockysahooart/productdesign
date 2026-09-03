@@ -11956,12 +11956,64 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   cursor: pointer;
   transition: background-color var(--cu-fast) var(--cu-ease);
 }
+.cu-sug { align-items: center; }
 .cu-sug:hover { background: var(--cu-teal-8); }
-.cu-sug__ico { display: grid; place-items: center; padding-block-start: 2px; color: var(--cu-teal); }
-.cu-sug__ico svg { width: 20px; height: 20px; }
 .cu-sug__t { flex: 1 1 auto; min-width: 0; font-size: 14px; line-height: 20px; overflow-wrap: break-word; }
 .cu-sug[data-on="1"] { background: var(--cu-teal-8); cursor: default; opacity: 1; }
 .cu-sug[data-on="1"] .cu-sug__t { color: var(--cu-text-2); }
+
+/* THE ADD CONTROL IS THE POINT OF THE ROW, SO IT LOOKS LIKE ONE.
+   It used to be a bare 20px glyph the same weight as the text beside it, and
+   nothing on the row said which part of it did the adding. It is now a filled
+   circular target with the row's whole tap area still behind it — big enough
+   to read as the action from a metre away, and it flips to a tick in place
+   when the question has landed rather than vanishing. */
+.cu-sug__add {
+  flex: none;
+  display: grid; place-items: center;
+  width: 36px; height: 36px;
+  border-radius: 999px;
+  background: var(--cu-teal);
+  color: var(--cu-on-teal);
+  transition: transform var(--cu-fast) var(--cu-ease),
+              background-color var(--cu-fast) var(--cu-ease);
+}
+.cu-sug__add svg { width: 22px; height: 22px; }
+.cu-sug:hover .cu-sug__add { transform: scale(1.06); }
+.cu-sug:active .cu-sug__add { transform: scale(0.94); }
+.cu-sug[data-on="1"] .cu-sug__add {
+  background: transparent;
+  color: var(--cu-teal);
+  transform: none;
+}
+
+/* JUST ADDED — the question arrives at the top of the patient's own list, and
+   this is how the list says so. It is a temporary marker, cleared a couple of
+   seconds later, so it never becomes permanent furniture on the row. */
+.cu-qwrap[data-fresh="1"] {
+  background: var(--cu-teal-8);
+  animation: cu-fresh-in var(--cu-mid) var(--cu-ease) both;
+}
+.cu-fresh {
+  display: flex; align-items: center; gap: 6px;
+  margin: 0;
+  padding: var(--cu-2) var(--cu-4) 0;
+  font-size: 11px; font-weight: 500; line-height: 16px;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--cu-teal);
+}
+.cu-fresh svg { width: 14px; height: 14px; }
+.cu-qwrap[data-fresh="1"] .cu-row,
+.cu-qwrap[data-fresh="1"] .cu-q { border-block-start-color: transparent; }
+
+@keyframes cu-fresh-in {
+  from { background: var(--cu-teal-20); }
+  to   { background: var(--cu-teal-8); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cu-qwrap[data-fresh="1"] { animation: none; }
+  .cu-sug__add { transition: none; }
+}
 
 /* ==========================================================================
    SNACKBAR — every reversible action is reversed the same way
@@ -14157,7 +14209,8 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
+  text-align: center;
   gap: 10px 18px;
   margin-top: 16px;
   padding: 0;
@@ -14839,6 +14892,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   justify-content: center;
   align-items: stretch;
   gap: 24px;
+  max-width: 100%;
 }
 
 .cu-w {
@@ -14849,7 +14903,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   min-width: 0;
 }
 
-.cu-w__cap { display: flex; align-items: baseline; gap: 8px; margin: 0; }
+.cu-w__cap { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; margin: 0; }
 .cu-w__cap b { font-weight: 700; }
 .cu-w__cap span { color: var(--ink-muted); }
 
@@ -14864,8 +14918,15 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .cu-w__read b { color: var(--ink); font-weight: 700; }
 
 /* One device at a time below the comparison breakpoint, so "All three" is not
-   offered at a width where three frames are three slivers. */
-@media (max-width: 699px) {
+   offered at a width where three frames are three slivers.
+
+   THE BREAKPOINT IS THE CAPTIONS, NOT THE FRAMES. The frames scale, so three
+   of them will fit anything; the labels under them do not. "440pt · iPhone 16
+   Pro Max" is about 250px of text that cannot be made smaller without becoming
+   unreadable, and three of those plus the gaps need roughly 800px before
+   anything else on the page is drawn. Below that the row was pushing the whole
+   case study sideways, so below that there is no row. */
+@media (max-width: 1099px) {
   .cu-only-all { display: none; }
   .cu-widths { grid-auto-flow: row; justify-items: center; }
   .cu-screens { padding: 20px 16px 22px; }
@@ -14884,19 +14945,41 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    reading a paragraph or touching anything.
    -------------------------------------------------------------------------- */
 
+/* AND IT SITS OVER THE PROTOTYPE, NOT BESIDE IT.
+
+   The phone centres itself in the stage. The words above it were still
+   left-aligned to the module's edge, so on a wide screen a short heading and a
+   one-line lede sat in the far corner with a metre of empty module between
+   them and the thing they describe — the text read as a caption for the border
+   rather than for the device. Everything supporting the prototype now shares
+   the prototype's centre line and is capped at a readable measure, so the
+   whole module reads top to bottom as one column. */
 .demo__h {
-  margin: 0 0 8px;
+  margin: 0 auto 8px;
   max-width: 34ch;
+  text-align: center;
 }
 .demo__p {
-  margin: 0 0 20px;
+  margin: 0 auto 20px;
   max-width: 62ch;
   color: var(--ink-secondary);
+  text-align: center;
 }
 .demo__take {
-  margin: 16px 0 0;
+  margin: 16px auto 0;
   max-width: 68ch;
   color: var(--ink-secondary);
+  text-align: center;
+}
+
+/* The older modules — the width comparison, the trust artifacts — use the
+   article's own demo head instead of .demo__h. Same treatment, so a reader
+   moving between two prototype sections doesn't watch the text jump from the
+   centre to the left margin and back. */
+.ar-demo.cu .ar-demo__head { justify-content: center; text-align: center; }
+.ar-demo.cu .ar-demo__intro {
+  margin-inline: auto;
+  text-align: center;
 }
 
 /* The phone gets the room the paragraphs were using. */
@@ -14923,7 +15006,9 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .cu-scenario { margin-block-end: 0; }
 }
 
-.cu-embed__bar { justify-content: space-between; }
+/* The cue and the reset are the last line of supporting text before the
+   device, so they take the same centre as the rest of it. */
+.cu-embed__bar { justify-content: center; text-align: center; }
 
 /* The demo-account note, inside the phone. */
 .cu-demo-note {
@@ -15213,6 +15298,211 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   font-weight: 560;
   letter-spacing: -0.015em;
 }
+
+
+/* ===== css/15-accordion.css ===== */
+/* ==========================================================================
+   15 — THE CASE-STUDY ACCORDION
+
+   Five sections. The first is always open, because a reader who opens nothing
+   should still leave knowing what the project was, what happened to it and
+   what I did. The other four are ordinary accordions: a whole-width header
+   that toggles, a caret that turns, no auto-open, no auto-close, no scroll
+   hijacking, and as many open at once as somebody wants.
+
+   Spacing runs on the 8px rhythm — 20px gutters and 48–64 between sections on
+   a phone, 32–48 gutters and 80–112 between sections on a desktop, with the
+   readable column held to about 68 characters and visual evidence allowed the
+   full canvas.
+   ========================================================================== */
+
+.case {
+  --cs-gutter: 20px;
+  --cs-major: 48px;
+  --cs-group: 24px;
+  --cs-pad: 16px;
+  --cs-read: 68ch;
+  --cs-canvas: 1240px;
+}
+
+@media (min-width: 900px) {
+  .case {
+    --cs-gutter: 40px;
+    --cs-major: 88px;
+    --cs-group: 40px;
+    --cs-pad: 28px;
+  }
+}
+
+/* --- the shell ------------------------------------------------------------ */
+
+.cs-wrap {
+  max-width: var(--cs-canvas);
+  margin-inline: auto;
+  padding-inline: var(--cs-gutter);
+}
+
+/* AND IT IS ALLOWED TO BE NARROW.
+
+   The wrap is a grid item in the article's column grid, and a grid item's
+   min-width defaults to auto — it refuses to shrink below its contents'
+   min-content width. The width-comparison prototype measures the room it has
+   been given and scales three phones to fit, so the two of them formed a loop:
+   the frames asked the wrap how wide it was, the wrap answered with how wide
+   the frames were, and between 720 and 1100 the answer settled at 1240px
+   inside a 720px window — a case study you could scroll sideways.
+
+   min-width: 0 breaks the loop at the top. The track constrains the wrap, the
+   wrap constrains the prototype, and the prototype scales to what it actually
+   has. */
+.cs-wrap,
+.cs-wrap > *,
+.acc__b,
+.acc__b > * { min-width: 0; }
+
+/* THE WRAP TAKES THE WIDE COLUMN, NOT THE READING ONE. The sections inside it
+   are not paragraphs — they are five headers and a page of prototypes, and in
+   the text column the prototypes had 780px to show three phones in. The prose
+   inside keeps its own measure (--cs-read, below), so widening the wrap widens
+   only the things that wanted the room.
+
+   AND IT DOES NOT DOUBLE THE MARGIN either. Every column in that grid is
+   already inset by the article's own gutter, so the wrap's padding was a
+   second gutter on top of the first — merely generous at 1440, and at 320
+   forty pixels of margin inside a column with 260 to give, which put the
+   sections past the right edge of the screen. */
+.ar > .cs-wrap { grid-column: wide; padding-inline: 0; }
+
+/* Readable text keeps a narrow measure; evidence gets the canvas. */
+.case .ar-p,
+.case .demo__p,
+.case .ar-note,
+.case .ar-end,
+.case .acc__lede { max-width: var(--cs-read); }
+
+/* --- a section ------------------------------------------------------------ */
+
+.acc {
+  border-top: 1px solid var(--border);
+}
+.acc:last-of-type { border-bottom: 1px solid var(--border); }
+
+.acc__h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: var(--cs-pad) 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.acc__h:hover .acc__ico { background: var(--surface-sunken); }
+.acc__h:active { opacity: 0.72; }
+
+.acc__t { display: grid; gap: 4px; min-width: 0; }
+.acc__n {
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.acc__ico {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-raised);
+  color: var(--ink);
+  transition: transform 200ms ease, background-color 200ms ease;
+}
+.acc__ico svg {
+  width: 18px; height: 18px;
+  fill: none; stroke: currentColor; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.acc__h[aria-expanded="true"] .acc__ico { transform: rotate(180deg); }
+
+.acc__b { padding-block: 4px var(--cs-major); }
+.acc[data-open="0"] .acc__b { display: none; }
+
+/* The open section that is not an accordion. */
+.acc--static > .acc__h { cursor: default; }
+.acc--static .acc__ico { display: none; }
+
+/* --- rhythm inside a section ---------------------------------------------- */
+
+.case .acc__b > * + * { margin-block-start: var(--cs-group); }
+.case .acc__b .ar-h3 { margin-block-start: var(--cs-major); }
+.case .acc__b .ar-h3 + * { margin-block-start: 16px; }
+.case .acc__b > p + p { margin-block-start: 16px; }
+
+/* --- the outcome block ---------------------------------------------------- */
+
+.cs-lead {
+  margin: 0;
+  font-size: var(--cs-t2);
+  line-height: 1.35;
+  font-weight: 500;
+  max-width: 30ch;
+}
+.cs-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-block-start: 16px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--ink-secondary);
+}
+.cs-status::before {
+  content: "";
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--ink-muted);
+}
+
+/* --- a compact list of contributions -------------------------------------- */
+
+.cs-did { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+.cs-did li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+.cs-did li::before {
+  content: "";
+  margin-block-start: 8px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+@media (min-width: 700px) {
+  .cs-did { grid-template-columns: 1fr 1fr; gap: 12px 32px; }
+}
+
+/* --- what was difficult / what I changed / why it mattered ---------------- */
+
+.cs-move { display: grid; gap: 4px; }
+.cs-move + .cs-move { margin-block-start: var(--cs-group); }
+.cs-move__l {
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.cs-move p { margin: 0; max-width: var(--cs-read); }
 
 
 /* ===== css/06-responsive.css ===== */
@@ -25766,7 +26056,7 @@ em,
     </nav>
 
     <header class="ar-mast">
-      <p class="ar-kicker">Case study &middot; Patient experience</p>
+      <p class="ar-kicker">Case study</p>
       <h1 class="ar-title" id="carry-title">Carry: A Patient Experience Extension</h1>
       <p class="ar-standfirst">Helping patients remember what happened after the
         appointment.</p>
@@ -25785,124 +26075,82 @@ em,
         </div>
       </dl>
     </header>
+<div class="cs-wrap">
+<section class="acc acc--static" data-open="1">
+  <div data-acc-h>
+    <span class="acc__n">Outcome</span>
+    <span class="ar-h2">Carry: A Patient Experience Extension</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <p class="cs-lead">Carry moved into development. A change in leadership shifted
+      organisational priorities, and implementation was halted before release.</p>
+    <p class="cs-status">Design complete &middot; development halted</p>
 
-    <nav class="ar-toc" aria-label="Contents">
-      <p>Contents</p>
-      <ol>
-        <li><a href="#ar-what">What Carry is</a></li>
-        <li><a href="#ar-context">Where the work came from</a></li>
-        <li><a href="#ar-problem">The problem</a></li>
-        <li><a href="#ar-model">Before, during, after, later</a></li>
-        <li><a href="#ar-system">One system, not seven</a></li>
-        <li><a href="#ar-clarity">Clarity</a></li>
-        <li><a href="#ar-trust">Trust</a></li>
-        <li><a href="#ar-perf">Performance</a></li>
-        <li><a href="#ar-eco">Fitting an existing ecosystem</a></li>
-        <li><a href="#ar-phasing">Using a design system on purpose</a></li>
-        <li><a href="#ar-outcome">Outcome</a></li>
-      </ol>
-    </nav>
+    <p class="ar-p">Carry was an extension of an existing patient experience: prepare your
+      questions before an appointment, upload a recording of the conversation afterwards,
+      and see the moments that answered what you asked. The concept was evaluated,
+      scoped and taken into build. The decision that stopped it was organisational, not
+      a judgement on the design.</p>
 
-<h2 class="ar-h2" id="ar-what">What Carry is</h2>
+    <h3 class="ar-h3">What I contributed</h3>
+    <ul class="cs-did">
+      <li>Turned the team&rsquo;s premises into a flow patients could actually walk</li>
+      <li>Set the boundary on AI-assisted content and designed the interface that holds it</li>
+      <li>Designed the upload, transcription and failure states end to end</li>
+      <li>Made the question row responsive so nothing a patient wrote is ever cut off</li>
+      <li>Pulled the visual language into one reference other designers could work from</li>
+      <li>Argued the tradeoffs with product and engineering before they became build cost</li>
+    </ul>
+  </div>
+</section>
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">Problem &amp; Context</span>
+    <span class="ar-h2">Remembering a conversation you only get once</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <p class="ar-p">A fifteen-minute appointment carries more than anyone remembers.
+      Patients arrive with questions, absorb a lot quickly, and leave trying to
+      reconstruct what was said.</p>
 
-<p class="ar-p ar-p--lead">Carry is an extension of an existing patient
-experience, designed around a simple problem: high-stakes medical
-conversations are difficult to remember. Patients arrive with questions,
-absorb a large amount of information in a short period of time, and leave
-trying to reconstruct what their provider said later.</p>
+    <p class="ar-p">The constraint shaped everything: this had to be a layer on an existing
+      patient product, not a new app. Identity, appointments and navigation already
+      existed. We were adding one thing &mdash; the moment around the conversation.</p>
 
-<p class="ar-p">Carry explored a more continuous experience across that moment.
-Before an appointment, patients prepare the questions they want to ask.
-Afterwards, they can upload a recording of the conversation, return to those
-questions, and see relevant moments from the conversation connected back to
-what they wanted to understand.</p>
+    <figure class="ar-fig ar-wide">
+      <ul class="cu-hold">
+        <li>What a result means</li>
+        <li>What happens next</li>
+        <li>Symptoms they forgot to mention</li>
+        <li>Questions they prepared</li>
+        <li>Instructions to remember</li>
+        <li>Follow-ups to complete</li>
+      </ul>
+      <figcaption class="ar-cap">All of it at once, at the moment a patient has the least
+        capacity to hold any of it.</figcaption>
+    </figure>
+  </div>
+</section>
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">Research &amp; Direction</span>
+    <span class="ar-h2">What changed the direction</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <div class="ar-note"><p>This began in a quarterly design workshop, with three
+      designers on it. There was no interview study behind it &mdash; the inputs were the
+      product team&rsquo;s stated premises and existing patient feedback. I have kept
+      the findings below to the ones that changed a decision.</p></div>
 
-<p class="ar-p">My responsibility was to make that experience viable across
-three things: <b>clarity</b>, <b>trust</b> and <b>performance</b>. Those are
-the three sections this page is organised around, because they are what the
-work actually consisted of once the concept existed.</p>
+    <div class="cs-move"><p class="cs-move__l">Patients refine questions as they think</p>
+      <p>A question that starts as &ldquo;what does this mean?&rdquo; becomes something sharper by the day of. So editing had to live in the row, not behind a separate screen, and every action had to be reversible.</p></div>
+    <div class="cs-move"><p class="cs-move__l">Nobody trusts a summary they cannot check</p>
+      <p>We could not verify a generated answer against what was actually said. So matched content became a direct quotation with a route to the transcript, and never generated prose.</p></div>
+    <div class="cs-move"><p class="cs-move__l">Recording inside a consulting room is a consent problem</p>
+      <p>It varies by state and it is not the value the product is offering. So Carry never records: the patient uploads a file from their own phone.</p></div>
 
-<blockquote class="ar-pull">The happy path demonstrated the concept.
-Designing for clarity, trust and performance is what made the concept behave
-like a real product.</blockquote>
-
-<h2 class="ar-h2" id="ar-context">Where the work came from</h2>
-<p class="ar-dek">A quarterly design workshop, a team of three, and a
-deliberately small scope.</p>
-
-<p class="ar-p">Carry began as an MVP design exploration during a quarterly
-design workshop. A larger internal design organisation was divided into
-smaller teams to identify opportunities within existing product experiences,
-define a focused MVP, prototype the core interactions, and present the
-direction for stakeholder evaluation. I worked on Carry in a team of three
-designers.</p>
-
-<p class="ar-p">Rather than designing a standalone patient application, we
-approached Carry as an extension of an existing patient ecosystem. Existing
-infrastructure &mdash; patient identity, appointment context, navigation,
-shared interface patterns &mdash; could remain intact while Carry introduced a
-focused layer around appointment preparation and recall. That decision is the
-reason the scope stayed small enough to be real.</p>
-
-<p class="ar-p">The initial scope covered five core product flows:</p>
-
-<figure class="ar-fig ar-wide">
-  <ol class="cs-beats cs-beats--flow">
-    <li class="cs-beat"><span class="cs-beat__n">1</span>Sign in</li>
-    <li class="cs-beat"><span class="cs-beat__n">2</span>Prepare</li>
-    <li class="cs-beat"><span class="cs-beat__n">3</span>Edit</li>
-    <li class="cs-beat"><span class="cs-beat__n">4</span>Upload</li>
-    <li class="cs-beat"><span class="cs-beat__n">5</span>Review</li>
-  </ol>
-  <figcaption class="ar-cap">The five documented flows. Every prototype on this
-    page is a state of one of them.</figcaption>
-</figure>
-
-<div class="ar-note"><p><b>What the prototype was, and was not.</b> The
-prototype was intentionally built at MVP fidelity. The objective was to make
-the product idea tangible enough to evaluate its product boundaries,
-interaction model, system requirements and feasibility &mdash; before
-committing every new pattern to production infrastructure. It was not a
-production-ready build, and nothing on this page should be read as one. The
-source work established the happy path, the interaction model, the visual
-system, the trust boundaries and the major product states; the expanded error,
-latency, recovery and conditional scenarios below are implementation-level
-product thinking built from those established flows.</p></div>
-
-<h2 class="ar-h2" id="ar-problem">The problem</h2>
-<p class="ar-dek">Maximum information, minimum bandwidth, at the same
-moment.</p>
-
-<p class="ar-p">Medical appointments create an unusual UX challenge. The
-information can be extremely important at exactly the moment the patient has
-the least cognitive bandwidth to process it. In a fifteen-minute conversation
-a patient may be holding all of this at once:</p>
-
-<figure class="ar-fig ar-wide">
-  <ul class="cu-hold">
-    <li>What a result means</li>
-    <li>What happens next</li>
-    <li>Symptoms they forgot to mention</li>
-    <li>Questions they prepared beforehand</li>
-    <li>Instructions they need to remember later</li>
-    <li>Follow-ups they need to complete</li>
-  </ul>
-  <figcaption class="ar-cap">Six things, one fifteen-minute conversation, and
-    the least bandwidth a person has all year.</figcaption>
-</figure>
-
-<p class="ar-p">So the product could not simply become another place to display
-information. It needed to help patients prepare before the conversation,
-remain oriented afterwards, and recover what was actually said &mdash; without
-pretending to replace the provider.</p>
-
-<h2 class="ar-h2" id="ar-model">Before, during, after, later</h2>
-<p class="ar-dek">The product model, and the one phase where Carry does
-nothing.</p>
-
-<figure class="ar-fig ar-wide">
-<div class="ar-fig__frame">
-<svg class="md" viewBox="0 0 960 320" width="960" height="320" role="img"
+    <figure class="ar-fig ar-wide">
+      <div class="ar-fig__frame"><svg class="md" viewBox="0 0 960 320" width="960" height="320" role="img"
      aria-label="The Carry product model across four phases: before, during, after and later"
      xmlns="http://www.w3.org/2000/svg">
   <title>The Carry product model</title>
@@ -25953,84 +26201,27 @@ nothing.</p>
 
   <text class="md-anno" x="480" y="284" text-anchor="middle">The hollow marker is deliberate. During the appointment the product has no job,</text>
   <text class="md-anno" x="480" y="304" text-anchor="middle">and designing it that way was a decision rather than an omission.</text>
-</svg>
-</div>
-<figcaption class="ar-cap">Four phases. Only three of them have an
-interface.</figcaption>
-</figure>
-
-<h2 class="ar-h2" id="ar-system">One system, not seven</h2>
-<p class="ar-dek">Every artifact below is drawn from the same tokens and the
-same components.</p>
-
-<p class="ar-p">Before building any of the prototypes on this page, I pulled
-the existing Carry design system out of the project's own documentation and
-converted it into one implementation system: semantic colour, typography,
-spacing, corner radii, borders and dividers, surface treatments, button
-variants, text inputs, verification-code inputs, checkboxes, icons, chips and
-badges, loading indicators, app bars, menus, modal overlays, bottom sheets,
-permission dialogs and responsive rules.</p>
-
-<p class="ar-p">The documented product patterns came across with it &mdash;
-QuestionRow, RecordingPanel, SuggestedQuestionItem, AudioFileRow, FollowUpItem,
-RecentConversationRow, TimelineEventGroup, the contextual question menu,
-inline editing, the transcript panel, the &ldquo;Matched from recording&rdquo;
-badge, and the split between capture mode and review mode. Every prototype
-below is assembled from those, and nothing on this page invents a separate
-visual language for a single section. That is not a presentation convenience;
-it is the same discipline the case study argues for.</p>
-
-<dl class="ar-spec">
-  <div><dt>Colour</dt><dd><div class="ar-swatches"><span class="ar-swatch"><i style="background:#3F6970"></i>primary.main</span><span class="ar-swatch"><i style="background:#F8F9FA"></i>background.default</span><span class="ar-swatch"><i style="background:#FCFCFD"></i>background.paper</span><span class="ar-swatch"><i style="background:#E8F4F8"></i>surface.tinted</span><span class="ar-swatch"><i style="background:#1A1C1E"></i>text.primary</span><span class="ar-swatch"><i style="background:#43474E"></i>text.secondary</span><span class="ar-swatch"><i style="background:#B3261E"></i>error</span></div>Plus three primary alpha variants at 8, 12 and 20 per cent for state layers, two scrims, an icon-container tint, and a 50% white transcript overlay.</dd></div>
-  <div><dt>Type</dt><dd>Inter, weights 400 and 500 only. displayTitle 36/44, loadingTitle 28/36, authTitle 24/32, h6 22/28, sectionHeader 16/24 at 500, body1 16/24, body2 14/20, button 14 at 500 with no transform, caption 12/16, and an 11/16 uppercase label at 0.5px tracking.</dd></div>
-  <div><dt>Spacing</dt><dd>4 minimal, 8 compact, 12 item gap, 16 component gap. Horizontal gutter 16 throughout.</dd></div>
-  <div><dt>Radius</dt><dd>4 inputs, 8 icon containers and transcript overlays, 12 cards, 16 every 56pt primary button, 20 the upload pill in the file picker, 28 sheet tops and the permission dialog, 50% avatars and timeline dots.</dd></div>
-  <div><dt>Heights</dt><dd>40 small buttons, 48 medium buttons and tabs, 56 primary buttons and list rows, 64 app bar, 72 conversation rows, 88 quick actions. QuestionRow has a <em>minimum</em> of 56 and no maximum.</dd></div>
-  <div><dt>Elevation</dt><dd>None. Every component is flat; separation comes from tonal contrast and one-point dividers, never shadow. The only exceptions are the two things that genuinely float: the contextual menu and the snackbar.</dd></div>
-  <div><dt>Widths</dt><dd>375 to 440 points, safe areas 47 top and 34 bottom, 16 point gutters. Primary buttons 343 / 358 / 408 wide at a fixed 56 tall.</dd></div>
-</dl>
-
-<section class="ar-demo ar-wide cu" data-cu="gallery">
-  <div class="ar-demo__head">
-    <p class="ar-demo__title">One component library, used everywhere</p>
-  </div>
-  <p class="ar-demo__intro">Not screenshots. These are the same live components
-    the prototypes below are assembled from, rendered on their own.</p>
-  <div class="cu-gal">
-    <div class="cu-gal__cell"><p>Buttons</p><div class="cu-gal__demo" data-gal="buttons"></div></div>
-    <div class="cu-gal__cell"><p>Checkable row</p><div class="cu-gal__demo" data-gal="rows"></div></div>
-    <div class="cu-gal__cell"><p>QuestionRow</p><div class="cu-gal__demo" data-gal="qrow"></div></div>
-    <div class="cu-gal__cell"><p>Chips and badges</p><div class="cu-gal__demo cu-gal__demo--row" data-gal="badges"></div></div>
-    <div class="cu-gal__cell"><p>Contextual menu</p><div class="cu-gal__demo" data-gal="menu"></div></div>
-    <div class="cu-gal__cell"><p>RecordingPanel</p><div class="cu-gal__demo" data-gal="panel"></div></div>
-    <div class="cu-gal__cell"><p>AudioFileRow</p><div class="cu-gal__demo" data-gal="file"></div></div>
-    <div class="cu-gal__cell"><p>Matched content</p><div class="cu-gal__demo" data-gal="said"></div></div>
-    <div class="cu-gal__cell"><p>TimelineEventGroup</p><div class="cu-gal__demo" data-gal="timeline"></div></div>
-    <div class="cu-gal__cell"><p>A conditional state</p><div class="cu-gal__demo" data-gal="fail"></div></div>
+</svg></div>
+      <figcaption class="ar-cap">Where the product does and does not act.</figcaption>
+    </figure>
   </div>
 </section>
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">Design Priorities</span>
+    <span class="ar-h2">Clarity, Trust, Performance</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <p class="acc__lede ar-p">Three things had to be true before this was a product and
+      not a demo.</p>
 
-<p class="ar-p">The canonical happy path the whole product is measured against
-runs: welcome, phone entry, verification, dashboard, prepare for the
-conversation, add and edit and organise questions, start the conversation,
-upload recording, file permission, file picker, uploading, transcribing,
-matched answers, save session, past conversations, read-only review.
-Everything conditional branches out of that path and returns to it. There are
-no separate disconnected screens for failures anywhere on this page.</p>
-
-
-
-<h2 class="ar-h2" id="ar-clarity">Clarity</h2>
-<p class="ar-dek">Could patients understand the product, the information on
-the screen, and what would happen next?</p>
-
-<p class="ar-p">Healthcare products often become harder to use because every
-piece of information competes for attention. Carry needed the opposite. My
-responsibility was to reduce ambiguity through UX copy, hierarchy, responsive
-behaviour, interaction states and a consistent design language &mdash; so that
-at any moment a patient could tell what they were looking at, what was
-optional, and what would happen if they touched it.</p>
-
+    <h3 class="ar-h3" id="ar-clarity">Clarity</h3>
+    <div class="cs-move"><p class="cs-move__l">What was difficult</p>
+      <p>Everything on a healthcare screen competes for attention, and this screen had three different kinds of content on it &mdash; a checklist, the patient&rsquo;s own questions, and a library of suggestions.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I changed</p>
+      <p>Suggestions became optional and reversible, editing moved into the row, and the question row got a minimum height instead of a fixed one.</p></div>
+    <div class="cs-move"><p class="cs-move__l">Why it mattered</p>
+      <p>A patient wrote those questions to ask their provider. Showing two-thirds of one defeats the point.</p></div>
 <section class="ar-demo ar-wide cu" data-cu="prepare">
   <h3 class="demo__h">Patients build their own list of questions.</h3>
   <p class="demo__p">Add, edit, reorder or undo anything — without leaving the screen.</p>
@@ -26044,17 +26235,6 @@ optional, and what would happen if they touched it.</p>
     </div>
   </div>
 </section>
-
-<h3 class="ar-h3">A question is never truncated</h3>
-
-<p class="ar-p">Patients write these questions specifically to ask their
-provider. Showing two-thirds of one and an ellipsis defeats the purpose. So
-the QuestionRow has a minimum height rather than a fixed one: the checkbox and
-the trailing controls stay pinned at the edges, the text column flexes, and
-the row grows downward. At 375 points a long question wraps to three lines and
-the row is taller. At 440 the same text may fit in fewer. Content drives the
-component's height; the layout does not clip content to stay rigid.</p>
-
 <section class="ar-demo ar-wide cu" data-cu="widths">
   <div class="ar-demo__head">
     <p class="ar-demo__title">A question is never truncated — the row grows instead</p>
@@ -26101,118 +26281,13 @@ component's height; the layout does not clip content to stay rigid.</p>
   </div>
   </section>
 
-<h3 class="ar-h3">Copy is a product tool, not a finishing pass</h3>
-
-<p class="ar-p">Most of the ambiguity in a product like this is removed by
-language rather than layout. The interface has to continuously explain what is
-happening, why it is happening, and how much authority the system has &mdash;
-and the third one is the one products in this space usually skip.</p>
-
-<section class="ar-demo ar-wide cu">
-  <div class="ar-demo__head">
-    <p class="ar-demo__title">The copy names the operation, not the feeling</p>
-  </div>
-  <div class="cu-copy">
-    <div class="cu-copy__row">
-      <p class="cu-copy__k">A wait</p>
-      <span class="cu-copy__tag">Was</span><p class="cu-copy__x">Processing</p>
-      <span class="cu-copy__tag">Is</span><p class="cu-copy__o">Transcribing the conversation&hellip;</p>
-      <p class="cu-copy__t">Names the operation, so the patient can judge how
-        long it should take and whether it is safe to leave.</p>
-    </div>
-    <div class="cu-copy__row">
-      <p class="cu-copy__k">A permission</p>
-      <span class="cu-copy__tag">Was</span><p class="cu-copy__x">Permission required</p>
-      <span class="cu-copy__tag">Is</span><p class="cu-copy__o">Carry needs access to find your conversation recording. Only audio files will be shown.</p>
-      <p class="cu-copy__t">States the purpose and the limit in the same
-        breath. The picker then honours it &mdash; only audio is listed, which
-        is what turns the sentence from a claim into a fact.</p>
-    </div>
-    <div class="cu-copy__row">
-      <p class="cu-copy__k">Machine-produced content</p>
-      <span class="cu-copy__tag">Was</span><p class="cu-copy__x">AI answer</p>
-      <span class="cu-copy__tag">Is</span><p class="cu-copy__o">Matched from recording</p>
-      <p class="cu-copy__t">Describes the operation the system actually
-        performed. &ldquo;Answer&rdquo; claims authorship of a clinical answer;
-        &ldquo;matched&rdquo; claims only that it found the moment.</p>
-    </div>
-    <div class="cu-copy__row">
-      <p class="cu-copy__k">An absence</p>
-      <span class="cu-copy__tag">Was</span><p class="cu-copy__x">No results</p>
-      <span class="cu-copy__tag">Is</span><p class="cu-copy__o">Not answered during this conversation.</p>
-      <p class="cu-copy__t">Attributes the gap to the conversation rather than
-        to a failure, which is both more accurate and less alarming.</p>
-    </div>
-  </div>
-  <p class="ar-demo__note">The tone rules that produced these: calm, restrained,
-    direct. Reassuring without becoming sentimental, healthcare-appropriate
-    without becoming clinical. No exclamation marks, no celebratory language
-    around medical content, no dramatic alerts unless something is genuinely
-    urgent, and nothing that frames the machine as magical.</p>
-</section>
-
-
-
-<h2 class="ar-h2" id="ar-trust">Trust</h2>
-<p class="ar-dek">Could the patient understand where information came from,
-what the system was allowed to do, and what remained under their control?</p>
-
-<p class="ar-p">The most important Carry decisions were often decisions about
-what <em>not</em> to build. The product sits around highly sensitive medical
-conversations, and adding intelligence without boundaries would have made it
-more impressive in a demo and less trustworthy in practice. So the boundary
-was written down first and the interface was built to hold it.</p>
-
-<figure class="ar-fig ar-wide">
-  <div class="cu-eco">
-    <div class="cu-eco__col">
-      <p class="cu-eco__h">Carry does <span>the product boundary</span></p>
-      <p class="cu-eco__d">Help a patient prepare for and remember a clinical
-        conversation.</p>
-      <ul class="cu-eco__list">
-        <li>Help prepare questions</li>
-        <li>Process an uploaded conversation</li>
-        <li>Transcribe it</li>
-        <li>Connect prepared questions to relevant excerpts</li>
-        <li>Preserve notes and follow-ups</li>
-        <li>Let patients review past conversations</li>
-      </ul>
-    </div>
-    <div class="cu-eco__col cu-eco__col--extend">
-      <p class="cu-eco__h">Carry does not <span>and this is the design</span></p>
-      <p class="cu-eco__d">Replace the provider, or independently interpret
-        clinical information.</p>
-      <ul class="cu-eco__list">
-        <li>Deliver clinical results</li>
-        <li>Diagnose</li>
-        <li>Recommend treatment</li>
-        <li>Reinterpret medical guidance</li>
-        <li>Generate a new medical answer when the conversation did not contain one</li>
-      </ul>
-    </div>
-  </div>
-  <figcaption class="ar-cap">The right-hand column is the harder one to hold,
-    because every item on it is something a demo would be more impressive
-    for.</figcaption>
-</figure>
-
-<h3 class="ar-h3">The AI matches, it does not author</h3>
-
-<p class="ar-p">After a recording is transcribed, Carry fills in the patient's
-prepared questions with what the provider said. If those answers were
-summaries, a wrong one could send someone into the next three months acting on
-a sentence nobody ever said. So a matched answer is a direct excerpt from the
-transcript, carrying a <b>Matched from recording</b> badge, a
-<b>What they said</b> label, and a route to the transcript section it came
-from. It is editable, and editing swaps the badge to <b>Edited</b> &mdash;
-because once the patient has changed it, it is no longer a quotation and the
-interface should stop implying it is. It can be dismissed, with an undo.</p>
-
-<p class="ar-p">And where there is no reliable match, nothing is generated. The
-question stays unanswered and says so. A system that produces a plausible
-sentence for every question is more satisfying to demo and considerably more
-dangerous to use.</p>
-
+    <h3 class="ar-h3" id="ar-trust">Trust</h3>
+    <div class="cs-move"><p class="cs-move__l">What was difficult</p>
+      <p>The product sits around sensitive conversations, and the most impressive version of it &mdash; an assistant that answers your questions &mdash; is also the most dangerous.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I changed</p>
+      <p>Answers are quotations from the recording, badged and editable, with a route to the transcript. Where nothing was said clearly enough to quote, the question stays unanswered.</p></div>
+    <div class="cs-move"><p class="cs-move__l">Why it mattered</p>
+      <p>A wrong summary could send someone into the next three months acting on a sentence nobody said.</p></div>
 <section class="ar-demo ar-wide cu" data-cu="match">
   <h3 class="demo__h">Patients can see exactly what was said.</h3>
   <p class="demo__p">Carry links each question to the part of the conversation that answered it.</p>
@@ -26226,23 +26301,6 @@ dangerous to use.</p>
     </div>
   </div>
 </section>
-
-<h3 class="ar-h3">Carry receives a recording; it never starts one</h3>
-
-<p class="ar-p">The patient records on their own device, the way they already
-would, and uploads the file afterwards. There is no record button in the MVP
-prototype and there is not one on this page. An application that begins
-recording inside a consulting room takes on a set of consent problems that
-have nothing to do with the product's value &mdash; and the value survives
-without it, because what the patient needs is the recall, not the capture
-mechanism.</p>
-
-<p class="ar-p">That decision is what makes the permission moment small. Carry
-asks for one thing, says exactly what it is for and what it excludes, and then
-the picker honours the promise: only audio files are listed. A permission
-dialog that promises less access than the next screen delivers is worse than
-no dialog at all.</p>
-
 <section class="ar-demo ar-wide cu" data-cu="permit">
   <h3 class="demo__h">Patients choose what to upload.</h3>
   <p class="demo__p">Carry asks once, shows only audio, and saying no changes nothing.</p>
@@ -26256,16 +26314,6 @@ no dialog at all.</p>
     </div>
   </div>
 </section>
-
-<h3 class="ar-h3">Capture and review are the same data and two interfaces</h3>
-
-<p class="ar-p">During and just after an appointment the patient is doing
-things: checking questions off, typing notes, adding follow-ups, uploading.
-Months later they are reading. Carrying the capture interface into review
-would leave a page full of controls inviting changes to a record that should
-not change any more &mdash; and would make a finished conversation feel like
-an unfinished task.</p>
-
 <section class="ar-demo ar-wide cu" data-cu="modes">
   <h3 class="demo__h">One conversation, whether it’s live or saved.</h3>
   <p class="demo__p">Once a session is saved, the editing controls go away.</p>
@@ -26280,32 +26328,13 @@ an unfinished task.</p>
   </div>
 </section>
 
-
-
-<h2 class="ar-h2" id="ar-perf">Performance</h2>
-<p class="ar-dek">Does the experience still make sense when the system does
-not behave perfectly?</p>
-
-<p class="ar-p">The happy path establishes the concept. Conditional states
-determine whether the concept behaves like a real product. Carry depends on
-operations that can take time or fail: authentication, network requests, file
-access, audio upload, transcription, transcript matching, persistence, and
-retrieval of past sessions. Every one of those is a product state, not a
-hidden engineering exception, and each one needs a designed answer.</p>
-
-<blockquote class="ar-pull">Every conditional state has to answer three
-things. What happened? Was the patient's previous action or data preserved?
-What can they do next?</blockquote>
-
-<p class="ar-p">That is a rule with teeth. It rules out
-&ldquo;Something went wrong&rdquo;. It rules out an error that clears the form
-the patient just filled in. It rules out phrasing that makes a system failure
-look like a user failure. And it rules out a spinner on its own: in a
-high-stakes interaction a loading state has to communicate whether the action
-worked, whether the information is safe, whether the patient needs to stay on
-the screen, what happens next, and what to do if it takes longer than
-expected.</p>
-
+    <h3 class="ar-h3" id="ar-performance">Performance</h3>
+    <div class="cs-move"><p class="cs-move__l">What was difficult</p>
+      <p>Upload, transcription and matching all take time and all fail. A concept that only works on the happy path is a concept, not a product.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I changed</p>
+      <p>Every failure became a designed state of the real component, each answering three questions: what happened, what was kept, what to do next.</p></div>
+    <div class="cs-move"><p class="cs-move__l">Why it mattered</p>
+      <p>It was the difference between something engineering could estimate and something they would have had to invent during build.</p></div>
 <section class="ar-demo ar-wide cu" data-cu="lab">
   <h3 class="demo__h">It still makes sense when things go wrong.</h3>
   <p class="demo__p">Pick a condition, then run the flow.</p>
@@ -26328,173 +26357,43 @@ expected.</p>
     </div>
   </div>
 </section>
-
-<h3 class="ar-h3">One panel, thirteen states</h3>
-
-<p class="ar-p">The RecordingPanel is written once, as a state machine, and
-every condition above is a state of it rather than a screen of its own:
-default, file selected, uploading, slow network, connection lost, upload
-failed, unsupported file, corrupted file, uploaded, transcribing, delayed
-transcription, failed transcription, complete. That is what makes the failure
-handling checkable rather than decorative &mdash; a reader can watch the same
-component they used on the happy path arrive somewhere else.</p>
-
-<p class="ar-p">The distinctions inside it are the design work. A slow network
-communicates that the system is still working, rather than looking stalled.
-Connection loss preserves the selected file and offers resume, because making
-someone find their recording again is a punishment for the network's mistake.
-An unsupported file is rejected <em>before</em> upload, with a reason, since
-the fix is choosing differently and not trying harder. A corrupted file is
-named as a processing problem rather than a network one. A delayed
-transcription confirms the upload succeeded before it mentions the delay
-&mdash; the patient's first question is always &ldquo;did my recording make
-it?&rdquo;. And a failed transcription keeps the uploaded recording visible
-and fabricates nothing from a partial transcript.</p>
-
-<p class="ar-p">Matching gets the same treatment. Full, partial and no reliable
-match are three legitimate outcomes, not one success and two errors. Partial
-matching populates only the questions with defensible transcript matches and
-leaves the others alone, and the interface says which is which &mdash;
-otherwise a patient reads three blanks as a broken system rather than as a
-conversation that did not cover everything.</p>
-
-
-
-<h2 class="ar-h2" id="ar-eco">Fitting an existing ecosystem</h2>
-<p class="ar-dek">The smallest extension that improves continuity around an
-appointment.</p>
-
-<p class="ar-p">Carry did not need to rebuild a patient platform, and trying to
-would have made the concept unevaluable. The useful question was which parts
-of the existing patient experience it could stand on, and which small set of
-things genuinely had to be new.</p>
-
-<figure class="ar-fig ar-wide">
-  <div class="cu-eco">
-    <div class="cu-eco__col">
-      <p class="cu-eco__h">Reuse <span>already exists</span></p>
-      <p class="cu-eco__d">Infrastructure and patterns Carry inherits rather
-        than rebuilds.</p>
-      <ul class="cu-eco__list">
-        <li>Patient authentication</li>
-        <li>Patient identity</li>
-        <li>Appointment context</li>
-        <li>Navigation shell</li>
-        <li>Existing account structure</li>
-        <li>Shared visual foundations</li>
-        <li>Accessibility patterns</li>
-        <li>Analytics and monitoring patterns</li>
-      </ul>
-    </div>
-    <div class="cu-eco__col cu-eco__col--extend">
-      <p class="cu-eco__h">Extend <span>genuinely new</span></p>
-      <p class="cu-eco__d">The focused layer Carry adds around one moment.</p>
-      <ul class="cu-eco__list">
-        <li>Conversation preparation</li>
-        <li>Question management</li>
-        <li>Audio ingestion</li>
-        <li>Transcription states</li>
-        <li>Transcript matching</li>
-        <li>Conversation review</li>
-        <li>Follow-up continuity</li>
-      </ul>
-    </div>
   </div>
-</figure>
-
-<blockquote class="ar-pull">The question was not: how do we build another
-patient platform? The question was: what is the smallest extension that
-improves continuity around an appointment?</blockquote>
-
-<h2 class="ar-h2" id="ar-phasing">Using a design system on purpose</h2>
-<p class="ar-dek">Exploratory work should not force every new interaction
-straight into the shared production system.</p>
-
-<p class="ar-p">Carry introduced patterns that did not exist in the shared
-system &mdash; provenance badging, an upload and transcription state machine,
-the split between capture and review. Committing those to a production
-component library before they had been evaluated would have pushed
-unvalidated decisions onto every team that depends on it, and made them
-expensive to reverse. So the Carry system was built as a complete reference in
-its own right, phased rather than merged.</p>
-
-<figure class="ar-fig ar-wide">
-  <div class="ar-table__wrap">
-  <table class="ar-table">
-    <thead><tr><th>Layer</th><th>Contents</th><th>Status</th></tr></thead>
-    <tbody>
-      <tr>
-        <td>Foundations</td>
-        <td>Colour, typography, spacing, radius, borders, responsive rules</td>
-        <td>Aligned with the shared system</td>
-      </tr>
-      <tr>
-        <td>Atoms</td>
-        <td>Buttons, inputs, checkboxes, icons, badges, progress indicators</td>
-        <td>Mostly existing patterns, re-specified</td>
-      </tr>
-      <tr>
-        <td>Molecules</td>
-        <td>QuestionRow, RecordingPanel, SuggestedQuestionItem, AudioFileRow, FollowUpItem, TimelineEventGroup, RecentConversationRow</td>
-        <td>Candidates for promotion</td>
-      </tr>
-      <tr>
-        <td>Product-specific</td>
-        <td>Inline editing, matched-from-recording provenance, the upload and transcription state machine, capture versus review mode</td>
-        <td>Deliberately held back pending evaluation</td>
-      </tr>
-    </tbody>
-  </table>
+</section>
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">Reflection</span>
+    <span class="ar-h2">Where it landed</span>
   </div>
-  <figcaption class="ar-cap">Candidate patterns could later be reviewed for
-    promotion into the broader shared system rather than being committed
-    prematurely.</figcaption>
-</figure>
+  <div class="acc__b" data-acc-b>
+    <p class="ar-p">The work reached development with the flows, the states and the
+      component set defined. Priorities changed above it and the build stopped there.</p>
 
-<p class="ar-p">The prototype also needed to communicate behaviour before every
-backend dependency existed. Seeded data and simulated state machines stood in
-for authentication, file selection, upload progress, transcription, transcript
-matching, loading, failures, retries, partial completion and review &mdash;
-which let the team evaluate product behaviour without requiring live backend
-services for a concept prototype. Every prototype on this page works the same
-way, for the same reason.</p>
+    <h3 class="ar-h3">What I would do differently</h3>
+    <p class="ar-p">Every premise this rests on is testable and none of them were tested.
+      I would want to sit with people in surveillance before another design phase &mdash;
+      to find out whether preparation is really where the anxiety lives, and whether
+      anyone would record an appointment at all.</p>
 
+    <p class="ar-p">The part I would defend is the subtraction. Deciding early that Carry
+      does not record, does not deliver results and does not let the model write anything
+      removed most of the hard questions before they became interface problems.</p>
 
-
-<h2 class="ar-h2" id="ar-outcome">Outcome</h2>
-
-<p class="ar-p">Carry transformed an open-ended patient-experience opportunity
-into a defined MVP system. The work established five core patient flows, a
-consistent visual language, reusable component candidates, an explicit
-boundary for AI-assisted content, separate capture and review modes,
-responsive behaviour across mobile widths, privacy and permission patterns,
-upload and transcription state models, and a path from prototype behaviour
-toward implementation.</p>
-
-<p class="ar-p">More importantly, the work changed the design question. It
-started as <em>what should Carry look like?</em> and became <em>how should
-Carry behave when the information is sensitive, the technology is imperfect,
-and the patient needs to trust what happens next?</em></p>
-
-<p class="ar-p">My role centered on clarity, trust, and performance.</p>
-
-<div class="ar-end"><p>The design system, the five documented flows, the
-component states and the seeded content on this page come from the project's
-own design documentation. The prototypes are rebuilt here as working
-components rather than exported images, so the interaction claims can be
-checked. Conditional states beyond the documented happy path are
-implementation-level product thinking developed from those flows, and are
-labelled as such above rather than presented as artifacts of the original MVP.
-No real authentication, patient account, medical record, audio recording, file
-system, transcription service or model is involved anywhere on this page, and
-nothing entered here is stored.</p></div>
+    <div class="ar-end"><p>The design system, the five documented flows and the seeded
+      content come from the project&rsquo;s own documentation. The prototypes are rebuilt
+      here as working components so the interaction claims can be checked. Conditional
+      states beyond the documented happy path are implementation-level thinking developed
+      from those flows. Nothing here touches a real account, patient record, model or
+      transcription service.</p></div>
+  </div>
+</section>
+</div>
 
     <nav class="csnav ar-wide" data-study="carry"
          aria-label="Case study navigation"></nav>
 </main>
 
   
-  <main class="page case" id="optiflow" data-view="optiflow" aria-labelledby="of-title" hidden>
+  <main class="page case ar" id="optiflow" data-view="optiflow" aria-labelledby="of-title" hidden>
 
     <div class="cs-bar">
       <a class="cs-bar__back" href="#work"><span aria-hidden="true">&larr;</span> Back to Work</a>
@@ -26508,32 +26407,81 @@ nothing entered here is stored.</p></div>
       </div>
     </div>
 
-    <header class="cs-hero">
-      <p class="cs-hero__eyebrow">01 &middot; Overview</p>
-      <h1 class="t-section cs-hero__title" id="of-title">Training Smarter AI Models Through Human-In-The-Loop Document Processing</h1>
-      <div class="cs-hero__body">
-        <p class="t-lead cs-hero__lede">
-          optiSTREAM reads insurance and billing correspondence, classifies it,
-          extracts what matters and suggests billing tags. I designed the
-          tagging stage &mdash; the point where a reviewer accepts, corrects or
-          adds to what the model proposed, and where that judgment becomes
-          feedback the system can act on.
-        </p>
-      </div>
-      <dl class="cs-meta cs-meta--ic">
-        <div class="cs-meta__cell"><dt><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#c-role"/></svg>Role</dt><dd>Product Designer &mdash; tagging stage, review flow, design system</dd></div>
-        <div class="cs-meta__cell"><dt><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#c-team"/></svg>Team</dt><dd>Ops reviewers, product, engineering</dd></div>
-        <div class="cs-meta__cell"><dt><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#c-scope"/></svg>Scope</dt><dd>Tagging workspace, evidence, justification, feedback loop</dd></div>
-        <div class="cs-meta__cell"><dt><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#c-prototype"/></svg>Stage</dt><dd>Shipped</dd></div>
+    
+    <header class="ar-mast">
+      <p class="ar-kicker">Case study</p>
+      <h1 class="ar-title" id="of-title">OptiFlow</h1>
+      <p class="ar-standfirst">Training smarter models by designing the moment a person
+        disagrees with one.</p>
+      <dl class="ar-meta">
+        <div class="ar-meta__row"><dt>Role</dt><dd>Product Designer &mdash; tagging stage, review flow</dd></div>
+        <div class="ar-meta__row"><dt>Team</dt><dd>Ops reviewers, product, engineering</dd></div>
+        <div class="ar-meta__row"><dt>Status</dt><dd>Design delivered and handed off</dd></div>
       </dl>
     </header>
 
-    <section class="cs-band" id="optiflow-system" aria-labelledby="of-sys-h">
-      <div class="cs-band__head cs-band__head--wide">
-        <p class="cs-eyebrow">02 &middot; How the system works</p>
-        <h2 class="t-display cs-head" id="of-sys-h">One document, all the way through</h2>
-        <p class="cs-sub">The pipeline stays put. Watch what happens inside it &mdash; and what happens after a reviewer disagrees.</p>
-      </div>
+<div class="cs-wrap">
+<section class="acc acc--static" data-open="1">
+  <div data-acc-h>
+    <span class="acc__n">Outcome</span>
+    <span class="ar-h2">Human judgement in the loop</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <p class="cs-lead">I designed the tagging stage &mdash; where a reviewer accepts,
+      corrects or adds to what the model proposed, and where that judgement becomes
+      feedback the system can use.</p>
+    <p class="cs-status">Design delivered &middot; handed to engineering</p>
+
+    <p class="ar-p">optiSTREAM reads insurance and billing correspondence, classifies it,
+      extracts what matters and suggests billing tags. Ingest and extraction were already
+      accurate. Tagging still needed a person, and had no interface designed for making
+      that judgement quickly.</p>
+
+    <div class="ar-note"><p><b>On the numbers.</b> Measured accuracy was 99.5% at ingest
+      and 99% at extraction. Tagging carried a <b>target</b> of 75% &mdash; a goal the
+      feedback loop was meant to move toward, not a result measured after release. I have
+      not claimed it as an outcome because I cannot evidence it as one.</p></div>
+
+    <h3 class="ar-h3">What I contributed</h3>
+    <ul class="cs-did">
+      <li>Designed the tagging workspace and the accept / correct / add interaction</li>
+      <li>Made model confidence and its evidence visible at the moment of judgement</li>
+      <li>Required a reason before a correction could be validated</li>
+      <li>Designed the states for low confidence, no suggestion and disagreement</li>
+      <li>Worked with engineering on what the feedback loop could realistically consume</li>
+      <li>Kept the stage on the existing component set rather than adding patterns</li>
+    </ul>
+  </div>
+</section>
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">Problem &amp; Context</span>
+    <span class="ar-h2">Corrections with no reasoning attached</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <p class="ar-p">Reviewers were correcting a model all day with no way to say
+      <em>why</em> it was wrong. The correction landed; the reasoning did not. So the same
+      mistakes came back.</p>
+
+    <p class="ar-p">The constraint was throughput. Ops reviewers work at volume, and any
+      step that added seconds per document would not survive contact with the floor.</p>
+  </div>
+</section>
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">Research &amp; Direction</span>
+    <span class="ar-h2">What changed the direction</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <div class="cs-move"><p class="cs-move__l">Reviewers could not tell a confident suggestion from a guess</p>
+      <p>Everything arrived looking equally certain. So confidence and the evidence behind it moved next to the tag itself, where the decision is actually made.</p></div>
+    <div class="cs-move"><p class="cs-move__l">A correction without a reason teaches the model nothing</p>
+      <p>Engineering could only act on categorised feedback. So Validate stays disabled until a reason is given &mdash; the one place I deliberately added friction.</p></div>
+    <div class="cs-move"><p class="cs-move__l">The pipeline was not the problem; the handoff to a person was</p>
+      <p>Ingest and extraction were already at 99%. So the work stayed inside one stage rather than spreading across the whole system.</p></div>
+
+    <div class="cs-band">
+
 
       <div class="cs-wide">
         <div class="of" data-of data-playing="0">
@@ -26606,7 +26554,62 @@ nothing entered here is stored.</p></div>
       </div>
 
       <p class="cs-source">Structure, terminology, examples, tags, confidence levels, justification reasons and accuracy figures are taken from the project&rsquo;s own Figma file &mdash; the pipeline architecture frame, the Tagging Logic Graphic, the Tagging User Flow and the optiSTREAM icon set. This is the one animated visual in the case study; the diagrams themselves are reproduced exactly and left static.</p>
-    </section>
+    
+    </div>
+  </div>
+</section>
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">Design Priorities</span>
+    <span class="ar-h2">Clarity, Trust, Performance</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <h3 class="ar-h3">Clarity</h3>
+    <div class="cs-move"><p class="cs-move__l">What was difficult</p>
+      <p>A reviewer sees a document, a suggested tag and a confidence figure, and has seconds to decide whether to trust it.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I changed</p>
+      <p>Confidence, the evidence for it and the action sit in one place, in a fixed order, so the reviewer reads the same shape every time.</p></div>
+    <div class="cs-move"><p class="cs-move__l">Why it mattered</p>
+      <p>At volume, a consistent layout is what makes a decision fast.</p></div>
+
+    <h3 class="ar-h3">Trust</h3>
+    <div class="cs-move"><p class="cs-move__l">What was difficult</p>
+      <p>The model is wrong often enough that a reviewer who stops checking is worse than no model at all.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I changed</p>
+      <p>Every suggestion shows what it was based on, and disagreeing is a first-class action rather than an exception path.</p></div>
+    <div class="cs-move"><p class="cs-move__l">Why it mattered</p>
+      <p>The feedback loop only works if people are willing to disagree with it.</p></div>
+
+    <h3 class="ar-h3">Performance</h3>
+    <div class="cs-move"><p class="cs-move__l">What was difficult</p>
+      <p>Requiring a reason for every correction is friction, and friction at volume is expensive.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I changed</p>
+      <p>The reasons are a short fixed list rather than free text, so the cost is one tap and the output is something engineering can group.</p></div>
+    <div class="cs-move"><p class="cs-move__l">Why it mattered</p>
+      <p>That was the tradeoff I had to argue for: slightly slower per correction, in exchange for feedback that could actually change the model.</p></div>
+  </div>
+</section>
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">Reflection</span>
+    <span class="ar-h2">Where it landed</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <p class="ar-p">The tagging stage was designed, specified and handed to engineering
+      with its states and feedback categories defined. I did not own the model, the
+      pipeline or the release, and I have no post-launch measurement to point at.</p>
+
+    <h3 class="ar-h3">What I would do differently</h3>
+    <p class="ar-p">I would have pushed to instrument the reason codes from day one. The
+      design assumes reviewers pick an accurate reason under time pressure, and that
+      assumption was never tested.</p>
+
+    <div class="ar-end"><p>Structure, terminology, examples, tags, confidence levels and
+      justification reasons are taken from the project&rsquo;s own Figma file. The diagrams
+      are reproduced rather than reinterpreted.</p></div>
+  </div>
+</section>
+</div>
 
     <nav class="csnav" data-study="optiflow"
            aria-label="Case study navigation"></nav>
@@ -28433,6 +28436,7 @@ window.PF = window.PF || {};
   function artPrepare(root) {
     var app = root.querySelector('[data-app]');
     var st, auth, snack;
+    var freshT = null;
 
     var scenario = function () { return { conn: 'fast', auth: 'correct' }; };
 
@@ -28448,8 +28452,9 @@ window.PF = window.PF || {};
         bring: SEED.bring.map(function () { return false; }),
         qs: SEED.questions.slice(),
         cats: SEED.suggested.map(function (c, i) { return { open: i === 0, taken: [] }; }),
-        editing: -1, adding: false, draft: '', snack: null, undo: null, scrollTo: null
+        editing: -1, adding: false, draft: '', snack: null, undo: null, justAdded: null
       };
+      clearTimeout(freshT);
       auth = makeAuth({
         scenario: scenario,
         render: render,
@@ -28481,10 +28486,17 @@ window.PF = window.PF || {};
 
       var f = app.querySelector('[data-field="draft"]');
       if (f && (st.editing >= 0 || st.adding)) { f.focus(); f.selectionStart = f.value.length; }
-      if (st.scrollTo) {
-        var t = app.querySelector('[data-scroll="' + st.scrollTo + '"]');
-        if (t) t.scrollIntoView({ block: 'nearest', behavior: reduced.matches ? 'auto' : 'smooth' });
-        st.scrollTo = null;
+      /* Inside the device's own scroller, never the page. scrollIntoView on a
+         node inside a transformed, scaled frame will happily scroll the whole
+         document to find it, which is how adding a question used to throw the
+         reader back to the top of the case study. */
+      var fresh = app.querySelector('[data-scroll-to]');
+      if (fresh) {
+        var pane = app.querySelector('.cu-scroll');
+        if (pane) {
+          var top = fresh.offsetTop - pane.offsetTop - 12;
+          pane.scrollTo({ top: Math.max(0, top), behavior: reduced.matches ? 'auto' : 'smooth' });
+        }
       }
     }
 
@@ -28539,22 +28551,50 @@ window.PF = window.PF || {};
     function prepare() {
       var checked = st.bring.filter(Boolean).length;
       var totalSugg = SEED.suggested.reduce(function (n, c) { return n + c.qs.length; }, 0);
-      var added = st.cats.reduce(function (n, c) { return n + c.taken.length; }, 0);
 
-      return appBar(SEED.title, SEED.whenShort, { back: 'go-dash', trail: 'gear' }) +
-        '<div class="cu-scroll">' +
+      /* SUGGESTIONS FIRST, THEN THE PATIENT'S OWN LIST, THEN THE CHECKLIST.
+         The order follows what somebody does here: browse what they could ask,
+         watch it land in their list, and only then think about the day itself.
+         With the library above the list, a question that arrives at the top of
+         "My questions" appears just below where it was tapped. */
+      var suggested =
+        '<div class="cu-card"><div class="cu-sec"><b>' + ic('sparkle') + 'Suggested questions</b>' +
+          '<span>' + totalSugg + ' questions</span></div>' +
+          SEED.suggested.map(function (c, ci) {
+            var sc = st.cats[ci];
+            return '<div class="cu-cat">' +
+              '<button class="cu-cat__h" type="button" data-act="cat" data-i="' + ci + '" ' +
+                'aria-expanded="' + (sc.open ? 'true' : 'false') + '">' +
+                '<span><b>' + esc(c.name) + '</b><span>' + c.qs.length + ' questions, ' +
+                  sc.taken.length + ' added</span></span>' +
+                '<span class="cu-ico cu-ico--sm cu-chev" data-open="' + (sc.open ? 1 : 0) + '" aria-hidden="true">' +
+                  ic('downc') + '</span></button>' +
+              (sc.open
+                ? c.qs.map(function (q, qi) {
+                    var on = sc.taken.indexOf(qi) >= 0;
+                    return '<button class="cu-sug" type="button" data-act="sugg" data-c="' + ci +
+                      '" data-i="' + qi + '" data-on="' + (on ? 1 : 0) + '"' + (on ? ' disabled' : '') +
+                      ' aria-label="' + (on ? 'Added: ' : 'Add: ') + esc(q) + '">' +
+                      '<span class="cu-sug__t">' + esc(q) + '</span>' +
+                      '<span class="cu-sug__add">' + ic(on ? 'checkc' : 'plus') + '</span></button>';
+                  }).join('')
+                : '') +
+            '</div>';
+          }).join('') +
+          '<p class="cu-hint">Tap any question to add it to your list.</p>' +
+        '</div>';
 
-        '<div class="cu-card"><div class="cu-sec"><b>Things to bring</b>' +
-          '<span>' + checked + ' of ' + SEED.bring.length + ' checked</span></div>' +
-          SEED.bring.map(function (b, i) { return checkRow(b, st.bring[i], 'bring', i); }).join('') +
-          '<p class="cu-hint">Check items off as you gather them. You can also bring this list up on the day of.</p>' +
-        '</div>' +
-
+      var mine =
         '<div class="cu-card" data-scroll="q"><div class="cu-sec"><b>My questions</b>' +
           '<span>' + st.qs.length + ' prepared</span></div>' +
           st.qs.map(function (q, i) {
             if (st.editing === i) return editRow(st.draft, q);
-            return questionRow({ q: q, i: i, as: 'div' });
+            var fresh = st.justAdded === q;
+            return '<div class="cu-qwrap"' + (fresh ? ' data-fresh="1"' : '') +
+                     (fresh ? ' data-scroll-to="1"' : '') + '>' +
+              (fresh ? '<p class="cu-fresh">' + ic('check') + 'Just added</p>' : '') +
+              questionRow({ q: q, i: i, as: 'div' }) +
+            '</div>';
           }).join('') +
           (st.adding
             ? '<div class="cu-edit">' +
@@ -28569,33 +28609,17 @@ window.PF = window.PF || {};
             : '<button class="cu-row cu-row--add" type="button" data-act="add-open">' +
               '<span class="cu-row__ico">' + ic('plus') + '</span>' +
               '<span class="cu-row__t">Add your own question</span></button>') +
-        '</div>' +
+        '</div>';
 
-        '<div class="cu-card"><div class="cu-sec"><b>' + ic('sparkle') + 'Suggested questions</b>' +
-          '<span>' + totalSugg + ' questions</span></div>' +
-          SEED.suggested.map(function (c, ci) {
-            var s = st.cats[ci];
-            return '<div class="cu-cat">' +
-              '<button class="cu-cat__h" type="button" data-act="cat" data-i="' + ci + '" ' +
-                'aria-expanded="' + (s.open ? 'true' : 'false') + '">' +
-                '<span><b>' + esc(c.name) + '</b><span>' + c.qs.length + ' questions, ' +
-                  s.taken.length + ' added</span></span>' +
-                '<span class="cu-ico cu-ico--sm cu-chev" data-open="' + (s.open ? 1 : 0) + '" aria-hidden="true">' +
-                  ic('downc') + '</span></button>' +
-              (s.open
-                ? c.qs.map(function (q, qi) {
-                    var on = s.taken.indexOf(qi) >= 0;
-                    return '<button class="cu-sug" type="button" data-act="sugg" data-c="' + ci +
-                      '" data-i="' + qi + '" data-on="' + (on ? 1 : 0) + '"' + (on ? ' disabled' : '') + '>' +
-                      '<span class="cu-sug__ico">' + ic(on ? 'checkc' : 'pluso') + '</span>' +
-                      '<span class="cu-sug__t">' + esc(q) + '</span></button>';
-                  }).join('')
-                : '') +
-            '</div>';
-          }).join('') +
-          '<p class="cu-hint">Tap any question to add it to your list.</p>' +
-        '</div>' +
+      var bring =
+        '<div class="cu-card"><div class="cu-sec"><b>Things to bring</b>' +
+          '<span>' + checked + ' of ' + SEED.bring.length + ' checked</span></div>' +
+          SEED.bring.map(function (b, i) { return checkRow(b, st.bring[i], 'bring', i); }).join('') +
+          '<p class="cu-hint">Check items off as you gather them.</p>' +
+        '</div>';
 
+      return appBar(SEED.title, SEED.whenShort, { back: 'go-dash', trail: 'gear' }) +
+        '<div class="cu-scroll">' + suggested + mine + bring +
         '<div class="cu-pad"></div></div>' +
         actionBar('Start the conversation', 'noop');
     }
@@ -28631,12 +28655,19 @@ window.PF = window.PF || {};
       if (a === 'sugg') {
         var q = SEED.suggested[c].qs[i];
         st.cats[c].taken.push(i);
-        st.qs.push(q);
+        /* TOP OF THE LIST, NOT THE BOTTOM. A question added to the end of six
+           others is a question nobody sees arrive. */
+        st.qs.unshift(q);
+        st.justAdded = q;
         st.undo = { c: c, i: i, q: q };
-        snack(st, 'Added to My Questions', true);
-        st.scrollTo = 'q';
+        snack(st, 'Added to your questions', true);
         render();
-        say(root, 'Added to My Questions: ' + q);
+        say(root, 'Added to your questions: ' + q);
+        clearTimeout(freshT);
+        freshT = setTimeout(function () {
+          if (st.justAdded !== q) return;
+          st.justAdded = null; render();
+        }, ms(2600));
         return;
       }
 
@@ -28645,9 +28676,10 @@ window.PF = window.PF || {};
         var u = st.undo;
         var at = st.cats[u.c].taken.indexOf(u.i);
         if (at >= 0) st.cats[u.c].taken.splice(at, 1);
-        var qi = st.qs.lastIndexOf(u.q);
+        var qi = st.qs.indexOf(u.q);
         if (qi >= 0) st.qs.splice(qi, 1);
         st.undo = null;
+        st.justAdded = null;
         snack(st, null);
         render();
         say(root, 'Removed again.');
@@ -28763,7 +28795,7 @@ window.PF = window.PF || {};
        control stops meaning "which of the three to highlight" and starts
        meaning "which device am I looking at". "All" is hidden at this width
        rather than left as an option that produces three unreadable slivers. */
-    var side = window.matchMedia('(min-width: 700px)');
+    var side = window.matchMedia('(min-width: 1100px)');
     function effectiveOnly() {
       return (!side.matches && st.only === 'all') ? '390' : st.only;
     }
@@ -28861,6 +28893,7 @@ window.PF = window.PF || {};
        than the 440 one, because it is. Scaled, never reflowed — reflowing
        would show a layout the product does not have. */
     var GAP = 16;
+    var fitting = false;   /* the clear-then-set below must not re-enter */
 
     /* One shared scale when the three sit together, so 375 really is narrower
        than 440 on screen. When one device is shown on its own it simply fits
@@ -28870,8 +28903,31 @@ window.PF = window.PF || {};
       var boxes = wrap.querySelectorAll('[data-wfit]');
       if (!boxes.length) return;
 
+      /* MEASURE THE ROOM, NOT THE FURNITURE.
+
+         The three frames are laid out in max-content columns and their widths
+         are written here as pixels, which means asking the row how wide it is
+         while they are still in it is asking the frames how wide they made
+         themselves. Whatever they answered last time is what they answer for
+         ever — and when this first ran inside a closed accordion, the answer
+         it kept was a 1,158px row inside a 720px window, with the whole case
+         study scrolling sideways behind it.
+
+         So the frames are emptied of width first. With nothing pushing, the
+         row collapses to the width its column actually has, that is read, and
+         only then are the frames given a size again. Reading clientWidth
+         between the two forces the layout in between, which is the point. */
+      if (fitting) return;
+      fitting = true;
+
+      var b0;
+      for (b0 = 0; b0 < boxes.length; b0++) {
+        boxes[b0].style.width = '';
+        boxes[b0].style.height = '';
+      }
+
       var avail = wrap.clientWidth;
-      if (!avail) return;
+      if (!avail) { fitting = false; return; }
 
       var single = boxes.length === 1;
       var s;
@@ -28893,6 +28949,8 @@ window.PF = window.PF || {};
         box.style.width = Math.round(bw * s) + 'px';
         box.style.height = Math.round(bh * s) + 'px';
       }
+
+      fitting = false;
     }
 
     function syncOnly() {
@@ -35167,6 +35225,89 @@ window.PF = window.PF || {};
     scope = scope || document;
     var links = scope.querySelectorAll('.card__overlay-link[data-project]');
     for (var i = 0; i < links.length; i++) add(links[i]);
+  };
+
+  if (document.readyState !== 'loading') PF.initRoutes();
+
+})(window.PF);
+
+/* ==========================================================================
+   CASE-STUDY SECTIONS
+
+   Five per study. The first carries the outcome and is not collapsible — a
+   reader who opens nothing still leaves knowing what happened and what I did.
+   The rest are ordinary accordions.
+
+   Nothing auto-opens, auto-closes, scrolls the page or closes a sibling.
+   Several can be open at once, because comparing two sections is a reasonable
+   thing to want. A deep link to a heading inside a closed section opens it.
+   ========================================================================== */
+
+(function (PF) {
+  'use strict';
+
+  var CARET =
+    '<span class="acc__ico" aria-hidden="true">' +
+      '<svg viewBox="0 0 24 24" focusable="false"><path d="M7 10l5 5 5-5"/></svg>' +
+    '</span>';
+
+  function build(sec) {
+    if (sec.querySelector('.acc__h')) return;
+
+    var head = sec.querySelector('[data-acc-h]');
+    var body = sec.querySelector('[data-acc-b]');
+    if (!head || !body) return;
+
+    var open = sec.getAttribute('data-open') === '1';
+    var stat = sec.classList.contains('acc--static');
+
+    if (!body.id) body.id = 'sec-' + Math.random().toString(36).slice(2, 8);
+
+    var btn = document.createElement('button');
+    btn.className = 'acc__h';
+    btn.type = 'button';
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.setAttribute('aria-controls', body.id);
+    if (stat) btn.setAttribute('aria-disabled', 'true');
+
+    btn.innerHTML = '<span class="acc__t">' + head.innerHTML + '</span>' + (stat ? '' : CARET);
+
+    head.parentNode.replaceChild(btn, head);
+    sec.setAttribute('data-open', open ? '1' : '0');
+
+    if (stat) return;
+
+    btn.addEventListener('click', function () {
+      var on = sec.getAttribute('data-open') === '1';
+      sec.setAttribute('data-open', on ? '0' : '1');
+      btn.setAttribute('aria-expanded', on ? 'false' : 'true');
+    });
+  }
+
+  /* A link into a collapsed section opens it before the browser jumps. */
+  function reveal(hash) {
+    if (!hash || hash.length < 2) return;
+    var t;
+    try { t = document.querySelector(hash); } catch (e) { return; }
+    if (!t) return;
+    var sec = t.closest('.acc');
+    if (!sec || sec.getAttribute('data-open') === '1') return;
+    sec.setAttribute('data-open', '1');
+    var b = sec.querySelector('.acc__h');
+    if (b) b.setAttribute('aria-expanded', 'true');
+  }
+
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a[href^="#"]');
+    if (a) reveal(a.getAttribute('href'));
+  }, true);
+
+  var prev = PF.initRoutes;
+  PF.initRoutes = function (scope) {
+    prev(scope);
+    scope = scope || document;
+    var secs = scope.querySelectorAll('.acc');
+    for (var i = 0; i < secs.length; i++) build(secs[i]);
   };
 
   if (document.readyState !== 'loading') PF.initRoutes();
