@@ -1442,6 +1442,30 @@ body::before {
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
 ul, ol { padding: 0; list-style: none; }
 
+/* --------------------------------------------------------------------------
+   THE HIDDEN ATTRIBUTE MEANS HIDDEN
+
+   `hidden` is only a user-agent rule at specificity (0,1,0), so ANY class or
+   attribute selector that sets display beats it. This site sets display on
+   .page, .ar, .plist, .hero__mobile-cta and more, and every one of those is a
+   latent bug waiting for someone to hide the element.
+
+   One of them was not latent. At phone widths 06-responsive.css set
+   `main.page[data-view="home"] { display: flex }`, which outranked [hidden] —
+   so the router hid the landing page, the landing page stayed in the layout,
+   and every case study had the whole index stacked underneath it. The document
+   was 43,391px tall instead of 12,000.
+
+   So: one guard, stated once, instead of a patch per component.
+
+   The single exception is the project browser's slides. They use [hidden] to
+   leave the accessibility tree while a crossfade runs and keep their box on
+   purpose, taking visibility:hidden instead — see .pv__slide[hidden] in
+   04-components.css.
+   -------------------------------------------------------------------------- */
+
+[hidden]:not(.pv__slide) { display: none !important; }
+
 img, svg { display: block; max-width: 100%; }
 img { height: auto; }
 
@@ -12930,8 +12954,34 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .of-rail { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-2); }
 }
 
+/* AND TWO ACROSS WHEN THREE STOPS BEING HONEST.
+
+   Three across on a 320pt phone gives each card an 40px text column, and
+   "CLASSIFY" is 59px wide in it — the label was not merely tight, it was
+   crossing its own padding and running to the card's edge. No legible type
+   size fixes that; eight characters do not fit in 40px above about 6px.
+
+   So below this the rail drops to two columns and the card gets its width
+   back. The reading order is unchanged — ingest, classify, extract, tag,
+   match, post, left to right and down — and above it three across is fine
+   once the type below is sized to the card rather than to the page. */
+@container ofstage (max-width: 340px) {
+  .of-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 .of-stage {
   position: relative;
+  /* THE CARD SIZES ITS OWN TYPE.
+
+     The board's scale (see `.of > *`) is a fraction of the BOARD, and that is
+     the wrong denominator here: at a 364px board the board scale says 10.2px
+     while the card it has to fit inside is 89px wide. The card is the thing
+     the text has to fit, so the card is what the text is measured against.
+
+     Safe to make a containment context: the only absolutely-positioned thing
+     on the rail is .of-doc, which is a sibling of these buttons rather than a
+     child, so nothing inside here needs to escape. */
+  container: ofcard / inline-size;
   display: grid;
   justify-items: center;
   align-content: start;
@@ -12953,15 +13003,19 @@ button.cu-q:hover { background: var(--cu-teal-8); }
                 stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
                 transition: stroke var(--of-fast) var(--of-ease); }
 .of-stage__n {
-  font-size: var(--fs-meta);
-  letter-spacing: var(--tr-label);
+  /* Capped at what the page used to give it, so a desktop board is unchanged;
+     below that it tracks the card. Tracking comes down with it — uppercase
+     letter-spacing is a fixed tax per character, and on an eight-character
+     label at card width it was costing 7px of the 40px available. */
+  font-size: clamp(8.6px, 10.2cqi, 13px);
+  letter-spacing: clamp(0.02em, 0.9cqi - 0.06em, var(--tr-label));
   text-transform: uppercase;
   font-weight: var(--fw-strong);
   color: var(--ink-muted);
   transition: color var(--of-fast) var(--of-ease);
 }
 .of-stage__acc {
-  font-size: var(--of-micro, 11px);
+  font-size: clamp(8px, 9.2cqi, 11px);
   letter-spacing: var(--tr-meta);
   color: var(--ink-muted);
   opacity: 0;
@@ -14292,6 +14346,238 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
 @media (prefers-reduced-motion: reduce) {
   .ar * { transition: none !important; }
+}
+
+
+/* ===== css/13-mobile-nav.css ===== */
+/* ==========================================================================
+   13 — NAVIGATION, STATES AND TOUCH
+
+   The mobile pass. Everything here exists to answer one of four questions a
+   thumb asks: is this tappable, where does it go, did my tap land, and how do
+   I get back. Nothing here restyles the desktop layout; where a rule would
+   have, it is inside a max-width query.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. A TAP HAS TO LAND SOMEWHERE VISIBLE
+
+   Hover does not exist on a phone, so the pressed state is the only feedback
+   between the tap and the new page. It is deliberately small — a surface
+   shift and a hair of scale, on the way down only — because a dramatic
+   animation on every tap reads as a toy, and because anything longer than the
+   navigation delays the navigation.
+   -------------------------------------------------------------------------- */
+
+.card--link,
+.cta,
+.morework__item,
+.csnav a,
+.pv__cta,
+.pv__arrow,
+.hero__role,
+.toc__toggle,
+.toc__list a {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .card--link:active,
+  .morework__item:active,
+  .csnav a:active,
+  .cta:active,
+  .pv__cta:active {
+    transform: scale(0.988);
+    filter: brightness(0.97);
+    transition: transform 90ms ease-out, filter 90ms ease-out;
+  }
+  /* A card is a big object; scaling the whole thing reads as the page
+     flexing. The surface change carries it instead. */
+  .card--link:active { transform: none; background-color: var(--surface-sunken); }
+}
+
+/* --------------------------------------------------------------------------
+   2. A PROJECT WITH NOWHERE TO GO SAYS SO
+
+   Not a disabled button — those are a mystery on a phone, where there is no
+   title attribute and no hover to explain them. The card keeps its name and
+   its description, because that is what a recruiter is actually reading, and
+   the action slot becomes a plain statement of fact. It is not a link, it
+   does not take focus, and it does not look like it would reward a tap.
+
+   State is never colour alone: the label changes, the fill goes, and the
+   border becomes dashed.
+   -------------------------------------------------------------------------- */
+
+[data-status="soon"] .cta,
+.cta[data-status="soon"],
+[data-cta][data-status="soon"] {
+  background: none !important;
+  color: var(--ink-muted) !important;
+  border: 1px dashed var(--border-strong);
+  cursor: default;
+  pointer-events: none;
+}
+[data-status="soon"] .cta::before,
+.cta[data-status="soon"]::before { opacity: 0 !important; }
+[data-status="soon"] .cta .cta__arrow,
+.cta[data-status="soon"] .cta__arrow { display: none; }
+
+/* The card itself stops advertising a destination. */
+.card--link[data-status="soon"],
+[data-status="soon"] > .card--link { cursor: default; }
+.card--link[data-status="soon"]:active { transform: none; filter: none; background-color: inherit; }
+
+.morework__item[data-status="soon"] { cursor: default; opacity: 0.72; }
+.morework__item[data-status="soon"]::after { content: none; }
+
+/* --------------------------------------------------------------------------
+   3. EXTERNAL IS MARKED, INTERNAL IS NOT
+
+   The arrow used to be decoration and appeared on internal routes too, which
+   made "where will this take me" unanswerable. Now it means one thing: this
+   leaves the site.
+   -------------------------------------------------------------------------- */
+
+[data-external]::after {
+  content: " ↗";
+  font-size: 0.85em;
+  line-height: 1;
+  vertical-align: baseline;
+}
+
+/* --------------------------------------------------------------------------
+   4. THE FOOT OF A CASE STUDY
+
+   Previous · Back to Work · Next, built from the route map. On a phone they
+   stack, with Back to Work in the middle where a thumb is, and each side
+   names the project it goes to so nobody taps to find out.
+   -------------------------------------------------------------------------- */
+
+.csnav {
+  display: grid;
+  gap: 10px;
+  margin-block: 48px 8px;
+  padding-block-start: 28px;
+  border-block-start: 1px solid var(--border);
+}
+
+.csnav a {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 60px;
+  justify-content: center;
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.csnav__dir {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.csnav__name { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+.csnav__side--next { text-align: right; }
+
+.csnav__work {
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--surface-raised);
+}
+
+@media (min-width: 720px) {
+  .csnav {
+    grid-template-columns: 1fr auto 1fr;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .csnav__side--next { grid-column: 3; }
+  /* With only one neighbour the single side keeps its own end of the row
+     rather than sliding into the middle. */
+  .csnav__side:not(.csnav__side--next) { grid-column: 1; }
+  .csnav__work { grid-column: 2; padding-inline: 24px; }
+}
+
+/* --------------------------------------------------------------------------
+   5. THE CONTENTS OF A CASE STUDY, ON A PHONE
+
+   Eleven section links is a screen and a half of navigation before the first
+   sentence of the article. It collapses to a control that says what it is and
+   how many sections there are, and opens in place.
+   -------------------------------------------------------------------------- */
+
+.toc__toggle { display: none; }
+
+@media (max-width: 719px) {
+  .ar-toc { padding: 0; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+  .ar-toc > p { display: none; }
+
+  .toc__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 52px;
+    padding: 0 16px;
+    border: 0;
+    background: var(--surface);
+    color: var(--ink);
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: start;
+  }
+  .toc__toggle span:last-child {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    transition: transform 180ms ease;
+  }
+  .toc__toggle[aria-expanded="true"] span:last-child { transform: rotate(180deg); }
+
+  .ar-toc ol { padding: 4px 0 8px; margin: 0; border-block-start: 1px solid var(--border); }
+  .ar-toc[data-open="0"] ol { display: none; }
+  .ar-toc li { margin: 0; }
+  .ar-toc li a {
+    display: block;
+    padding: 11px 16px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   6. AN ANCHOR MUST NOT LAND UNDER THE STICKY BAR
+
+   The case-study bar is sticky, so a plain #anchor jump puts the heading
+   behind it. scroll-margin moves the landing point, which is the browser's
+   own mechanism and keeps normal scrolling untouched.
+   -------------------------------------------------------------------------- */
+
+.ar-h2, .ar-h3, [id^="ar-"], [id$="-title"] { scroll-margin-top: 84px; }
+@media (max-width: 719px) { .ar-h2, .ar-h3, [id^="ar-"] { scroll-margin-top: 72px; } }
+
+/* --------------------------------------------------------------------------
+   7. TAP TARGETS
+
+   Anything whose whole job is to be tapped gets 44px, which is the number
+   every platform guideline lands on. Inline text links inside a sentence are
+   left alone — padding them would break the paragraph.
+   -------------------------------------------------------------------------- */
+
+@media (hover: none), (pointer: coarse) {
+  .cta, .pv__cta, .morework__item, .csnav a, .toc__list a { min-height: 44px; }
+  .pv__arrow, .theme-toggle, .hero__replay { min-width: 44px; min-height: 44px; }
 }
 
 
@@ -15847,7 +16133,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
               </span>
               <span class="hero__field">
                 <span class="hero__lbl">LinkedIn</span>
-                <a class="link-out" href="#" data-placeholder-link>LinkedIn <span class="cta__arrow" aria-hidden="true">&#8599;</span></a>
+                <a class="link-out" data-link="linkedin">LinkedIn <span class="cta__arrow" aria-hidden="true">&#8599;</span></a>
               </span>
             </address>
 
@@ -15876,7 +16162,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
             </details>
 
             
-            <a class="hero__book" href="#" data-placeholder-link>
+            <a class="hero__book" data-link="schedule">
               Schedule a call <span class="cta__arrow" aria-hidden="true">&#8599;</span>
             </a>
 
@@ -15932,7 +16218,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
             
             <a class="cta cta--fill hero__mobile-cta" href="#work">
-              View key industry projects <span class="cta__arrow" aria-hidden="true">&darr;</span>
+              <span data-cta-label>View Work</span> <span class="cta__arrow" aria-hidden="true">&darr;</span>
             </a>
           </div>
 
@@ -15981,7 +16267,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
             </div>
 
             <div class="pv__stage" data-pv-stage>
-              <article class="pv__slide" data-pv-slide data-mode="design" data-href="#/carry"
+              <article class="pv__slide" data-project="carry" data-pv-slide data-mode="design"
                        role="tabpanel" aria-label="Carry" data-pv-name="Carry">
                 <div class="pv__head">
                   <h3 class="pv__title">Carry: A Continuity-of-Care Companion</h3>
@@ -17308,6 +17594,30 @@ body::before {
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
 ul, ol { padding: 0; list-style: none; }
 
+/* --------------------------------------------------------------------------
+   THE HIDDEN ATTRIBUTE MEANS HIDDEN
+
+   `hidden` is only a user-agent rule at specificity (0,1,0), so ANY class or
+   attribute selector that sets display beats it. This site sets display on
+   .page, .ar, .plist, .hero__mobile-cta and more, and every one of those is a
+   latent bug waiting for someone to hide the element.
+
+   One of them was not latent. At phone widths 06-responsive.css set
+   `main.page[data-view=&quot;home&quot;] { display: flex }`, which outranked [hidden] —
+   so the router hid the landing page, the landing page stayed in the layout,
+   and every case study had the whole index stacked underneath it. The document
+   was 43,391px tall instead of 12,000.
+
+   So: one guard, stated once, instead of a patch per component.
+
+   The single exception is the project browser&#x27;s slides. They use [hidden] to
+   leave the accessibility tree while a crossfade runs and keep their box on
+   purpose, taking visibility:hidden instead — see .pv__slide[hidden] in
+   04-components.css.
+   -------------------------------------------------------------------------- */
+
+[hidden]:not(.pv__slide) { display: none !important; }
+
 img, svg { display: block; max-width: 100%; }
 img { height: auto; }
 
@@ -18390,7 +18700,7 @@ em,
                             scrolling="no" tabindex="-1"></iframe>
                   </div></div>
               </article>
-              <article class="pv__slide" data-pv-slide data-mode="design" data-href="#" data-placeholder-link
+              <article class="pv__slide" data-project="specimen" data-pv-slide data-mode="design"
                        role="tabpanel" aria-label="Specimen Kit" hidden>
                 <div class="pv__head">
                   <h3 class="pv__title">Specimen Kit</h3>
@@ -18400,7 +18710,7 @@ em,
                        alt="A Natera specimen kit opened flat — the printed tissue preparation instructions in the lid, the moulded foam insert below it with an FFPE block cassette seated in its well."
                        width="1200" height="2231" loading="lazy" decoding="async"></div>
               </article>
-              <article class="pv__slide" data-pv-slide data-mode="design" data-href="#/optiflow"
+              <article class="pv__slide" data-project="optiflow" data-pv-slide data-mode="design"
                        role="tabpanel" aria-label="OptiFlow" hidden>
                 <div class="pv__head">
                   <h3 class="pv__title">OptiFlow</h3>
@@ -19726,6 +20036,30 @@ body::before {
 
 h1, h2, h3, h4, p, figure, blockquote, ul, ol { margin: 0; }
 ul, ol { padding: 0; list-style: none; }
+
+/* --------------------------------------------------------------------------
+   THE HIDDEN ATTRIBUTE MEANS HIDDEN
+
+   `hidden` is only a user-agent rule at specificity (0,1,0), so ANY class or
+   attribute selector that sets display beats it. This site sets display on
+   .page, .ar, .plist, .hero__mobile-cta and more, and every one of those is a
+   latent bug waiting for someone to hide the element.
+
+   One of them was not latent. At phone widths 06-responsive.css set
+   `main.page[data-view=&quot;home&quot;] { display: flex }`, which outranked [hidden] —
+   so the router hid the landing page, the landing page stayed in the layout,
+   and every case study had the whole index stacked underneath it. The document
+   was 43,391px tall instead of 12,000.
+
+   So: one guard, stated once, instead of a patch per component.
+
+   The single exception is the project browser&#x27;s slides. They use [hidden] to
+   leave the accessibility tree while a crossfade runs and keep their box on
+   purpose, taking visibility:hidden instead — see .pv__slide[hidden] in
+   04-components.css.
+   -------------------------------------------------------------------------- */
+
+[hidden]:not(.pv__slide) { display: none !important; }
 
 img, svg { display: block; max-width: 100%; }
 img { height: auto; }
@@ -21308,7 +21642,7 @@ em,
                   </div></div>
               </article>
               
-              <article class="pv__slide" data-pv-slide data-mode="design" data-href="#" data-placeholder-link
+              <article class="pv__slide" data-project="dsa" data-pv-slide data-mode="design"
                        role="tabpanel" aria-label="Design System Audit" hidden>
                 <div class="pv__head">
                   <h3 class="pv__title">Design System Audit</h3>
@@ -22391,7 +22725,7 @@ em,
                   </div>
                 </div>
               </article>
-              <article class="pv__slide" data-pv-slide data-mode="design" data-href="#" data-placeholder-link
+              <article class="pv__slide" data-project="pnc" data-pv-slide data-mode="design"
                        role="tabpanel" aria-label="PNC Bank" hidden>
                 <div class="pv__head">
                   <h3 class="pv__title">PNC Bank</h3>
@@ -23136,7 +23470,7 @@ em,
                             scrolling="no" tabindex="-1"></iframe>
                   </div></div>
               </article>
-              <article class="pv__slide" data-pv-slide data-mode="design" data-href="#" data-placeholder-link
+              <article class="pv__slide" data-project="crypto" data-pv-slide data-mode="design"
                        role="tabpanel" aria-label="Cryptography" hidden>
                 <div class="pv__head">
                   <h3 class="pv__title">Cryptography</h3>
@@ -23146,8 +23480,7 @@ em,
                     <div class="ec-thumb-root" aria-hidden="true" role="presentation"></div>
                   </div></div>
               </article>
-              <article class="pv__slide" data-pv-slide data-mode="illustration" data-href="#"
-                       data-placeholder-link data-cta="" role="tabpanel" aria-label="Illustration one" hidden>
+              <article class="pv__slide" data-project="illo-1" data-pv-slide data-mode="illustration" data-cta="" role="tabpanel" aria-label="Illustration one" hidden>
                 <div class="pv__head">
                   <h3 class="pv__title">Illustration one</h3>
                   <p class="pv__sub">A short line about the piece goes here — one sentence, same length as the others.</p>
@@ -23158,8 +23491,7 @@ em,
                   </div>
                 </div>
               </article>
-              <article class="pv__slide" data-pv-slide data-mode="illustration" data-href="#"
-                       data-placeholder-link data-cta="" role="tabpanel" aria-label="Illustration two" hidden>
+              <article class="pv__slide" data-project="illo-2" data-pv-slide data-mode="illustration" data-cta="" role="tabpanel" aria-label="Illustration two" hidden>
                 <div class="pv__head">
                   <h3 class="pv__title">Illustration two</h3>
                   <p class="pv__sub">A short line about the piece goes here — one sentence, same length as the others.</p>
@@ -23170,8 +23502,7 @@ em,
                   </div>
                 </div>
               </article>
-              <article class="pv__slide" data-pv-slide data-mode="illustration" data-href="#"
-                       data-placeholder-link data-cta="" role="tabpanel" aria-label="Illustration three" hidden>
+              <article class="pv__slide" data-project="illo-3" data-pv-slide data-mode="illustration" data-cta="" role="tabpanel" aria-label="Illustration three" hidden>
                 <div class="pv__head">
                   <h3 class="pv__title">Illustration three</h3>
                   <p class="pv__sub">A short line about the piece goes here — one sentence, same length as the others.</p>
@@ -23182,8 +23513,7 @@ em,
                   </div>
                 </div>
               </article>
-              <article class="pv__slide" data-pv-slide data-mode="music" data-href="#"
-                       data-placeholder-link data-cta="" role="tabpanel" aria-label="Release one" hidden>
+              <article class="pv__slide" data-project="rel-1" data-pv-slide data-mode="music" data-cta="" role="tabpanel" aria-label="Release one" hidden>
                 <div class="pv__head">
                   <h3 class="pv__title">Release one</h3>
                   <p class="pv__sub">A short line about the track or release goes here — one sentence, same as the others.</p>
@@ -23194,8 +23524,7 @@ em,
                   </div>
                 </div>
               </article>
-              <article class="pv__slide" data-pv-slide data-mode="music" data-href="#"
-                       data-placeholder-link data-cta="" role="tabpanel" aria-label="Release two" hidden>
+              <article class="pv__slide" data-project="rel-2" data-pv-slide data-mode="music" data-cta="" role="tabpanel" aria-label="Release two" hidden>
                 <div class="pv__head">
                   <h3 class="pv__title">Release two</h3>
                   <p class="pv__sub">A short line about the track or release goes here — one sentence, same as the others.</p>
@@ -23206,8 +23535,7 @@ em,
                   </div>
                 </div>
               </article>
-              <article class="pv__slide" data-pv-slide data-mode="music" data-href="#"
-                       data-placeholder-link data-cta="" role="tabpanel" aria-label="Release three" hidden>
+              <article class="pv__slide" data-project="rel-3" data-pv-slide data-mode="music" data-cta="" role="tabpanel" aria-label="Release three" hidden>
                 <div class="pv__head">
                   <h3 class="pv__title">Release three</h3>
                   <p class="pv__sub">A short line about the track or release goes here — one sentence, same as the others.</p>
@@ -23220,8 +23548,8 @@ em,
               </article>
             </div>
 
-            <a class="pv__cta" href="#/carry" data-pv-cta>
-              View case study <span class="cta__arrow" aria-hidden="true">&#8599;</span>
+            <a class="pv__cta" data-pv-cta>
+              <span data-cta-label>View Case Study</span>
             </a>
           </div>
 
@@ -23268,7 +23596,7 @@ em,
               </li>
             </ol>
 
-            <a class="cta cta--ink past__cta" href="#" data-placeholder-link>
+            <a class="cta cta--ink past__cta" data-link="resume">
               View r&eacute;sum&eacute; <span class="cta__arrow" aria-hidden="true">&rarr;</span>
             </a>
           </div>
@@ -23363,10 +23691,6 @@ em,
                     and make the next decision easier.
                   </p>
                 </div>
-
-                <a class="cta cta--ink" href="#" data-placeholder-link>
-                  More about me <span class="cta__arrow" aria-hidden="true">→</span>
-                </a>
               </div>
             </div>
           </article>
@@ -23391,7 +23715,7 @@ em,
         <article class="cell cell--carry">
           <div class="card card--link card--project card--stacked"
                style="--hue: var(--hue-carry)">
-            <a class="card__overlay-link" href="#/carry">
+            <a class="card__overlay-link" data-project="carry">
               <span class="visually-hidden">Explore the Carry case study</span>
             </a>
 
@@ -23563,7 +23887,7 @@ em,
             </div>
 
             <span class="cta cta--fill card__cta--foot" aria-hidden="true">
-              Explore project <span class="cta__arrow">→</span>
+              <span data-cta-label>View Case Study</span> <span class="cta__arrow" aria-hidden="true">→</span>
             </span>
           </div>
         </article>
@@ -23571,7 +23895,7 @@ em,
         <article class="cell cell--optiflow">
           <div class="card card--link card--project card--footed"
                style="--hue: var(--hue-optiflow); --split: minmax(0, 1.15fr) minmax(0, 1fr)">
-            <a class="card__overlay-link" href="#/optiflow">
+            <a class="card__overlay-link" data-project="optiflow">
               <span class="visually-hidden">Explore the OptiFlow case study</span>
             </a>
 
@@ -23801,7 +24125,7 @@ em,
             </div>
 
             <span class="cta cta--fill card__cta--foot" aria-hidden="true">
-              Explore project <span class="cta__arrow">→</span>
+              <span data-cta-label>View Case Study</span> <span class="cta__arrow" aria-hidden="true">→</span>
             </span>
           </div>
 </article>
@@ -23809,7 +24133,7 @@ em,
         <article class="cell cell--crypto">
           <div class="card card--link card--project card--footed"
                style="--hue: var(--hue-crypto); --split: minmax(0, 1fr) minmax(0, 0.92fr)">
-            <a class="card__overlay-link" href="#" data-placeholder-link>
+            <a class="card__overlay-link" data-project="crypto">
               <span class="visually-hidden">Explore the Cryptography project</span>
             </a>
 
@@ -23829,7 +24153,7 @@ em,
             </div>
 
             <span class="cta cta--fill card__cta--foot" aria-hidden="true">
-              Explore project <span class="cta__arrow">→</span>
+              <span data-cta-label>View Case Study</span> <span class="cta__arrow" aria-hidden="true">→</span>
             </span>
           </div>
         </article>
@@ -23840,7 +24164,7 @@ em,
         <article class="cell cell--specimen">
           <div class="card card--link card--project"
                style="--hue: var(--hue-specimen); --split: minmax(0, 1fr) minmax(0, 1.1fr)">
-            <a class="card__overlay-link" href="#" data-placeholder-link>
+            <a class="card__overlay-link" data-project="specimen">
               <span class="visually-hidden">Explore the Natera Specimen Kit project</span>
             </a>
 
@@ -23852,7 +24176,7 @@ em,
               </p>
               <p class="card__status">Shipped</p>
               <span class="cta cta--fill" aria-hidden="true">
-                Explore project <span class="cta__arrow">→</span>
+                <span data-cta-label>View Case Study</span> <span class="cta__arrow" aria-hidden="true">→</span>
               </span>
             </div>
 
@@ -23877,7 +24201,7 @@ em,
         <article class="cell cell--pnc">
           <div class="card card--link card--project"
                style="--hue: var(--hue-pnc); --split: minmax(0, 1fr) minmax(0, 1.1fr)">
-            <a class="card__overlay-link" href="#" data-placeholder-link>
+            <a class="card__overlay-link" data-project="pnc">
               <span class="visually-hidden">Explore the PNC Bank project</span>
             </a>
 
@@ -23890,7 +24214,7 @@ em,
               </p>
               <p class="card__status">Shipped</p>
               <span class="cta cta--fill" aria-hidden="true">
-                Explore project <span class="cta__arrow">→</span>
+                <span data-cta-label>View Case Study</span> <span class="cta__arrow" aria-hidden="true">→</span>
               </span>
             </div>
 
@@ -24671,7 +24995,7 @@ em,
               </div>
 
               <div class="morework">
-                <a class="morework__item" href="#" data-placeholder-link>
+                <a class="morework__item" data-project="fub">
                   <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-bank"/></svg></span>
                   <span>
                     <span class="morework__name">First United Bank</span>
@@ -24680,7 +25004,7 @@ em,
                   <span class="morework__ext" aria-hidden="true">↗</span>
                 </a>
 
-                <a class="morework__item" href="#" data-placeholder-link>
+                <a class="morework__item" data-project="cvs">
                   <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg></span>
                   <span>
                     <span class="morework__name">CVS Health</span>
@@ -24690,9 +25014,9 @@ em,
                 </a>
               </div>
 
-              <a class="cta cta--ink" href="#" data-placeholder-link>
-                View all projects <span class="cta__arrow" aria-hidden="true">→</span>
-              </a>
+              <a class="cta cta--ink" href="#work" data-work-link="View Work">
+        <span data-cta-label>View Work</span> <span class="cta__arrow" aria-hidden="true">→</span>
+      </a>
             </div>
           </div>
         </article>
@@ -24737,10 +25061,6 @@ em,
                   <div class="media media--placeholder" data-placeholder="djing.jpg"></div>
                 </figure>
               </div>
-
-              <a class="cta cta--ink" href="#" data-placeholder-link>
-                See more <span class="cta__arrow" aria-hidden="true">→</span>
-              </a>
             </div>
           </div>
         </article>
@@ -24767,13 +25087,13 @@ em,
           <a class="cta cta--accent" href="mailto:rockysahooart@gmail.com">
             Email me <span class="cta__arrow" aria-hidden="true">→</span>
           </a>
-          <a class="cta cta--ghost" href="#" data-placeholder-link>Schedule a conversation</a>
+          <a class="cta cta--ghost" data-link="schedule">Schedule a conversation</a>
         </div>
 
         <div class="contact__meta">
           <span>Austin, TX</span>
-          <a class="link-out" href="#" data-placeholder-link>LinkedIn <span class="cta__arrow" aria-hidden="true">&#8599;</span></a>
-          <a href="#" data-placeholder-link>Résumé ↗</a>
+          <a class="link-out" data-link="linkedin">LinkedIn <span class="cta__arrow" aria-hidden="true">&#8599;</span></a>
+          <a data-link="resume">Résumé ↗</a>
         </div>
       </div>
     </div>
@@ -24786,7 +25106,7 @@ em,
 
     <nav class="cs-bar ar-full" aria-label="Case study">
       <a class="cs-bar__back" href="#work">
-        <span aria-hidden="true">&larr;</span> Key industry projects
+        <span aria-hidden="true">&larr;</span> Back to Work
       </a>
       <button class="theme-toggle" type="button" data-theme-toggle
               aria-label="Switch colour theme">
@@ -25667,21 +25987,15 @@ No real authentication, patient account, medical record, audio recording, file
 system, transcription service or model is involved anywhere on this page, and
 nothing entered here is stored.</p></div>
 
-    <nav class="cs-next ar-wide" aria-labelledby="carry-next-h">
-      <p class="cs-next__label" id="carry-next-h">Next case study</p>
-      <a class="cs-next__link" href="#/optiflow">
-        <span class="cs-next__title">OptiFlow</span>
-        <span class="cs-next__sub">Document ingestion, classification and
-          matching for a clinical operations team</span>
-      </a>
-    </nav>
+    <nav class="csnav ar-wide" data-study="carry"
+         aria-label="Case study navigation"></nav>
 </main>
 
   
   <main class="page case" id="optiflow" data-view="optiflow" aria-labelledby="of-title" hidden>
 
     <div class="cs-bar">
-      <a class="cs-bar__back" href="#work"><span aria-hidden="true">&larr;</span> Key industry projects</a>
+      <a class="cs-bar__back" href="#work"><span aria-hidden="true">&larr;</span> Back to Work</a>
       <p class="cs-bar__where">OptiFlow</p>
       <div class="cs-bar__end">
         <button class="theme-toggle" type="button" data-theme-toggle
@@ -25792,21 +26106,165 @@ nothing entered here is stored.</p></div>
       <p class="cs-source">Structure, terminology, examples, tags, confidence levels, justification reasons and accuracy figures are taken from the project&rsquo;s own Figma file &mdash; the pipeline architecture frame, the Tagging Logic Graphic, the Tagging User Flow and the optiSTREAM icon set. This is the one animated visual in the case study; the diagrams themselves are reproduced exactly and left static.</p>
     </section>
 
-    <section class="cs-next" aria-labelledby="of-next-h">
-      <div>
-        <p class="cs-next__label">Next project</p>
-        <h2 class="t-card cs-next__title" id="of-next-h">Helping patients remember what was said in the room</h2>
-      </div>
-      <div class="cs-next__actions">
-        <a class="cta cta--fill" href="#/carry">Open the Carry case study <span class="cta__arrow" aria-hidden="true">&rarr;</span></a>
-        <a class="cta cta--ghost" href="#work">Back to key industry projects</a>
-      </div>
-    </section>
+    <nav class="csnav" data-study="optiflow"
+           aria-label="Case study navigation"></nav>
 
   </main>
 
 
 <script>
+/* ===== js/routes.js ===== */
+/* ==========================================================================
+   routes.js — THE PROJECT ROUTE MAP, AND THE ONE PLACE DESTINATIONS LIVE.
+
+   Every project on this site is named in four places: the carousel on desktop,
+   the bento cards, the "more work" list, and the previous/next control at the
+   foot of a case study. Before this file each of those carried its own
+   hard-coded href, which is how five of them ended up pointing at "#" and how
+   the foot of the OptiFlow study ended up with a bespoke link to Carry that
+   nothing else knew about.
+
+   So there is one table. Order in PROJECTS is the order a reader walks them,
+   and previous/next is computed from it rather than written by hand.
+
+   ROUTES ARE HASHES, DELIBERATELY. The whole site is one document — that is
+   what the standalone build is — so a case study is a second <main>, not a
+   second file. A hash route therefore survives the thing a path-based router
+   would break: this is served from a project sub-path (/productdesign/), and
+   a deep link, a refresh and a Back button all resolve against whatever base
+   the document was served from, with no server rewrite rule and no 404
+   fallback page. Nothing here needs to know where it is deployed, which is
+   why nothing here mentions it.
+
+   STATUS IS HONEST. A project with no case study written is 'soon'. It never
+   gets a link, and the interface says so in words rather than offering a tap
+   that goes nowhere or, worse, lands on a different project's page.
+   ========================================================================== */
+
+window.PF = window.PF || {};
+
+(function (PF) {
+  'use strict';
+
+  /* ---------------------------------------------------------------------
+     EXTERNAL DESTINATIONS
+
+     Empty means "not published yet", and the boot code below removes the
+     control rather than leaving a link that goes nowhere. Fill a string in
+     and it wires itself up: new tab, rel="noopener", and the external-link
+     mark. This is the only place these belong.
+     --------------------------------------------------------------------- */
+  PF.LINKS = {
+    linkedin: '',     /* e.g. 'https://www.linkedin.com/in/…' */
+    resume:   '',     /* a URL, or a file committed alongside index.html */
+    schedule: ''      /* a booking link */
+  };
+
+  /* ---------------------------------------------------------------------
+     THE PROJECTS
+
+       key      what the markup references
+       mode     which filter it belongs to on the index
+       name     the short name used in navigation ("Next Project · OptiFlow")
+       context  who it was for / what kind of work — shown before the tap
+       route    the in-document route, when the case study exists
+       status   'live'   the route is real
+                'soon'   nothing written yet; never linked, always labelled
+     --------------------------------------------------------------------- */
+  PF.PROJECTS = [
+    { key: 'carry', mode: 'design', name: 'Carry',
+      context: 'Patient experience · Healthcare',
+      route: '#/carry', status: 'live' },
+
+    { key: 'specimen', mode: 'design', name: 'Specimen Kit',
+      context: 'Physical experience · Healthcare',
+      status: 'soon' },
+
+    { key: 'optiflow', mode: 'design', name: 'OptiFlow',
+      context: 'AI-assisted operations · Healthcare',
+      route: '#/optiflow', status: 'live' },
+
+    { key: 'dsa', mode: 'design', name: 'Design System Audit',
+      context: 'Design systems',
+      status: 'soon' },
+
+    { key: 'pnc', mode: 'design', name: 'PNC Bank',
+      context: 'Securities-based lending · Finance',
+      status: 'soon' },
+
+    { key: 'crypto', mode: 'design', name: 'Cryptography',
+      context: 'Interactive explainer',
+      status: 'soon' },
+
+    { key: 'fub', mode: 'design', name: 'First United Bank',
+      context: 'Banking identity and digital',
+      status: 'soon' },
+
+    { key: 'cvs', mode: 'design', name: 'CVS Health',
+      context: 'Enterprise platforms',
+      status: 'soon' },
+
+    { key: 'illo-1', mode: 'illustration', name: 'Illustration one', context: 'Illustration', status: 'soon' },
+    { key: 'illo-2', mode: 'illustration', name: 'Illustration two', context: 'Illustration', status: 'soon' },
+    { key: 'illo-3', mode: 'illustration', name: 'Illustration three', context: 'Illustration', status: 'soon' },
+
+    { key: 'rel-1', mode: 'music', name: 'Release one', context: 'Music', status: 'soon' },
+    { key: 'rel-2', mode: 'music', name: 'Release two', context: 'Music', status: 'soon' },
+    { key: 'rel-3', mode: 'music', name: 'Release three', context: 'Music', status: 'soon' }
+  ];
+
+  /* One word for the collection, everywhere it is a destination rather than
+     a headline: the back control, the hero action, the end-of-study module.
+     Editorial headings on the index keep their own voice. */
+  PF.WORK = { label: 'Work', hash: '#work' };
+
+  PF.project = function (key) {
+    for (var i = 0; i < PF.PROJECTS.length; i++) {
+      if (PF.PROJECTS[i].key === key) return PF.PROJECTS[i];
+    }
+    return null;
+  };
+
+  /* Previous and next walk only the projects that have somewhere to go. A
+     disabled control pointing at an unwritten study is a mystery button, and
+     the brief for this pass is right that they are worse than nothing. */
+  PF.liveProjects = function () {
+    return PF.PROJECTS.filter(function (p) { return p.status === 'live'; });
+  };
+
+  PF.neighbours = function (key) {
+    var live = PF.liveProjects();
+    for (var i = 0; i < live.length; i++) {
+      if (live[i].key === key) {
+        return { prev: live[i - 1] || null, next: live[i + 1] || null };
+      }
+    }
+    return { prev: null, next: null };
+  };
+
+  /* The route a case study view corresponds to, so a page can find itself. */
+  PF.projectByRoute = function (view) {
+    for (var i = 0; i < PF.PROJECTS.length; i++) {
+      if (PF.PROJECTS[i].route === '#/' + view) return PF.PROJECTS[i];
+    }
+    return null;
+  };
+
+  /* ---------------------------------------------------------------------
+     COPY — one label per action, chosen so the words describe the result.
+     --------------------------------------------------------------------- */
+  PF.CTA = {
+    study:  'View Case Study',
+    soon:   'Case study coming soon',
+    back:   'Back to ' + PF.WORK.label,
+    next:   'Next Project',
+    prev:   'Previous Project',
+    work:   'View Work'
+  };
+
+})(window.PF);
+
+
 /* ===== js/theme.js ===== */
 /* ==========================================================================
    theme.js — light / dark switch
@@ -32188,27 +32646,33 @@ window.PF = window.PF || {};
     if (typeof fit === 'function') fit();
 
     if (cta) {
-      var href = el.getAttribute('data-href') || '#';
-      cta.setAttribute('href', href);
-      if (el.hasAttribute('data-placeholder-link')) {
-        cta.setAttribute('data-placeholder-link', '');
-      } else {
-        cta.removeAttribute('data-placeholder-link');
-      }
+      /* THE CAROUSEL DOES NOT KNOW WHERE ANYTHING IS. It asks the route map,
+         the same one the cards and the case-study feet ask, so a slide and
+         the card for the same project can never point at different places.
+         See js/routes.js. */
+      var proj = (window.PF && PF.project) ? PF.project(el.getAttribute('data-project')) : null;
+      var live = proj && proj.status === 'live';
+      var lab = cta.querySelector('[data-cta-label]') || cta;
 
-      /* A slide can say it has no action yet. The zone stays exactly where it
-         is — the link is made invisible rather than removed — so a placeholder
-         card is the same shape as a finished one and dropping a real link in
-         later changes nothing about the layout. */
-      var label = el.getAttribute('data-cta');
-      var none = label !== null && label === '';
-      cta.style.visibility = none ? 'hidden' : '';
-      cta.setAttribute('aria-hidden', none ? 'true' : 'false');
-      cta.setAttribute('tabindex', none ? '-1' : '0');
-      if (!none) {
-        cta.setAttribute('aria-label',
-          'View the ' + (el.getAttribute('aria-label') || '') + ' case study');
+      if (live) {
+        cta.setAttribute('href', proj.route);
+        cta.removeAttribute('aria-disabled');
+        cta.setAttribute('tabindex', '0');
+        cta.setAttribute('aria-label', PF.CTA.study + ': ' + proj.name);
+        lab.textContent = PF.CTA.study;
+      } else {
+        /* No study written: the zone keeps its size so the frame does not
+           move between slides, but there is nothing to tap and the words say
+           why. A disabled-looking button with no explanation is the thing
+           this replaced. */
+        cta.removeAttribute('href');
+        cta.setAttribute('aria-disabled', 'true');
+        cta.setAttribute('tabindex', '-1');
+        cta.removeAttribute('aria-label');
+        lab.textContent = proj ? PF.CTA.soon : '';
       }
+      cta.setAttribute('data-status', live ? 'live' : 'soon');
+      cta.style.visibility = proj ? '' : 'hidden';
     }
   }
 
@@ -33786,6 +34250,266 @@ window.PF = window.PF || {};
     initScenes();
     watchMotion();
   };
+})(window.PF);
+
+
+/* ===== js/wire.js ===== */
+/* ==========================================================================
+   wire.js — the route map, applied.
+
+   routes.js says where things go. This puts it on the page, so no piece of
+   markup carries a destination of its own and none of them can drift apart.
+
+   WHAT IT TOUCHES
+
+     [data-project="key"]     any card, slide or list row that stands for a
+                              project. Gets its href, its CTA label and, if
+                              the study is not written, an honest state.
+     [data-work-link]         anything whose job is "go to the work"
+     [data-link="linkedin"]   external destinations, from PF.LINKS
+     [data-study="key"]       a case study; gets its foot navigation built
+
+   THE RULE FOR AN UNWRITTEN STUDY. It does not get a link. Not a disabled
+   link, not a link to something related, not a link to the top of the page —
+   no link. The card keeps its title and its description, because those are
+   the things a recruiter is reading, and where the action would have been it
+   says "Case study coming soon" in a treatment that is visibly not a button.
+   A tap that does nothing is worse on a phone than no tap target at all,
+   because there is no hover to tell you first.
+
+   ONE NAVIGATION PER TAP. A card is one link. Where a card also shows a
+   textual CTA — and it should, so the action is obvious without hover — that
+   CTA is not a second anchor; it is a span inside the same one. Nested
+   anchors were how the same tap could mean two things.
+   ========================================================================== */
+
+window.PF = window.PF || {};
+
+(function (PF) {
+  'use strict';
+
+  function txt(el, s) { if (el) el.textContent = s; }
+
+  /* ---------------------------------------------------------------------
+     PROJECTS
+     --------------------------------------------------------------------- */
+
+  function wireProject(el) {
+    var key = el.getAttribute('data-project');
+    var p = PF.project(key);
+
+    if (!p) {
+      /* A key with no entry is a bug in the markup, not something to paper
+         over at runtime. Leave it inert and say so in the console. */
+      el.setAttribute('data-status', 'unknown');
+      if (window.console) console.warn('[routes] no project named "' + key + '"');
+      return;
+    }
+
+    el.setAttribute('data-status', p.status);
+
+    /* THE LABEL IS NOT INSIDE THE LINK. On a card the overlay anchor covers
+       the whole tile and the visible CTA sits beside it in the copy block —
+       that is the arrangement that keeps one tap meaning one thing. So the
+       label is looked up from the CARD, not from the anchor. */
+    var card = el.closest('.card, article, li') || el;
+    var label = el.querySelector('[data-cta-label]') || card.querySelector('[data-cta-label]');
+    var live = p.status === 'live';
+
+    if (live) {
+      if (el.tagName === 'A') el.setAttribute('href', p.route);
+      else el.setAttribute('data-href', p.route);
+      el.removeAttribute('data-placeholder-link');
+      el.removeAttribute('aria-disabled');
+      txt(label, PF.CTA.study);
+
+      /* The accessible name says which project, because "View Case Study"
+         repeated nine times down a page tells a screen-reader user nothing
+         about which one they are on. */
+      var vh = el.querySelector('.visually-hidden');
+      if (vh) txt(vh, PF.CTA.study + ': ' + p.name);
+      else if (el.tagName === 'A' && !el.getAttribute('aria-label')) {
+        el.setAttribute('aria-label', PF.CTA.study + ': ' + p.name);
+      }
+      return;
+    }
+
+    /* Not written yet. Strip every affordance that promises a destination. */
+    txt(label, PF.CTA.soon);
+    el.removeAttribute('href');
+    el.removeAttribute('data-href');
+    el.removeAttribute('data-placeholder-link');
+    if (el.tagName === 'A') {
+      /* An anchor with no href is already unfocusable and unactivatable;
+         these two just make the reason legible to assistive technology. */
+      el.setAttribute('role', 'presentation');
+      el.setAttribute('aria-hidden', 'true');
+    }
+    /* The card, not whatever container happens to be the parent: the
+       'more work' list was picking this up and greying its own heading. */
+    var host = el.closest('[data-project-card], article, li');
+    if (host && host !== el) host.setAttribute('data-status', 'soon');
+  }
+
+  /* ---------------------------------------------------------------------
+     THE WORK, AND EXTERNAL DESTINATIONS
+     --------------------------------------------------------------------- */
+
+  function wireWork(el) {
+    el.setAttribute('href', PF.WORK.hash);
+    el.removeAttribute('data-placeholder-link');
+    var label = el.querySelector('[data-cta-label]');
+    if (label && !label.hasAttribute('data-keep')) txt(label, el.getAttribute('data-work-link') || PF.CTA.work);
+  }
+
+  function wireExternal(el) {
+    var name = el.getAttribute('data-link');
+    var url = (PF.LINKS || {})[name] || '';
+
+    if (!url) {
+      /* Nothing to point at. Remove the control rather than leave a link
+         that reloads the page — see the file header. Anything marked
+         data-link-keep stays as plain text (a label, not an action). */
+      if (el.hasAttribute('data-link-keep')) {
+        el.removeAttribute('href');
+        el.setAttribute('data-status', 'soon');
+        return;
+      }
+      var row = el.closest('[data-link-row]');
+      (row || el).remove();
+      return;
+    }
+
+    el.setAttribute('href', url);
+    el.setAttribute('target', '_blank');
+    el.setAttribute('rel', 'noopener noreferrer');
+    el.setAttribute('data-external', '1');
+    el.removeAttribute('data-placeholder-link');
+  }
+
+  /* ---------------------------------------------------------------------
+     THE FOOT OF A CASE STUDY
+
+     Previous · Back to Work · Next, in that order, built from the map so it
+     can never disagree with the index. Missing neighbours are omitted
+     rather than shown disabled.
+     --------------------------------------------------------------------- */
+
+  function buildStudyNav(host) {
+    var key = host.getAttribute('data-study');
+    var n = PF.neighbours(key);
+    var h = '';
+
+    if (n.prev) {
+      h += '<a class="csnav__side" href="' + n.prev.route + '">' +
+             '<span class="csnav__dir"><span aria-hidden="true">&larr;</span> ' + PF.CTA.prev + '</span>' +
+             '<span class="csnav__name">' + n.prev.name + '</span>' +
+           '</a>';
+    }
+
+    h += '<a class="csnav__work" href="' + PF.WORK.hash + '">' +
+           '<span aria-hidden="true">&uarr;</span> ' + PF.CTA.back +
+         '</a>';
+
+    if (n.next) {
+      h += '<a class="csnav__side csnav__side--next" href="' + n.next.route + '">' +
+             '<span class="csnav__dir">' + PF.CTA.next + ' <span aria-hidden="true">&rarr;</span></span>' +
+             '<span class="csnav__name">' + n.next.name + '</span>' +
+           '</a>';
+    }
+
+    host.innerHTML = h;
+    host.setAttribute('data-built', '1');
+  }
+
+  /* ---------------------------------------------------------------------
+     BOOT
+     --------------------------------------------------------------------- */
+
+  PF.initRoutes = function (scope) {
+    scope = scope || document;
+
+    var projects = scope.querySelectorAll('[data-project]');
+    for (var i = 0; i < projects.length; i++) wireProject(projects[i]);
+
+    var work = scope.querySelectorAll('[data-work-link]');
+    for (var j = 0; j < work.length; j++) wireWork(work[j]);
+
+    var ext = scope.querySelectorAll('[data-link]');
+    for (var k = 0; k < ext.length; k++) wireExternal(ext[k]);
+
+    var studies = scope.querySelectorAll('[data-study]');
+    for (var m = 0; m < studies.length; m++) buildStudyNav(studies[m]);
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { PF.initRoutes(); });
+  } else {
+    PF.initRoutes();
+  }
+
+})(window.PF);
+
+/* ==========================================================================
+   THE CONTENTS CONTROL
+
+   A case study's table of contents is eleven links. On a desktop column that
+   is a sidebar; on a phone it is a screen and a half of navigation standing
+   between the reader and the first sentence. So on a phone it collapses to
+   one row that says what it is and how many sections there are, and opens in
+   place — no overlay, no new context to escape from, and the anchors inside
+   are ordinary anchors that scroll the page the way anchors do.
+
+   Above the phone breakpoint the toggle is display:none and the list is
+   always open, so nothing about the desktop reading experience changes.
+   ========================================================================== */
+
+(function (PF) {
+  'use strict';
+
+  function build(toc) {
+    if (toc.querySelector('.toc__toggle')) return;
+    var list = toc.querySelector('ol, ul');
+    if (!list) return;
+
+    var n = list.querySelectorAll('li').length;
+    var btn = document.createElement('button');
+    btn.className = 'toc__toggle';
+    btn.type = 'button';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.innerHTML = '<span>Contents</span><span>' + n + ' sections &#9662;</span>';
+
+    if (!list.id) list.id = 'toc-' + Math.random().toString(36).slice(2, 8);
+    btn.setAttribute('aria-controls', list.id);
+
+    toc.setAttribute('data-open', '0');
+    toc.insertBefore(btn, toc.firstChild);
+
+    btn.addEventListener('click', function () {
+      var open = toc.getAttribute('data-open') === '1';
+      toc.setAttribute('data-open', open ? '0' : '1');
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+    });
+
+    /* Choosing a section closes the list on the way out, so the reader lands
+       on the heading rather than behind the menu they just used. */
+    list.addEventListener('click', function (e) {
+      if (!e.target.closest('a')) return;
+      toc.setAttribute('data-open', '0');
+      btn.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  var prev = PF.initRoutes;
+  PF.initRoutes = function (scope) {
+    prev(scope);
+    scope = scope || document;
+    var tocs = scope.querySelectorAll('.ar-toc');
+    for (var i = 0; i < tocs.length; i++) build(tocs[i]);
+  };
+
+  if (document.readyState !== 'loading') PF.initRoutes();
+
 })(window.PF);
 
 
