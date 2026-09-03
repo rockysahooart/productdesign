@@ -17724,6 +17724,38 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   }
 }
 
+/* --------------------------------------------------------------------------
+   NOTHING IS PAINTED BEFORE IT HAS BEEN MEASURED
+
+   Both the card's phone and the framed previews are authored at a fixed size
+   and scaled to whatever box they are given. Between first paint and the first
+   successful measurement they are therefore at full size inside a box that
+   clips — which is what a cold load used to show for a frame or two, and why
+   a refresh appeared to fix it.
+
+   One frame of nothing is better than one frame of a phone with its top and
+   bottom cut off, so they are held back until the script has set a scale and
+   marked the container. No spinner: the reveal is a single opacity step, and
+   the reserved box below means nothing moves when it happens.
+   -------------------------------------------------------------------------- */
+
+#cfRoot .cf-stage,
+.pv__embed .pv__frame {
+  opacity: 0;
+  transition: opacity 160ms linear;
+}
+#cfRoot[data-fit="1"] .cf-stage,
+.pv__embed[data-fit="1"] .pv__frame { opacity: 1; }
+
+/* And no measurement can be taken against a zero box: the preview area holds
+   its shape whether or not the document inside it has reported anything. */
+.pv__embed { min-height: 240px; }
+
+@media (prefers-reduced-motion: reduce) {
+  #cfRoot .cf-stage,
+  .pv__embed .pv__frame { transition: none; }
+}
+
 </style>
 </head>
 
@@ -20448,13 +20480,44 @@ em,
   // its own and wrong inside a card. Same maths against the container box.
   var stage = document.getElementById(&#x27;cf-stage&#x27;);
   var FRAME_W = 390, FRAME_H = 844;
+
+  /* MEASURED AFTER LAYOUT, EVERY TIME, AND NOT SHOWN UNTIL IT HAS BEEN.
+
+     The old version measured once at script time and gave up silently if the
+     container had no box yet — which is exactly what happens on a cold load,
+     where the card&#x27;s own height is still settling when a deferred script
+     runs. No scale meant the phone rendered at its authored 390 x 844 inside
+     a shorter card, and the top and bottom were cut off. Refreshing appeared
+     to fix it because a warm cache changed the order layout and script
+     arrived in, which is the signature of a measurement taken too early
+     rather than of anything visual.
+
+     Now: the first fit is deferred to a rAF so it lands after layout rather
+     than inside it, it is repeated when fonts settle and when everything has
+     loaded, and the ResizeObserver keeps it right for every change after
+     that. The stage stays invisible until a fit has actually succeeded — one
+     frame, no spinner — so a wrongly-sized phone is never painted at all. */
   function fit(){
     var w = root.clientWidth, h = root.clientHeight;
-    if (!w || !h) return;
+    if (!w || !h) return false;
     var scale = Math.min(1, (w * 0.94) / FRAME_W, (h * 0.94) / FRAME_H);
     stage.style.transform = &#x27;scale(&#x27; + scale + &#x27;)&#x27;;
+    root.setAttribute(&#x27;data-fit&#x27;, &#x27;1&#x27;);
+    return true;
   }
-  fit();
+
+  /* Keep asking until there is a box to measure. A container that is still
+     zero after a second is one that is hidden, and hidden is not a problem
+     the observer below cannot solve later. */
+  var tries = 0;
+  (function settle(){
+    if (fit() || tries++ &gt; 60) return;
+    requestAnimationFrame(settle);
+  })();
+
+  window.addEventListener(&#x27;load&#x27;, fit);
+  if (document.fonts &amp;&amp; document.fonts.ready) document.fonts.ready.then(fit);
+
   if (&#x27;ResizeObserver&#x27; in window) new ResizeObserver(fit).observe(root);
   else window.addEventListener(&#x27;resize&#x27;, fit);
 
@@ -27170,20 +27233,14 @@ em,
   <div class="acc__b" data-acc-b>
     <div class="ar-note"><p>To be straight about the inputs: there was no interview study
       behind this. I had the product team&rsquo;s stated premises and the patient feedback
-      they already held, and I have kept what follows to the three things that actually
-      changed a decision.</p></div>
+      they already held, and I have kept what follows to what actually changed a
+      decision.</p></div>
 
-    <div class="cs-move"><p class="cs-move__l">Patients keep rewriting the question</p>
-      <p>A question that starts as &ldquo;what does this mean?&rdquo; is sharper by the day of the appointment. That told me preparation is not a form you fill in once, so I put editing inside the row rather than behind a separate screen, and made every action reversible.</p></div>
-    <div class="cs-move"><p class="cs-move__l">I could not verify a generated answer</p>
-      <p>I tried to work out how we would check a written-up answer against what was actually said, and there was no way to do it that a patient could see. That ruled out generated prose entirely: matched content became a direct quotation with a route to the transcript.</p></div>
-    <div class="cs-move"><p class="cs-move__l">Recording in a consulting room is a consent problem</p>
-      <p>Once I looked at what recording would require, it varied by state and it was not the value we were offering anyway. So Carry never records. The patient uploads a file from their own phone, which moved the whole question outside the product.</p></div>
-
-    <p class="ar-p">Those three decisions were subtractions, and together they drew a
-      boundary I could design against. I mapped the product across the appointment to
-      make that boundary explicit &mdash; particularly the part where Carry does nothing
-      at all.</p>
+    <p class="ar-p">Three decisions that set the boundary: patients kept refining
+      questions, so I made editing immediate and reversible. I ruled out generated
+      answers because patients needed to verify exactly what was said, and I moved
+      recording outside Carry to avoid consent complexity. Together, those decisions
+      clarified what Carry should do, and what it should deliberately avoid.</p>
 
     <figure class="ar-fig ar-wide">
       <div class="ar-fig__frame ar-fig__frame--bare"><svg class="md md--phases" viewBox="0 0 960 340" width="960" height="340" role="img"
@@ -28500,13 +28557,44 @@ window.PF = window.PF || {};
   // its own and wrong inside a card. Same maths against the container box.
   var stage = document.getElementById('cf-stage');
   var FRAME_W = 390, FRAME_H = 844;
+
+  /* MEASURED AFTER LAYOUT, EVERY TIME, AND NOT SHOWN UNTIL IT HAS BEEN.
+
+     The old version measured once at script time and gave up silently if the
+     container had no box yet — which is exactly what happens on a cold load,
+     where the card's own height is still settling when a deferred script
+     runs. No scale meant the phone rendered at its authored 390 x 844 inside
+     a shorter card, and the top and bottom were cut off. Refreshing appeared
+     to fix it because a warm cache changed the order layout and script
+     arrived in, which is the signature of a measurement taken too early
+     rather than of anything visual.
+
+     Now: the first fit is deferred to a rAF so it lands after layout rather
+     than inside it, it is repeated when fonts settle and when everything has
+     loaded, and the ResizeObserver keeps it right for every change after
+     that. The stage stays invisible until a fit has actually succeeded — one
+     frame, no spinner — so a wrongly-sized phone is never painted at all. */
   function fit(){
     var w = root.clientWidth, h = root.clientHeight;
-    if (!w || !h) return;
+    if (!w || !h) return false;
     var scale = Math.min(1, (w * 0.94) / FRAME_W, (h * 0.94) / FRAME_H);
     stage.style.transform = 'scale(' + scale + ')';
+    root.setAttribute('data-fit', '1');
+    return true;
   }
-  fit();
+
+  /* Keep asking until there is a box to measure. A container that is still
+     zero after a second is one that is hidden, and hidden is not a problem
+     the observer below cannot solve later. */
+  var tries = 0;
+  (function settle(){
+    if (fit() || tries++ > 60) return;
+    requestAnimationFrame(settle);
+  })();
+
+  window.addEventListener('load', fit);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+
   if ('ResizeObserver' in window) new ResizeObserver(fit).observe(root);
   else window.addEventListener('resize', fit);
 
@@ -35416,6 +35504,10 @@ window.PF = window.PF || {};
       if (!b.w || !b.h || !b.r.width) continue;
       var s = Math.min(b.r.width / b.w, b.r.height / b.h, 1);
       b.el.style.setProperty('--pv-scale', s.toFixed(4));
+      /* Only now is the frame worth looking at. Before this it is at its
+         authored size in a box that clips, so the stylesheet keeps it
+         invisible rather than showing a cropped phone for a frame or two. */
+      b.el.setAttribute('data-fit', '1');
       tell(b.el, s);
     }
   }
@@ -35451,11 +35543,40 @@ window.PF = window.PF || {};
     ft = setTimeout(fit, 120);
   });
 
-  /* A frame that is hidden at first paint has no box to measure, so every
-     slide is fitted once the stage has one — and again after the frames have
-     loaded, in case a document reports its size late. */
-  fit();
-  window.addEventListener('load', fit);
+  /* MEASURE WHEN THERE IS SOMETHING TO MEASURE, NOT WHEN THE SCRIPT RUNS.
+
+     A preview whose box is zero at the moment fit() happens to run gets no
+     scale at all, and a frame with no scale renders at its authored size —
+     390 x 760 for the phone — inside a box that clips. That is the bug this
+     replaces: on a cold load the phone came out cropped top and bottom, and a
+     refresh "fixed" it, because a warm cache simply changed the order layout
+     and script arrived in. A bug that depends on cache timing is not a
+     rendering bug, it is a measurement taken too early.
+
+     So the measurement is taken repeatedly, and always after the browser has
+     finished a layout:
+
+       rAF          after the first layout of this frame, not during it
+       fonts.ready  a metric font swap changes every box on the page
+       load         a framed document that reports its size late
+       observer     and anything else — a slide becoming visible, the role
+                    filter switching, a column resizing. This is the one that
+                    actually guarantees it, because it fires on the exact
+                    event the old code was guessing at.
+
+     fit() is idempotent and cheap, so running it more often than strictly
+     needed costs a read pass and buys the frame never being wrong. */
+  function refit() { requestAnimationFrame(fit); }
+
+  refit();
+  window.addEventListener('load', refit);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
+
+  if ('ResizeObserver' in window) {
+    var ro = new ResizeObserver(function () { fit(); });
+    var watched = root.querySelectorAll('.pv__embed:not(.pv__embed--dsa)');
+    for (var wi = 0; wi < watched.length; wi++) ro.observe(watched[wi]);
+  }
 
   /* Start in the mode the selector starts in. */
   var startBtn = document.querySelector('[data-role][aria-selected="true"]');
