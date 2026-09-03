@@ -14551,13 +14551,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
     font-weight: 600;
     text-align: start;
   }
-  .toc__toggle span:last-child {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--ink-muted);
-    transition: transform 180ms ease;
-  }
-  .toc__toggle[aria-expanded="true"] span:last-child { transform: rotate(180deg); }
+
 
   .ar-toc ol { padding: 4px 0 8px; margin: 0; border-block-start: 1px solid var(--border); }
   .ar-toc[data-open="0"] ol { display: none; }
@@ -14643,6 +14637,171 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .card__launch { inset-block-start: 12px; inset-inline-end: 12px; width: 34px; height: 34px; }
   .card__launch svg { width: 16px; height: 16px; }
 }
+
+/* --------------------------------------------------------------------------
+   9. THE CONTENTS CARET
+
+   The same circular control the project cards carry, so the two read as one
+   family: down when the list is closed, up when it is open. Only the icon
+   rotates. The previous version rotated the whole label — which is why the
+   words came out upside down.
+   -------------------------------------------------------------------------- */
+
+.toc__toggle { padding-block: 8px; }
+
+.toc__ico {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-raised);
+  color: var(--ink);
+  transition: transform 200ms ease, background-color 200ms ease;
+}
+.toc__ico svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.toc__toggle[aria-expanded="true"] .toc__ico { transform: rotate(180deg); }
+.toc__toggle:active .toc__ico { background: var(--surface-sunken); }
+
+/* --------------------------------------------------------------------------
+   10. A FIGURE FITS, IT DOES NOT SCROLL
+
+   Wide diagrams were sitting in an overflow-x container, so reading one meant
+   panning the page sideways. They shrink to the column instead and keep their
+   aspect ratio. A diagram that ends up small is a diagram you can pinch; a
+   diagram you have to pan is one most readers never see the end of.
+   -------------------------------------------------------------------------- */
+
+.ar-fig__frame,
+.ar-table__wrap {
+  overflow-x: visible;
+  max-width: 100%;
+}
+.ar-fig__frame > svg,
+.ar-fig svg.md {
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  display: block;
+}
+.ar-fig img,
+.ar-shot img,
+.ar-fig picture,
+.case img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* A table is the one thing that genuinely cannot shrink past its content, so
+   it keeps a scroller — but only the table, never the page. */
+.ar-table__wrap { overflow-x: auto; }
+
+/* --------------------------------------------------------------------------
+   11. ROLE / TEAM / PHASE
+
+   Was three run-on lines with the label bolded inline. It is a set of
+   label-and-value pairs, so it is built as one: labels in the quiet uppercase
+   tier, values in body ink, aligned down a column on anything wider than a
+   phone.
+   -------------------------------------------------------------------------- */
+
+.ar-meta {
+  margin: 24px 0 0;
+  padding: 20px 0 0;
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 12px;
+}
+.ar-meta__row { display: grid; gap: 2px; }
+.ar-meta dt {
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.ar-meta dd { margin: 0; color: var(--ink); }
+
+@media (min-width: 560px) {
+  .ar-meta__row {
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 4px 16px;
+    align-items: baseline;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   12. THE WIDTH COMPARISON
+
+   Controls in their own panel, screens in theirs, so it is obvious which one
+   answers to which. On a phone the screens panel shows one device at a time
+   at its real height — a 375×667 frame rather than a crop — because three
+   frames on a phone is three slivers and no comparison at all.
+   -------------------------------------------------------------------------- */
+
+.cu-embed--split { padding: 0; }
+
+.cu-panel {
+  padding: 0 0 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-raised);
+}
+
+.cu-wtools {
+  display: grid;
+  gap: 16px;
+  padding: 0 16px;
+  margin: 0;
+}
+.cu-wtools__field {
+  display: grid;
+  gap: 8px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.cu-wtools__field textarea {
+  font-family: var(--font-body);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 12px;
+  resize: vertical;
+  min-height: 72px;
+  width: 100%;
+}
+.cu-wtools__field textarea:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+.cu-wtools__sets { display: grid; gap: 16px; }
+@media (min-width: 700px) { .cu-wtools__sets { grid-template-columns: 1fr auto; gap: 24px; } }
+
+.cu-screens { padding: 24px 16px 28px; }
+
+/* One device at a time below the comparison breakpoint — so "All three" is
+   not offered at a width where it cannot mean anything. */
+@media (max-width: 699px) {
+  .cu-only-all { display: none; }
+}
+
+.cu-widths[data-single="1"] { justify-content: center; }
+.cu-widths[data-single="1"] .cu-w { max-width: 100%; }
+
+/* The frame is a device, so it keeps the device's proportions and clips like
+   one rather than letting the app spill past the bottom edge. */
+.cu-w__fit { overflow: hidden; border-radius: 22px; }
 
 
 /* ===== css/14-case-type.css ===== */
@@ -25446,11 +25605,20 @@ em,
       <h1 class="ar-title" id="carry-title">Carry: A Patient Experience Extension</h1>
       <p class="ar-standfirst">Helping patients remember what happened after the
         appointment.</p>
-      <p class="ar-byline">
-        <span><b>Role</b>Designer &mdash; clarity, trust, performance</span>
-        <span><b>Team</b>Three designers, inside a larger design organisation</span>
-        <span><b>Phase</b>MVP design exploration, evaluated by stakeholders</span>
-      </p>
+      <dl class="ar-meta">
+        <div class="ar-meta__row">
+          <dt>Role</dt>
+          <dd>Designer &mdash; clarity, trust, performance</dd>
+        </div>
+        <div class="ar-meta__row">
+          <dt>Team</dt>
+          <dd>Three designers, inside a larger design organisation</dd>
+        </div>
+        <div class="ar-meta__row">
+          <dt>Phase</dt>
+          <dd>MVP design exploration, evaluated by stakeholders</dd>
+        </div>
+      </dl>
     </header>
 
     <nav class="ar-toc" aria-label="Contents">
@@ -25762,39 +25930,50 @@ component's height; the layout does not clip content to stay rigid.</p>
 <section class="ar-demo ar-wide cu" data-cu="widths">
   <div class="ar-demo__head">
     <p class="ar-demo__label">Prototype &middot; Clarity</p>
-    <p class="ar-demo__title">The same question at three widths</p>
+    <p class="ar-demo__title">One question, three devices</p>
   </div>
-  <p class="ar-demo__intro">375, 390 and 440 points, side by side, with the
-    same row in each. Edit the text or pick a sample and watch all three
-    respond. The height under each frame is measured from the live DOM, not
-    written into the caption.</p>
-  <div class="cu-embed">
-    <div class="cu-embed__bar">
-      <b>Molecule &middot; QuestionRow</b>
-      <span class="cu-cue" data-cue>Try it &mdash; type a longer question</span>
-    </div>
-    <div class="cu-stage">
+  <p class="ar-demo__intro">Type a question, then switch device. Each frame is
+    a real screen at its real height. The row height under it is measured from
+    the live DOM, not written into the caption.</p>
+  <div class="cu-embed cu-embed--split">
+    
+    <div class="cu-panel">
+      <div class="cu-embed__bar">
+        <b>Molecule &middot; QuestionRow</b>
+        <span class="cu-cue" data-cue>Try it &mdash; type a longer question</span>
+      </div>
       <div class="cu-wtools">
-        <label>Question text
+        <label class="cu-wtools__field">Question text
           <textarea rows="2" data-field="q" aria-label="Question text">Has anything changed since my last test?</textarea>
         </label>
-        <span class="cu-ctl__opts" role="group" aria-label="Sample lengths">
-          <button class="cu-labbtn" type="button" data-act="sample" data-i="0">One line at 440</button>
-          <button class="cu-labbtn" type="button" data-act="sample" data-i="1">Three lines, then two</button>
-          <button class="cu-labbtn" type="button" data-act="sample" data-i="2">Wraps at every width</button>
-        </span>
-        <span class="cu-ctl__opts" role="group" aria-label="Show width">
-          <button type="button" data-act="only" data-w="all" aria-pressed="true">All</button>
-          <button type="button" data-act="only" data-w="375" aria-pressed="false">375</button>
-          <button type="button" data-act="only" data-w="390" aria-pressed="false">390</button>
-          <button type="button" data-act="only" data-w="440" aria-pressed="false">440</button>
-        </span>
+        <div class="cu-wtools__sets">
+          <span class="cu-ctl">
+            <span class="cu-ctl__l">Examples</span>
+            <span class="cu-ctl__opts" role="group" aria-label="Sample lengths">
+              <button type="button" data-act="sample" data-i="0">One line at 440</button>
+              <button type="button" data-act="sample" data-i="1">Three lines, then two</button>
+              <button type="button" data-act="sample" data-i="2">Wraps at every width</button>
+            </span>
+          </span>
+          <span class="cu-ctl">
+            <span class="cu-ctl__l">Device</span>
+            <span class="cu-ctl__opts" role="group" aria-label="Device width">
+              <button class="cu-only-all" type="button" data-act="only" data-w="all" aria-pressed="true">All three</button>
+              <button type="button" data-act="only" data-w="375" aria-pressed="false">375</button>
+              <button type="button" data-act="only" data-w="390" aria-pressed="false">390</button>
+              <button type="button" data-act="only" data-w="440" aria-pressed="false">440</button>
+            </span>
+          </span>
+        </div>
       </div>
+    </div>
+
+    <div class="cu-screens">
       <div class="cu-widths" data-widths></div>
       <span class="cu-live" data-live aria-live="polite"></span>
     </div>
   </div>
-</section>
+  </section>
 
 <h3 class="ar-h3">Copy is a product tool, not a finishing pass</h3>
 
@@ -28535,10 +28714,12 @@ window.PF = window.PF || {};
      rather than written into the copy and hoped to still be true.
      ===================================================================== */
 
+  /* Real devices, so the frame is a real screen rather than a crop of one:
+     the height is the device's own, not a number that happened to fit. */
   var WIDTHS = [
-    { w: 375, name: 'iPhone SE', btn: 343 },
-    { w: 390, name: 'iPhone 14/15/16', btn: 358 },
-    { w: 440, name: 'iPhone Pro Max', btn: 408 }
+    { w: 375, h: 667, name: 'iPhone SE', btn: 343 },
+    { w: 390, h: 844, name: 'iPhone 14/15/16', btn: 358 },
+    { w: 440, h: 956, name: 'iPhone Pro Max', btn: 408 }
   ];
 
   /* Chosen so the comparison actually shows something. The middle one is the
@@ -28557,6 +28738,15 @@ window.PF = window.PF || {};
     var field = root.querySelector('[data-field="q"]');
     if (field) field.value = st.text;
 
+    /* Below this there is no room for a side-by-side comparison, so the
+       control stops meaning "which of the three to highlight" and starts
+       meaning "which device am I looking at". "All" is hidden at this width
+       rather than left as an option that produces three unreadable slivers. */
+    var side = window.matchMedia('(min-width: 700px)');
+    function effectiveOnly() {
+      return (!side.matches && st.only === 'all') ? '390' : st.only;
+    }
+
     function render(keepCaret) {
       var caret = null;
       if (keepCaret) {
@@ -28564,12 +28754,24 @@ window.PF = window.PF || {};
         if (cur) caret = cur.selectionStart;
       }
 
-      wrap.innerHTML = WIDTHS.map(function (d) {
-        var hidden = st.only !== 'all' && String(d.w) !== st.only;
-        return '<figure class="cu-w"' + (hidden ? ' hidden' : '') + '>' +
+      /* ONE SCREEN AT A TIME ON A PHONE. Three frames side by side is a
+         comparison you can only make on a desk. On a phone each one is a
+         third of a third and none of them is a screen any more — so the
+         width control stops being a filter over a row and becomes the
+         choice of which device you are looking at. */
+      var only = effectiveOnly();
+      var single = only !== 'all';
+      var list = single
+        ? WIDTHS.filter(function (d) { return String(d.w) === only; })
+        : WIDTHS;
+
+      wrap.setAttribute('data-single', single ? '1' : '0');
+
+      wrap.innerHTML = list.map(function (d) {
+        return '<figure class="cu-w">' +
           '<figcaption class="cu-w__cap"><b>' + d.w + 'pt</b><span>' + esc(d.name) + '</span></figcaption>' +
-          '<div class="cu-w__fit" data-wfit="' + d.w + '">' +
-            '<div class="cu-app cu-w__app" style="--cu-w:' + d.w + 'px">' +
+          '<div class="cu-w__fit" data-wfit="' + d.w + '" data-wh="' + d.h + '">' +
+            '<div class="cu-app cu-w__app" style="--cu-w:' + d.w + 'px;height:' + d.h + 'px">' +
               appBar(SEED.title, SEED.whenShort, { back: 'noop', trail: 'gear' }) +
               '<div class="cu-scroll">' +
                 '<div class="cu-card"><div class="cu-sec"><b>My questions</b><span>3 prepared</span></div>' +
@@ -28618,36 +28820,49 @@ window.PF = window.PF || {};
        would show a layout the product does not have. */
     var GAP = 16;
 
+    /* One shared scale when the three sit together, so 375 really is narrower
+       than 440 on screen. When one device is shown on its own it simply fits
+       the column, because there is nothing left to compare it against and a
+       shrunken lone phone is just small. */
     function fitWidths() {
       var boxes = wrap.querySelectorAll('[data-wfit]');
       if (!boxes.length) return;
-      var shown = [];
-      for (var i = 0; i < boxes.length; i++) {
-        if (!boxes[i].closest('.cu-w').hidden) shown.push(boxes[i]);
-      }
-      if (!shown.length) return;
 
       var avail = wrap.clientWidth;
       if (!avail) return;
 
-      /* Side by side while they fit at a legible scale; stacked below that,
-         still at one shared scale so the comparison survives. */
-      var sum = 0;
-      for (var j = 0; j < shown.length; j++) sum += +shown[j].getAttribute('data-wfit');
-      var row = (avail - GAP * (shown.length - 1)) / sum;
-      var stacked = row < 0.42 && shown.length > 1;
-      var s = stacked ? Math.min(1, avail / 440) : Math.min(1, row);
+      var single = boxes.length === 1;
+      var s;
 
-      wrap.setAttribute('data-stacked', stacked ? '1' : '0');
+      if (single) {
+        var w = +boxes[0].getAttribute('data-wfit');
+        s = Math.min(1, avail / w);
+      } else {
+        var sum = 0;
+        for (var j = 0; j < boxes.length; j++) sum += +boxes[j].getAttribute('data-wfit');
+        s = Math.min(1, (avail - GAP * (boxes.length - 1)) / sum);
+      }
 
       for (var k = 0; k < boxes.length; k++) {
         var box = boxes[k];
-        var w = +box.getAttribute('data-wfit');
+        var bw = +box.getAttribute('data-wfit');
+        var bh = +box.getAttribute('data-wh');
         box.style.setProperty('--cu-scale', s);
-        box.style.width = Math.round(w * s) + 'px';
-        var inner = box.firstElementChild;
-        if (inner) box.style.height = Math.round(inner.offsetHeight * s) + 'px';
+        box.style.width = Math.round(bw * s) + 'px';
+        box.style.height = Math.round(bh * s) + 'px';
       }
+    }
+
+    function syncOnly() {
+      var on = effectiveOnly();
+      var btns = root.querySelectorAll('[data-act="only"]');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].setAttribute('aria-pressed', btns[i].getAttribute('data-w') === on ? 'true' : 'false');
+      }
+    }
+
+    if (side.addEventListener) {
+      side.addEventListener('change', function () { syncOnly(); render(); });
     }
 
     root.addEventListener('click', function (e) {
@@ -28659,12 +28874,9 @@ window.PF = window.PF || {};
       if (a === 'sample') { st.text = SAMPLES[+b.getAttribute('data-i')][1]; syncField(); render(); return; }
       if (a === 'only') {
         st.only = b.getAttribute('data-w');
-        var btns = root.querySelectorAll('[data-act="only"]');
-        for (var i = 0; i < btns.length; i++) {
-          btns[i].setAttribute('aria-pressed', btns[i].getAttribute('data-w') === st.only ? 'true' : 'false');
-        }
+        syncOnly();
         render();
-        say(root, st.only === 'all' ? 'Showing all three widths.' : 'Showing ' + st.only + ' points.');
+        say(root, effectiveOnly() === 'all' ? 'Showing all three widths.' : 'Showing ' + effectiveOnly() + ' points.');
         return;
       }
     });
@@ -28690,6 +28902,7 @@ window.PF = window.PF || {};
       window.addEventListener('resize', function () { fitWidths(); measure(); });
     }
 
+    syncOnly();
     render();
   }
 
@@ -34803,12 +35016,21 @@ window.PF = window.PF || {};
     var list = toc.querySelector('ol, ul');
     if (!list) return;
 
-    var n = list.querySelectorAll('li').length;
     var btn = document.createElement('button');
     btn.className = 'toc__toggle';
     btn.type = 'button';
     btn.setAttribute('aria-expanded', 'false');
-    btn.innerHTML = '<span>Contents</span><span>' + n + ' sections &#9662;</span>';
+    /* An icon, not a sentence. The count used to sit here as "11 sections ▾"
+       and the open state rotated the whole span — which turned the words
+       upside down along with the caret. The circle is the same control the
+       project cards carry, pointing down when closed and up when open. */
+    btn.innerHTML =
+      '<span>Contents</span>' +
+      '<span class="toc__ico">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+          '<path d="M7 10l5 5 5-5"/>' +
+        '</svg>' +
+      '</span>';
 
     if (!list.id) list.id = 'toc-' + Math.random().toString(36).slice(2, 8);
     btn.setAttribute('aria-controls', list.id);
