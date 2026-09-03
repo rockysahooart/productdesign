@@ -223,7 +223,7 @@
      not reach full dark until the edge. That tail is most of the radius: it is
      what makes the transition read as distance rather than as a circle. */
   --reveal: radial-gradient(circle clamp(420px, 36vmax, 600px)
-                            at var(--px, 50%) var(--py, 42%),
+                            at 50% 50%,
               rgba(0, 0, 0, 0) 0%,
               rgba(0, 0, 0, 0.05) 20%,
               rgba(0, 0, 0, 0.18) 38%,
@@ -863,19 +863,15 @@ html {
 body {
   margin: 0;
   background-color: var(--canvas);
-  /* THE LIGHT FOLLOWS THE POINTER. One soft radial on the ground, centred on
-     wherever the cursor is — js/main.js writes --px and --py, eased, and does
-     nothing at all on a touch screen where there is no pointer to follow. It
-     is attached to the viewport rather than the document, so it is a light in
-     the room rather than a mark on the page, and it sits under the wall's own
-     washes so the two read as one ground. */
+  /* The pointer glow used to live here, as a second background layer with its
+     own centre animated. It is now .pf-wash, a real element moved by a
+     transform — see THE GROUND'S GLOW below. What is left is the grain, which
+     never moves, so this background is painted once. */
   background-image:
-    radial-gradient(42vmax 42vmax at var(--px, 50%) var(--py, 8%),
-                    var(--cursor-glow, transparent) 0%, transparent 68%),
     url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='150'%20height='150'%3E%3Cfilter%20id='w'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.86'%20numOctaves='3'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='150'%20height='150'%20filter='url%28%23w%29'%20opacity='0.085'/%3E%3C/svg%3E");
-  background-size: auto, 150px 150px;
-  background-repeat: no-repeat, repeat;
-  background-attachment: fixed, scroll;
+  background-size: 150px 150px;
+  background-repeat: repeat;
+  background-attachment: scroll;
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--fs-body);
@@ -908,6 +904,47 @@ body {
    position alone: no transform on the body, no repaint of the content above
    it, nothing that can cost a frame in the hero's animation.
    -------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------
+   THE GROUND'S GLOW
+
+   One soft radial on the ground, centred on wherever the cursor is. It was a
+   background layer on the body until profiling showed what that costs: a
+   background gradient whose centre moves repaints the element, and the element
+   is the viewport. Roughly 17ms a frame, for a wash nobody would consciously
+   notice — and it was one of three layers making the same mistake.
+
+   So it is an element now. The gradient inside it never changes; the box is
+   84vmax square, which is twice the gradient's own reach, and it is translated
+   so its middle sits under the light. Rasterised once, composited thereafter.
+
+   z-index -2 keeps it exactly where it was in the stack: above the body's flat
+   colour, below the wall's drifting washes at -1, so the two still read as one
+   ground rather than as a light on top of a wall.
+
+   The gate is .has-torch, which js/main.js only adds on a wide viewport with a
+   fine pointer, motion allowed and contrast not raised — the same conditions
+   that used to be enforced by zeroing --cursor-glow, except now the element
+   does not exist at all rather than existing and painting nothing.
+   -------------------------------------------------------------------------- */
+
+.pf-wash, .pf-veil, .pf-torch, .pf-beam { display: none; }
+
+:root.has-torch[data-route="home"] .pf-wash {
+  display: block;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 84vmax;
+  height: 84vmax;
+  transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
+  will-change: transform;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(closest-side,
+                              var(--cursor-glow, transparent) 0%,
+                              transparent 68%);
+}
 
 body::before {
   content: "";
@@ -1164,10 +1201,30 @@ body::before {
    them along with everything else.
    -------------------------------------------------------------------------- */
 
-:root.has-torch[data-route="home"][data-theme="dark"] main.page[data-view="home"]::after {
-  content: "";
+:root.has-torch[data-route="home"][data-theme="dark"] .pf-veil {
+  display: block;
   position: fixed;
-  inset: 0;
+  left: 0;
+  top: 0;
+  /* TWICE THE VIEWPORT, CENTRED ON THE POINTER, MOVED BY A TRANSFORM.
+
+     This used to be `inset: 0` with the mask's own centre animated. Moving a
+     gradient's origin invalidates paint, so that was a repaint of a
+     viewport-sized layer every frame — profiled at about 17ms on its own, and
+     it was one of three layers doing the same thing.
+
+     Now the mask never changes. The hole sits at 50% 50% of a box two
+     viewports wide and two tall, and the box is translated so its centre lands
+     under the light. Two viewports is exactly enough: with the centre anywhere
+     inside the viewport the box still overhangs every edge. The layer
+     rasterises once and is then only ever composited. */
+  width: 200vw;
+  height: 200vh;
+  /* The element centres itself on whatever point JS hands it: the -50% pair
+     resolves against this box's own size, so the script only ever needs the
+     pointer. Nothing here is written as a custom property — see main.js. */
+  transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
+  will-change: transform;
   z-index: 39;
   pointer-events: none;
   background: var(--veil);
@@ -1177,10 +1234,27 @@ body::before {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root.has-torch[data-route="home"]:not([data-theme="light"]) main.page[data-view="home"]::after {
-    content: "";
+  :root.has-torch[data-route="home"]:not([data-theme="light"]) .pf-veil {
+    display: block;
     position: fixed;
-    inset: 0;
+    left: 0;
+    top: 0;
+    /* TWICE THE VIEWPORT, CENTRED ON THE POINTER, MOVED BY A TRANSFORM.
+
+       This used to be `inset: 0` with the mask's own centre animated. Moving a
+       gradient's origin invalidates paint, so that was a repaint of a
+       viewport-sized layer every frame — profiled at about 17ms on its own, and
+       it was one of three layers doing the same thing.
+
+       Now the mask never changes. The hole sits at 50% 50% of a box two
+       viewports wide and two tall, and the box is translated so its centre lands
+       under the light. Two viewports is exactly enough: with the centre anywhere
+       inside the viewport the box still overhangs every edge. The layer
+       rasterises once and is then only ever composited. */
+    width: 200vw;
+    height: 200vh;
+    transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
+    will-change: transform;
     z-index: 39;
     pointer-events: none;
     background: var(--veil);
@@ -1234,8 +1308,8 @@ body::before {
    all. -------------------------------------------------------------------- */
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  :root.has-torch[data-route="home"][data-theme="dark"]::before {
-      content: "";
+  :root.has-torch[data-route="home"][data-theme="dark"] .pf-beam {
+      display: block;
     position: fixed;
     left: 0;
     top: 0;
@@ -1246,8 +1320,7 @@ body::before {
        pass every frame. */
     width: 380px;
     height: 380px;
-    transform: translate(calc(var(--fx, -50vw) - 190px),
-                         calc(var(--fy, -50vh) - 190px));
+    transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
     will-change: transform;
     z-index: 41;
     pointer-events: none;
@@ -1258,8 +1331,8 @@ body::before {
   }
 
   @media (prefers-color-scheme: dark) {
-    :root.has-torch[data-route="home"]:not([data-theme="light"])::before {
-      content: "";
+    :root.has-torch[data-route="home"]:not([data-theme="light"]) .pf-beam {
+      display: block;
     position: fixed;
     left: 0;
     top: 0;
@@ -1270,8 +1343,7 @@ body::before {
        pass every frame. */
     width: 380px;
     height: 380px;
-    transform: translate(calc(var(--fx, -50vw) - 190px),
-                         calc(var(--fy, -50vh) - 190px));
+    transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
     will-change: transform;
     z-index: 41;
     pointer-events: none;
@@ -1285,11 +1357,11 @@ body::before {
   /* A light that chases a pointer is exactly what reduced motion is for, and a
      touch screen has no pointer to chase. */
   @media (prefers-reduced-motion: reduce) {
-    :root::before { display: none; }
+    .pf-beam { display: none; }
   }
 
   @media (hover: none), (pointer: coarse) {
-    :root::before { display: none; }
+    .pf-beam { display: none; }
   }
 }
 
@@ -1313,10 +1385,18 @@ body::before {
    and this paints nothing at all.
    -------------------------------------------------------------------------- */
 
-:root.has-torch[data-route="home"][data-theme="dark"]::after {
-  content: "";
+:root.has-torch[data-route="home"][data-theme="dark"] .pf-torch {
+  display: block;
   position: fixed;
-  inset: 0;
+  left: 0;
+  top: 0;
+  /* Same rebuild as the veil, for the same reason: a static gradient in a box
+     the size of the light itself, translated. 720 square holds the whole
+     falloff at the widest the clamp goes. */
+  width: 720px;
+  height: 720px;
+  transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
+  will-change: transform;
   z-index: 40;
   pointer-events: none;
   /* Inside the hole the veil has already stepped aside, so this is not what
@@ -1324,7 +1404,7 @@ body::before {
      a little more light at the middle than at the edge of it, which is what
      keeps the hotspot reading as a hotspot rather than as a flat window. */
   background: radial-gradient(clamp(150px, 13vmax, 230px) clamp(150px, 13vmax, 230px)
-                              at var(--px, 50%) var(--py, 42%),
+                              at 50% 50%,
                               var(--torch-core, transparent) 0%,
                               var(--torch-edge, transparent) 44%,
                               transparent 72%);
@@ -1332,10 +1412,18 @@ body::before {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root.has-torch[data-route="home"]:not([data-theme="light"])::after {
-    content: "";
+  :root.has-torch[data-route="home"]:not([data-theme="light"]) .pf-torch {
+    display: block;
     position: fixed;
-    inset: 0;
+    left: 0;
+    top: 0;
+    /* Same rebuild as the veil, for the same reason: a static gradient in a box
+       the size of the light itself, translated. 720 square holds the whole
+       falloff at the widest the clamp goes. */
+    width: 720px;
+    height: 720px;
+    transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
+    will-change: transform;
     z-index: 40;
     pointer-events: none;
     /* Inside the hole the veil has already stepped aside, so this is not what
@@ -1343,7 +1431,7 @@ body::before {
        a little more light at the middle than at the edge of it, which is what
        keeps the hotspot reading as a hotspot rather than as a flat window. */
     background: radial-gradient(clamp(150px, 13vmax, 230px) clamp(150px, 13vmax, 230px)
-                                at var(--px, 50%) var(--py, 42%),
+                                at 50% 50%,
                                 var(--torch-core, transparent) 0%,
                                 var(--torch-edge, transparent) 44%,
                                 transparent 72%);
@@ -15408,6 +15496,12 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 </head>
 
 <body>
+
+
+<div class="pf-wash"  aria-hidden="true"></div>
+<div class="pf-veil"  aria-hidden="true"></div>
+<div class="pf-torch" aria-hidden="true"></div>
+<div class="pf-beam"  aria-hidden="true"></div>
 <a class="skip-link" href="#work">Skip to key industry projects</a>
 
 
@@ -15995,7 +16089,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
      not reach full dark until the edge. That tail is most of the radius: it is
      what makes the transition read as distance rather than as a circle. */
   --reveal: radial-gradient(circle clamp(420px, 36vmax, 600px)
-                            at var(--px, 50%) var(--py, 42%),
+                            at 50% 50%,
               rgba(0, 0, 0, 0) 0%,
               rgba(0, 0, 0, 0.05) 20%,
               rgba(0, 0, 0, 0.18) 38%,
@@ -16635,19 +16729,15 @@ html {
 body {
   margin: 0;
   background-color: var(--canvas);
-  /* THE LIGHT FOLLOWS THE POINTER. One soft radial on the ground, centred on
-     wherever the cursor is — js/main.js writes --px and --py, eased, and does
-     nothing at all on a touch screen where there is no pointer to follow. It
-     is attached to the viewport rather than the document, so it is a light in
-     the room rather than a mark on the page, and it sits under the wall&#x27;s own
-     washes so the two read as one ground. */
+  /* The pointer glow used to live here, as a second background layer with its
+     own centre animated. It is now .pf-wash, a real element moved by a
+     transform — see THE GROUND&#x27;S GLOW below. What is left is the grain, which
+     never moves, so this background is painted once. */
   background-image:
-    radial-gradient(42vmax 42vmax at var(--px, 50%) var(--py, 8%),
-                    var(--cursor-glow, transparent) 0%, transparent 68%),
     url(&quot;data:image/svg+xml,%3Csvg%20xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%3E%3Cfilter%20id=&#x27;w&#x27;%3E%3CfeTurbulence%20type=&#x27;fractalNoise&#x27;%20baseFrequency=&#x27;0.86&#x27;%20numOctaves=&#x27;3&#x27;%20stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix%20type=&#x27;saturate&#x27;%20values=&#x27;0&#x27;/%3E%3C/filter%3E%3Crect%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%20filter=&#x27;url%28%23w%29&#x27;%20opacity=&#x27;0.085&#x27;/%3E%3C/svg%3E&quot;);
-  background-size: auto, 150px 150px;
-  background-repeat: no-repeat, repeat;
-  background-attachment: fixed, scroll;
+  background-size: 150px 150px;
+  background-repeat: repeat;
+  background-attachment: scroll;
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--fs-body);
@@ -16680,6 +16770,47 @@ body {
    position alone: no transform on the body, no repaint of the content above
    it, nothing that can cost a frame in the hero&#x27;s animation.
    -------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------
+   THE GROUND&#x27;S GLOW
+
+   One soft radial on the ground, centred on wherever the cursor is. It was a
+   background layer on the body until profiling showed what that costs: a
+   background gradient whose centre moves repaints the element, and the element
+   is the viewport. Roughly 17ms a frame, for a wash nobody would consciously
+   notice — and it was one of three layers making the same mistake.
+
+   So it is an element now. The gradient inside it never changes; the box is
+   84vmax square, which is twice the gradient&#x27;s own reach, and it is translated
+   so its middle sits under the light. Rasterised once, composited thereafter.
+
+   z-index -2 keeps it exactly where it was in the stack: above the body&#x27;s flat
+   colour, below the wall&#x27;s drifting washes at -1, so the two still read as one
+   ground rather than as a light on top of a wall.
+
+   The gate is .has-torch, which js/main.js only adds on a wide viewport with a
+   fine pointer, motion allowed and contrast not raised — the same conditions
+   that used to be enforced by zeroing --cursor-glow, except now the element
+   does not exist at all rather than existing and painting nothing.
+   -------------------------------------------------------------------------- */
+
+.pf-wash, .pf-veil, .pf-torch, .pf-beam { display: none; }
+
+:root.has-torch[data-route=&quot;home&quot;] .pf-wash {
+  display: block;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 84vmax;
+  height: 84vmax;
+  transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
+  will-change: transform;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(closest-side,
+                              var(--cursor-glow, transparent) 0%,
+                              transparent 68%);
+}
 
 body::before {
   content: &quot;&quot;;
@@ -16936,10 +17067,30 @@ body::before {
    them along with everything else.
    -------------------------------------------------------------------------- */
 
-:root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;] main.page[data-view=&quot;home&quot;]::after {
-  content: &quot;&quot;;
+:root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;] .pf-veil {
+  display: block;
   position: fixed;
-  inset: 0;
+  left: 0;
+  top: 0;
+  /* TWICE THE VIEWPORT, CENTRED ON THE POINTER, MOVED BY A TRANSFORM.
+
+     This used to be `inset: 0` with the mask&#x27;s own centre animated. Moving a
+     gradient&#x27;s origin invalidates paint, so that was a repaint of a
+     viewport-sized layer every frame — profiled at about 17ms on its own, and
+     it was one of three layers doing the same thing.
+
+     Now the mask never changes. The hole sits at 50% 50% of a box two
+     viewports wide and two tall, and the box is translated so its centre lands
+     under the light. Two viewports is exactly enough: with the centre anywhere
+     inside the viewport the box still overhangs every edge. The layer
+     rasterises once and is then only ever composited. */
+  width: 200vw;
+  height: 200vh;
+  /* The element centres itself on whatever point JS hands it: the -50% pair
+     resolves against this box&#x27;s own size, so the script only ever needs the
+     pointer. Nothing here is written as a custom property — see main.js. */
+  transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
+  will-change: transform;
   z-index: 39;
   pointer-events: none;
   background: var(--veil);
@@ -16949,10 +17100,27 @@ body::before {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;]) main.page[data-view=&quot;home&quot;]::after {
-    content: &quot;&quot;;
+  :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;]) .pf-veil {
+    display: block;
     position: fixed;
-    inset: 0;
+    left: 0;
+    top: 0;
+    /* TWICE THE VIEWPORT, CENTRED ON THE POINTER, MOVED BY A TRANSFORM.
+
+       This used to be `inset: 0` with the mask&#x27;s own centre animated. Moving a
+       gradient&#x27;s origin invalidates paint, so that was a repaint of a
+       viewport-sized layer every frame — profiled at about 17ms on its own, and
+       it was one of three layers doing the same thing.
+
+       Now the mask never changes. The hole sits at 50% 50% of a box two
+       viewports wide and two tall, and the box is translated so its centre lands
+       under the light. Two viewports is exactly enough: with the centre anywhere
+       inside the viewport the box still overhangs every edge. The layer
+       rasterises once and is then only ever composited. */
+    width: 200vw;
+    height: 200vh;
+    transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
+    will-change: transform;
     z-index: 39;
     pointer-events: none;
     background: var(--veil);
@@ -17006,8 +17174,8 @@ body::before {
    all. -------------------------------------------------------------------- */
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  :root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;]::before {
-      content: &quot;&quot;;
+  :root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;] .pf-beam {
+      display: block;
     position: fixed;
     left: 0;
     top: 0;
@@ -17018,8 +17186,7 @@ body::before {
        pass every frame. */
     width: 380px;
     height: 380px;
-    transform: translate(calc(var(--fx, -50vw) - 190px),
-                         calc(var(--fy, -50vh) - 190px));
+    transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
     will-change: transform;
     z-index: 41;
     pointer-events: none;
@@ -17030,8 +17197,8 @@ body::before {
   }
 
   @media (prefers-color-scheme: dark) {
-    :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;])::before {
-      content: &quot;&quot;;
+    :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;]) .pf-beam {
+      display: block;
     position: fixed;
     left: 0;
     top: 0;
@@ -17042,8 +17209,7 @@ body::before {
        pass every frame. */
     width: 380px;
     height: 380px;
-    transform: translate(calc(var(--fx, -50vw) - 190px),
-                         calc(var(--fy, -50vh) - 190px));
+    transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
     will-change: transform;
     z-index: 41;
     pointer-events: none;
@@ -17057,11 +17223,11 @@ body::before {
   /* A light that chases a pointer is exactly what reduced motion is for, and a
      touch screen has no pointer to chase. */
   @media (prefers-reduced-motion: reduce) {
-    :root::before { display: none; }
+    .pf-beam { display: none; }
   }
 
   @media (hover: none), (pointer: coarse) {
-    :root::before { display: none; }
+    .pf-beam { display: none; }
   }
 }
 
@@ -17085,10 +17251,18 @@ body::before {
    and this paints nothing at all.
    -------------------------------------------------------------------------- */
 
-:root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;]::after {
-  content: &quot;&quot;;
+:root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;] .pf-torch {
+  display: block;
   position: fixed;
-  inset: 0;
+  left: 0;
+  top: 0;
+  /* Same rebuild as the veil, for the same reason: a static gradient in a box
+     the size of the light itself, translated. 720 square holds the whole
+     falloff at the widest the clamp goes. */
+  width: 720px;
+  height: 720px;
+  transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
+  will-change: transform;
   z-index: 40;
   pointer-events: none;
   /* Inside the hole the veil has already stepped aside, so this is not what
@@ -17096,7 +17270,7 @@ body::before {
      a little more light at the middle than at the edge of it, which is what
      keeps the hotspot reading as a hotspot rather than as a flat window. */
   background: radial-gradient(clamp(150px, 13vmax, 230px) clamp(150px, 13vmax, 230px)
-                              at var(--px, 50%) var(--py, 42%),
+                              at 50% 50%,
                               var(--torch-core, transparent) 0%,
                               var(--torch-edge, transparent) 44%,
                               transparent 72%);
@@ -17104,10 +17278,18 @@ body::before {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;])::after {
-    content: &quot;&quot;;
+  :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;]) .pf-torch {
+    display: block;
     position: fixed;
-    inset: 0;
+    left: 0;
+    top: 0;
+    /* Same rebuild as the veil, for the same reason: a static gradient in a box
+       the size of the light itself, translated. 720 square holds the whole
+       falloff at the widest the clamp goes. */
+    width: 720px;
+    height: 720px;
+    transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
+    will-change: transform;
     z-index: 40;
     pointer-events: none;
     /* Inside the hole the veil has already stepped aside, so this is not what
@@ -17115,7 +17297,7 @@ body::before {
        a little more light at the middle than at the edge of it, which is what
        keeps the hotspot reading as a hotspot rather than as a flat window. */
     background: radial-gradient(clamp(150px, 13vmax, 230px) clamp(150px, 13vmax, 230px)
-                                at var(--px, 50%) var(--py, 42%),
+                                at 50% 50%,
                                 var(--torch-core, transparent) 0%,
                                 var(--torch-edge, transparent) 44%,
                                 transparent 72%);
@@ -18326,7 +18508,7 @@ em,
      not reach full dark until the edge. That tail is most of the radius: it is
      what makes the transition read as distance rather than as a circle. */
   --reveal: radial-gradient(circle clamp(420px, 36vmax, 600px)
-                            at var(--px, 50%) var(--py, 42%),
+                            at 50% 50%,
               rgba(0, 0, 0, 0) 0%,
               rgba(0, 0, 0, 0.05) 20%,
               rgba(0, 0, 0, 0.18) 38%,
@@ -18966,19 +19148,15 @@ html {
 body {
   margin: 0;
   background-color: var(--canvas);
-  /* THE LIGHT FOLLOWS THE POINTER. One soft radial on the ground, centred on
-     wherever the cursor is — js/main.js writes --px and --py, eased, and does
-     nothing at all on a touch screen where there is no pointer to follow. It
-     is attached to the viewport rather than the document, so it is a light in
-     the room rather than a mark on the page, and it sits under the wall&#x27;s own
-     washes so the two read as one ground. */
+  /* The pointer glow used to live here, as a second background layer with its
+     own centre animated. It is now .pf-wash, a real element moved by a
+     transform — see THE GROUND&#x27;S GLOW below. What is left is the grain, which
+     never moves, so this background is painted once. */
   background-image:
-    radial-gradient(42vmax 42vmax at var(--px, 50%) var(--py, 8%),
-                    var(--cursor-glow, transparent) 0%, transparent 68%),
     url(&quot;data:image/svg+xml,%3Csvg%20xmlns=&#x27;http://www.w3.org/2000/svg&#x27;%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%3E%3Cfilter%20id=&#x27;w&#x27;%3E%3CfeTurbulence%20type=&#x27;fractalNoise&#x27;%20baseFrequency=&#x27;0.86&#x27;%20numOctaves=&#x27;3&#x27;%20stitchTiles=&#x27;stitch&#x27;/%3E%3CfeColorMatrix%20type=&#x27;saturate&#x27;%20values=&#x27;0&#x27;/%3E%3C/filter%3E%3Crect%20width=&#x27;150&#x27;%20height=&#x27;150&#x27;%20filter=&#x27;url%28%23w%29&#x27;%20opacity=&#x27;0.085&#x27;/%3E%3C/svg%3E&quot;);
-  background-size: auto, 150px 150px;
-  background-repeat: no-repeat, repeat;
-  background-attachment: fixed, scroll;
+  background-size: 150px 150px;
+  background-repeat: repeat;
+  background-attachment: scroll;
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--fs-body);
@@ -19011,6 +19189,47 @@ body {
    position alone: no transform on the body, no repaint of the content above
    it, nothing that can cost a frame in the hero&#x27;s animation.
    -------------------------------------------------------------------------- */
+
+/* --------------------------------------------------------------------------
+   THE GROUND&#x27;S GLOW
+
+   One soft radial on the ground, centred on wherever the cursor is. It was a
+   background layer on the body until profiling showed what that costs: a
+   background gradient whose centre moves repaints the element, and the element
+   is the viewport. Roughly 17ms a frame, for a wash nobody would consciously
+   notice — and it was one of three layers making the same mistake.
+
+   So it is an element now. The gradient inside it never changes; the box is
+   84vmax square, which is twice the gradient&#x27;s own reach, and it is translated
+   so its middle sits under the light. Rasterised once, composited thereafter.
+
+   z-index -2 keeps it exactly where it was in the stack: above the body&#x27;s flat
+   colour, below the wall&#x27;s drifting washes at -1, so the two still read as one
+   ground rather than as a light on top of a wall.
+
+   The gate is .has-torch, which js/main.js only adds on a wide viewport with a
+   fine pointer, motion allowed and contrast not raised — the same conditions
+   that used to be enforced by zeroing --cursor-glow, except now the element
+   does not exist at all rather than existing and painting nothing.
+   -------------------------------------------------------------------------- */
+
+.pf-wash, .pf-veil, .pf-torch, .pf-beam { display: none; }
+
+:root.has-torch[data-route=&quot;home&quot;] .pf-wash {
+  display: block;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 84vmax;
+  height: 84vmax;
+  transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
+  will-change: transform;
+  z-index: -2;
+  pointer-events: none;
+  background: radial-gradient(closest-side,
+                              var(--cursor-glow, transparent) 0%,
+                              transparent 68%);
+}
 
 body::before {
   content: &quot;&quot;;
@@ -19267,10 +19486,30 @@ body::before {
    them along with everything else.
    -------------------------------------------------------------------------- */
 
-:root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;] main.page[data-view=&quot;home&quot;]::after {
-  content: &quot;&quot;;
+:root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;] .pf-veil {
+  display: block;
   position: fixed;
-  inset: 0;
+  left: 0;
+  top: 0;
+  /* TWICE THE VIEWPORT, CENTRED ON THE POINTER, MOVED BY A TRANSFORM.
+
+     This used to be `inset: 0` with the mask&#x27;s own centre animated. Moving a
+     gradient&#x27;s origin invalidates paint, so that was a repaint of a
+     viewport-sized layer every frame — profiled at about 17ms on its own, and
+     it was one of three layers doing the same thing.
+
+     Now the mask never changes. The hole sits at 50% 50% of a box two
+     viewports wide and two tall, and the box is translated so its centre lands
+     under the light. Two viewports is exactly enough: with the centre anywhere
+     inside the viewport the box still overhangs every edge. The layer
+     rasterises once and is then only ever composited. */
+  width: 200vw;
+  height: 200vh;
+  /* The element centres itself on whatever point JS hands it: the -50% pair
+     resolves against this box&#x27;s own size, so the script only ever needs the
+     pointer. Nothing here is written as a custom property — see main.js. */
+  transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
+  will-change: transform;
   z-index: 39;
   pointer-events: none;
   background: var(--veil);
@@ -19280,10 +19519,27 @@ body::before {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;]) main.page[data-view=&quot;home&quot;]::after {
-    content: &quot;&quot;;
+  :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;]) .pf-veil {
+    display: block;
     position: fixed;
-    inset: 0;
+    left: 0;
+    top: 0;
+    /* TWICE THE VIEWPORT, CENTRED ON THE POINTER, MOVED BY A TRANSFORM.
+
+       This used to be `inset: 0` with the mask&#x27;s own centre animated. Moving a
+       gradient&#x27;s origin invalidates paint, so that was a repaint of a
+       viewport-sized layer every frame — profiled at about 17ms on its own, and
+       it was one of three layers doing the same thing.
+
+       Now the mask never changes. The hole sits at 50% 50% of a box two
+       viewports wide and two tall, and the box is translated so its centre lands
+       under the light. Two viewports is exactly enough: with the centre anywhere
+       inside the viewport the box still overhangs every edge. The layer
+       rasterises once and is then only ever composited. */
+    width: 200vw;
+    height: 200vh;
+    transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
+    will-change: transform;
     z-index: 39;
     pointer-events: none;
     background: var(--veil);
@@ -19337,8 +19593,8 @@ body::before {
    all. -------------------------------------------------------------------- */
 
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  :root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;]::before {
-      content: &quot;&quot;;
+  :root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;] .pf-beam {
+      display: block;
     position: fixed;
     left: 0;
     top: 0;
@@ -19349,8 +19605,7 @@ body::before {
        pass every frame. */
     width: 380px;
     height: 380px;
-    transform: translate(calc(var(--fx, -50vw) - 190px),
-                         calc(var(--fy, -50vh) - 190px));
+    transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
     will-change: transform;
     z-index: 41;
     pointer-events: none;
@@ -19361,8 +19616,8 @@ body::before {
   }
 
   @media (prefers-color-scheme: dark) {
-    :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;])::before {
-      content: &quot;&quot;;
+    :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;]) .pf-beam {
+      display: block;
     position: fixed;
     left: 0;
     top: 0;
@@ -19373,8 +19628,7 @@ body::before {
        pass every frame. */
     width: 380px;
     height: 380px;
-    transform: translate(calc(var(--fx, -50vw) - 190px),
-                         calc(var(--fy, -50vh) - 190px));
+    transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
     will-change: transform;
     z-index: 41;
     pointer-events: none;
@@ -19388,11 +19642,11 @@ body::before {
   /* A light that chases a pointer is exactly what reduced motion is for, and a
      touch screen has no pointer to chase. */
   @media (prefers-reduced-motion: reduce) {
-    :root::before { display: none; }
+    .pf-beam { display: none; }
   }
 
   @media (hover: none), (pointer: coarse) {
-    :root::before { display: none; }
+    .pf-beam { display: none; }
   }
 }
 
@@ -19416,10 +19670,18 @@ body::before {
    and this paints nothing at all.
    -------------------------------------------------------------------------- */
 
-:root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;]::after {
-  content: &quot;&quot;;
+:root.has-torch[data-route=&quot;home&quot;][data-theme=&quot;dark&quot;] .pf-torch {
+  display: block;
   position: fixed;
-  inset: 0;
+  left: 0;
+  top: 0;
+  /* Same rebuild as the veil, for the same reason: a static gradient in a box
+     the size of the light itself, translated. 720 square holds the whole
+     falloff at the widest the clamp goes. */
+  width: 720px;
+  height: 720px;
+  transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
+  will-change: transform;
   z-index: 40;
   pointer-events: none;
   /* Inside the hole the veil has already stepped aside, so this is not what
@@ -19427,7 +19689,7 @@ body::before {
      a little more light at the middle than at the edge of it, which is what
      keeps the hotspot reading as a hotspot rather than as a flat window. */
   background: radial-gradient(clamp(150px, 13vmax, 230px) clamp(150px, 13vmax, 230px)
-                              at var(--px, 50%) var(--py, 42%),
+                              at 50% 50%,
                               var(--torch-core, transparent) 0%,
                               var(--torch-edge, transparent) 44%,
                               transparent 72%);
@@ -19435,10 +19697,18 @@ body::before {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;])::after {
-    content: &quot;&quot;;
+  :root.has-torch[data-route=&quot;home&quot;]:not([data-theme=&quot;light&quot;]) .pf-torch {
+    display: block;
     position: fixed;
-    inset: 0;
+    left: 0;
+    top: 0;
+    /* Same rebuild as the veil, for the same reason: a static gradient in a box
+       the size of the light itself, translated. 720 square holds the whole
+       falloff at the widest the clamp goes. */
+    width: 720px;
+    height: 720px;
+    transform: translate3d(-50vw, -50vh, 0) translate(-50%, -50%);
+    will-change: transform;
     z-index: 40;
     pointer-events: none;
     /* Inside the hole the veil has already stepped aside, so this is not what
@@ -19446,7 +19716,7 @@ body::before {
        a little more light at the middle than at the edge of it, which is what
        keeps the hotspot reading as a hotspot rather than as a flat window. */
     background: radial-gradient(clamp(150px, 13vmax, 230px) clamp(150px, 13vmax, 230px)
-                                at var(--px, 50%) var(--py, 42%),
+                                at 50% 50%,
                                 var(--torch-core, transparent) 0%,
                                 var(--torch-edge, transparent) 44%,
                                 transparent 72%);
@@ -33601,10 +33871,46 @@ window.PF = window.PF || {};
      listeners themselves. Below it nothing is tracked and nothing is bound. */
   var wide = window.matchMedia('(min-width: 960px)');
 
-  var toX = 50, toY = 8;     /* where the pointer is, in per cent */
-  var atX = 50, atY = 8;     /* where the light has got to */
-  var rawX = -9999, rawY = -9999;   /* and where it is, in pixels, right now */
+  /* FOUR NODES, NOT FOUR CUSTOM PROPERTIES — AND THIS IS THE WHOLE FIX.
+
+     The first build of this wrote --fx/--fy/--px/--py onto :root every frame
+     and let the stylesheet position the layers from them. It looked clean and
+     it was extremely slow, for a reason that is easy to miss: custom
+     properties inherit. Writing one on the root element invalidates the
+     computed style of every element that could read it, which is all of them —
+     2,964 on this page — and it happens on every single pointer frame.
+
+     Measured on this page, sweeping the pointer for a second:
+
+       write --ex/--ey on :root ......... 254 ms/s of style recalculation
+       write .style.transform on a node .. 22 ms/s
+       write nothing at all .............. 21 ms/s
+
+     So nothing is written to :root any more. Each layer is a real element,
+     each one gets its transform set directly, and because the gradients inside
+     them never move, the browser rasterises each layer once and only ever
+     composites it afterwards.
+
+     The elements centre themselves: their CSS ends in translate(-50%, -50%),
+     which resolves against each box's own size, so this code only ever has to
+     know where the pointer is — not how big any of the four boxes are. */
+  var wash  = document.querySelector('.pf-wash');
+  var veil  = document.querySelector('.pf-veil');
+  var torch = document.querySelector('.pf-torch');
+  var beam  = document.querySelector('.pf-beam');
+  if (!wash || !veil || !torch || !beam) return;
+
+  var CENTRE = ' translate(-50%, -50%)';
+
+  var toX = 0, toY = 0;             /* where the pointer is */
+  var atX = 0, atY = 0;             /* where the eased light has got to */
+  var rawX = -9999, rawY = -9999;   /* and where it is right now */
+  var seen = false;                 /* has the pointer ever been on the page */
   var raf = 0;
+
+  function place(el, x, y) {
+    el.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)' + CENTRE;
+  }
 
   function frame() {
     /* TWO CLOCKS, ON PURPOSE.
@@ -33614,8 +33920,7 @@ window.PF = window.PF || {};
        ease in behind it, so the effect is layered rather than uniform — the
        cursor reaches the letters, the letters catch it on the next frame, and
        the wide light drifts up a moment later. */
-    root.style.setProperty('--fx', rawX.toFixed(1) + 'px');
-    root.style.setProperty('--fy', rawY.toFixed(1) + 'px');
+    place(beam, rawX, rawY);
 
     /* A fifth of the remaining distance a frame: quick enough to keep up with
        a slow read, slow enough that a flick across the page is a sweep rather
@@ -33623,10 +33928,11 @@ window.PF = window.PF || {};
     atX += (toX - atX) * 0.075;
     atY += (toY - atY) * 0.075;
 
-    root.style.setProperty('--px', atX.toFixed(2) + '%');
-    root.style.setProperty('--py', atY.toFixed(2) + '%');
+    place(wash, atX, atY);
+    place(veil, atX, atY);
+    place(torch, atX, atY);
 
-    if (Math.abs(toX - atX) > 0.05 || Math.abs(toY - atY) > 0.05) {
+    if (Math.abs(toX - atX) > 0.4 || Math.abs(toY - atY) > 0.4) {
       raf = window.requestAnimationFrame(frame);
     } else {
       raf = 0;
@@ -33645,8 +33951,12 @@ window.PF = window.PF || {};
     if (!home()) return;
     rawX = e.clientX;
     rawY = e.clientY;
-    toX = (rawX / window.innerWidth) * 100;
-    toY = (rawY / window.innerHeight) * 100;
+    toX = rawX;
+    toY = rawY;
+    /* The first sighting is a jump, not a sweep: easing in from the page's
+       default corner would drag a light across the whole screen before the
+       reader has done anything. */
+    if (!seen) { seen = true; atX = toX; atY = toY; }
     if (!raf) raf = window.requestAnimationFrame(frame);
   }
 
@@ -33677,12 +33987,10 @@ window.PF = window.PF || {};
        the window is dragged back out again. */
     if (raf) { window.cancelAnimationFrame(raf); raf = 0; }
     rawX = rawY = -9999;
-    toX = atX = 50;
-    toY = atY = 8;
-    root.style.removeProperty('--fx');
-    root.style.removeProperty('--fy');
-    root.style.removeProperty('--px');
-    root.style.removeProperty('--py');
+    toX = atX = toY = atY = 0;
+    seen = false;
+    wash.style.transform = veil.style.transform =
+      torch.style.transform = beam.style.transform = '';
   }
 
   function sync() { if (wide.matches) bind(); else unbind(); }
@@ -33700,10 +34008,9 @@ window.PF = window.PF || {};
     if (home()) return;
     rawX = -9999;
     rawY = -9999;
-    root.style.removeProperty('--fx');
-    root.style.removeProperty('--fy');
-    root.style.removeProperty('--px');
-    root.style.removeProperty('--py');
+    seen = false;
+    wash.style.transform = veil.style.transform =
+      torch.style.transform = beam.style.transform = '';
   });
 })();
 
