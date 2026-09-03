@@ -15055,6 +15055,188 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .demo__p { margin-block-end: 20px; }
 }
 
+/* --------------------------------------------------------------------------
+   15. THE PERFORMANCE LAB — A BOUNDED PREVIEW, AND A CAMERA
+
+   The phone in this module is 866 points tall. Rendered at a size anybody
+   could read it, that is most of a phone screen: the controls that cause the
+   behaviour scrolled off the top before the behaviour they caused arrived, so
+   the one thing the module is for — watching the product answer a condition —
+   was the one thing you could not do on the device most people would open it
+   on.
+
+   So the device gets a window instead of a page. The preview is a fixed share
+   of the screen, the phone is scaled to fit it where that stays legible, and
+   where it does not the phone is taller than its window and the camera moves:
+   choosing an authentication fault brings the sign-in feedback into the
+   window, an upload fault brings the upload status, a matching fault brings
+   the answers. The reader never scrolls anything — not the page, and not a
+   miniature phone. The settings are the camera.
+   -------------------------------------------------------------------------- */
+
+.cu-lab { display: grid; gap: 16px; }
+
+.cu-lab .cu-scenario { margin: 0; }
+.cu-lab .cu-rail { display: grid; gap: 16px; }
+
+/* The summary sits between the cause and the effect, which is where a caption
+   belongs. Plain words, one line, and it survives the controls collapsing. */
+.cu-scnhead {
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  color: var(--ink-secondary);
+  font-weight: 500;
+  text-align: center;
+  overflow-wrap: break-word;
+}
+
+/* The window itself. A neutral ground so the simulated device reads as a
+   thing being shown rather than as part of the page around it. */
+.cu-preview {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+
+.cu-fit--bound {
+  width: 100%;
+  margin-inline: auto;
+  overflow: hidden;
+}
+
+/* The camera. --cu-pan is written by the script in screen pixels and is the
+   only thing that moves; the phone itself is never re-laid-out, so a pan
+   costs one composited transform and nothing else. */
+.cu-fit--bound .cu-app {
+  transform: translate(-50%, var(--cu-pan, 0px)) scale(var(--cu-scale, 1));
+  transition: transform 380ms cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cu-fit--bound .cu-app { transition: none; }
+}
+
+/* --- the collapse, for phones with no height to spare --------------------- */
+
+.cu-scntoggle { display: none; }
+
+@media (max-width: 899px) {
+  /* One column, in reading order: controls, summary, preview, way back.
+     display:contents lets the scenario's children take their place in that
+     column directly rather than as a block inside it. */
+  .cu-stage.cu-lab { display: flex; flex-direction: column; gap: 14px; }
+  .cu-lab .cu-scenario { display: contents; }
+  .cu-lab .cu-rail { order: 1; }
+  .cu-lab .cu-scnhead { order: 2; }
+  .cu-lab .cu-preview { order: 3; }
+  .cu-lab .cu-labbar { order: 4; margin: 0; padding: 0; border: 0; justify-content: center; }
+
+  .cu-preview { padding: 8px; border-radius: 16px; }
+
+  /* Six groups of chips is a lot of column. Tighter than the desktop rail,
+     because here they are a step on the way to the preview rather than a
+     panel somebody works in. */
+  .cu-lab .cu-rail { gap: 12px; }
+  .cu-lab .cu-ctl { display: grid; gap: 6px; }
+  .cu-lab .cu-ctl__opts { gap: 6px; }
+  .cu-lab .cu-ctl__opts button { padding: 7px 12px; }
+}
+
+/* On a small phone every pixel of width is a pixel of legibility in the
+   preview, so this module gives up its own padding before the device gives up
+   any more scale. */
+@media (max-width: 479px) {
+  .cu-stage.cu-lab { padding-inline: 8px; }
+  .cu-preview { padding: 6px; border-radius: 14px; }
+}
+
+/* Six control groups and a preview worth looking at do not both fit on a
+   phone, so the controls fold away once a choice has been made — the script
+   measures whether they actually fit before folding anything, and the summary
+   stays either way, because that is the sentence the preview is answering. */
+@media (max-width: 899px) {
+  .cu-scntoggle {
+    order: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface-raised);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cu-scntoggle__ico {
+    display: grid; place-items: center;
+    width: 22px; height: 22px;
+    transition: transform 200ms ease;
+  }
+  .cu-scntoggle__ico svg {
+    width: 18px; height: 18px;
+    fill: none; stroke: currentColor; stroke-width: 1.8;
+    stroke-linecap: round; stroke-linejoin: round;
+  }
+  .cu-scntoggle[aria-expanded="false"] .cu-scntoggle__ico { transform: rotate(-90deg); }
+  .cu-scntoggle[aria-expanded="false"] + .cu-rail { display: none; }
+}
+
+/* On a desktop the same four blocks become a rail beside the window: the
+   controls, the sentence they produce and the way back on the left, the
+   product answering on the right. Named areas rather than source order,
+   because the source order is the phone's. */
+@media (min-width: 900px) {
+  .cu-stage.cu-lab {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 430px);
+    grid-template-areas:
+      "rail    preview"
+      "note    preview"
+      "acts    preview";
+    grid-template-rows: auto auto 1fr;
+    align-content: start;
+    gap: 20px 40px;
+  }
+  .cu-lab .cu-scenario { grid-area: rail; }
+  .cu-lab .cu-scnhead  { grid-area: note; justify-self: start; text-align: start; }
+  .cu-lab .cu-preview  { grid-area: preview; align-self: start; }
+  .cu-lab .cu-labbar   { grid-area: acts; align-self: start; margin: 0; padding: 0; border: 0; }
+}
+
+/* WHICH CHOICES ARE THE SCENARIO.
+
+   Six groups, six selected chips, and before this the two that meant
+   something looked exactly like the four that were merely default — a rail
+   of black pills in which the actual scenario was invisible. Selected still
+   means selected; selected AND away from normal gets a ring and brings its
+   group's label up out of the grey with it, so the conditions being
+   demonstrated can be read at a glance from across the room. */
+.cu-ctl[data-off="1"] .cu-ctl__l {
+  color: var(--ink);
+}
+.cu-ctl[data-off="1"] .cu-ctl__l::after {
+  content: "";
+  display: inline-block;
+  width: 6px; height: 6px;
+  margin-inline-start: 8px;
+  border-radius: 50%;
+  background: var(--ink);
+  vertical-align: 0.12em;
+}
+.cu-ctl__opts button[data-off="1"] {
+  box-shadow: 0 0 0 2px var(--surface-raised), 0 0 0 4px var(--ink);
+}
+
 
 /* ===== css/14-case-type.css ===== */
 /* ==========================================================================
@@ -15323,6 +15505,24 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   --cs-pad: 16px;
   --cs-read: 68ch;
   --cs-canvas: 1240px;
+
+  /* THE CLOSED ROW IS A ROW.
+
+     Four numbers hold it together, and they are here rather than inline
+     because the open state has to reuse two of them — the header must be
+     exactly the same height whether the section is open or shut, or the page
+     jumps under the reader's thumb on every tap.
+
+       h-top    divider to the category label
+       h-lab    category label to the title — one group, not two blocks
+       h-bot    title to the divider, and the header's share of the gap
+                between the header and the first thing inside it
+       h-body   the body's share of that same gap */
+  --cs-h-top: 12px;
+  --cs-h-lab: 10px;
+  --cs-h-bot: 12px;
+  --cs-h-body: 12px;
+  --cs-tail: 40px;
 }
 
 @media (min-width: 900px) {
@@ -15331,6 +15531,11 @@ button.cu-q:hover { background: var(--cu-teal-8); }
     --cs-major: 88px;
     --cs-group: 40px;
     --cs-pad: 28px;
+
+    --cs-h-top: 14px;
+    --cs-h-bot: 18px;
+    --cs-h-body: 12px;
+    --cs-tail: 56px;
   }
 }
 
@@ -15382,10 +15587,15 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
 /* --- a section ------------------------------------------------------------ */
 
-.acc {
-  border-top: 1px solid var(--border);
-}
-.acc:last-of-type { border-bottom: 1px solid var(--border); }
+/* ONE RULE PER SECTION, NOT TWO.
+
+   Every section used to draw its own top edge and the last one drew a bottom
+   as well, so between two closed sections there were two hairlines a couple of
+   pixels apart doing the same job, and the stack read as a column of separate
+   cards. One line under each section, one line above the first, and the five of
+   them read as a single list. */
+.acc { border-bottom: 1px solid var(--border); }
+.acc:first-of-type { border-top: 1px solid var(--border); }
 
 .acc__h {
   display: flex;
@@ -15393,7 +15603,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   justify-content: space-between;
   gap: 16px;
   width: 100%;
-  padding: var(--cs-pad) 0;
+  padding: var(--cs-h-top) 0 var(--cs-h-bot);
   border: 0;
   background: none;
   color: var(--ink);
@@ -15405,18 +15615,33 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .acc__h:hover .acc__ico { background: var(--surface-sunken); }
 .acc__h:active { opacity: 0.72; }
 
-.acc__t { display: grid; gap: 4px; min-width: 0; }
+/* LABEL AND TITLE ARE ONE GROUP.
+
+   They were two, and the reason was invisible: the title in the header is an
+   .ar-h2, and an .ar-h2 in an article carries 56–88px of top margin to hold it
+   off the paragraph above it. Inside a header there is no paragraph above it —
+   there is a four-word category label that belongs to it — so the margin put
+   most of a thumb's width between a label and the title it labels, and each
+   closed section read as two unrelated things. The header is not the article
+   flow; nothing inside it keeps its flow margins. */
+.acc__t { display: grid; gap: var(--cs-h-lab); min-width: 0; }
+.acc__t > * { margin: 0; }
 .acc__n {
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--ink-muted);
 }
+/* The title carries the meaning and the label is the quiet part, so the title
+   wraps naturally rather than being balanced or held to a measure — a long one
+   simply takes a second line and the chevron stays where it is. */
+.acc__t .ar-h2 { text-wrap: pretty; max-width: 34ch; }
 
 .acc__ico {
   flex: none;
-  width: 36px;
-  height: 36px;
+  align-self: center;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   border: 1px solid var(--border);
@@ -15426,13 +15651,22 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   transition: transform 200ms ease, background-color 200ms ease;
 }
 .acc__ico svg {
-  width: 18px; height: 18px;
+  width: 17px; height: 17px;
   fill: none; stroke: currentColor; stroke-width: 1.8;
   stroke-linecap: round; stroke-linejoin: round;
 }
 .acc__h[aria-expanded="true"] .acc__ico { transform: rotate(180deg); }
+@media (prefers-reduced-motion: reduce) {
+  .acc__ico { transition: none; }
+}
 
-.acc__b { padding-block: 4px var(--cs-major); }
+/* The header keeps its own bottom padding when the section opens, and the body
+   adds the rest — so opening a section changes what is below the header and
+   never the height of the header itself. */
+/* The foot of an open section is a gap between two rows of a list, not the end
+   of a chapter — --cs-major (48/88) left a band of nothing above the next
+   divider big enough to read as a break in the page. */
+.acc__b { padding-block: var(--cs-h-body) var(--cs-tail); }
 .acc[data-open="0"] .acc__b { display: none; }
 
 /* The open section that is not an accordion. */
@@ -15453,8 +15687,16 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   font-size: var(--cs-t2);
   line-height: 1.35;
   font-weight: 500;
-  max-width: 30ch;
+  max-width: 34ch;
 }
+
+/* WHAT HAPPENED TO IT IS NOT WHAT IT IS.
+
+   The halt used to be the largest sentence in the case study, which made the
+   first thing a reader learned about eighteen months of work the fact that it
+   stopped. It is still here, unhedged and in the first section — it is just no
+   longer the headline. The pill states it, one quiet paragraph explains it, and
+   the design gets the top of the page back. */
 .cs-status {
   display: inline-flex;
   align-items: center;
@@ -15465,6 +15707,8 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   border-radius: 999px;
   color: var(--ink-secondary);
 }
+.case .acc__b > .cs-status + .ar-p--quiet { margin-block-start: 12px; }
+.case .ar-p--quiet { color: var(--ink-muted); }
 .cs-status::before {
   content: "";
   width: 8px; height: 8px;
@@ -26079,18 +26323,21 @@ em,
 <section class="acc acc--static" data-open="1">
   <div data-acc-h>
     <span class="acc__n">Outcome</span>
-    <span class="ar-h2">Carry: A Patient Experience Extension</span>
+    <span class="ar-h2">A conversation patients can read back</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="cs-lead">Carry moved into development. A change in leadership shifted
-      organisational priorities, and implementation was halted before release.</p>
-    <p class="cs-status">Design complete &middot; development halted</p>
+    <p class="cs-lead">Write your questions before the appointment, upload the recording
+      afterwards, and see the moments that answered them.</p>
 
-    <p class="ar-p">Carry was an extension of an existing patient experience: prepare your
-      questions before an appointment, upload a recording of the conversation afterwards,
-      and see the moments that answered what you asked. The concept was evaluated,
-      scoped and taken into build. The decision that stopped it was organisational, not
-      a judgement on the design.</p>
+    <p class="ar-p">Carry is an extension of an existing patient experience rather than a
+      new app &mdash; identity, appointments and navigation were already there, and what
+      was missing was the fifteen minutes nobody remembers. It went from a workshop
+      premise to an evaluated, scoped design that was taken into build.</p>
+
+    <p class="cs-status">Design complete &middot; development halted</p>
+    <p class="ar-p ar-p--quiet">A change in leadership shifted organisational priorities
+      and implementation stopped before release. The decision was organisational, not a
+      judgement on the design.</p>
 
     <h3 class="ar-h3">What I contributed</h3>
     <ul class="cs-did">
@@ -26337,23 +26584,32 @@ em,
       <p>It was the difference between something engineering could estimate and something they would have had to invent during build.</p></div>
 <section class="ar-demo ar-wide cu" data-cu="lab">
   <h3 class="demo__h">It still makes sense when things go wrong.</h3>
-  <p class="demo__p">Pick a condition, then run the flow.</p>
+  <p class="demo__p">Change a condition. The product responds.</p>
   <div class="cu-embed">
-    <div class="cu-embed__bar">
-      <span class="cu-cue" data-cue>Try it — choose Interrupted, then upload</span>
-      <button class="cu-reset" type="button" data-act="reset">Reset</button>
-    </div>
-    <div class="cu-stage">
+    
+    <div class="cu-stage cu-lab">
       <div class="cu-scenario">
-        <div data-controls></div>
-        <div class="cu-labbar">
-          <p class="cu-labbar__note" data-scnote>Everything working normally.</p>
-          <button class="cu-labbtn cu-labbtn--go" type="button" data-act="lab-happy">All normal</button>
-          <button class="cu-labbtn" type="button" data-act="lab-reset">Reset</button>
-          <button class="cu-labbtn" type="button" data-act="lab-skip">Skip to upload</button>
-        </div>
+        <button class="cu-scntoggle" type="button" data-act="lab-settings"
+                aria-expanded="true">
+          <span>Scenario settings</span>
+          <span class="cu-scntoggle__ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false"><path d="M4 9l8 7 8-7"/></svg>
+          </span>
+        </button>
+        <div class="cu-rail" data-controls data-railbody></div>
       </div>
-      <div class="cu-fit"><div class="cu-app" data-app></div></div>
+
+      <p class="cu-scnhead" data-scnote>Everything working normally.</p>
+
+      <div class="cu-preview">
+        <div class="cu-fit cu-fit--bound"><div class="cu-app" data-app></div></div>
+      </div>
+
+      <div class="cu-labbar">
+        <button class="cu-labbtn cu-labbtn--go" type="button" data-act="lab-happy">All normal</button>
+        <button class="cu-labbtn" type="button" data-act="lab-reset">Reset</button>
+        <button class="cu-labbtn" type="button" data-act="lab-replay">Replay</button>
+      </div>
     </div>
   </div>
 </section>
@@ -27970,7 +28226,7 @@ window.PF = window.PF || {};
     function phoneScreen() {
       var busy = st.state === 'phoneEntered';
       return appBar('', null, { back: 'auth-welcome' }) +
-        '<div class="cu-scroll"><div class="cu-auth">' +
+        '<div class="cu-scroll"><div class="cu-auth" data-focus="auth">' +
           '<h3 class="cu-auth__t">What’s your phone number?</h3>' +
           '<p class="cu-auth__p">We’ll send a code to verify it’s you. Standard messaging rates may apply.</p>' +
           '<div class="cu-field">' +
@@ -28004,7 +28260,7 @@ window.PF = window.PF || {};
           (digits[i] || '') + '</span>';
       }
       return appBar('', null, { back: 'auth-back-phone' }) +
-        '<div class="cu-scroll"><div class="cu-auth">' +
+        '<div class="cu-scroll"><div class="cu-auth" data-focus="auth">' +
           '<h3 class="cu-auth__t">Enter the code we sent</h3>' +
           '<p class="cu-auth__p">Sent to ' + esc(st.phone) + '. It’s six digits.</p>' +
           '<div class="cu-code" aria-hidden="true">' + boxes + '</div>' +
@@ -28021,7 +28277,7 @@ window.PF = window.PF || {};
     }
 
     function loadingScreen() {
-      return '<div class="cu-scroll"><div class="cu-loading">' +
+      return '<div class="cu-scroll"><div class="cu-loading" data-focus="auth">' +
         '<h3>Welcome to Carry</h3>' +
         '<p>Setting things up for you...</p>' +
         '<span class="cu-spin cu-spin--lg" aria-hidden="true"></span>' +
@@ -28277,7 +28533,7 @@ window.PF = window.PF || {};
 
     function panel() {
       var s = st.state;
-      var h = '<div class="cu-rec"><b class="cu-rec__h">Your recording</b>';
+      var h = '<div class="cu-rec" data-focus="upload"><b class="cu-rec__h">Your recording</b>';
 
       if (s === 'empty' || s === 'permissionRequested' || s === 'filePickerOpen') {
         h += '<p class="cu-rec__p">Upload an audio file from your phone after the conversation. Carry will transcribe it.</p>' +
@@ -29521,13 +29777,31 @@ window.PF = window.PF || {};
 
   var HAPPY = { conn: 'fast', auth: 'correct', audio: 'valid', upload: 'success', transcribe: 'normal', match: 'full' };
 
+  /* THE SUMMARY LINE IS ENGLISH, NOT STATE NAMES.
+
+     "Connection: slow · Authentication: incorrect" is the shape of the object
+     underneath, read aloud. Nobody looking at this cares what the keys are
+     called; they care what is wrong with the world the product is running in.
+     So each off-normal value carries the phrase a person would use for it, and
+     the line under the controls is those phrases joined. */
+  var PLAIN = {
+    conn:       { slow: 'slow connection', offline: 'no connection' },
+    auth:       { incorrect: 'wrong sign-in code', expired: 'expired sign-in code' },
+    audio:      { unsupported: 'wrong kind of file', corrupted: 'damaged recording' },
+    upload:     { interrupted: 'upload cut off', failed: 'upload failed' },
+    transcribe: { delayed: 'slow transcription', failed: 'transcription failed' },
+    match:      { partial: 'some answers found', none: 'no answers found' }
+  };
+
   function artLab(root) {
     var app = root.querySelector('[data-app]');
     var st, auth, panel;
+    var driveT = null, runId = 0;
 
     function scenario() { return st.sc; }
 
     function init(keepScenario) {
+      stop();
       if (auth) auth.clear();
       if (panel) panel.clear();
       var sc = keepScenario && st ? st.sc : JSON.parse(JSON.stringify(HAPPY));
@@ -29570,7 +29844,18 @@ window.PF = window.PF || {};
         stateStrip(root, panel.states, panel.st.state);
       }
       app.innerHTML = h + '<span class="cu-live" data-live aria-live="polite"></span>';
-      trap(app);
+      /* THE PHONE IS A DEMONSTRATION, NOT A SECOND INTERFACE.
+
+         Everything in it is driven from the rail, so nothing in it should
+         take a tap, a caret or a Tab stop — a keyboard reader tabbing into a
+         disabled phone-number field they cannot fill is being offered a
+         control that does not exist. inert removes the whole subtree from
+         hit-testing and from the tab order in one attribute; the CSS carries
+         the same intent for browsers that do not have it yet. */
+      app.inert = true;
+      app.setAttribute('inert', '');
+      app.setAttribute('aria-hidden', 'true');
+      focusNow();
     }
 
     function capture() {
@@ -29587,7 +29872,7 @@ window.PF = window.PF || {};
             '<button class="cu-tab" type="button" role="tab" aria-selected="false">Notes</button>' +
             '<button class="cu-tab" type="button" role="tab" aria-selected="false">Follow-ups</button>' +
           '</div>' +
-          '<div class="cu-card cu-card--tabbed">' +
+          '<div class="cu-card cu-card--tabbed"' + (done ? ' data-focus="answers"' : '') + '>' +
             (done
               ? '<div class="cu-sec"><b>Your questions</b><span>' + hits + ' of ' + SEED.questions.length + ' matched</span></div>'
               : '') +
@@ -29618,12 +29903,12 @@ window.PF = window.PF || {};
     function matchNote(hits) {
       if (hits === SEED.questions.length) return '';
       if (hits === 0) {
-        return '<div class="cu-fail cu-fail--soft"><span class="cu-fail__ico">' + ic('warn') + '</span>' +
+        return '<div class="cu-fail cu-fail--soft" data-focus="match"><span class="cu-fail__ico">' + ic('warn') + '</span>' +
           '<span class="cu-fail__b"><b>No reliable matches in this recording.</b>' +
           '<span>The transcript is saved and you can read it in full.</span>' +
           '<em>Nothing was written for your questions — they stay as you left them.</em></span></div>';
       }
-      return '<div class="cu-fail cu-fail--soft"><span class="cu-fail__ico">' + ic('warn') + '</span>' +
+      return '<div class="cu-fail cu-fail--soft" data-focus="match"><span class="cu-fail__ico">' + ic('warn') + '</span>' +
         '<span class="cu-fail__b"><b>' + hits + ' of ' + SEED.questions.length + ' questions matched.</b>' +
         '<span>The rest weren’t covered clearly enough in the recording to quote.</span>' +
         '<em>They stay unanswered. You can add your own note or read the transcript.</em></span></div>';
@@ -29631,22 +29916,282 @@ window.PF = window.PF || {};
 
     function syncControls() {
       CONTROLS.forEach(function (c) {
+        var offNormal = st.sc[c.k] !== HAPPY[c.k];
+        var group = root.querySelector('[data-ctl-group="' + c.k + '"]');
+        if (group) group.setAttribute('data-off', offNormal ? '1' : '0');
         var btns = root.querySelectorAll('[data-ctl="' + c.k + '"]');
         for (var i = 0; i < btns.length; i++) {
-          btns[i].setAttribute('aria-pressed', btns[i].getAttribute('data-v') === st.sc[c.k] ? 'true' : 'false');
+          var on = btns[i].getAttribute('data-v') === st.sc[c.k];
+          btns[i].setAttribute('aria-pressed', on ? 'true' : 'false');
+          /* Chosen and chosen-and-abnormal are different facts, and only the
+             second one is the scenario. Marking them the same way made a rail
+             of six selected buttons in which the two that mattered were
+             indistinguishable from the four that were merely default. */
+          btns[i].setAttribute('data-off', on && offNormal ? '1' : '0');
         }
       });
       var note = root.querySelector('[data-scnote]');
       if (note) {
         var off = CONTROLS.filter(function (c) { return st.sc[c.k] !== HAPPY[c.k]; });
         note.textContent = off.length
-          ? off.map(function (c) {
-              var v = st.sc[c.k];
-              var lab = c.opts.filter(function (o) { return o[0] === v; })[0];
-              return c.label + ': ' + (lab ? lab[1] : v);
-            }).join(' · ')
+          ? cap(off.map(function (c) {
+              return (PLAIN[c.k] && PLAIN[c.k][st.sc[c.k]]) || st.sc[c.k];
+            }).join(' · '))
           : 'Everything working normally.';
       }
+    }
+
+    function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+    /* =================================================================
+       THE AUTOPILOT
+
+       Nobody should have to learn a prototype to read a case study. The
+       controls on the left are the only thing to operate; changing one
+       restarts the flow and the phone plays the scenario through on its
+       own — sign in, choose a recording, upload, transcribe, match — and
+       stops on the state that scenario produces.
+
+       IT IS DRIVEN BY STATE, NOT BY A SCRIPT OF TIMESTAMPS. Every step
+       below asks the two machines where they actually are and performs
+       the single next thing a person would do from there. That matters
+       because the machines have their own clocks — a slow connection
+       triples the send, an upload ticks twenty times — and a timeline
+       written next to them would drift out of step with the thing it was
+       narrating. Asking instead of assuming also means each step is the
+       real interaction: the autopilot presses Send code, it does not set
+       a variable called codeSent.
+
+       AND A FAILURE IS ONLY HALF THE STORY. Where a condition has a
+       recovery — a cut-off upload resumes, a wrong code is resent — the
+       autopilot pauses on the error long enough to read it, then takes
+       the recovery and carries on, so the rest of the scenario still gets
+       demonstrated. Where there is no recovery under the stated
+       conditions — the connection is simply off, the file is not audio,
+       the audio is damaged — it stops there, because pretending otherwise
+       would be the one thing this section is arguing against.
+       ================================================================= */
+
+    /* =================================================================
+       THE PREVIEW WINDOW, AND THE CAMERA IN IT
+
+       On a desktop the phone simply fits beside its controls. On a phone it
+       does not: 866 points rendered at a size anybody can read is most of the
+       screen, so the controls that cause the behaviour scroll away before the
+       behaviour arrives, and the module stops demonstrating anything.
+
+       So below 900 the device gets a window rather than a page — a fixed
+       share of the screen, with a floor and a ceiling so it survives a 568pt
+       phone and a 932pt one. The phone is scaled to fit that window whenever
+       the result is still legible; where it is not, the phone is taller than
+       its window and the camera moves instead. Nothing here ever scrolls the
+       portfolio page, and nothing asks the reader to scroll a miniature
+       phone: the settings decide what matters, and what matters comes to the
+       window.
+       ================================================================= */
+
+    /* 15px body type at 0.72 is a shade under 11px on screen — the point
+       below which scaling stops being "smaller" and starts being "unreadable",
+       and therefore the point where the camera takes over from the scale. */
+    var MIN_READ = 0.72;
+    var panT = null, curPan = 0, curScale = 1;
+
+    function bound() { return root.querySelector('.cu-fit--bound'); }
+    function wide() { return window.matchMedia('(min-width: 900px)').matches; }
+
+    function boxHeight() {
+      var vh = window.innerHeight || 800;
+      return Math.max(340, Math.min(560, Math.round(vh * 0.6)));
+    }
+
+    function fitLab() {
+      var el = bound();
+      if (!el) return;
+      var availW = el.clientWidth;
+      if (!availW) return;
+
+      var fitW = Math.min(1, availW / DEV_OW);
+      var s, h;
+
+      if (wide()) {
+        s = fitW;
+        h = Math.round(DEV_OH * s);
+      } else {
+        h = boxHeight();
+        /* Fit both dimensions where that stays readable; otherwise take the
+           floor and let the camera cover the difference. The floor can never
+           exceed the width fit, or the phone would hang off the sides. */
+        s = Math.max(Math.min(fitW, h / DEV_OH), Math.min(fitW, MIN_READ));
+      }
+
+      curScale = s;
+      el.style.setProperty('--cu-scale', s);
+      el.style.height = h + 'px';
+      focusNow();
+    }
+
+    function setPan(p) {
+      var el = bound();
+      if (!el) return;
+      curPan = p;
+      el.style.setProperty('--cu-pan', Math.round(p) + 'px');
+    }
+
+    /* Which part of the product the current condition is about. */
+    function focusKey() {
+      if (st.view === 'auth') return 'auth';
+      if (panel.st.state === 'transcribed') {
+        return app.querySelector('[data-focus="match"]') ? 'match' : 'answers';
+      }
+      return 'upload';
+    }
+
+    function focusNow() {
+      var el = bound();
+      if (!el) return;
+
+      var target = app.querySelector('[data-focus="' + focusKey() + '"]') ||
+                   app.querySelector('[data-focus]');
+      if (!target) { setPan(0); return; }
+
+      /* Inside the phone first. If what matters is below the phone's own
+         fold, the phone scrolls itself — animated, once, as part of the
+         demonstration rather than as something to operate. */
+      var pane = app.querySelector('.cu-scroll');
+      if (pane && pane.contains(target)) {
+        var pr = pane.getBoundingClientRect(), tr0 = target.getBoundingClientRect();
+        var inside = (tr0.top - pr.top) / curScale;
+        var to = pane.scrollTop + inside - 12;
+        to = Math.max(0, Math.min(pane.scrollHeight - pane.clientHeight, to));
+        if (Math.abs(to - pane.scrollTop) > 2) {
+          pane.scrollTo({ top: to, behavior: reduced.matches ? 'auto' : 'smooth' });
+        }
+      }
+
+      /* Then the window. Both rectangles carry the same transform, so their
+         difference is pure layout — which makes this exact even while a
+         previous pan is still animating, and means it never chases itself. */
+      clearTimeout(panT);
+      panT = setTimeout(function () {
+        var box = el.clientHeight;
+        var appH = DEV_OH * curScale;
+        var min = Math.min(0, box - appH);
+        if (min > -2) { setPan(0); return; }
+
+        var ar = app.getBoundingClientRect();
+        var tr = target.getBoundingClientRect();
+        var yIn = (tr.top - ar.top) / curScale;           /* app coordinates */
+        var want = Math.min(72, box * 0.22);
+        setPan(Math.max(min, Math.min(0, want - yIn * curScale)));
+      }, ms(reduced.matches ? 0 : 340));
+    }
+
+    function stop() {
+      clearTimeout(driveT); clearTimeout(panT);
+      driveT = null; runId++;
+    }
+
+    function drive(wait) {
+      clearTimeout(driveT);
+      var mine = runId;
+      driveT = setTimeout(function () {
+        if (mine !== runId) return;
+        step();
+      }, ms(wait));
+    }
+
+    /* Long enough to read what happened, short enough that nobody thinks
+       it has stalled. */
+    var BEAT = 420, READ = 1500;
+
+    /* Is anything other than this control set away from normal? */
+    function otherFaults(key) {
+      for (var i = 0; i < CONTROLS.length; i++) {
+        var k = CONTROLS[i].k;
+        if (k !== key && st.sc[k] !== HAPPY[k]) return true;
+      }
+      return false;
+    }
+
+    function step() {
+      var s = st.sc;
+
+      if (st.view === 'auth') {
+        var a = auth.st;
+
+        /* Offline never gets past the first screen, and that is the point:
+           the number is still in the field and the retry is right there. */
+        if (a.err && a.errKind === 'conn') return;
+
+        if (a.state === 'idle') {
+          if (!a.phone) { auth.act('auth-demo'); return drive(BEAT); }
+          auth.act('auth-send'); return drive(BEAT);
+        }
+        if (a.state === 'phoneEntered') return drive(BEAT);   /* its own clock */
+
+        if (a.state === 'codeSent') {
+          if (a.errKind === 'code' || a.errKind === 'expired') {
+            /* WHEN THE SIGN-IN FAULT IS THE WHOLE SCENARIO, STOP ON IT.
+
+               Otherwise a reader who chooses "Incorrect", looks away for two
+               seconds and looks back finds a normal capture screen and has
+               learned nothing — the error they asked to see has already been
+               recovered from. The recovery is not hidden by stopping here: it
+               is the "Resend code" sitting under the message, with the digits
+               they typed still in the field.
+
+               But if something else is also set, the sign-in fault is one beat
+               in a longer scenario, so it plays and the flow carries on to the
+               conditions waiting downstream. */
+            if (!otherFaults('auth')) return;
+            auth.act('auth-resend');
+            return drive(READ);
+          }
+          if (!a.code) { auth.act('auth-demo'); return drive(BEAT); }
+          auth.act('auth-verify'); return drive(BEAT);
+        }
+        if (a.state === 'verifying' || a.state === 'authenticated') return drive(BEAT);
+        return drive(BEAT);
+      }
+
+      var p = panel.st;
+
+      if (p.state === 'empty') { panel.act('rec-upload'); return drive(BEAT); }
+      if (p.state === 'permissionRequested') { panel.act('perm-yes'); return drive(BEAT); }
+      if (p.state === 'filePickerOpen') { panel.act('pick-upload'); return drive(BEAT); }
+
+      /* An unsupported file is rejected before anything moves, and choosing
+         again is a person's decision, not a retry — so it settles here. */
+      if (p.state === 'fileSelected' && p.err) return;
+      if (p.state === 'fileSelected') { panel.act('rec-go'); return drive(BEAT); }
+
+      if (p.state === 'uploading' || p.state === 'uploaded' || p.state === 'transcribing') {
+        return drive(BEAT);
+      }
+
+      /* Both upload failures keep the file and offer the same move. The
+         second attempt succeeds — which is the shape of a real transient
+         failure, and the reason the recovery is worth designing. */
+      if (p.state === 'uploadInterrupted' || p.state === 'uploadFailed') {
+        if (s.conn === 'offline') return;
+        panel.act('rec-retry'); return drive(READ);
+      }
+
+      if (p.state === 'transcriptionFailed') {
+        /* A damaged recording is not a retryable condition — the file is
+           the problem, and the screen says so rather than spinning. */
+        if (p.file && p.file.kind === 'corrupted') return;
+        panel.act('rec-retry-tx'); return drive(READ);
+      }
+
+      /* transcribed — the matching scenario is already on screen. */
+    }
+
+    function restart() {
+      init(true);
+      render();
+      syncControls();
+      drive(260);
     }
 
     root.addEventListener('click', function (e) {
@@ -29657,73 +30202,109 @@ window.PF = window.PF || {};
       if (ctl) {
         used(root);
         st.sc[ctl] = b.getAttribute('data-v');
-        syncControls();
-        /* The scenario applies to what happens NEXT. Nothing already on
-           screen is rewritten under the reader, which is also how a real
-           environment behaves. */
-        say(root, ctl + ' set to ' + b.getAttribute('data-v') + '. Run the flow to see it.');
-        render();
+        /* The whole scenario replays from the beginning, because the point
+           is the sequence: a slow connection and a wrong code together are
+           not two separate demonstrations, they are one run in which the
+           code screen is slow to answer and then rejects you. */
+        restart();
+        collapseIfTight();
+        var phrase = (PLAIN[ctl] && PLAIN[ctl][st.sc[ctl]]) || 'normal';
+        say(root, 'Scenario set to ' + phrase + '. Replaying.');
         return;
       }
 
       var a = b.getAttribute('data-act'), i = +b.getAttribute('data-i');
       if (a !== 'noop') used(root);
 
-      if (a === 'lab-reset') { init(true); render(); say(root, 'Flow reset. Scenario kept.'); return; }
+      if (a === 'lab-reset') {
+        st.sc = JSON.parse(JSON.stringify(HAPPY));
+        restart();
+        say(root, 'Settings back to the start.');
+        return;
+      }
       if (a === 'lab-happy') {
         st.sc = JSON.parse(JSON.stringify(HAPPY));
-        init(true); render(); syncControls();
-        say(root, 'Scenario reset to the happy path.');
+        restart();
+        say(root, 'Everything working normally. Replaying.');
         return;
       }
-      if (a === 'lab-back') { st.view = 'auth'; auth.reset(); panel.reset(); render(); return; }
-      if (a === 'lab-skip') { st.view = 'capture'; render(); say(root, 'Skipped to the capture screen.'); return; }
+      if (a === 'lab-replay') { restart(); say(root, 'Replaying the scenario.'); return; }
+      if (a === 'lab-settings') {
+        var on = b.getAttribute('aria-expanded') === 'true';
+        b.setAttribute('aria-expanded', on ? 'false' : 'true');
+        say(root, on ? 'Scenario settings hidden.' : 'Scenario settings shown.');
+        return;
+      }
       if (a === 'noop') return;
 
-      if (st.view === 'auth') {
-        if (a === 'auth-welcome') { auth.reset(); render(); return; }
-        if (auth.act(a)) return;
-        return;
-      }
-      panel.act(a, i);
+      /* The phone is a demonstration, not a second interface to operate.
+         Everything inside it is inert; the rail on the left is the control
+         surface, and it is the only one. */
     });
 
-    root.addEventListener('input', function (e) {
-      var f = e.target.closest('[data-field]');
-      if (!f || !root.contains(f)) return;
-      auth.field(f.getAttribute('data-field'), f.value);
-    });
-
-    root.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
-        var f = e.target.closest('[data-field]');
-        if (f && f.tagName === 'INPUT') {
-          e.preventDefault();
-          var go = app.querySelector('[data-act="auth-send"], [data-act="auth-verify"]');
-          if (go && !go.disabled) go.click();
-        }
-        return;
-      }
-      if (e.key !== 'Escape') return;
-      if (panel.st.state === 'permissionRequested') panel.act('perm-no');
-      else if (panel.st.state === 'filePickerOpen') panel.act('pick-close');
-    });
+    /* No input or keydown wiring here any more. There is nothing in the phone
+       to type into: the autopilot fills the fields and presses the buttons,
+       and the rail is the only thing a reader touches. */
 
     /* Paint the control rail from the same table the machines read. */
     var rail = root.querySelector('[data-controls]');
     if (rail) {
       rail.innerHTML = CONTROLS.map(function (c) {
-        return '<div class="cu-ctl"><p class="cu-ctl__l">' + c.label + '</p>' +
+        return '<div class="cu-ctl" data-ctl-group="' + c.k + '" data-off="0">' +
+          '<p class="cu-ctl__l">' + c.label + '</p>' +
           '<div class="cu-ctl__opts" role="group" aria-label="' + c.label + '">' +
             c.opts.map(function (o) {
               return '<button type="button" data-ctl="' + c.k + '" data-v="' + o[0] + '" ' +
-                'aria-pressed="' + (o[0] === HAPPY[c.k]) + '">' + o[1] + '</button>';
+                'data-off="0" aria-pressed="' + (o[0] === HAPPY[c.k]) + '">' + o[1] + '</button>';
             }).join('') +
           '</div></div>';
       }).join('');
     }
 
-    init(); render();
+    /* On a short phone the six control groups and a preview worth looking at
+       do not both fit, so once a choice has been made the controls fold away
+       and the summary — the sentence the preview is answering — stays. */
+    var narrow = window.matchMedia('(max-width: 899px)');
+    function collapseIfTight() {
+      if (!narrow.matches) return;
+      var t = root.querySelector('.cu-scntoggle');
+      var rail = root.querySelector('[data-railbody]');
+      var pv = root.querySelector('.cu-preview');
+      if (!t || !rail || !pv) return;
+      /* Fold only when they genuinely do not both fit. A phone tall enough to
+         show the controls and the thing they control at the same time keeps
+         them, because a tap you did not need to make is worse than a rail. */
+      var need = rail.getBoundingClientRect().height + pv.getBoundingClientRect().height + 150;
+      if (need <= window.innerHeight) return;
+      t.setAttribute('aria-expanded', 'false');
+    }
+
+    init(); render(); syncControls(); fitLab();
+
+    if ('ResizeObserver' in window) {
+      new ResizeObserver(function () { fitLab(); }).observe(root);
+    }
+    window.addEventListener('resize', function () { fitLab(); });
+
+    /* IT STARTS WHEN IT IS LOOKED AT, NOT WHEN THE PAGE LOADS.
+
+       The happy path runs itself the first time this scrolls into view, so
+       the reader arrives to a phone that is already doing something rather
+       than a sign-in screen waiting to be operated. Once. After that the
+       rail is in charge. */
+    if ('IntersectionObserver' in window) {
+      var seen = false;
+      var io = new IntersectionObserver(function (ents) {
+        for (var i = 0; i < ents.length; i++) {
+          if (!ents[i].isIntersecting || seen) continue;
+          seen = true; io.disconnect();
+          drive(500);
+        }
+      }, { threshold: 0.25 });
+      io.observe(root);
+    } else {
+      drive(500);
+    }
   }
 
   /* =====================================================================
@@ -29824,7 +30405,9 @@ window.PF = window.PF || {};
   }
 
   function watchFit(scope) {
-    var boxes = scope.querySelectorAll('.cu-fit');
+    /* The Performance lab sizes its own preview — it has a height budget and
+       a camera, and the generic fit would overwrite both. */
+    var boxes = scope.querySelectorAll('.cu-fit:not(.cu-fit--bound)');
     for (var i = 0; i < boxes.length; i++) {
       fit(boxes[i]);
       if ('ResizeObserver' in window) {
