@@ -11369,14 +11369,35 @@ em,
    narrow column shows a smaller phone rather than a different layout.
    ========================================================================== */
 
+/* The device frame paints outside the app's own box, so this must not clip.
+   It was hiding everything but the corners of the bezel. */
 .cu-fit {
   position: relative;
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
 }
 
+/* THE DEVICE.
+
+   This was a 1px outline for a long time, on the argument that a bezel is
+   decoration and the screen is the point. The argument was half right: a
+   glossy render with a reflection and a tilt is decoration. But an unframed
+   rectangle of app on a page full of other rectangles does not read as a
+   phone, and every one of these prototypes is making a claim about how
+   something behaves ON a phone — at 390 points, in a hand. So the frame is
+   back, drawn as flatly as a frame can be: a dark bezel, the corner radius a
+   modern iPhone actually has, an island and a home indicator. No highlight, no
+   shadow gradient, no buttons down the side, no tilt.
+
+   THE BEZEL IS A SHADOW, NOT A BORDER, and that is load-bearing. A 10px border
+   on a border-box element would take the screen from 390 points to 370, which
+   is the one number every claim on this page rests on. box-shadow paints
+   outside the box and changes no layout at all, so the viewport stays exactly
+   390 x 844 and the frame sits in the 11px of margin the fit already allows
+   for on each side (412 x 866). */
 .cu-app {
   --cu-w: 390px;
+  --cu-bezel: #16181A;
   position: absolute;
   inset-block-start: 0;
   inset-inline-start: 50%;
@@ -11387,14 +11408,49 @@ em,
   display: flex;
   flex-direction: column;
   background: var(--cu-app);
-  border: 1px solid var(--cu-line-strong);
-  border-radius: var(--cu-r-sheet);
+  border: 0;
+  border-radius: 44px;
   overflow: hidden;
   isolation: isolate;
+  box-shadow:
+    0 0 0 10px var(--cu-bezel),                    /* the bezel */
+    0 0 0 11px rgba(255, 255, 255, 0.10),          /* the machined edge */
+    0 6px 22px rgba(0, 0, 0, 0.14);                /* it is sitting on a page */
 }
 
-/* The width comparison lays its own phones out, so those are static. */
-.cu-w__fit { position: relative; width: 100%; overflow: hidden; }
+/* And the home indicator. Current ink at low opacity rather than a fixed
+   grey, so it reads on a light screen and on a dark one without a second
+   rule. */
+.cu-app::after {
+  content: "";
+  position: absolute;
+  inset-block-end: 8px;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  z-index: 60;
+  width: 134px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.32;
+  pointer-events: none;
+}
+
+/* Room for it, so the indicator never lies across a button. */
+.cu-foot { padding-block-end: 26px; }
+.cu-scroll + .cu-pad,
+.cu-app > .cu-scroll:last-child { padding-block-end: 8px; }
+
+/* The width comparison lays its own phones out, so those are static. The
+   frame comes with them — they are the same component — but the drop shadow
+   does not, because three of them side by side at a third of the size is a
+   row of smudges rather than three phones. */
+.cu-w__app {
+  box-shadow:
+    0 0 0 10px var(--cu-bezel),
+    0 0 0 11px rgba(255, 255, 255, 0.10);
+}
+.cu-w__fit { position: relative; width: 100%; overflow: visible; }
 .cu-w__app {
   position: absolute;
   inset-block-start: 0;
@@ -12770,6 +12826,70 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   line-height: 1.4;
   color: var(--ink-secondary);
 }
+
+
+/* --------------------------------------------------------------------------
+   THE STATUS BAR
+
+   Without it the top of the frame is a 52px band of nothing above the app
+   bar, which reads as a layout mistake rather than as a safe area — a real
+   phone always has something there. Time on the left, the usual three glyphs
+   on the right, and the island sitting between them, all painted by one
+   pseudo-element: the pill is a gradient with a fixed size and the glyphs are
+   an inlined SVG, so this costs no markup and no request, and every screen in
+   every artifact gets it from the one rule.
+   -------------------------------------------------------------------------- */
+
+.cu-app::before {
+  content: "9:41";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: 60;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding-inline-start: 32px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--cu-text);
+  pointer-events: none;
+
+  /* THE ISLAND IS AN INLINED SVG, NOT A GRADIENT. A background layer has no
+     corner radius of its own, so a flat colour painted at 108x30 came out as
+     a black rectangle — the one shape on the frame everybody recognises as
+     wrong. A rounded rect inside the image solves it, and it is the same black
+     in both themes because the island always is. */
+  background:
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20108%2030%22%3E%3Crect%20width%3D%22108%22%20height%3D%2230%22%20rx%3D%2215%22%20fill%3D%22%2316181A%22%2F%3E%3C%2Fsvg%3E") no-repeat top 9px center / 108px 30px,
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2046%2012%22%20fill%3D%22%25231A1C1E%22%3E%3Crect%20x%3D%220%22%20y%3D%227.5%22%20width%3D%222.6%22%20height%3D%224.5%22%20rx%3D%220.8%22%2F%3E%3Crect%20x%3D%224.2%22%20y%3D%225.5%22%20width%3D%222.6%22%20height%3D%226.5%22%20rx%3D%220.8%22%2F%3E%3Crect%20x%3D%228.4%22%20y%3D%223.2%22%20width%3D%222.6%22%20height%3D%228.8%22%20rx%3D%220.8%22%2F%3E%3Crect%20x%3D%2212.6%22%20y%3D%221%22%20width%3D%222.6%22%20height%3D%2211%22%20rx%3D%220.8%22%2F%3E%3Cpath%20d%3D%22M24.6%203.1c-2.6%200-5%20.9-6.8%202.5l1.3%201.4c1.5-1.3%203.4-2%205.5-2s4%20.7%205.5%202l1.3-1.4c-1.8-1.6-4.2-2.5-6.8-2.5z%22%2F%3E%3Cpath%20d%3D%22M24.6%206.9c-1.5%200-2.9.5-3.9%201.4l1.3%201.4c.7-.6%201.6-1%202.6-1s1.9.4%202.6%201l1.3-1.4c-1-.9-2.4-1.4-3.9-1.4z%22%2F%3E%3Ccircle%20cx%3D%2224.6%22%20cy%3D%2211%22%20r%3D%221.1%22%2F%3E%3Crect%20x%3D%2233%22%20y%3D%222.2%22%20width%3D%2211.4%22%20height%3D%227.6%22%20rx%3D%222.2%22%20fill%3D%22none%22%20stroke%3D%22%25231A1C1E%22%20stroke-width%3D%221%22%20opacity%3D%220.5%22%2F%3E%3Crect%20x%3D%2234.3%22%20y%3D%223.5%22%20width%3D%228.8%22%20height%3D%225%22%20rx%3D%221.3%22%2F%3E%3Cpath%20d%3D%22M45.2%204.9v2.2c.5-.2.8-.6.8-1.1s-.3-.9-.8-1.1z%22%20opacity%3D%220.5%22%2F%3E%3C%2Fsvg%3E") no-repeat right 30px center / 46px 12px;
+
+  /* Nothing else changes size or position: the bar below simply starts under
+     it, which is what the safe-area padding was standing in for all along. */
+  width: auto;
+  transform: none;
+  border-radius: 0;
+}
+
+:root[data-theme="dark"] .cu-app::before {
+  background:
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20108%2030%22%3E%3Crect%20width%3D%22108%22%20height%3D%2230%22%20rx%3D%2215%22%20fill%3D%22%2316181A%22%2F%3E%3C%2Fsvg%3E") no-repeat top 9px center / 108px 30px,
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2046%2012%22%20fill%3D%22%2523E7EBEA%22%3E%3Crect%20x%3D%220%22%20y%3D%227.5%22%20width%3D%222.6%22%20height%3D%224.5%22%20rx%3D%220.8%22%2F%3E%3Crect%20x%3D%224.2%22%20y%3D%225.5%22%20width%3D%222.6%22%20height%3D%226.5%22%20rx%3D%220.8%22%2F%3E%3Crect%20x%3D%228.4%22%20y%3D%223.2%22%20width%3D%222.6%22%20height%3D%228.8%22%20rx%3D%220.8%22%2F%3E%3Crect%20x%3D%2212.6%22%20y%3D%221%22%20width%3D%222.6%22%20height%3D%2211%22%20rx%3D%220.8%22%2F%3E%3Cpath%20d%3D%22M24.6%203.1c-2.6%200-5%20.9-6.8%202.5l1.3%201.4c1.5-1.3%203.4-2%205.5-2s4%20.7%205.5%202l1.3-1.4c-1.8-1.6-4.2-2.5-6.8-2.5z%22%2F%3E%3Cpath%20d%3D%22M24.6%206.9c-1.5%200-2.9.5-3.9%201.4l1.3%201.4c.7-.6%201.6-1%202.6-1s1.9.4%202.6%201l1.3-1.4c-1-.9-2.4-1.4-3.9-1.4z%22%2F%3E%3Ccircle%20cx%3D%2224.6%22%20cy%3D%2211%22%20r%3D%221.1%22%2F%3E%3Crect%20x%3D%2233%22%20y%3D%222.2%22%20width%3D%2211.4%22%20height%3D%227.6%22%20rx%3D%222.2%22%20fill%3D%22none%22%20stroke%3D%22%2523E7EBEA%22%20stroke-width%3D%221%22%20opacity%3D%220.5%22%2F%3E%3Crect%20x%3D%2234.3%22%20y%3D%223.5%22%20width%3D%228.8%22%20height%3D%225%22%20rx%3D%221.3%22%2F%3E%3Cpath%20d%3D%22M45.2%204.9v2.2c.5-.2.8-.6.8-1.1s-.3-.9-.8-1.1z%22%20opacity%3D%220.5%22%2F%3E%3C%2Fsvg%3E") no-repeat right 30px center / 46px 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .cu-app::before {
+    background:
+      url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20108%2030%22%3E%3Crect%20width%3D%22108%22%20height%3D%2230%22%20rx%3D%2215%22%20fill%3D%22%2316181A%22%2F%3E%3C%2Fsvg%3E") no-repeat top 9px center / 108px 30px,
+      url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2046%2012%22%20fill%3D%22%2523E7EBEA%22%3E%3Crect%20x%3D%220%22%20y%3D%227.5%22%20width%3D%222.6%22%20height%3D%224.5%22%20rx%3D%220.8%22%2F%3E%3Crect%20x%3D%224.2%22%20y%3D%225.5%22%20width%3D%222.6%22%20height%3D%226.5%22%20rx%3D%220.8%22%2F%3E%3Crect%20x%3D%228.4%22%20y%3D%223.2%22%20width%3D%222.6%22%20height%3D%228.8%22%20rx%3D%220.8%22%2F%3E%3Crect%20x%3D%2212.6%22%20y%3D%221%22%20width%3D%222.6%22%20height%3D%2211%22%20rx%3D%220.8%22%2F%3E%3Cpath%20d%3D%22M24.6%203.1c-2.6%200-5%20.9-6.8%202.5l1.3%201.4c1.5-1.3%203.4-2%205.5-2s4%20.7%205.5%202l1.3-1.4c-1.8-1.6-4.2-2.5-6.8-2.5z%22%2F%3E%3Cpath%20d%3D%22M24.6%206.9c-1.5%200-2.9.5-3.9%201.4l1.3%201.4c.7-.6%201.6-1%202.6-1s1.9.4%202.6%201l1.3-1.4c-1-.9-2.4-1.4-3.9-1.4z%22%2F%3E%3Ccircle%20cx%3D%2224.6%22%20cy%3D%2211%22%20r%3D%221.1%22%2F%3E%3Crect%20x%3D%2233%22%20y%3D%222.2%22%20width%3D%2211.4%22%20height%3D%227.6%22%20rx%3D%222.2%22%20fill%3D%22none%22%20stroke%3D%22%2523E7EBEA%22%20stroke-width%3D%221%22%20opacity%3D%220.5%22%2F%3E%3Crect%20x%3D%2234.3%22%20y%3D%223.5%22%20width%3D%228.8%22%20height%3D%225%22%20rx%3D%221.3%22%2F%3E%3Cpath%20d%3D%22M45.2%204.9v2.2c.5-.2.8-.6.8-1.1s-.3-.9-.8-1.1z%22%20opacity%3D%220.5%22%2F%3E%3C%2Fsvg%3E") no-repeat right 30px center / 46px 12px;
+  }
+}
+
+/* The app bar and any full-bleed screen start below the status bar. 52 rather
+   than the 22 that used to stand in for a safe area, because there is now
+   something in it — the title was rendering behind the island. */
+.cu-bar { padding-block-start: 52px; }
+.cu-app > .cu-scroll:first-child { padding-block-start: 52px; }
 
 
 /* ===== css/11-optiflow.css ===== */
@@ -14209,8 +14329,8 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  text-align: center;
+  justify-content: space-between;
+  text-align: start;
   gap: 10px 18px;
   margin-top: 16px;
   padding: 0;
@@ -14414,6 +14534,55 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 @media (prefers-reduced-motion: reduce) {
   .ar * { transition: none !important; }
 }
+
+/* --------------------------------------------------------------------------
+   THE FOUR-PHASE MODEL — NO PANEL, NO LINE THROUGH THE MARKERS, MORE CONTRAST
+
+   Three things were wrong with it. It sat on a white card inside a page that
+   is not white, so the diagram read as a screenshot pasted onto the article
+   rather than as part of it. The timeline was one stroke from end to end with
+   the markers laid on top, which showed on the one marker that is deliberately
+   open — a rule running straight through the middle of the phase where the
+   argument is that nothing runs. And the labels under it were muted grey at
+   11px, which is the wrong end of the contrast scale for the sentence the
+   whole figure exists to make.
+   -------------------------------------------------------------------------- */
+
+.ar-fig__frame--bare {
+  border: 0;
+  background: none;
+  border-radius: 0;
+}
+
+.md--phases {
+  --md-line: var(--ink-muted);
+}
+
+/* The three phases where the product does something. */
+.md--phases .md-node--on {
+  fill: var(--ink);
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+
+/* And the one where it does not. Open, dashed, and in full ink rather than in
+   the soft grey that used to say "unimportant" — it is the most deliberate
+   mark in the diagram, so it is drawn as one. */
+.md--phases .md-node--off {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.6;
+  stroke-dasharray: 3.4 3.2;
+}
+
+.md--phases .md-wire { stroke: var(--ink-muted); stroke-width: 1.2; }
+
+.md--phases .md-t { font-size: 13.5px; font-weight: 600; fill: var(--ink); }
+.md--phases .md-t--off { font-weight: 700; }
+.md--phases .md-m { font-size: 11.5px; fill: var(--ink-secondary); }
+.md--phases .md-st { fill: var(--ink-secondary); font-weight: 600; }
+.md--phases .md-st--off { fill: var(--ink); }
+.md--phases .md-anno { font-size: 11.5px; fill: var(--ink-secondary); font-style: normal; }
 
 
 /* ===== css/13-mobile-nav.css ===== */
@@ -14883,7 +15052,10 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
 /* --- the screens ---------------------------------------------------------- */
 
-.cu-screens { padding: 24px 20px 26px; }
+/* Room for the bezels: each frame now paints ~11px outside its own box on
+   every side, and the outer two would otherwise be shaved by the module's
+   border. */
+.cu-screens { padding: 34px 28px 36px; overflow: visible; }
 
 .cu-widths {
   display: grid;
@@ -14898,7 +15070,12 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .cu-w {
   display: grid;
   grid-template-rows: auto 1fr auto;   /* label · screen · readout */
-  gap: 12px;
+  /* THE FRAME EATS ELEVEN PIXELS OF EVERY GAP IT TOUCHES. The bezel is painted
+     outside the device's own box, so a 12px gap between a caption and the
+     phone under it renders as one, and the label ends up sitting on the metal.
+     Every gap that meets a device is now set from what should be visible plus
+     the bezel, not from the number alone. */
+  gap: 26px;
   margin: 0;
   min-width: 0;
 }
@@ -14907,10 +15084,13 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .cu-w__cap b { font-weight: 700; }
 .cu-w__cap span { color: var(--ink-muted); }
 
+/* The frame is drawn as a shadow outside the app's box, so the box it sits in
+   must not clip — this rule used to hide everything but the four corner arcs.
+   The rounding moved onto the device itself, so there is nothing left here to
+   round either. */
 .cu-w__fit {
   position: relative;
-  overflow: hidden;
-  border-radius: 22px;
+  overflow: visible;
   align-self: start;
 }
 
@@ -14929,7 +15109,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 @media (max-width: 1099px) {
   .cu-only-all { display: none; }
   .cu-widths { grid-auto-flow: row; justify-items: center; }
-  .cu-screens { padding: 20px 16px 22px; }
+  .cu-screens { padding: 28px 20px 30px; }
 }
 
 /* --------------------------------------------------------------------------
@@ -14945,49 +15125,57 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    reading a paragraph or touching anything.
    -------------------------------------------------------------------------- */
 
-/* AND IT SITS OVER THE PROTOTYPE, NOT BESIDE IT.
+/* SUPPORTING TEXT IS TEXT, AND TEXT IS FLUSH LEFT.
 
-   The phone centres itself in the stage. The words above it were still
-   left-aligned to the module's edge, so on a wide screen a short heading and a
-   one-line lede sat in the far corner with a metre of empty module between
-   them and the thing they describe — the text read as a caption for the border
-   rather than for the device. Everything supporting the prototype now shares
-   the prototype's centre line and is capped at a readable measure, so the
-   whole module reads top to bottom as one column. */
+   It was centred for a while, and the reason was real: a short heading and a
+   one-line lede sat in the far corner of a wide module with a metre of empty
+   space between them and the phone they described, so the words read as a
+   caption for the border rather than for the device. Centring fixed the wrong
+   half of that. These lines are now sentences about how the work went — two or
+   three of them, wrapping — and a centred rag is only ever legible on one
+   line; on two it gives the reader a new left margin to find on every line.
+
+   So the words go back to flush left, and the *block* is what moves. It keeps
+   the reading measure, and it sits on the same left edge as every other line
+   in the case study, so a prototype's introduction is aligned with the prose
+   that led to it rather than floating on its own axis. The phone below still
+   centres in its stage; the text above it is a paragraph, not a caption. */
 .demo__h {
-  margin: 0 auto 8px;
-  max-width: 34ch;
-  text-align: center;
+  margin: 0 0 8px;
+  max-width: 46ch;
+  text-align: start;
 }
 .demo__p {
-  margin: 0 auto 20px;
-  max-width: 62ch;
+  margin: 0 0 20px;
+  max-width: var(--cs-read, 62ch);
   color: var(--ink-secondary);
-  text-align: center;
+  text-align: start;
 }
 .demo__take {
-  margin: 16px auto 0;
-  max-width: 68ch;
+  margin: 16px 0 0;
+  max-width: var(--cs-read, 68ch);
   color: var(--ink-secondary);
-  text-align: center;
+  text-align: start;
 }
 
 /* The older modules — the width comparison, the trust artifacts — use the
    article's own demo head instead of .demo__h. Same treatment, so a reader
-   moving between two prototype sections doesn't watch the text jump from the
-   centre to the left margin and back. */
-.ar-demo.cu .ar-demo__head { justify-content: center; text-align: center; }
+   moving between two prototype sections doesn't watch the text jump from one
+   margin to another and back. */
+.ar-demo.cu .ar-demo__head { justify-content: flex-start; text-align: start; }
 .ar-demo.cu .ar-demo__intro {
-  margin-inline: auto;
-  text-align: center;
+  margin-inline: 0;
+  max-width: var(--cs-read, 44rem);
+  text-align: start;
 }
 
-/* The phone gets the room the paragraphs were using. */
-.cu-stage { padding: 20px 16px 24px; }
+/* The phone gets the room the paragraphs were using — and 12px more than it
+   used to, because the device frame paints outside the app's box now. */
+.cu-stage { padding: 36px 16px 40px; }
 .cu-stage .cu-fit { margin-inline: auto; max-width: 460px; }
 
 @media (min-width: 900px) {
-  .cu-stage { padding: 28px 24px 32px; }
+  .cu-stage { padding: 40px 24px 44px; }
   /* With the rail gone there is no column to share, so the device simply
      centres and takes a comfortable size rather than a leftover half. */
   .cu-stage .cu-fit { max-width: 430px; }
@@ -15006,9 +15194,10 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .cu-scenario { margin-block-end: 0; }
 }
 
-/* The cue and the reset are the last line of supporting text before the
-   device, so they take the same centre as the rest of it. */
-.cu-embed__bar { justify-content: center; text-align: center; }
+/* The cue and the reset are a control strip rather than prose: the cue names
+   what to try, the reset undoes it, and they belong at opposite ends of the
+   bar they share. Left edge with everything else, action on the right. */
+.cu-embed__bar { justify-content: space-between; text-align: start; }
 
 /* The demo-account note, inside the phone. */
 .cu-demo-note {
@@ -15034,7 +15223,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
 .cu-embed { border-radius: 16px; }
 .cu-embed__bar { padding: 16px 20px; gap: 16px; }
-.cu-stage { padding: 20px; }
+.cu-stage { padding: 32px 20px 36px; }
 
 .cu-scenario { gap: 24px; }
 .cu-scenario .cu-ctl + .cu-ctl { margin-block-start: 16px; }
@@ -15043,14 +15232,14 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 @media (min-width: 900px) {
   .ar-demo.cu { margin-block: 64px; }
   .demo__p { margin-block-end: 32px; }
-  .cu-stage { padding: 32px; }
+  .cu-stage { padding: 40px 32px 44px; }
   .cu-embed__bar { padding: 16px 32px; }
   .cu-stage:has(.cu-scenario) { gap: 40px; }
 }
 
 @media (max-width: 719px) {
   .ar-demo.cu { margin-block: 32px; }
-  .cu-stage { padding: 20px 16px; }
+  .cu-stage { padding: 32px 16px 36px; }
   .cu-embed__bar { padding: 14px 16px; gap: 12px; }
   .demo__p { margin-block-end: 20px; }
 }
@@ -15096,7 +15285,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 /* The window itself. A neutral ground so the simulated device reads as a
    thing being shown rather than as part of the page around it. */
 .cu-preview {
-  padding: 12px;
+  padding: 24px 12px;
   border: 1px solid var(--border);
   border-radius: 18px;
   background: var(--surface-sunken);
@@ -15108,6 +15297,11 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   margin-inline: auto;
   overflow: hidden;
 }
+/* The window has to be a couple of pixels wider than the phone it frames, or
+   the bezel is shaved off down both sides. --cu-scale is on this element, so
+   the inset scales with the device. */
+.cu-preview { padding-inline: 20px; }
+@media (max-width: 479px) { .cu-preview { padding-inline: 14px; } }
 
 /* The camera. --cu-pan is written by the script in screen pixels and is the
    only thing that moves; the phone itself is never re-laid-out, so a pan
@@ -15135,7 +15329,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .cu-lab .cu-preview { order: 3; }
   .cu-lab .cu-labbar { order: 4; margin: 0; padding: 0; border: 0; justify-content: center; }
 
-  .cu-preview { padding: 8px; border-radius: 16px; }
+  .cu-preview { padding: 20px 8px; border-radius: 16px; }
 
   /* Six groups of chips is a lot of column. Tighter than the desktop rail,
      because here they are a step on the way to the preview rather than a
@@ -15151,7 +15345,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    any more scale. */
 @media (max-width: 479px) {
   .cu-stage.cu-lab { padding-inline: 8px; }
-  .cu-preview { padding: 6px; border-radius: 14px; }
+  .cu-preview { padding: 18px 6px; border-radius: 14px; }
 }
 
 /* Six control groups and a preview worth looking at do not both fit on a
@@ -15848,14 +16042,17 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    accordion list starts where the masthead has finished speaking. */
 .case .cs-wrap > .acc:first-of-type { margin-block-start: var(--cs-z-zone); }
 
-.acc--static .cs-lead { margin-block-end: 0; }
+/* ONE PARAGRAPH, ONE WEIGHT. The outcome used to be four blocks in three
+   weights and two inks — a bold lead, a plain sentence, a bold status line and
+   a muted footnote — with a different gap between each pair. Four typographic
+   states for one short idea, which is three more than the idea has. It is a
+   paragraph now, and the only spacing decision left is the one between it and
+   the headline above it. */
 .case .acc--static .acc__b > .ar-p { margin-block-start: var(--cs-z-tight); }
-.case .acc--static .acc__b > .cs-status { margin-block-start: var(--cs-z-group); }
-.case .acc--static .acc__b > .cs-status + .ar-p--quiet { margin-block-start: 12px; }
 
 /* --- zone 3: what I contributed -------------------------------------------- */
 
-.case .acc--static .acc__b > .ar-h3 { margin-block-start: var(--cs-z-zone); }
+.case .acc--static .acc__b > .ar-h3 { margin-block-start: var(--cs-z-group); }
 .case .acc--static .acc__b > .ar-h3 + .cs-did { margin-block-start: var(--cs-z-tight); }
 
 
@@ -17054,6 +17251,46 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
 @media (min-width: 960px) and (max-width: 1279px) {
   .hero__thread { font-size: clamp(20px, 1.1vw + 9px, 23px); }
+}
+
+/* --------------------------------------------------------------------------
+   THE CARRY CARD FITS ON A SCREEN
+
+   The phone in this card scales to whatever box it is given, so the card had
+   no reason to stop growing — and it did not. At 390 x 844 it came out 1,112px
+   tall, and at 1512 x 850 it came out 1,006: a card you could never see the
+   whole of, with the animation it exists to show clipped by the fold on the
+   first screen of the site.
+
+   So the slot is capped against the viewport rather than against itself. The
+   subtraction is the card's own chrome — eyebrow, title, description, status
+   and the action under it — which is about 460px once the copy wraps on a
+   phone and about 340 on a wider screen where it does not. The phone gets what
+   is left, scales itself down to it, and the card lands inside one screen.
+
+   svh rather than vh, because vh on a phone is the height of the viewport with
+   the browser chrome hidden — the one measurement that is wrong on first load,
+   which is exactly when this has to be right.
+   -------------------------------------------------------------------------- */
+
+/* flex: none, and the height is the whole answer. The slot was `flex: 1` with
+   a min-height doing the sizing, which meant two things fought this: a
+   max-height loses to a min-height, and with min-height released to 0 the flex
+   basis of 0% collapsed the slot to nothing. One property decides it now. */
+.card--stacked > .slot--embed-fill {
+  flex: none;
+  min-height: 0;
+  height: clamp(320px, calc(92vh - 400px), 520px);
+  height: clamp(320px, calc(92svh - 400px), 520px);
+}
+
+@media (min-width: 720px) {
+  .card--stacked > .slot--embed-fill {
+    /* Whichever is smaller: the share of the band this card would have taken
+       anyway, or what the viewport has left after the card's own copy. */
+    height: clamp(320px, min(38vw, calc(92vh - 300px)), 580px);
+    height: clamp(320px, min(38vw, calc(92svh - 300px)), 580px);
+  }
 }
 
 </style>
@@ -26437,15 +26674,11 @@ em,
     <span class="ar-h2">A conversation patients can read back</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="cs-lead">I took Carry from an early workshop premise to a scoped experience
-      that moved into development.</p>
-    <p class="ar-p">Patients write their questions before the appointment, upload the
-      recording afterwards, and see the moments that answered them.</p>
-
-    <p class="cs-status">I completed the design and handed it into development &middot;
-      implementation later halted</p>
-    <p class="ar-p ar-p--quiet">A leadership change shifted organisational priorities
-      before release.</p>
+    <p class="ar-p">I took Carry from an early workshop premise to a scoped experience
+      that moved into development. Patients write their questions before the appointment,
+      upload the recording afterwards, and see the moments that answered them. I completed
+      the design and handed it into development; implementation later halted when a
+      leadership change shifted organisational priorities before release.</p>
 
     <h3 class="ar-h3">What I contributed</h3>
     <ul class="cs-did">
@@ -26515,60 +26748,65 @@ em,
       at all.</p>
 
     <figure class="ar-fig ar-wide">
-      <div class="ar-fig__frame"><svg class="md" viewBox="0 0 960 320" width="960" height="320" role="img"
-     aria-label="The Carry product model across four phases: before, during, after and later"
+      <div class="ar-fig__frame ar-fig__frame--bare"><svg class="md md--phases" viewBox="0 0 960 340" width="960" height="340" role="img"
+     aria-label="The Carry product model across four phases: before, during, after and later. During the appointment Carry does not operate."
      xmlns="http://www.w3.org/2000/svg">
   <title>The Carry product model</title>
-  <desc>Four phases along one line. Before: prepare. During: the product steps back.
+  <desc>Four phases along one line. Before: prepare. During: Carry does not operate.
     After: upload and match. Later: a read-only record.</desc>
 
-  <line class="md-wire" x1="40" y1="78" x2="920" y2="78"/>
+  
+  <line class="md-wire" x1="40"  y1="78" x2="114" y2="78"/>
+  <line class="md-wire" x1="146" y1="78" x2="354" y2="78"/>
+  <line class="md-wire" x1="386" y1="78" x2="594" y2="78"/>
+  <line class="md-wire" x1="626" y1="78" x2="834" y2="78"/>
+  <line class="md-wire" x1="866" y1="78" x2="920" y2="78"/>
 
   <g>
-    <circle class="md-node md-node--own" cx="130" cy="78" r="8"/>
+    <circle class="md-node md-node--on" cx="130" cy="78" r="8"/>
     <text class="md-st" x="130" y="50">BEFORE</text>
     <text class="md-t" x="130" y="126" text-anchor="middle">Prepare the conversation</text>
-    <text class="md-m" x="130" y="154" text-anchor="middle">Review what to bring.</text>
-    <text class="md-m" x="130" y="175" text-anchor="middle">Write your questions.</text>
-    <text class="md-m" x="130" y="196" text-anchor="middle">Add suggested ones.</text>
-    <text class="md-m" x="130" y="217" text-anchor="middle">Edit and organise what matters.</text>
+    <text class="md-m" x="130" y="156" text-anchor="middle">Review what to bring.</text>
+    <text class="md-m" x="130" y="178" text-anchor="middle">Write your questions.</text>
+    <text class="md-m" x="130" y="200" text-anchor="middle">Add suggested ones.</text>
+    <text class="md-m" x="130" y="222" text-anchor="middle">Edit and organise what matters.</text>
   </g>
 
   <g>
-    <circle class="md-node md-node--act" cx="370" cy="78" r="8"/>
-    <text class="md-st" x="370" y="50">DURING</text>
-    <text class="md-t" x="370" y="126" text-anchor="middle">Get out of the way</text>
-    <text class="md-m" x="370" y="154" text-anchor="middle">Carry does not conduct the</text>
-    <text class="md-m" x="370" y="175" text-anchor="middle">appointment and does not</text>
-    <text class="md-m" x="370" y="196" text-anchor="middle">deliver clinical guidance.</text>
-    <text class="md-m" x="370" y="217" text-anchor="middle">The phone stays in the pocket.</text>
+    <circle class="md-node md-node--off" cx="370" cy="78" r="8"/>
+    <text class="md-st md-st--off" x="370" y="50">DURING</text>
+    <text class="md-t md-t--off" x="370" y="126" text-anchor="middle">Carry does not operate here</text>
+    <text class="md-m" x="370" y="156" text-anchor="middle">Nothing runs during the visit.</text>
+    <text class="md-m" x="370" y="178" text-anchor="middle">Carry does not record, listen,</text>
+    <text class="md-m" x="370" y="200" text-anchor="middle">prompt or give guidance.</text>
+    <text class="md-m" x="370" y="222" text-anchor="middle">The phone stays in the pocket.</text>
   </g>
 
   <g>
-    <circle class="md-node md-node--own" cx="610" cy="78" r="8"/>
+    <circle class="md-node md-node--on" cx="610" cy="78" r="8"/>
     <text class="md-st" x="610" y="50">AFTER</text>
     <text class="md-t" x="610" y="126" text-anchor="middle">Upload and connect</text>
-    <text class="md-m" x="610" y="154" text-anchor="middle">The patient uploads audio</text>
-    <text class="md-m" x="610" y="175" text-anchor="middle">recorded on their own device.</text>
-    <text class="md-m" x="610" y="196" text-anchor="middle">Carry processes it, and excerpts</text>
-    <text class="md-m" x="610" y="217" text-anchor="middle">connect to prepared questions.</text>
+    <text class="md-m" x="610" y="156" text-anchor="middle">The patient uploads audio</text>
+    <text class="md-m" x="610" y="178" text-anchor="middle">recorded on their own device.</text>
+    <text class="md-m" x="610" y="200" text-anchor="middle">Carry processes it, and excerpts</text>
+    <text class="md-m" x="610" y="222" text-anchor="middle">connect to prepared questions.</text>
   </g>
 
   <g>
-    <circle class="md-node md-node--own" cx="850" cy="78" r="8"/>
+    <circle class="md-node md-node--on" cx="850" cy="78" r="8"/>
     <text class="md-st" x="850" y="50">LATER</text>
     <text class="md-t" x="850" y="126" text-anchor="middle">A calm record</text>
-    <text class="md-m" x="850" y="154" text-anchor="middle">Past conversations become a</text>
-    <text class="md-m" x="850" y="175" text-anchor="middle">read-only record patients can</text>
-    <text class="md-m" x="850" y="196" text-anchor="middle">revisit when they need to</text>
-    <text class="md-m" x="850" y="217" text-anchor="middle">remember what was discussed.</text>
+    <text class="md-m" x="850" y="156" text-anchor="middle">Past conversations become a</text>
+    <text class="md-m" x="850" y="178" text-anchor="middle">read-only record patients can</text>
+    <text class="md-m" x="850" y="200" text-anchor="middle">revisit when they need to</text>
+    <text class="md-m" x="850" y="222" text-anchor="middle">remember what was discussed.</text>
   </g>
 
-  <text class="md-anno" x="480" y="284" text-anchor="middle">The hollow marker is deliberate. During the appointment the product has no job,</text>
-  <text class="md-anno" x="480" y="304" text-anchor="middle">and designing it that way was a decision rather than an omission.</text>
+  <text class="md-anno" x="480" y="290" text-anchor="middle">For the whole of the appointment Carry does nothing: it does not record, listen,</text>
+  <text class="md-anno" x="480" y="312" text-anchor="middle">prompt or advise. The open marker is that decision, not a gap in the diagram.</text>
 </svg></div>
-      <figcaption class="ar-cap">The hollow marker is the decision: during the
-        appointment the product has no job.</figcaption>
+      <figcaption class="ar-cap">The open marker is the decision: during the
+        appointment Carry does not operate.</figcaption>
     </figure>
   </div>
 </section>
@@ -26810,18 +27048,14 @@ em,
     <span class="ar-h2">Human judgement in the loop</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="cs-lead">I designed the tagging stage, where a reviewer accepts, corrects
-      or adds to what the model proposed &mdash; and where that judgement becomes
-      feedback the system can use.</p>
-
-    <p class="cs-status">I delivered the design and handed it to engineering</p>
-
-    <p class="ar-p">I came in after the pipeline already worked. optiSTREAM reads
+    <p class="ar-p">I designed the tagging stage, where a reviewer accepts, corrects or
+      adds to what the model proposed, and where that judgement becomes feedback the
+      system can use. I came in after the pipeline already worked: optiSTREAM reads
       insurance and billing correspondence, classifies it, extracts what matters and
       suggests billing tags, and ingest and extraction were both running at around 99%.
-      The one stage that still needed a person &mdash; agreeing or disagreeing with a
-      suggested tag &mdash; had no interface designed for it. That stage was what I was
-      given, and I kept the work inside it rather than spreading across the system.</p>
+      The one stage that still needed a person had no interface designed for it. That
+      stage was what I was given, I kept the work inside it rather than spreading across
+      the system, and I delivered the design and handed it to engineering.</p>
 
     <div class="ar-note"><p><b>On the numbers.</b> Measured accuracy was 99.5% at ingest
       and 99% at extraction. Tagging carried a <b>target</b> of 75% &mdash; a goal the
@@ -29924,7 +30158,15 @@ window.PF = window.PF || {};
     { k: 'audio', label: 'Audio', opts: [['valid', 'Valid'], ['unsupported', 'Unsupported'], ['corrupted', 'Corrupted']] },
     { k: 'upload', label: 'Upload', opts: [['success', 'Success'], ['interrupted', 'Interrupted'], ['failed', 'Failed']] },
     { k: 'transcribe', label: 'Transcription', opts: [['normal', 'Normal'], ['delayed', 'Delayed'], ['failed', 'Failed']] },
-    { k: 'match', label: 'Matching', opts: [['full', 'Full'], ['partial', 'Partial'], ['none', 'No reliable match']] }
+    /* "Full" was the wrong word and it made the prototype look broken. Every
+       other control here names a fault against a no-fault default — Fast,
+       Correct, Valid, Success, Normal — and matching's default is not "every
+       question answered", it is "the model found everything it could
+       defensibly find", which in this recording is three of six. Labelled
+       Full, the screen underneath read "3 of 6 matched" and looked like it had
+       failed to do what the control said. Labelled Normal, it reads as the
+       designed result, which is the whole argument of the Trust section. */
+    { k: 'match', label: 'Matching', opts: [['full', 'Normal'], ['partial', 'Fewer matches'], ['none', 'No reliable match']] }
   ];
 
   var HAPPY = { conn: 'fast', auth: 'correct', audio: 'valid', upload: 'success', transcribe: 'normal', match: 'full' };
@@ -30146,7 +30388,11 @@ window.PF = window.PF || {};
        below which scaling stops being "smaller" and starts being "unreadable",
        and therefore the point where the camera takes over from the scale. */
     var MIN_READ = 0.72;
-    var panT = null, curPan = 0, curScale = 1;
+    /* The device frame paints outside the app's own box, so the window's rest
+       position is a bezel down from its top edge rather than flush with it —
+       otherwise the top of the phone is sliced off at pan zero. */
+    var BEZ = 12;
+    var panT = null, curPan = BEZ, curScale = 1;
 
     function bound() { return root.querySelector('.cu-fit--bound'); }
     function wide() { return window.matchMedia('(min-width: 900px)').matches; }
@@ -30204,7 +30450,7 @@ window.PF = window.PF || {};
 
       var target = app.querySelector('[data-focus="' + focusKey() + '"]') ||
                    app.querySelector('[data-focus]');
-      if (!target) { setPan(0); return; }
+      if (!target) { setPan(BEZ); return; }
 
       /* Inside the phone first. If what matters is below the phone's own
          fold, the phone scrolls itself — animated, once, as part of the
@@ -30227,14 +30473,14 @@ window.PF = window.PF || {};
       panT = setTimeout(function () {
         var box = el.clientHeight;
         var appH = DEV_OH * curScale;
-        var min = Math.min(0, box - appH);
-        if (min > -2) { setPan(0); return; }
+        var min = Math.min(BEZ, box - appH - BEZ);
+        if (min > BEZ - 2) { setPan(BEZ); return; }
 
         var ar = app.getBoundingClientRect();
         var tr = target.getBoundingClientRect();
         var yIn = (tr.top - ar.top) / curScale;           /* app coordinates */
         var want = Math.min(72, box * 0.22);
-        setPan(Math.max(min, Math.min(0, want - yIn * curScale)));
+        setPan(Math.max(min, Math.min(BEZ, want - yIn * curScale)));
       }, ms(reduced.matches ? 0 : 340));
     }
 
