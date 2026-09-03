@@ -14871,6 +14871,105 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .cu-screens { padding: 20px 16px 22px; }
 }
 
+/* --------------------------------------------------------------------------
+   13. A PROTOTYPE LEADS; THE PROSE GETS OUT OF ITS WAY
+
+   These sections used to be a phone on the left and three headed paragraphs on
+   the right, roughly half the width each. A reader had to consume an essay
+   about an interaction that was sitting right there able to demonstrate
+   itself. Now it is: one decision as a heading, one line of reasoning, the
+   prototype at full width, and one takeaway underneath.
+
+   The five-second test this is built for — priority, decision, proof, without
+   reading a paragraph or touching anything.
+   -------------------------------------------------------------------------- */
+
+.demo__h {
+  margin: 0 0 8px;
+  max-width: 34ch;
+}
+.demo__p {
+  margin: 0 0 20px;
+  max-width: 62ch;
+  color: var(--ink-secondary);
+}
+.demo__take {
+  margin: 16px 0 0;
+  max-width: 68ch;
+  color: var(--ink-secondary);
+}
+
+/* The phone gets the room the paragraphs were using. */
+.cu-stage { padding: 20px 16px 24px; }
+.cu-stage .cu-fit { margin-inline: auto; max-width: 460px; }
+
+@media (min-width: 900px) {
+  .cu-stage { padding: 28px 24px 32px; }
+  /* With the rail gone there is no column to share, so the device simply
+     centres and takes a comfortable size rather than a leftover half. */
+  .cu-stage .cu-fit { max-width: 430px; }
+}
+
+/* The Performance Lab keeps a rail, because its controls ARE the interaction
+   rather than commentary on it. */
+.cu-scenario { display: grid; gap: 16px; margin-block-end: 20px; }
+@media (min-width: 900px) {
+  .cu-stage:has(.cu-scenario) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 430px);
+    gap: 32px;
+    align-items: start;
+  }
+  .cu-scenario { margin-block-end: 0; }
+}
+
+.cu-embed__bar { justify-content: space-between; }
+
+/* The demo-account note, inside the phone. */
+.cu-demo-note {
+  margin: 12px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--cu-text-3);
+}
+
+/* --------------------------------------------------------------------------
+   14. ROOM INSIDE A MODULE
+
+   Heading, one line, controls, prototype — on the 8px rhythm, with the
+   prototype given the weight. Nothing here crowds anything else, and the
+   controls are grouped so they read as one thing you operate rather than as
+   scattered buttons.
+   -------------------------------------------------------------------------- */
+
+.ar-demo.cu { margin-block: 40px; }
+.demo__h { margin: 0 0 8px; }
+.demo__p { margin: 0 0 24px; }
+
+.cu-embed { border-radius: 16px; }
+.cu-embed__bar { padding: 16px 20px; gap: 16px; }
+.cu-stage { padding: 20px; }
+
+.cu-scenario { gap: 24px; }
+.cu-scenario .cu-ctl + .cu-ctl { margin-block-start: 16px; }
+.cu-labbar { gap: 8px; padding-block-start: 16px; margin-block-start: 16px; }
+
+@media (min-width: 900px) {
+  .ar-demo.cu { margin-block: 64px; }
+  .demo__p { margin-block-end: 32px; }
+  .cu-stage { padding: 32px; }
+  .cu-embed__bar { padding: 16px 32px; }
+  .cu-stage:has(.cu-scenario) { gap: 40px; }
+}
+
+@media (max-width: 719px) {
+  .ar-demo.cu { margin-block: 32px; }
+  .cu-stage { padding: 20px 16px; }
+  .cu-embed__bar { padding: 14px 16px; gap: 12px; }
+  .demo__p { margin-block-end: 20px; }
+}
+
 
 /* ===== css/14-case-type.css ===== */
 /* ==========================================================================
@@ -25933,50 +26032,15 @@ at any moment a patient could tell what they were looking at, what was
 optional, and what would happen if they touched it.</p>
 
 <section class="ar-demo ar-wide cu" data-cu="prepare">
-  <div class="ar-demo__head">
-    <p class="ar-demo__title">Suggested questions are optional, and reversible</p>
-  </div>
-  <p class="ar-demo__intro">Sign in, land on the dashboard, and prepare. Expand
-    a suggested category and add a question &mdash; then undo it. Open the
-    contextual menu on any of your own questions to edit it inline, move it, or
-    delete it. Every one of those is reversible, and none of them opens a
-    separate screen.</p>
+  <h3 class="demo__h">Patients build their own list of questions.</h3>
+  <p class="demo__p">Add, edit, reorder or undo anything — without leaving the screen.</p>
   <div class="cu-embed">
     <div class="cu-embed__bar">
-      <b>Sign in, prepare, edit</b>
-      <span class="cu-cue" data-cue>Try it &mdash; tap a suggested question</span>
+      <span class="cu-cue" data-cue>Try it — add a suggested question, then undo it</span>
       <button class="cu-reset" type="button" data-act="reset">Reset</button>
     </div>
     <div class="cu-stage">
-      <div class="cu-split">
-        <div class="cu-fit"><div class="cu-app" data-app></div></div>
-        <div class="cu-rail">
-          <div>
-            <h4>Three sections, three jobs</h4>
-            <p><b>Things to bring</b> is a checklist for the day of. <b>My
-              questions</b> is the patient's own list, reorderable and
-              editable. <b>Suggested questions</b> is a library grouped into
-              four categories, and it is the only part of the screen that is
-              not already the patient's.</p>
-          </div>
-          <div>
-            <h4>Suggested is optional, and reversible</h4>
-            <p>A suggested question is a prompt to consider, not medical
-              advice and not a checklist item. So adding one is a single tap
-              that produces a confirmation with an <b>Undo</b>, the source row
-              stays visible in its claimed state, and nothing about the
-              treatment implies clinical authority.</p>
-          </div>
-          <div>
-            <h4>Editing happens in the row</h4>
-            <p>Default, menu open, edit state, modified text, confirmed. The
-              original stays visible while the field is open, confirm and
-              cancel sit next to the text, and confirmation is a light
-              acknowledgement rather than a dialog. A patient correcting their
-              own wording should not be moved to another screen to do it.</p>
-          </div>
-        </div>
-      </div>
+      <div class="cu-fit"><div class="cu-app" data-app></div></div>
     </div>
   </div>
 </section>
@@ -26150,48 +26214,15 @@ sentence for every question is more satisfying to demo and considerably more
 dangerous to use.</p>
 
 <section class="ar-demo ar-wide cu" data-cu="match">
-  <div class="ar-demo__head">
-    <p class="ar-demo__title">A matched answer is a quotation, not a summary</p>
-  </div>
-  <p class="ar-demo__intro">The Questions tab after transcription. Three of the
-    six questions have defensible matches; three do not. Open a transcript to
-    verify a match against its source, edit one to see the badge change, or
-    dismiss one and undo it.</p>
+  <h3 class="demo__h">Patients can see exactly what was said.</h3>
+  <p class="demo__p">Carry links each question to the part of the conversation that answered it.</p>
   <div class="cu-embed">
     <div class="cu-embed__bar">
-      <b>Unanswered, matched, edited, dismissed</b>
-      <span class="cu-cue" data-cue>Try it &mdash; open a transcript</span>
+      <span class="cu-cue" data-cue>Try it — open a transcript, or dismiss an answer</span>
       <button class="cu-reset" type="button" data-act="reset">Reset</button>
     </div>
     <div class="cu-stage">
-      <div class="cu-split">
-        <div class="cu-fit"><div class="cu-app" data-app></div></div>
-        <div class="cu-rail">
-          <div>
-            <h4>Provenance is a component, not a disclaimer</h4>
-            <p>The badge, the &ldquo;What they said&rdquo; label and the
-              excerpt block travel together. There is no state in which
-              matched content appears without all three, so a patient never
-              has to work out whether a sentence came from the room or from a
-              model.</p>
-          </div>
-          <div>
-            <h4>Verification, without taking over</h4>
-            <p>The transcript arrives over the list with the matched line
-              marked, and leaves again. Deep verification is available;
-              scanning stays the primary experience. Making the transcript the
-              main view would have punished the patients who just want to
-              remember one thing.</p>
-          </div>
-          <div>
-            <h4>Control is visible</h4>
-            <p>Dismiss a match, edit a match, choose whether to upload at all,
-              retry a failed action, leave and come back, review past sessions.
-              Each of those is a place the patient can override the system, and
-              each is one tap from where they already are.</p>
-          </div>
-        </div>
-      </div>
+      <div class="cu-fit"><div class="cu-app" data-app></div></div>
     </div>
   </div>
 </section>
@@ -26213,44 +26244,15 @@ dialog that promises less access than the next screen delivers is worse than
 no dialog at all.</p>
 
 <section class="ar-demo ar-wide cu" data-cu="permit">
-  <div class="ar-demo__head">
-    <p class="ar-demo__title">Carry receives a recording; it never starts one</p>
-  </div>
-  <p class="ar-demo__intro">From the default RecordingPanel through the
-    permission dialog &mdash; try <b>Not now</b> as well as <b>Allow</b> &mdash;
-    into a simulated picker that contains audio and nothing else, then upload
-    and transcription.</p>
+  <h3 class="demo__h">Patients choose what to upload.</h3>
+  <p class="demo__p">Carry asks once, shows only audio, and saying no changes nothing.</p>
   <div class="cu-embed">
     <div class="cu-embed__bar">
-      <b>Uploading a recording</b>
-      <span class="cu-cue" data-cue>Try it &mdash; tap Upload recording</span>
+      <span class="cu-cue" data-cue>Try it — tap Upload recording</span>
       <button class="cu-reset" type="button" data-act="reset">Reset</button>
     </div>
     <div class="cu-stage">
-      <div class="cu-split">
-        <div class="cu-fit"><div class="cu-app" data-app></div></div>
-        <div class="cu-rail">
-          <div>
-            <h4>Recording state</h4>
-            <ul class="cu-states" data-strip></ul>
-          </div>
-          <div>
-            <h4>What the dialog promises</h4>
-            <p>&ldquo;Carry needs access to find your conversation recording.
-              Only audio files will be shown. Carry never sees photos,
-              documents, or other files.&rdquo; Purpose, scope and exclusion,
-              in three sentences, before the patient has to decide.</p>
-          </div>
-          <div>
-            <h4>Declining is a real option</h4>
-            <p><b>Not now</b> returns to the default state with everything
-              intact. Nothing is lost, nothing is nagged, and the upload is
-              still there whenever the patient wants it. A permission dialog
-              with one usable answer is a dark pattern with a nice
-              typeface.</p>
-          </div>
-        </div>
-      </div>
+      <div class="cu-fit"><div class="cu-app" data-app></div></div>
     </div>
   </div>
 </section>
@@ -26265,44 +26267,15 @@ not change any more &mdash; and would make a finished conversation feel like
 an unfinished task.</p>
 
 <section class="ar-demo ar-wide cu" data-cu="modes">
-  <div class="ar-demo__head">
-    <p class="ar-demo__title">Capture and review are the same record, two interfaces</p>
-  </div>
-  <p class="ar-demo__intro">Switch between an active session and a past one.
-    The conversation underneath does not change &mdash; the affordances do.</p>
+  <h3 class="demo__h">One conversation, whether it’s live or saved.</h3>
+  <p class="demo__p">Once a session is saved, the editing controls go away.</p>
   <div class="cu-embed">
     <div class="cu-embed__bar">
-      <b>Capture and review</b>
-      <div class="cu-modes" role="group" aria-label="Session mode">
-        <button type="button" data-act="mode" data-m="capture" aria-pressed="true">Active session</button>
-        <button type="button" data-act="mode" data-m="review" aria-pressed="false">Past session</button>
-      </div>
+      <span class="cu-cue" data-cue>Try switching between Active and Saved</span>
       <button class="cu-reset" type="button" data-act="reset">Reset</button>
     </div>
     <div class="cu-stage">
-      <div class="cu-split">
-        <div class="cu-fit"><div class="cu-app" data-app></div></div>
-        <div class="cu-rail">
-          <div>
-            <h4>Currently showing</h4>
-            <p data-modenote>Active session &mdash; checkboxes, editable notes,
-              upload, follow-up actions, Save session.</p>
-          </div>
-          <div>
-            <h4>What review keeps</h4>
-            <p>Question expansion, transcript expansion, the notes as written,
-              and follow-up status. Everything a patient came back to read is
-              still there and still openable.</p>
-          </div>
-          <div>
-            <h4>What review removes</h4>
-            <p>The checkboxes, the notes field, the upload control and the
-              Save session bar. In their place, one outlined action for the
-              thing people actually want from an old conversation: sharing the
-              summary.</p>
-          </div>
-        </div>
-      </div>
+      <div class="cu-fit"><div class="cu-app" data-app></div></div>
     </div>
   </div>
 </section>
@@ -26334,58 +26307,26 @@ the screen, what happens next, and what to do if it takes longer than
 expected.</p>
 
 <section class="ar-demo ar-wide cu" data-cu="lab">
-  <div class="ar-demo__head">
-    <p class="ar-demo__title">Every failure is a state of the real component</p>
-  </div>
-  <p class="ar-demo__intro">Set the conditions, then run the flow. These
-    controls change what the prototype actually does &mdash; they do not swap
-    in a descriptive card. Choosing <b>Interrupted</b> makes the next upload
-    stop partway through the same panel, with the file still selected.</p>
+  <h3 class="demo__h">It still makes sense when things go wrong.</h3>
+  <p class="demo__p">Pick a condition, then run the flow.</p>
   <div class="cu-embed">
     <div class="cu-embed__bar">
-      <b>Authentication and recording</b>
-      <span class="cu-cue" data-cue>Try it &mdash; set a condition, then sign in</span>
+      <span class="cu-cue" data-cue>Try it — choose Interrupted, then upload</span>
+      <button class="cu-reset" type="button" data-act="reset">Reset</button>
     </div>
     <div class="cu-stage">
-      <div class="cu-split cu-split--wide">
-        <div class="cu-fit"><div class="cu-app" data-app></div></div>
-        <div class="cu-rail">
-          <div>
-            <h4>Scenario</h4>
-            <div data-controls></div>
-            <div class="cu-labbar">
-              <p class="cu-labbar__note" data-scnote>Happy path &mdash; every condition nominal.</p>
-              <button class="cu-labbtn cu-labbtn--go" type="button" data-act="lab-happy">Run happy path</button>
-              <button class="cu-labbtn" type="button" data-act="lab-reset">Reset scenario</button>
-              <button class="cu-labbtn" type="button" data-act="lab-skip">Skip to upload</button>
-            </div>
-          </div>
-          <div>
-            <h4>Current state</h4>
-            <ul class="cu-states" data-strip></ul>
-          </div>
-          <div>
-            <h4>What to try</h4>
-            <ul>
-              <li><b>Incorrect</b> or <b>Expired</b> &mdash; the error appears inline, the entered code stays, and expiry offers <b>Resend code</b>.</li>
-              <li><b>Offline</b> &mdash; the phone number and the code survive the failure. Nothing is cleared to make room for an error.</li>
-              <li><b>Slow</b> &mdash; the loading screen adds a connection line only once the wait becomes unusual.</li>
-              <li><b>Unsupported</b> &mdash; the file is rejected before upload, with a reason and a path to another one.</li>
-              <li><b>Corrupted</b> &mdash; identified as a processing problem, not a network one, so the patient does not retry the wrong thing.</li>
-              <li><b>Interrupted</b> &mdash; the upload stops partway; the file stays selected and the action is Resume.</li>
-              <li><b>Delayed</b> &mdash; transcription confirms the upload succeeded <em>first</em>, then explains the wait and says it is safe to leave.</li>
-              <li><b>Partial</b> &mdash; only questions with defensible matches are populated. The rest stay unanswered, and it is not framed as a failure.</li>
-            </ul>
-          </div>
+      <div class="cu-scenario">
+        <div data-controls></div>
+        <div class="cu-labbar">
+          <p class="cu-labbar__note" data-scnote>Everything working normally.</p>
+          <button class="cu-labbtn cu-labbtn--go" type="button" data-act="lab-happy">All normal</button>
+          <button class="cu-labbtn" type="button" data-act="lab-reset">Reset</button>
+          <button class="cu-labbtn" type="button" data-act="lab-skip">Skip to upload</button>
         </div>
       </div>
-      <span class="cu-live" data-live aria-live="polite"></span>
+      <div class="cu-fit"><div class="cu-app" data-app></div></div>
     </div>
   </div>
-  <p class="ar-demo__note">Timing is realistic in shape and accelerated in
-    scale: a slow upload is visibly slower than a fast one, and neither takes
-    thirty seconds of your afternoon. Nothing here touches a network, a file
-    system, a model or a real account.</p>
 </section>
 
 <h3 class="ar-h3">One panel, thirteen states</h3>
@@ -27957,7 +27898,9 @@ window.PF = window.PF || {};
       }
       st.state = 'phoneEntered'; o.render();
       timer = setTimeout(function () {
-        st.state = 'codeSent'; st.code = ''; o.render();
+        st.state = 'codeSent';
+        if (st.phone.indexOf('555-0134') < 0) st.code = '';
+        o.render();
         o.say('Code sent to ' + st.phone + '. Enter the six digits.');
       }, ms(slow() ? T.send * 3 : T.send));
     }
@@ -28038,6 +27981,13 @@ window.PF = window.PF || {};
           note(st) +
           '<button class="cu-btn" type="button" data-act="auth-send"' + (busy ? ' disabled' : '') + '>' +
             (busy ? '<span class="cu-spin"></span>Sending' : 'Send code') + '</button>' +
+          /* Nobody should have to invent a phone number to look at a design.
+             One tap fills both fields with obviously fictional details and
+             leaves the real Send code / Verify path intact, because that path
+             is the thing being demonstrated. */
+          '<button class="cu-btn cu-btn--text" type="button" data-act="auth-demo">' +
+            'Use demo account</button>' +
+          '<p class="cu-demo-note">Prototype only &middot; no real account, no code will be sent.</p>' +
         '</div></div>';
     }
 
@@ -28063,6 +28013,7 @@ window.PF = window.PF || {};
           '<button class="cu-btn" type="button" data-act="auth-verify"' + (busy ? ' disabled' : '') + '>' +
             (busy ? '<span class="cu-spin"></span>Checking' : 'Verify') + '</button>' +
           '<button class="cu-btn cu-btn--text" type="button" data-act="auth-resend">Resend code</button>' +
+          '<p class="cu-demo-note">Prototype only &middot; the demo code is already filled in.</p>' +
         '</div></div>';
     }
 
@@ -28087,6 +28038,14 @@ window.PF = window.PF || {};
     /* --- events -------------------------------------------------------- */
 
     function act(a) {
+      if (a === 'auth-demo') {
+        st.phone = '(555) 555-0134';
+        st.code = '481902';
+        st.err = null; st.errKind = null;
+        o.render();
+        o.say('Demo details filled in. Tap Send code to continue.');
+        return true;
+      }
       if (a === 'auth-send') { send(); return true; }
       if (a === 'auth-verify') { verify(); return true; }
       if (a === 'auth-resend') { resend(); return true; }
@@ -28480,7 +28439,12 @@ window.PF = window.PF || {};
     function init() {
       if (auth) auth.clear();
       st = {
-        view: 'welcome',
+        /* STRAIGHT TO THE THING BEING DEMONSTRATED. This section is about
+           preparing a conversation, not about signing in, and five taps of
+           authentication before the first real interaction is five taps most
+           readers will not spend. The auth flow still exists — it is the
+           subject of the Performance section, where it belongs. */
+        view: 'prep',
         bring: SEED.bring.map(function () { return false; }),
         qs: SEED.questions.slice(),
         cats: SEED.suggested.map(function (c, i) { return { open: i === 0, taken: [] }; }),
@@ -29259,15 +29223,31 @@ window.PF = window.PF || {};
   /* A named-state readout beside a machine. Not decoration: it is how the
      reader knows the failure they are looking at is a state of the real
      component rather than a different screen. */
+  /* The machines are named in code the way code is named. A reader should see
+     what is happening, not the identifier it happens under. */
+  var STATE_WORDS = {
+    idle: 'Ready', phoneEntered: 'Sending code', codeSent: 'Code sent',
+    verifying: 'Checking', authenticated: 'Signing in',
+    codeIncorrect: 'Wrong code', codeExpired: 'Code expired',
+    connectionError: 'No connection',
+    empty: 'No recording', permissionRequested: 'Asking permission',
+    filePickerOpen: 'Choosing a file', fileSelected: 'File selected',
+    uploading: 'Uploading', uploaded: 'Uploaded',
+    uploadInterrupted: 'Connection lost', uploadFailed: 'Upload failed',
+    transcribing: 'Transcribing', transcriptionDelayed: 'Taking longer',
+    transcriptionFailed: 'Transcription failed', transcribed: 'Ready to review'
+  };
+  function words(k) { return STATE_WORDS[k] || k; }
+
   function stateStrip(root, states, on) {
     var strip = root.querySelector('[data-strip]');
     if (!strip) return;
     var at = states.indexOf(on);
     strip.innerHTML = states.map(function (n, i) {
       return '<li class="cu-state" data-on="' + (n === on ? 1 : 0) + '" data-done="' +
-        (at >= 0 && i < at ? 1 : 0) + '">' + n + '</li>';
+        (at >= 0 && i < at ? 1 : 0) + '">' + words(n) + '</li>';
     }).join('') +
-    (at < 0 ? '<li class="cu-state cu-state--off" data-on="1">' + on + '</li>' : '');
+    (at < 0 ? '<li class="cu-state cu-state--off" data-on="1">' + words(on) + '</li>' : '');
   }
 
   /* Keep tab focus inside a dialog while one is open. */
@@ -29455,8 +29435,8 @@ window.PF = window.PF || {};
       var note = root.querySelector('[data-modenote]');
       if (note) {
         note.textContent = st.mode === 'capture'
-          ? 'Active session — checkboxes, editable notes, upload, follow-up actions, Save session.'
-          : 'Past session — read-only. Questions and transcript still expand; nothing invites a change.';
+          ? 'You can check things off, write notes and upload.'
+          : 'Saved. You can still read everything, but nothing invites a change.';
       }
     }
 
@@ -29607,7 +29587,7 @@ window.PF = window.PF || {};
               var lab = c.opts.filter(function (o) { return o[0] === v; })[0];
               return c.label + ': ' + (lab ? lab[1] : v);
             }).join(' · ')
-          : 'Happy path — every condition nominal.';
+          : 'Everything working normally.';
       }
     }
 
