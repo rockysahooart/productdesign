@@ -16249,6 +16249,48 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .case .ar-table td:nth-child(2) { width: 22%; }
 }
 
+/* ==========================================================================
+   THE MASTHEAD IMAGE
+
+   Three phones, one per moment, between the kicker and the title. It is the
+   only picture on the page that is not making an argument — it is there so a
+   reader knows what the thing looks like before they read a word about it.
+
+   Spacing is the point of most of these rules: each device carries a chassis
+   painted outside its own box, so the gaps between them and the space above
+   and below are set from the visible gap plus the bezel, the same way every
+   other device on this page is spaced.
+   ========================================================================== */
+
+.cs-mastimg {
+  margin-block: 32px 40px;
+}
+@media (min-width: 900px) {
+  .cs-mastimg { margin-block: 40px 56px; }
+}
+
+.cs-mastimg__row {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+}
+@media (max-width: 559px) { .cs-mastimg__row { gap: 12px; } }
+
+.cs-mastimg__one { margin: 0; }
+
+/* The chassis is drawn by the same rule the comparison uses, so these read as
+   the same device — and the bezel is reserved in the margin rather than
+   painted over the phone beside it. */
+.cs-mastimg__fit {
+  position: relative;
+  overflow: visible;
+}
+
+/* A picture, not a control surface. */
+.cs-mastimg,
+.cs-mastimg * { pointer-events: none; }
+
 
 /* ===== css/06-responsive.css ===== */
 /* ==========================================================================
@@ -26842,6 +26884,12 @@ em,
 
     <header class="ar-mast cs-mast">
       <p class="ar-kicker">Case study</p>
+
+      
+      <div class="cs-mastimg cu" data-cu="hero" aria-hidden="true">
+        <div class="cs-mastimg__row" data-hero></div>
+      </div>
+
       <h1 class="ar-title" id="carry-title">Carry: A Patient Experience Extension</h1>
       <p class="ar-standfirst">I designed and proposed an extension to an existing patient
         experience that helps people prepare for a visit and remember what happened
@@ -31152,7 +31200,136 @@ window.PF = window.PF || {};
     }
   }
 
+
+  /* =====================================================================
+     THE MASTHEAD IMAGE — three moments, one phone
+
+     Not an artifact and not interactive: the case study's opening picture.
+     Three screens side by side that carry the whole arc in one look — what
+     you write before the appointment, what happens to the recording after
+     it, and the answers that come back — drawn by the same components as
+     everything below, in the same device frame, so the first thing on the
+     page is the real thing rather than a render of it.
+     ===================================================================== */
+
+  function artHero(root) {
+    var wrap = root.querySelector('[data-hero]');
+    if (!wrap) return;
+
+    function screenPrepare() {
+      return appBar(SEED.title, SEED.whenShort, { trail: 'gear' }) +
+        '<div class="cu-scroll">' +
+          '<div class="cu-card"><div class="cu-sec"><b>Things to bring</b>' +
+            '<span>2 of ' + SEED.bring.length + ' checked</span></div>' +
+            SEED.bring.slice(0, 4).map(function (t, i) {
+              return checkRow(t, i < 2, 'noop', i, { readonly: true });
+            }).join('') +
+          '</div>' +
+          '<div class="cu-card"><div class="cu-sec"><b>My questions</b>' +
+            '<span>' + SEED.questions.length + ' prepared</span></div>' +
+            SEED.questions.slice(0, 5).map(function (q, i) {
+              return questionRow({ q: q, i: i, as: 'div', menu: false, tools: false });
+            }).join('') +
+          '</div><div class="cu-pad"></div>' +
+        '</div>' +
+        '<div class="cu-foot"><button class="cu-btn" type="button" data-act="noop">Start the conversation</button></div>';
+    }
+
+    function screenUpload() {
+      return appBar(SEED.title, SEED.today, { trail: 'kebab' }) +
+        '<div class="cu-scroll">' +
+          '<div class="cu-rec"><b class="cu-rec__h">Your recording</b>' +
+            '<p class="cu-rec__p">Transcribing the conversation&hellip;</p>' +
+            '<div class="cu-prog"><i class="is-indet"></i></div>' +
+          '</div>' +
+          '<div class="cu-card cu-card--bare"><div class="cu-file">' +
+            '<span class="cu-file__ico">' + ic('wave') + '</span>' +
+            '<span class="cu-file__t"><b>' + esc(fileMain().n) + '</b><span>12:34 &middot; Uploaded</span></span>' +
+            '<span class="cu-file__play">' + ic('play') + '</span></div></div>' +
+          '<div class="cu-card"><div class="cu-sec"><b>My questions</b>' +
+            '<span>' + SEED.questions.length + ' prepared</span></div>' +
+            SEED.questions.slice(0, 5).map(function (q, i) {
+              return questionRow({ q: q, i: i, as: 'div', menu: false, tools: false });
+            }).join('') +
+          '</div><div class="cu-pad"></div>' +
+        '</div>';
+    }
+
+    function screenAnswers() {
+      var m0 = SEED.matched[0], m1 = SEED.matched[1];
+      function block(q, m) {
+        return '<div class="cu-qm" data-state="matched">' +
+          '<div class="cu-qm__head"><span class="cu-box" data-on="1">' + ic('check') + '</span>' +
+            '<span class="cu-qm__t">' + esc(q) + '</span></div>' +
+          '<div class="cu-qm__meta"><span class="cu-badge">' + ic('sparkle') + 'Matched from recording</span></div>' +
+          '<p class="cu-label cu-label--said">What they said</p>' +
+          '<blockquote class="cu-said">' + esc(m.quote) + '</blockquote></div>';
+      }
+      return appBar(SEED.title, SEED.today, { trail: 'kebab' }) +
+        '<div class="cu-scroll">' +
+          '<div class="cu-tabs" role="tablist">' +
+            '<button class="cu-tab" type="button" role="tab" aria-selected="true">Questions</button>' +
+            '<button class="cu-tab" type="button" role="tab" aria-selected="false">Notes</button>' +
+            '<button class="cu-tab" type="button" role="tab" aria-selected="false">Follow-ups</button>' +
+          '</div>' +
+          '<div class="cu-card cu-card--tabbed">' +
+            '<div class="cu-sec"><b>Your questions</b><span>6 of 6 matched</span></div>' +
+            block(SEED.questions[0], m0) + block(SEED.questions[1], m1) +
+          '</div><div class="cu-pad"></div>' +
+        '</div>';
+    }
+
+    /* No captions. The three screens are in order and the order is legible from
+       the screens themselves — a list of questions, a recording being read, the
+       answers coming back. Labelling that is explaining a picture to someone
+       already looking at it. */
+    var SCREENS = [screenPrepare, screenUpload, screenAnswers];
+
+    wrap.innerHTML = SCREENS.map(function (view) {
+      return '<div class="cs-mastimg__one">' +
+        '<div class="cu-w__fit cs-mastimg__fit" data-dev="ios" data-hfit>' +
+          '<div class="cu-app cu-w__app" data-dev="ios" style="--cu-w:393px;height:852px">' +
+            view() +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    /* Inert: this is a picture of the product, not a control surface. */
+    var apps = wrap.querySelectorAll('.cu-app');
+    for (var i = 0; i < apps.length; i++) {
+      apps[i].inert = true;
+      apps[i].setAttribute('inert', '');
+      apps[i].setAttribute('aria-hidden', 'true');
+    }
+
+    var GAPH = 20;
+    function fitHero() {
+      var boxes = wrap.querySelectorAll('[data-hfit]');
+      if (!boxes.length) return;
+      var k;
+      for (k = 0; k < boxes.length; k++) { boxes[k].style.width = ''; boxes[k].style.height = ''; }
+
+      var avail = wrap.clientWidth;
+      if (!avail) return;
+      /* 393 of screen plus 22 of chassis, three times, plus the gaps. */
+      var each = 393 + 22;
+      var s = Math.min(0.74, (avail - GAPH * (boxes.length - 1)) / (each * boxes.length));
+
+      for (k = 0; k < boxes.length; k++) {
+        boxes[k].style.setProperty('--cu-scale', s);
+        boxes[k].style.width = Math.round(393 * s) + 'px';
+        boxes[k].style.height = Math.round(852 * s) + 'px';
+      }
+    }
+
+    fitHero();
+    if ('ResizeObserver' in window) new ResizeObserver(fitHero).observe(wrap);
+    else window.addEventListener('resize', fitHero);
+  }
+
   var BUILD = {
+    hero: artHero,
     prepare: artPrepare,
     widths: artWidths,
     match: artMatch,
