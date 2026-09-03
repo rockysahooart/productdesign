@@ -15304,19 +15304,20 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    above them — the accordion stack read as ten lines of small type rather than
    five headlines you can find at a glance. It is set a step down from the
    masthead so the page still has one title. */
-/* THE SECTION HEADLINE IS THE TITLE'S SIZE, AND THE FAMILY IS WHAT SEPARATES
-   THEM. One display size on the page, not one-and-a-half: the masthead is the
-   pixel face and the five section headlines are the body face at the same
-   size, which reads as one level used twice rather than as two levels a reader
-   has to rank. At the body size these headlines were indistinguishable from
-   the label above them and the accordion stack read as ten lines of small
-   type; at this size it reads as five headlines. */
+/* ONE DISPLAY SIZE, AND IT BELONGS TO THE TITLE ALONE.
+
+   The section headlines were set at it too, which gave the page five things
+   competing with its own masthead and turned the accordion list into five
+   billboards. They are the body size now and carry their rank the way
+   everything else on this page does — full ink at 700 against a label that is
+   muted and uppercase, with the row's own space around them. Two sizes on the
+   page, and only one thing set large. */
 .case .ar-h2 {
   font-family: var(--font-body);
-  font-size: var(--cs-t1);
-  line-height: 1.1;
-  letter-spacing: -0.022em;
-  font-weight: 600;
+  font-size: var(--cs-t3);
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  font-weight: 700;
 }
 
 .case .ar-h3,
@@ -15548,7 +15549,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
                 between the header and the first thing inside it
        h-body   the body's share of that same gap */
   --cs-h-top: 12px;
-  --cs-h-lab: 10px;
+  --cs-h-lab: 6px;
   --cs-h-bot: 12px;
   --cs-h-body: 12px;
   --cs-tail: 40px;
@@ -15661,10 +15662,11 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   text-transform: uppercase;
   color: var(--ink-muted);
 }
-/* The title carries the meaning and the label is the quiet part, so the title
-   wraps naturally rather than being balanced or held to a measure — a long one
-   simply takes a second line and the chevron stays where it is. */
-.acc__t .ar-h2 { text-wrap: pretty; max-width: 34ch; }
+/* The title carries the meaning and the label is the quiet part. At the body
+   size a headline fits on one line at almost every width, so the measure that
+   used to hold a 44px line to a sane length would now be forcing wraps that
+   nothing needs. It goes. */
+.acc__t .ar-h2 { text-wrap: pretty; max-width: none; }
 
 .acc__ico {
   flex: none;
@@ -15715,10 +15717,14 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    width set when this was 23px type — the same sentence broke into three short
    lines with a ragged edge, which read as a mistake rather than as emphasis.
    Weight and ink carry it instead. */
+/* One size for the whole zone means weight is the only thing separating the
+   headline from the sentence under it, so the lead steps back to 500 — enough
+   to read as the key sentence, not so much that it argues with the headline
+   at 700 directly above it. */
 .cs-lead {
   margin: 0;
   line-height: 1.5;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--ink);
   max-width: var(--cs-read);
 }
