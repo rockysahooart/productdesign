@@ -7337,16 +7337,25 @@ em,
 
 
 /* --------------------------------------------------------------------------
-   Narrow canvas
+   Narrow canvas — AND WHY THERE IS NO TYPE RULE HERE ANY MORE
 
-   On a phone the camera pulls back (js/tagging.js) so a beat reads as part of
-   a flow rather than as one node in an empty field. Type is set in artboard
-   units, so a wider view shrinks it — this puts the units back.
+   There used to be one: `.tf-scene text { font-size: 34px }` below 460px,
+   compensating for the camera pulling back on a phone so the labels did not
+   come out too small to read.
+
+   It could not work, and it is worth saying why. The shapes are drawn in
+   artboard units and scale with the camera. The type was being scaled AGAINST
+   the camera. So every unit the camera pulled back, the type grew relative to
+   the box it sits inside — by 34/24, a little over forty per cent — and the
+   box interior is 186 units against a label that measures 186 at 24px. Forty
+   per cent over that is text through the side of the shape, on every node in
+   the drawing at once.
+
+   Type is part of the drawing. It scales with the drawing. If a beat is too
+   small to read on a phone, the thing to change is how far the camera pulls
+   back — which moves the type and the shape together and keeps them in the
+   proportion the geometry was drawn for. See zoomFit() in js/tagging.js.
    -------------------------------------------------------------------------- */
-
-@media (max-width: 460px) {
-  .tf-scene text { font-size: 34px; }
-}
 
 
 /* --------------------------------------------------------------------------
@@ -8397,9 +8406,14 @@ em,
   gap: var(--s-3);
   margin-bottom: var(--s-4);
   padding: var(--s-2) 0;
-  background: color-mix(in srgb, var(--canvas) 88%, transparent);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  /* NO FILL OF ITS OWN. The bar sat on an 88% wash of the canvas, which on a
+     dark page read as a lighter band pinned across the top — a piece of
+     chrome the page did not otherwise have. The blur alone does the work:
+     content passing underneath is softened enough to keep the back control
+     legible, and the hairline is what separates the two. */
+  background: transparent;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--border);
 }
 
@@ -14580,6 +14594,302 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .pv__arrow, .theme-toggle, .hero__replay { min-width: 44px; min-height: 44px; }
 }
 
+/* --------------------------------------------------------------------------
+   8. THE LAUNCH ARROW
+
+   Top-right of every project card that opens. Decorative — the card's own
+   overlay link takes the tap (see js/wire.js) — so pointer-events are off and
+   it never competes for the gesture.
+   -------------------------------------------------------------------------- */
+
+.card__launch {
+  position: absolute;
+  inset-block-start: 14px;
+  inset-inline-end: 14px;
+  z-index: 3;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-raised);
+  color: var(--ink);
+  pointer-events: none;
+  transition: transform 180ms var(--ease, ease), background-color 180ms ease;
+}
+.card__launch svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The card is the thing being hovered or pressed, so the arrow answers to it
+   rather than to a pointer it cannot receive. */
+@media (hover: hover) and (pointer: fine) {
+  .card--link:hover .card__launch {
+    transform: translate(2px, -2px);
+    background: var(--ink);
+    color: var(--surface);
+  }
+}
+.card--link:active .card__launch { transform: translate(1px, -1px); }
+
+@media (max-width: 719px) {
+  .card__launch { inset-block-start: 12px; inset-inline-end: 12px; width: 34px; height: 34px; }
+  .card__launch svg { width: 16px; height: 16px; }
+}
+
+
+/* ===== css/14-case-type.css ===== */
+/* ==========================================================================
+   14 — THE CASE-STUDY TYPE SYSTEM
+
+   Two families and three sizes, and nothing else in the editorial layer.
+
+     FAMILY 1  Geist Pixel      the title, and only the title
+     FAMILY 2  Be Vietnam Pro   everything else — headings, subtitles,
+                                body, captions, labels, tables, navigation
+
+     SIZE 1  --cs-t1   the title
+     SIZE 2  --cs-t2   headings, standfirst, pull quotes, the things that
+                       introduce a block
+     SIZE 3  --cs-t3   body, and every piece of supporting text
+
+   The audit that prompted this found twenty distinct size-and-weight pairs on
+   the Carry page alone, and the pixel face doing duty as both the masthead and
+   every section heading — which left the title with nothing of its own.
+
+   HIERARCHY WITHOUT MORE SIZES. Three sizes cannot carry six levels on size
+   alone, so the rest is done the way it is done in print: weight, colour, case
+   and space. A section heading and a caption are the same size here; one is
+   640 weight in full ink with room above it, the other is 400 weight in muted
+   ink. That is a stronger signal than two points of difference ever was.
+
+   WHAT THIS DOES NOT TOUCH. The prototypes and diagrams inside a case study —
+   the Carry app, the OptiFlow board, the tagging flow — are artifacts being
+   SHOWN, not page furniture. They carry their own documented type scales, and
+   flattening those would contradict the thing the Carry study spends a section
+   arguing for. They are excluded by selector, not by accident.
+   ========================================================================== */
+
+.case {
+  --cs-t1: clamp(30px, 7.4vw, 44px);   /* title */
+  --cs-t2: clamp(19px, 2.1vw, 23px);   /* heading, standfirst, pull */
+  --cs-t3: 15px;                        /* body and everything supporting */
+  --cs-lh1: 1.08;
+  --cs-lh2: 1.28;
+  --cs-lh3: 1.6;
+}
+
+/* --- 1. the title ---------------------------------------------------------- */
+
+.case .ar-title,
+.case .cs-hero__title {
+  font-family: var(--font-heading);
+  font-size: var(--cs-t1);
+  line-height: var(--cs-lh1);
+  font-weight: 560;
+  letter-spacing: -0.015em;
+}
+
+/* --- 2. headings and the lines that introduce a block ---------------------- */
+
+.case .ar-h2,
+.case .ar-h3,
+.case .ar-standfirst,
+.case .ar-p--lead,
+.case .ar-pull,
+.case .ar-demo__title,
+.case .csnav__name,
+.case .cu-eco__h,
+.case .cs-hero__lede {
+  font-family: var(--font-body);
+  font-size: var(--cs-t2);
+  line-height: var(--cs-lh2);
+  letter-spacing: -0.008em;
+}
+
+.case .ar-h2 { font-weight: 640; }
+.case .ar-h3 { font-weight: 600; }
+.case .ar-standfirst,
+.case .ar-p--lead,
+.case .cs-hero__lede { font-weight: 400; color: var(--ink-secondary); }
+.case .ar-pull { font-weight: 500; }
+.case .ar-demo__title { font-weight: 640; }
+.case .csnav__name { font-weight: 640; }
+.case .cu-eco__h { font-weight: 640; }
+
+/* --- 3. body, and every piece of supporting text --------------------------- */
+
+.case .ar-p,
+.case .ar-dek,
+.case .ar-kicker,
+.case .ar-byline,
+.case .ar-byline span,
+.case .ar-cap,
+.case .ar-note,
+.case .ar-note p,
+.case .ar-end,
+.case .ar-end p,
+.case .ar li,
+.case .ar-toc,
+.case .ar-toc p,
+.case .ar-toc a,
+.case .ar-spec dt,
+.case .ar-spec dd,
+.case .ar-swatch,
+.case .ar-table,
+.case .ar-table th,
+.case .ar-table td,
+.case .ar-demo__label,
+.case .ar-demo__intro,
+.case .ar-demo__note,
+.case .cs-source,
+.case .csnav__dir,
+.case .csnav__work,
+.case .toc__toggle,
+.case .toc__toggle span,
+.case .cu-rail h4,
+.case .cu-rail p,
+.case .cu-rail li,
+.case .cu-copy__k,
+.case .cu-copy__x,
+.case .cu-copy__o,
+.case .cu-copy__t,
+.case .cu-copy__tag,
+.case .cu-eco__d,
+.case .cu-eco__list li,
+.case .cu-hold li,
+.case .cu-w__cap b,
+.case .cu-w__cap span,
+.case .cu-w__read,
+.case .cu-ctl__l,
+.case .cu-ctl__opts button,
+.case .cu-labbar__note,
+.case .cu-labbtn,
+.case .cu-state,
+.case .cu-embed__bar,
+.case .cu-embed__bar b,
+.case .cu-cue,
+.case .cu-reset,
+.case .cu-gal__cell > p,
+.case .cu-modes button,
+.case .cs-beat,
+.case .cs-eyebrow,
+.case .cs-cap {
+  font-family: var(--font-body);
+  font-size: var(--cs-t3);
+  line-height: var(--cs-lh3);
+}
+
+/* The label tier is the same size and earns its difference the way a label
+   does: uppercase, tracked, muted, and lighter than the copy around it. */
+.case .ar-kicker,
+.case .ar-demo__label,
+.case .cu-rail h4,
+.case .cu-copy__k,
+.case .cu-copy__tag,
+.case .cu-ctl__l,
+.case .cu-w__cap span,
+.case .cu-embed__bar b,
+.case .csnav__dir,
+.case .cs-eyebrow,
+.case .cu-gal__cell > p {
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  line-height: 1.4;
+}
+
+/* Quiet supporting text: same size, less ink. */
+.case .ar-dek,
+.case .ar-cap,
+.case .ar-demo__intro,
+.case .ar-demo__note,
+.case .cs-source,
+.case .cu-rail p,
+.case .cu-rail li,
+.case .cu-copy__t,
+.case .cu-eco__d,
+.case .cu-w__read,
+.case .cu-labbar__note,
+.case .ar-byline span { color: var(--ink-secondary); }
+
+.case .ar-p { color: var(--ink); }
+
+/* Monospaced readouts keep the body face but stay distinguishable by tracking
+   and colour rather than by being a third family. */
+.case .cu-w__read,
+.case .cu-labbar__note,
+.case .cu-state { letter-spacing: 0.01em; font-variant-numeric: tabular-nums; }
+
+/* The table of contents is navigation, not prose. */
+.case .ar-toc a { line-height: 1.45; }
+
+/* --------------------------------------------------------------------------
+   THE STRAGGLERS
+
+   Enumerating every editorial class is a losing game — the audit kept finding
+   one more. So inline descendants of a covered block inherit rather than
+   setting their own size, and the handful of components that legitimately
+   name a size are named here once.
+   -------------------------------------------------------------------------- */
+
+.case :is(.ar-p, .ar-dek, .ar-cap, .ar-note, .ar-end, .ar-toc, .ar-spec,
+          .ar-table, .ar-byline, .ar-demo__intro, .ar-demo__note, .ar-pull,
+          .cu-rail, .cu-copy, .cu-copy__row, .cu-eco, .cu-eco__col, .cu-hold,
+          .cu-w, .cu-labbar, .csnav, .cs-bar, .cs-hero, .cs-beats, .ar li)
+     :is(b, strong, em, i, span, small, li, a, code, cite, dt, dd, th, td,
+         label, p, q, mark, time) {
+  /* The token, not `inherit`: inheriting picked up whatever the nearest
+     ancestor happened to be, which reintroduced the page's own 14.5px as a
+     fourth size and let Inter through from the prototype wrappers. */
+  font-size: var(--cs-t3);
+  font-family: var(--font-body);
+}
+
+.case .ar-spec dt,
+.case .ar-spec dd,
+.case .cs-beat,
+.case .cs-beat__n,
+.case .cs-sub,
+.case .cs-bar__back,
+.case .cs-bar__where,
+.case .cu-state,
+.case .cu-w__read,
+.case .cu-labbar__note,
+.case .cu-notes,
+.case .toc__toggle,
+.case .toc__toggle span {
+  font-family: var(--font-body);
+  font-size: var(--cs-t3);
+}
+
+.case .cs-hero__eyebrow,
+.case .cs-beat__n {
+  font-size: var(--cs-t3);
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* OptiFlow's hero display is a title, so it takes the title tier and the
+   title face — the same treatment Carry's masthead gets. */
+.case .t-display {
+  font-family: var(--font-heading);
+  font-size: var(--cs-t1);
+  line-height: var(--cs-lh1);
+  font-weight: 560;
+  letter-spacing: -0.015em;
+}
+
 
 /* ===== css/06-responsive.css ===== */
 /* ==========================================================================
@@ -20709,16 +21019,25 @@ em,
 
 
 /* --------------------------------------------------------------------------
-   Narrow canvas
+   Narrow canvas — AND WHY THERE IS NO TYPE RULE HERE ANY MORE
 
-   On a phone the camera pulls back (js/tagging.js) so a beat reads as part of
-   a flow rather than as one node in an empty field. Type is set in artboard
-   units, so a wider view shrinks it — this puts the units back.
+   There used to be one: `.tf-scene text { font-size: 34px }` below 460px,
+   compensating for the camera pulling back on a phone so the labels did not
+   come out too small to read.
+
+   It could not work, and it is worth saying why. The shapes are drawn in
+   artboard units and scale with the camera. The type was being scaled AGAINST
+   the camera. So every unit the camera pulled back, the type grew relative to
+   the box it sits inside — by 34/24, a little over forty per cent — and the
+   box interior is 186 units against a label that measures 186 at 24px. Forty
+   per cent over that is text through the side of the shape, on every node in
+   the drawing at once.
+
+   Type is part of the drawing. It scales with the drawing. If a beat is too
+   small to read on a phone, the thing to change is how far the camera pulls
+   back — which moves the type and the shape together and keeps them in the
+   proportion the geometry was drawn for. See zoomFit() in js/tagging.js.
    -------------------------------------------------------------------------- */
-
-@media (max-width: 460px) {
-  .tf-scene text { font-size: 34px; }
-}
 
 
 /* --------------------------------------------------------------------------
@@ -21459,7 +21778,13 @@ em,
   function zoomFit() {
     if (typeof window.TF_ZOOM === &#x27;number&#x27;) return window.TF_ZOOM;
     var w = (root &amp;&amp; root.clientWidth) || window.innerWidth;
-    return w &lt; 420 ? 0.62 : ZOOM_FIT;
+    /* A narrow canvas frames each beat CLOSER, not wider. Pulling back was
+       trading legibility for context and then trying to buy the legibility
+       back by inflating the type, which broke every label out of its shape
+       (see the note in css/05-tagging.css). Zooming in moves the shape and
+       its label together, so the drawing stays the drawing and the words
+       stay inside it. */
+    return w &lt; 420 ? 1.15 : ZOOM_FIT;
   }
   var zoom = zoomFit();
   var zt;
@@ -30033,7 +30358,13 @@ window.PF = window.PF || {};
   function zoomFit() {
     if (typeof window.TF_ZOOM === 'number') return window.TF_ZOOM;
     var w = (root && root.clientWidth) || window.innerWidth;
-    return w < 420 ? 0.62 : ZOOM_FIT;
+    /* A narrow canvas frames each beat CLOSER, not wider. Pulling back was
+       trading legibility for context and then trying to buy the legibility
+       back by inflating the type, which broke every label out of its shape
+       (see the note in css/05-tagging.css). Zooming in moves the shape and
+       its label together, so the drawing stays the drawing and the words
+       stay inside it. */
+    return w < 420 ? 1.15 : ZOOM_FIT;
   }
   var zoom = zoomFit();
   var zt;
@@ -34506,6 +34837,56 @@ window.PF = window.PF || {};
     scope = scope || document;
     var tocs = scope.querySelectorAll('.ar-toc');
     for (var i = 0; i < tocs.length; i++) build(tocs[i]);
+  };
+
+  if (document.readyState !== 'loading') PF.initRoutes();
+
+})(window.PF);
+
+/* ==========================================================================
+   THE LAUNCH ARROW
+
+   A diagonal arrow in the top-right corner of every project card that has
+   somewhere to go. It is the convention for "this opens" and it is visible
+   without hover, which is the whole point on a phone.
+
+   IT IS NOT A SECOND LINK. The card already has one overlay anchor covering
+   the whole tile; adding an anchor inside the corner would give one tap two
+   possible meanings and two history entries. So the arrow is a decorative
+   span sitting above the overlay in z-order but with pointer-events off —
+   the tap always lands on the one link that was already there.
+
+   Cards whose study is not written do not get one. The corner is the promise
+   that something opens, and nothing does.
+   ========================================================================== */
+
+(function (PF) {
+  'use strict';
+
+  var SVG =
+    '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+      '<path d="M8 16 L16 8"/><path d="M9.5 8 H16 V14.5"/>' +
+    '</svg>';
+
+  function add(link) {
+    if (!link.getAttribute('href')) return;              /* nothing opens */
+    var card = link.closest('.card') || link.parentElement;
+    if (!card || card.querySelector('.card__launch')) return;
+
+    var el = document.createElement('span');
+    el.className = 'card__launch';
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = SVG;
+    card.appendChild(el);
+    card.setAttribute('data-launch', '1');
+  }
+
+  var prev = PF.initRoutes;
+  PF.initRoutes = function (scope) {
+    prev(scope);
+    scope = scope || document;
+    var links = scope.querySelectorAll('.card__overlay-link[data-project]');
+    for (var i = 0; i < links.length; i++) add(links[i]);
   };
 
   if (document.readyState !== 'loading') PF.initRoutes();
