@@ -12894,6 +12894,28 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .cu-bar { padding-block-start: 52px; }
 .cu-app > .cu-scroll:first-child { padding-block-start: 52px; }
 
+/* --- the source cues on a matched answer ---------------------------------- */
+
+/* When the excerpt came from, sitting with the badge that says where. */
+.cu-qm__at {
+  margin-inline-start: auto;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--cu-text-3);
+}
+
+/* The paraphrase, before there were any source cues at all: the words with
+   nothing behind them, which is the state the section is arguing against. */
+.cu-qm__thin {
+  margin: var(--cu-2) 0 0;
+  padding-inline-start: 40px;
+  font-size: 14px; line-height: 20px;
+  color: var(--cu-text-2);
+}
+
+.cu-qm__go { padding: var(--cu-2) 0 0 40px; }
+.cu-qm__go .cu-btn--text { min-height: 0; padding: 0; justify-content: flex-start; }
+
 
 /* ===== css/11-optiflow.css ===== */
 /* ==========================================================================
@@ -16290,6 +16312,179 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 /* A picture, not a control surface. */
 .cs-mastimg,
 .cs-mastimg * { pointer-events: none; }
+
+/* ==========================================================================
+   TESTING & ITERATION
+
+   The risk in a section like this is that it turns into a research report:
+   panels, tiles, a chart nobody reads, a participant count that implies more
+   rigour than a one-week pilot has. So there are no cards and no graphics
+   here. The diagram is labels and hairlines, the figures are a number in
+   heavier ink beside a sentence in lighter ink, and everything is at the
+   page's one body size — hierarchy comes from weight, colour and space, which
+   is the same argument the rest of this case study makes.
+   ========================================================================== */
+
+/* --- how the study worked -------------------------------------------------- */
+
+.ts-flow {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 26px;
+}
+
+.ts-node {
+  position: relative;
+  margin: 0;
+  padding-inline-start: 22px;
+}
+.ts-node b { font-weight: 640; }
+
+/* The connector: a hairline down the left with a node on it. One rule draws
+   the whole spine — no arrowheads, no boxes. */
+.ts-node::before {
+  content: "";
+  position: absolute;
+  inset-block: 8px auto;
+  inset-inline-start: 3px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.ts-node:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  inset-block: 19px -30px;
+  inset-inline-start: 6px;
+  width: 1px;
+  background: var(--border-strong);
+}
+
+/* The two channels are the one place the line splits, so they are the one
+   place the spine goes hollow. */
+.ts-node--split::before {
+  background: none;
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+.ts-node--split { display: grid; gap: 18px; }
+.ts-chan { display: grid; gap: 4px; max-width: 46ch; }
+.ts-chan b { font-weight: 640; }
+.ts-chan span { color: var(--ink-secondary); }
+
+@media (min-width: 900px) {
+  .ts-node--split { grid-template-columns: 1fr 1fr; gap: 40px; }
+  .ts-chan { max-width: none; }
+}
+
+/* --- the tasks ------------------------------------------------------------- */
+
+.ts-tasks {
+  margin-block-start: var(--cs-group);
+  color: var(--ink-secondary);
+  max-width: none;
+}
+.ts-tasks__l {
+  display: inline-block;
+  margin-inline-end: 12px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.ts-tasks i { font-style: normal; color: var(--ink-muted); padding-inline: 4px; }
+
+/* --- figures --------------------------------------------------------------- */
+
+/* A number in full ink at 700 and a sentence in secondary ink at 400. That is
+   the entire visual system for a metric here: no tile, no border, no fill. */
+.ts-figs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 20px;
+}
+.ts-figs li { margin: 0; display: grid; gap: 2px; }
+.ts-figs b { font-weight: 700; letter-spacing: -0.01em; }
+.ts-figs span { color: var(--ink-secondary); }
+@media (min-width: 700px) {
+  .ts-figs { grid-template-columns: 1fr 1fr; gap: 24px 48px; }
+}
+
+.ts-note {
+  margin-block-start: 14px;
+  color: var(--ink-muted);
+  max-width: var(--cs-read);
+}
+
+/* --- observations ---------------------------------------------------------- */
+
+.ts-obs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  max-width: var(--cs-read);
+  color: var(--ink-secondary);
+}
+.ts-obs li { margin: 0; }
+.ts-obs b { color: var(--ink); font-weight: 700; margin-inline-end: 4px; }
+
+/* --- the two versions ------------------------------------------------------ */
+
+.ts-ver { display: grid; gap: 4px; }
+.ts-ver__l {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.ts-ver__seq { margin: 0; font-weight: 640; }
+
+/* The turn. The only place in the section with a rule on it, because it is
+   the only place where the argument actually changes direction. */
+.ts-turn {
+  display: grid;
+  gap: 6px;
+  padding-inline-start: 18px;
+  border-inline-start: 2px solid var(--ink);
+}
+.ts-turn__a { margin: 0; font-weight: 700; }
+.ts-turn__b { margin: 0; color: var(--ink-secondary); max-width: var(--cs-read); }
+
+/* --- the paired frames ----------------------------------------------------- */
+
+.cs-frames {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+}
+@media (max-width: 559px) { .cs-frames { gap: 12px; } }
+.cs-frame { margin: 0; }
+.cs-frame__fit { position: relative; overflow: visible; }
+
+/* Two words under two devices, on the devices' own centre lines. */
+.ts-cap {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-block-start: 20px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.ts-cap span { flex: 1 1 0; max-width: 300px; text-align: center; }
+
+/* These are pictures, not control surfaces. */
+.ar-demo[data-cu="order"],
+.ar-demo[data-cu="source"] { pointer-events: none; }
 
 
 /* ===== css/06-responsive.css ===== */
@@ -27055,6 +27250,119 @@ em,
 </section>
 <section class="acc" data-open="0">
   <div data-acc-h>
+    <span class="acc__n">Testing &amp; Iteration</span>
+    <span class="ar-h2">Testing changed the order</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <p class="acc__lede ar-p">I tested Carry with patients through a one-week onsite
+      workshop while a parallel Maze study ran against the core mobile flows. The two
+      channels answered different questions, and together they found something I had not
+      designed for.</p>
+
+    
+    <ol class="ts-flow">
+      <li class="ts-node"><b>Patient prototype</b></li>
+      <li class="ts-node ts-node--split">
+        <div class="ts-chan">
+          <b>In person</b>
+          <span>~3 unique patients a day in my sessions. Task-based moderated testing,
+            observation, follow-up questions.</span>
+        </div>
+        <div class="ts-chan">
+          <b>Maze</b>
+          <span>~5&ndash;6 unique testers a day. Unmoderated task testing: completion,
+            time on task, misclicks, heatmaps, comments.</span>
+        </div>
+      </li>
+      <li class="ts-node"><b>Behaviour patterns</b></li>
+      <li class="ts-node"><b>Design iteration</b></li>
+      <li class="ts-node"><b>Retest</b></li>
+    </ol>
+
+    <p class="ts-tasks"><span class="ts-tasks__l">Tasks tested</span>
+      Prepare for visit <i>&middot;</i> Add a question <i>&middot;</i> Reorder questions
+      <i>&middot;</i> Upload recording <i>&middot;</i> Find what the doctor said</p>
+
+    <ul class="ts-figs">
+      <li><b>~85&ndash;90%</b><span>completed preparation unassisted, after iteration</span></li>
+      <li><b>~20&ndash;35%</b><span>faster to begin building a question list, after the sequence changed</span></li>
+      <li><b>~80&ndash;90%</b><span>found something the doctor said in a saved conversation</span></li>
+      <li><b>~80&ndash;90%</b><span>understood a matched answer came from the uploaded recording, after stronger source cues</span></li>
+    </ul>
+    <p class="ts-note">Reconstructed ranges from onsite and Maze pilot testing. Exact
+      historical Maze exports are not available.</p>
+
+    <p class="ar-p">The most useful thing testing did was separate a usability problem
+      from a difference in intent. Somebody skipping the checklist to write a question
+      was not failing the task &mdash; they were telling me what mattered first.</p>
+
+    <div class="ts-ver">
+      <p class="ts-ver__l">Version 1</p>
+      <p class="ts-ver__seq">Preparation checklist &rarr; My questions &rarr; Suggested questions</p>
+    </div>
+    <p class="ar-p">I had treated logistical preparation as the beginning of the
+      experience. Some patients moved straight through the checklist or bypassed it,
+      because they arrived already thinking about what they needed to ask.</p>
+    <ul class="ts-obs">
+      <li><b>~70&ndash;80%</b> completed the whole flow without help</li>
+      <li><b>~20&ndash;30%</b> hesitated, backtracked, or bypassed the checklist</li>
+      <li>Patients with a specific concern usually tried to reach question-building first</li>
+      <li>Patients less sure what to ask were more likely to browse suggestions</li>
+    </ul>
+
+    <div class="ts-turn">
+      <p class="ts-turn__a">The checklist worked. Its position didn&rsquo;t.</p>
+      <p class="ts-turn__b">I changed the information hierarchy instead of redesigning a
+        component patients already understood.</p>
+    </div>
+
+    <div class="ts-ver">
+      <p class="ts-ver__l">Version 2</p>
+      <p class="ts-ver__seq">My questions &rarr; Suggested questions &rarr; Preparation checklist</p>
+    </div>
+    <p class="ar-p">I moved conversational preparation ahead of logistics, so a patient
+      can establish what they want out of the visit before dealing with what they need to
+      bring.</p>
+
+    <section class="ar-demo ar-wide cu" data-cu="order">
+      <div class="cs-frames" data-frames></div>
+      <p class="ts-cap"><span>Version 1</span><span>Version 2</span></p>
+    </section>
+
+    <ul class="ts-obs">
+      <li><b>~85&ndash;90%</b> completed preparation unassisted</li>
+      <li><b>~20&ndash;35%</b> faster entry into question-building</li>
+      <li><b>~10&ndash;15%</b> hesitation or unnecessary backtracking</li>
+    </ul>
+    <p class="ts-note">Reconstructed pilot patterns associated with the revised
+      experience. The sequence change is not the only thing that moved between the two
+      rounds, and these are not proof that it caused every improvement.</p>
+
+    <h3 class="ar-h3">Finding an answer wasn&rsquo;t enough</h3>
+    <p class="ar-p">Patients could reach an answer and still not know where it had come
+      from. So I strengthened the connection between a matched question and the
+      conversation it came from, rather than asking anyone to trust an interpretation:
+      the excerpt itself, where it came from, when it was said, and a way into the
+      transcript.</p>
+
+    <section class="ar-demo ar-wide cu" data-cu="source">
+      <div class="cs-frames" data-frames></div>
+      <p class="ts-cap"><span>Before</span><span>After</span></p>
+    </section>
+
+    <ul class="ts-obs">
+      <li><b>~80&ndash;90%</b> found something the doctor said in a saved conversation</li>
+      <li><b>~80&ndash;90%</b> understood the matched answer came from the recording, after stronger source cues</li>
+    </ul>
+    <p class="ts-note">The second figure is source comprehension &mdash; whether a patient
+      knew where the words came from. It is not a measure of matching accuracy.</p>
+
+    <div class="cs-move"><p class="cs-move__l">What changed</p>
+      <p>I did not use testing to prove the design was right. I used patient behaviour to find where my original hierarchy was wrong, changed the sequence, and tested the revised experience.</p></div>
+  </div>
+</section>
+<section class="acc" data-open="0">
+  <div data-acc-h>
     <span class="acc__n">Design Priorities</span>
     <span class="ar-h2">Clarity, Trust, Performance</span>
   </div>
@@ -31329,8 +31637,161 @@ window.PF = window.PF || {};
     else window.addEventListener('resize', fitHero);
   }
 
+
+  /* =====================================================================
+     STATIC FRAMES — a device that is evidence rather than a control
+
+     The hero, the two testing comparisons and anything else that shows a
+     screen without inviting a tap all want the same thing: real components
+     in a real frame, scaled to whatever room they are given, inert. This is
+     that, once.
+     ===================================================================== */
+
+  function staticFrames(wrap, screens, opts) {
+    if (!wrap) return;
+    opts = opts || {};
+    var W = opts.w || 393, H = opts.h || 852;
+    var cap = opts.max || 0.74, GAP = opts.gap || 20;
+
+    wrap.innerHTML = screens.map(function (view) {
+      return '<div class="cs-frame">' +
+        '<div class="cu-w__fit cs-frame__fit" data-dev="ios" data-sfit>' +
+          '<div class="cu-app cu-w__app" data-dev="ios" style="--cu-w:' + W + 'px;height:' + H + 'px">' +
+            view() +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    var apps = wrap.querySelectorAll('.cu-app');
+    for (var i = 0; i < apps.length; i++) {
+      apps[i].inert = true;
+      apps[i].setAttribute('inert', '');
+      apps[i].setAttribute('aria-hidden', 'true');
+    }
+
+    function fitFrames() {
+      var boxes = wrap.querySelectorAll('[data-sfit]');
+      if (!boxes.length) return;
+      var k;
+      for (k = 0; k < boxes.length; k++) { boxes[k].style.width = ''; boxes[k].style.height = ''; }
+      var avail = wrap.clientWidth;
+      if (!avail) return;
+      /* The screen plus the 22 of chassis it paints outside itself. */
+      var each = W + 22;
+      var s = Math.min(cap, (avail - GAP * (boxes.length - 1)) / (each * boxes.length));
+      for (k = 0; k < boxes.length; k++) {
+        boxes[k].style.setProperty('--cu-scale', s);
+        boxes[k].style.width = Math.round(W * s) + 'px';
+        boxes[k].style.height = Math.round(H * s) + 'px';
+      }
+    }
+
+    fitFrames();
+    if ('ResizeObserver' in window) new ResizeObserver(fitFrames).observe(wrap);
+    else window.addEventListener('resize', fitFrames);
+  }
+
+  /* =====================================================================
+     TESTING — the order that changed, and the source cue that followed
+
+     Two comparisons, four screens, no interaction. The first pair is the
+     preparation screen before and after the sequence change; the second is
+     a matched answer before and after the source cues were strengthened.
+     Both are built from the same components as everything else, so what is
+     being compared is the arrangement rather than the drawing.
+     ===================================================================== */
+
+  function prepCard(order) {
+    var bring =
+      '<div class="cu-card"><div class="cu-sec"><b>Things to bring</b>' +
+        '<span>0 of ' + SEED.bring.length + ' checked</span></div>' +
+        SEED.bring.slice(0, 3).map(function (t, i) {
+          return checkRow(t, false, 'noop', i, { readonly: true });
+        }).join('') +
+      '</div>';
+
+    var mine =
+      '<div class="cu-card"><div class="cu-sec"><b>My questions</b>' +
+        '<span>' + SEED.questions.length + ' prepared</span></div>' +
+        SEED.questions.slice(0, 3).map(function (q, i) {
+          return questionRow({ q: q, i: i, as: 'div', menu: false, tools: false });
+        }).join('') +
+        '<div class="cu-row cu-row--add" data-static="1">' +
+          '<span class="cu-row__ico">' + ic('plus') + '</span>' +
+          '<span class="cu-row__t">Add your own question</span></div>' +
+      '</div>';
+
+    var sugg =
+      '<div class="cu-card"><div class="cu-sec"><b>' + ic('sparkle') + 'Suggested questions</b>' +
+        '<span>17 questions</span></div>' +
+        SEED.suggested.slice(0, 3).map(function (c) {
+          return '<div class="cu-cat"><div class="cu-cat__h" style="cursor:default">' +
+            '<span><b>' + esc(c.name) + '</b><span>' + c.qs.length + ' questions</span></span>' +
+            '<span class="cu-ico cu-ico--sm cu-chev" aria-hidden="true">' + ic('downc') + '</span></div></div>';
+        }).join('') +
+      '</div>';
+
+    var parts = { bring: bring, mine: mine, sugg: sugg };
+    return appBar(SEED.title, SEED.whenShort, { trail: 'gear' }) +
+      '<div class="cu-scroll">' +
+        order.map(function (k) { return parts[k]; }).join('') +
+        '<div class="cu-pad"></div>' +
+      '</div>' +
+      '<div class="cu-foot"><button class="cu-btn" type="button" data-act="noop">Start the conversation</button></div>';
+  }
+
+  function artOrder(root) {
+    staticFrames(root.querySelector('[data-frames]'), [
+      function () { return prepCard(['bring', 'mine', 'sugg']); },
+      function () { return prepCard(['mine', 'sugg', 'bring']); }
+    ], { max: 0.62 });
+  }
+
+  /* The two states of a matched answer. Before: the words, with nothing
+     saying where they came from. After: the excerpt, the source, the moment
+     it was said, and a way into the transcript to check it. */
+  var THIN = [
+    'Your results are stable and this is the third clear set in a row.',
+    'Testing continues every three months for now, moving to four-month intervals next year.'
+  ];
+
+  function sourceCard(strong) {
+    function one(i) {
+      var m = SEED.matched[i];
+      return '<div class="cu-qm" data-state="matched">' +
+        '<div class="cu-qm__head"><span class="cu-box" data-on="1">' + ic('check') + '</span>' +
+          '<span class="cu-qm__t">' + esc(SEED.questions[i]) + '</span></div>' +
+        (strong
+          ? '<div class="cu-qm__meta"><span class="cu-badge">' + ic('sparkle') +
+              'Matched from your recording</span><span class="cu-qm__at">' + esc(m.at) + '</span></div>' +
+            '<p class="cu-label cu-label--said">What they said</p>' +
+            '<blockquote class="cu-said">' + esc(m.quote) + '</blockquote>' +
+            '<div class="cu-qm__go"><span class="cu-btn cu-btn--text">' + ic('right') +
+              'View in transcript</span></div>'
+          : '<p class="cu-qm__thin">' + esc(THIN[i]) + '</p>') +
+      '</div>';
+    }
+    return appBar(SEED.title, SEED.today, { trail: 'kebab' }) +
+      '<div class="cu-scroll">' +
+        '<div class="cu-card cu-card--tabbed">' +
+          '<div class="cu-sec"><b>Your questions</b><span>6 of 6 matched</span></div>' +
+          one(0) + one(1) +
+        '</div><div class="cu-pad"></div>' +
+      '</div>';
+  }
+
+  function artSource(root) {
+    staticFrames(root.querySelector('[data-frames]'), [
+      function () { return sourceCard(false); },
+      function () { return sourceCard(true); }
+    ], { max: 0.62 });
+  }
+
   var BUILD = {
     hero: artHero,
+    order: artOrder,
+    source: artSource,
     prepare: artPrepare,
     widths: artWidths,
     match: artMatch,
