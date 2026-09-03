@@ -15202,6 +15202,15 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .cu-stage { padding: 36px 16px 40px; }
 .cu-stage .cu-fit { margin-inline: auto; max-width: 460px; }
 
+/* THE FIT BOX IS THE OUTER HEIGHT, NOT THE SCREEN'S.
+
+   fit() sizes it to 866 x scale — the device including its bezel — while the
+   app inside is 844 of screen pinned to the top, so all 22 points of slack sat
+   under the phone's feet and the bezel it needed above it hung outside the
+   box. Half of the slack on each side puts the device where the box says it
+   is, and nothing paints outside the room reserved for it. */
+.cu-stage .cu-fit > .cu-app { inset-block-start: calc(11px * var(--cu-scale, 1)); }
+
 @media (min-width: 900px) {
   .cu-stage { padding: 40px 24px 44px; }
   /* With the rail gone there is no column to share, so the device simply
@@ -15336,15 +15345,12 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .cu-preview { padding-inline: 20px; }
 @media (max-width: 479px) { .cu-preview { padding-inline: 14px; } }
 
-/* The camera. --cu-pan is written by the script in screen pixels and is the
-   only thing that moves; the phone itself is never re-laid-out, so a pan
-   costs one composited transform and nothing else. */
+/* --cu-pan is the device's resting offset inside its window — half the spare
+   height, so the phone is centred rather than hung from the top edge. It is
+   written once per fit and does not animate: nothing about the frame moves any
+   more, only what is inside the phone's own scroller. */
 .cu-fit--bound .cu-app {
   transform: translate(-50%, var(--cu-pan, 0px)) scale(var(--cu-scale, 1));
-  transition: transform 380ms cubic-bezier(0.32, 0.72, 0.24, 1);
-}
-@media (prefers-reduced-motion: reduce) {
-  .cu-fit--bound .cu-app { transition: none; }
 }
 
 /* --- the collapse, for phones with no height to spare --------------------- */
@@ -16200,6 +16206,48 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
 .case .acc--static .acc__b > .ar-h3 { margin-block-start: var(--cs-z-group); }
 .case .acc--static .acc__b > .ar-h3 + .cs-did { margin-block-start: var(--cs-z-tight); }
+
+/* --- documentation tables -------------------------------------------------- */
+
+/* A TABLE THAT WRAPS INSTEAD OF SCROLLING.
+
+   `.ar-table__wrap` is a scroll container, and on the long-form pages that is
+   the right answer: a data table with real numbers in it should keep its
+   columns and take a scrollbar. These two are documentation — token, value,
+   where it is used — and their third column is a sentence, so an auto layout
+   made the table's minimum width the length of the longest sentence in it,
+   which at 320 was three times the column it lives in and pushed the whole
+   case study sideways.
+
+   Fixed layout drops that pressure entirely: the columns are proportioned
+   once and the prose inside them wraps like prose, which is what it is. */
+/* contain: inline-size makes the wrapper's width independent of what is inside
+   it — the element is sized by its container and the table lays out against
+   that, rather than the table's own minimum reaching up through three
+   ancestors to the article's grid track. Without it the case study inherited
+   the width of the longest sentence in the third column. */
+.case .ar-table__wrap {
+  contain: inline-size;
+  width: 100%;
+  overflow-x: auto;
+}
+
+.case .ar-table {
+  table-layout: fixed;
+  width: 100%;
+}
+.case .ar-table th,
+.case .ar-table td { overflow-wrap: break-word; }
+.case .ar-table th:first-child,
+.case .ar-table td:first-child { width: 28%; }
+.case .ar-table th:nth-child(2),
+.case .ar-table td:nth-child(2) { width: 26%; }
+@media (max-width: 559px) {
+  .case .ar-table th:first-child,
+  .case .ar-table td:first-child { width: 34%; }
+  .case .ar-table th:nth-child(2),
+  .case .ar-table td:nth-child(2) { width: 22%; }
+}
 
 
 /* ===== css/06-responsive.css ===== */
@@ -27125,6 +27173,91 @@ em,
 </section>
 <section class="acc" data-open="0">
   <div data-acc-h>
+    <span class="acc__n">Design System</span>
+    <span class="ar-h2">One reference the team could build from</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <p class="acc__lede ar-p">By the third flow I was redrawing the same row for the
+      fourth time and getting it slightly wrong each way, so I stopped and wrote the
+      system down. Everything below is the actual implemented set &mdash; the values in
+      the tables are the ones these prototypes are drawn with, not a specification
+      written alongside them.</p>
+
+    <h3 class="ar-h3">Colour</h3>
+    <p class="ar-p">One interactive colour, one ink ramp, one divider. The teal darkens
+      to carry white type on a light screen and lifts to carry near-black on a dark one,
+      which is the only reason there are two values for it rather than one.</p>
+    <div class="ar-swatches">
+      <span class="ar-swatch"><i style="background:#3F6970"></i>#3F6970 &middot; primary</span>
+      <span class="ar-swatch"><i style="background:#E8F4F8"></i>#E8F4F8 &middot; tinted surface</span>
+      <span class="ar-swatch"><i style="background:#FCFCFD"></i>#FCFCFD &middot; paper</span>
+      <span class="ar-swatch"><i style="background:#F8F9FA"></i>#F8F9FA &middot; app background</span>
+      <span class="ar-swatch"><i style="background:#1A1C1E"></i>#1A1C1E &middot; text primary</span>
+      <span class="ar-swatch"><i style="background:#43474E"></i>#43474E &middot; text secondary</span>
+      <span class="ar-swatch"><i style="background:#B3261E"></i>#B3261E &middot; error</span>
+      <span class="ar-swatch"><i style="background:#8A5A00"></i>#8A5A00 &middot; warning</span>
+    </div>
+
+    <h3 class="ar-h3">Spacing, radius and element heights</h3>
+    <p class="ar-p">Spacing is a 4-point scale, and the two heights at the bottom are
+      the ones that decide whether a screen feels like the product: a list row and a
+      primary button are both 56, and the question row has that as a
+      <em>minimum</em> rather than a fixed value.</p>
+    <div class="ar-table__wrap">
+      <table class="ar-table">
+        <thead><tr><th>Token</th><th>Value</th><th>Where it is used</th></tr></thead>
+        <tbody>
+          <tr><td>space</td><td>4 &middot; 8 &middot; 12 &middot; 16 &middot; 24 &middot; 32</td><td>Every gap and inset in the app</td></tr>
+          <tr><td>gutter</td><td>16</td><td>Screen edge to content, everywhere</td></tr>
+          <tr><td>radius</td><td>4 &middot; 8 &middot; 12 &middot; 16 &middot; 20 &middot; 28</td><td>Chips, cards, sheets</td></tr>
+          <tr><td>row</td><td>56 minimum</td><td>List rows, question rows, primary buttons</td></tr>
+          <tr><td>touch</td><td>44 minimum</td><td>Every control, including icon-only ones</td></tr>
+          <tr><td>app bar</td><td>64</td><td>Title, back, overflow</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="ar-h3">Type</h3>
+    <p class="ar-p">Inter, six sizes, and each one has a job. The 15/22 body size is
+      what the question row is measured against &mdash; it is why one line lands on 56
+      points and two on 80.</p>
+    <div class="ar-table__wrap">
+      <table class="ar-table">
+        <thead><tr><th>Size</th><th>Line</th><th>Where it is used</th></tr></thead>
+        <tbody>
+          <tr><td>36</td><td>44</td><td>Verification code entry</td></tr>
+          <tr><td>22</td><td>28</td><td>Screen titles</td></tr>
+          <tr><td>17</td><td>24</td><td>App bar title</td></tr>
+          <tr><td>15</td><td>22</td><td>Body, list rows, question text</td></tr>
+          <tr><td>13</td><td>18</td><td>Supporting copy, quoted answers</td></tr>
+          <tr><td>11</td><td>16</td><td>Labels, counts, badges</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="ar-h3">Components</h3>
+    <p class="ar-p">The set the flows are assembled from. These are the live
+      components, drawn by the same stylesheet as the prototypes above &mdash; if a
+      value changes here it changes there.</p>
+    <div class="cu-gal cu ar-wide">
+      <div class="cu-gal__cell"><p>Buttons</p><div class="cu-gal__demo" data-gal="buttons"></div></div>
+      <div class="cu-gal__cell"><p>Checklist row</p><div class="cu-gal__demo" data-gal="rows"></div></div>
+      <div class="cu-gal__cell"><p>Question row</p><div class="cu-gal__demo" data-gal="qrow"></div></div>
+      <div class="cu-gal__cell"><p>Badges and chips</p><div class="cu-gal__demo cu-gal__demo--row" data-gal="badges"></div></div>
+      <div class="cu-gal__cell"><p>Row menu</p><div class="cu-gal__demo" data-gal="menu"></div></div>
+      <div class="cu-gal__cell"><p>Recording panel</p><div class="cu-gal__demo" data-gal="panel"></div></div>
+      <div class="cu-gal__cell"><p>File row</p><div class="cu-gal__demo" data-gal="file"></div></div>
+      <div class="cu-gal__cell"><p>Matched answer</p><div class="cu-gal__demo" data-gal="said"></div></div>
+      <div class="cu-gal__cell"><p>Surveillance timeline</p><div class="cu-gal__demo" data-gal="timeline"></div></div>
+      <div class="cu-gal__cell"><p>Failure state</p><div class="cu-gal__demo" data-gal="fail"></div></div>
+    </div>
+
+    <div class="cs-move"><p class="cs-move__l">What changed</p>
+      <p>Two other designers picked up screens from this without asking me what a row was supposed to do, and the failure states below stopped being invented per flow. It is also why the three prototypes above are the same components under different conditions rather than three separate drawings &mdash; which is the claim this section exists to let you check.</p></div>
+  </div>
+</section>
+<section class="acc" data-open="0">
+  <div data-acc-h>
     <span class="acc__n">Reflection</span>
     <span class="ar-h2">Where it landed</span>
   </div>
@@ -28386,14 +28519,39 @@ window.PF = window.PF || {};
        defensible hits. Nothing is invented to fill the gap. */
     partial: [0],
 
+    /* AND THE TABLE FOR A CONVERSATION THAT COVERED EVERYTHING.
+
+       `matched` above is the Trust artifact's data, and it is three of six on
+       purpose: that section exists to show what the interface does when a
+       question was NOT answered clearly enough to quote. The Performance lab
+       is asking a different question — what does the product look like when
+       matching runs normally — and the honest answer to that is every question
+       answered, because the recording covered them all. Same six questions,
+       same transcript, three more turns in it.
+
+       So the lab's three settings are a ladder against this table rather than
+       against the Trust one: Normal is all six, Fewer matches is the three
+       above, No reliable match is none. */
+    matchedAll: {
+      2: { at: '06:44', quote: 'Call us about anything new that persists — a change in bowel habit lasting more than a week, unexplained bleeding, or pain that wakes you at night. Day-to-day tiredness and the odd ache are not what we are watching for.' },
+      4: { at: '07:52', quote: 'Nothing complicated: keep moving, eat normally, and try not to let the waiting stop you sleeping. There is no supplement or diet that changes these numbers. Staying active is the one thing with evidence behind it.' },
+      5: { at: '09:58', quote: 'The things that would bring you in early are the same ones: persistent pain, bleeding, unintentional weight loss, or a cough that does not settle. If any of those turn up between visits, do not wait for the next appointment.' }
+    },
+
     transcript: [
       { s: 'Dr. Patel', at: '02:14', m: 0, t: 'So we got your latest result back, and I’m happy to say it’s still showing no detectable disease. Your CEA levels are stable. The result is your third consecutive negative. We’re now sixteen months past treatment completion with three clear results, which is exactly what we want to see at this point.' },
       { s: 'Sarah',     at: '03:02', t: 'That’s such a relief. I’ve been so nervous about this one.' },
       { s: 'Dr. Patel', at: '03:20', t: 'I understand. The waiting period is hard. The fact that you’re consistently testing negative this far out from your initial treatment is a very good sign.' },
       { s: 'Sarah',     at: '04:48', t: 'And the testing schedule? When can we space them out?' },
       { s: 'Dr. Patel', at: '05:36', m: 1, t: 'We’ll continue at three-month intervals through the rest of year two. Then we can move to four-month intervals in year three if everything stays clear. This is the standard protocol for your cancer type.' },
+      { s: 'Sarah',     at: '06:20', t: 'Is there anything I should be watching for day to day?' },
+      { s: 'Dr. Patel', at: '06:44', m: 2, t: 'Call us about anything new that persists — a change in bowel habit lasting more than a week, unexplained bleeding, or pain that wakes you at night. Day-to-day tiredness and the odd ache are not what we are watching for.' },
+      { s: 'Sarah',     at: '07:30', t: 'And is there anything I can be doing in between the cycles?' },
+      { s: 'Dr. Patel', at: '07:52', m: 4, t: 'Nothing complicated: keep moving, eat normally, and try not to let the waiting stop you sleeping. There is no supplement or diet that changes these numbers. Staying active is the one thing with evidence behind it.' },
       { s: 'Sarah',     at: '08:41', t: 'How long does this go on for?' },
       { s: 'Dr. Patel', at: '09:12', m: 3, t: 'Standard protocol is five years total. We’ll reassess at the two-year mark and again at five years. Most patients who clear surveillance never have recurrence.' },
+      { s: 'Sarah',     at: '09:44', t: 'And what would make me call you before then?' },
+      { s: 'Dr. Patel', at: '09:58', m: 5, t: 'The things that would bring you in early are the same ones: persistent pain, bleeding, unintentional weight loss, or a cough that does not settle. If any of those turn up between visits, do not wait for the next appointment.' },
       { s: 'Sarah',     at: '10:05', t: 'Okay. Three more cycles at this pace.' }
     ],
 
@@ -30392,15 +30550,22 @@ window.PF = window.PF || {};
       syncControls();
     }
 
+    /* NORMAL MEANS EVERY QUESTION FOUND ITS ANSWER.
+
+       It used to mean SEED.matched, which is three of six — so the control
+       said matching was working normally and the screen under it said three
+       questions had gone unanswered, which reads as a broken prototype rather
+       than as a scenario. Normal is the full table now; Fewer matches is the
+       three the Trust section documents; No reliable match is none. */
     function matchedFor() {
       var m = st.sc.match;
       if (m === 'none') return {};
-      if (m === 'partial') {
-        var out = {};
-        SEED.partial.forEach(function (i) { out[i] = SEED.matched[i]; });
-        return out;
-      }
-      return SEED.matched;
+      if (m === 'partial') return SEED.matched;
+
+      var all = {};
+      Object.keys(SEED.matched).forEach(function (k) { all[k] = SEED.matched[k]; });
+      Object.keys(SEED.matchedAll).forEach(function (k) { all[k] = SEED.matchedAll[k]; });
+      return all;
     }
 
     function render() {
@@ -30562,15 +30727,20 @@ window.PF = window.PF || {};
        window.
        ================================================================= */
 
-    /* 15px body type at 0.72 is a shade under 11px on screen — the point
-       below which scaling stops being "smaller" and starts being "unreadable",
-       and therefore the point where the camera takes over from the scale. */
-    var MIN_READ = 0.72;
-    /* The device frame paints outside the app's own box, so the window's rest
-       position is a bezel down from its top edge rather than flush with it —
-       otherwise the top of the phone is sliced off at pan zero. */
-    var BEZ = 12;
-    var panT = null, curPan = BEZ, curScale = 1;
+    /* THE WHOLE PHONE, ALWAYS.
+
+       There was a camera here: below a readable scale the device stayed large
+       and the window moved instead, panning to whatever the current condition
+       was about. It worked, and it was the wrong trade — a prototype with its
+       top sliced off reads as broken long before anybody notices it is framing
+       the relevant part. The device is scaled to fit its window whole now, and
+       the only thing that still moves is the phone's own scroller, which is
+       the product's behaviour rather than the page's.
+
+       The bezel is painted outside the app's box, so the window has to hold
+       DEV_OH — the outer height, 866 — rather than the 844 of screen. */
+    var BEZ = 11;
+    var panT = null, curScale = 1;
 
     function bound() { return root.querySelector('.cu-fit--bound'); }
     function wide() { return window.matchMedia('(min-width: 900px)').matches; }
@@ -30594,23 +30764,19 @@ window.PF = window.PF || {};
         h = Math.round(DEV_OH * s);
       } else {
         h = boxHeight();
-        /* Fit both dimensions where that stays readable; otherwise take the
-           floor and let the camera cover the difference. The floor can never
-           exceed the width fit, or the phone would hang off the sides. */
-        s = Math.max(Math.min(fitW, h / DEV_OH), Math.min(fitW, MIN_READ));
+        /* Both dimensions, no floor. Whichever runs out first decides, and the
+           device is whole either way. */
+        s = Math.min(fitW, h / DEV_OH);
       }
 
       curScale = s;
       el.style.setProperty('--cu-scale', s);
       el.style.height = h + 'px';
+      /* Centre it in the window rather than hanging it from the top, so the
+         spare height is split above and below the device instead of all
+         landing under its feet. */
+      el.style.setProperty('--cu-pan', Math.round((h - DEV_OH * s) / 2) + 'px');
       focusNow();
-    }
-
-    function setPan(p) {
-      var el = bound();
-      if (!el) return;
-      curPan = p;
-      el.style.setProperty('--cu-pan', Math.round(p) + 'px');
     }
 
     /* Which part of the product the current condition is about. */
@@ -30622,44 +30788,31 @@ window.PF = window.PF || {};
       return 'upload';
     }
 
+    /* Inside the phone, and nowhere else. If what matters is below the phone's
+       own fold, the phone scrolls itself — animated, once, as part of the
+       demonstration rather than as something to operate. The window itself
+       never moves: it holds the whole device. */
     function focusNow() {
       var el = bound();
       if (!el) return;
 
       var target = app.querySelector('[data-focus="' + focusKey() + '"]') ||
                    app.querySelector('[data-focus]');
-      if (!target) { setPan(BEZ); return; }
+      if (!target) return;
 
-      /* Inside the phone first. If what matters is below the phone's own
-         fold, the phone scrolls itself — animated, once, as part of the
-         demonstration rather than as something to operate. */
       var pane = app.querySelector('.cu-scroll');
-      if (pane && pane.contains(target)) {
-        var pr = pane.getBoundingClientRect(), tr0 = target.getBoundingClientRect();
-        var inside = (tr0.top - pr.top) / curScale;
+      if (!pane || !pane.contains(target)) return;
+
+      clearTimeout(panT);
+      panT = setTimeout(function () {
+        var pr = pane.getBoundingClientRect(), tr = target.getBoundingClientRect();
+        var inside = (tr.top - pr.top) / (curScale || 1);
         var to = pane.scrollTop + inside - 12;
         to = Math.max(0, Math.min(pane.scrollHeight - pane.clientHeight, to));
         if (Math.abs(to - pane.scrollTop) > 2) {
           pane.scrollTo({ top: to, behavior: reduced.matches ? 'auto' : 'smooth' });
         }
-      }
-
-      /* Then the window. Both rectangles carry the same transform, so their
-         difference is pure layout — which makes this exact even while a
-         previous pan is still animating, and means it never chases itself. */
-      clearTimeout(panT);
-      panT = setTimeout(function () {
-        var box = el.clientHeight;
-        var appH = DEV_OH * curScale;
-        var min = Math.min(BEZ, box - appH - BEZ);
-        if (min > BEZ - 2) { setPan(BEZ); return; }
-
-        var ar = app.getBoundingClientRect();
-        var tr = target.getBoundingClientRect();
-        var yIn = (tr.top - ar.top) / curScale;           /* app coordinates */
-        var want = Math.min(72, box * 0.22);
-        setPan(Math.max(min, Math.min(BEZ, want - yIn * curScale)));
-      }, ms(reduced.matches ? 0 : 340));
+      }, ms(reduced.matches ? 0 : 120));
     }
 
     function stop() {
