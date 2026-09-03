@@ -14742,66 +14742,134 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 /* --------------------------------------------------------------------------
    12. THE WIDTH COMPARISON
 
-   Controls in their own panel, screens in theirs, so it is obvious which one
-   answers to which. On a phone the screens panel shows one device at a time
-   at its real height — a 375×667 frame rather than a crop — because three
-   frames on a phone is three slivers and no comparison at all.
+   Two objects, not one. The controls are page furniture and carry no border;
+   the framed module below holds only screens. That separation is the whole
+   affordance — you operate the top, the bottom answers.
+
+   AND THE THREE FRAMES LINE UP. They used to hang from a shared top with
+   nothing holding their feet, so three different device heights left three
+   captions floating at three different levels and the row read as broken
+   rather than as a comparison. Each column is now a three-row grid — label,
+   screen, readout — and the rows align across all three, so the only thing
+   that varies between them is the one thing being compared: width.
    -------------------------------------------------------------------------- */
 
-.cu-embed--split { padding: 0; }
-
-.cu-panel {
-  padding: 0 0 16px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface-raised);
-}
-
-.cu-wtools {
+.cu-controls {
   display: grid;
   gap: 16px;
-  padding: 0 16px;
-  margin: 0;
+  margin-block: 4px 16px;
 }
-.cu-wtools__field {
-  display: grid;
-  gap: 8px;
+
+.cu-controls__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.cu-controls__t {
+  margin: 0;
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--ink-muted);
 }
-.cu-wtools__field textarea {
+
+.cu-field { display: grid; gap: 8px; }
+.cu-field__l {
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.cu-field textarea {
+  width: 100%;
   font-family: var(--font-body);
-  letter-spacing: 0;
-  text-transform: none;
   color: var(--ink);
   background: var(--surface);
   border: 1px solid var(--border-strong);
   border-radius: 10px;
-  padding: 12px;
+  padding: 12px 14px;
+  min-height: 48px;
+  line-height: 1.5;
   resize: vertical;
-  min-height: 72px;
-  width: 100%;
 }
-.cu-wtools__field textarea:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.cu-field textarea:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
-.cu-wtools__sets { display: grid; gap: 16px; }
-@media (min-width: 700px) { .cu-wtools__sets { grid-template-columns: 1fr auto; gap: 24px; } }
+.cu-sets { display: grid; gap: 16px; }
+@media (min-width: 760px) {
+  .cu-sets { grid-template-columns: minmax(0, 1fr) auto; gap: 32px; align-items: start; }
+}
 
-.cu-screens { padding: 24px 16px 28px; }
+.cu-set { display: grid; gap: 8px; }
+.cu-set__l {
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.cu-set__opts { display: flex; flex-wrap: wrap; gap: 8px; }
+.cu-set__opts button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-secondary);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.cu-set__opts button:hover { border-color: var(--border-strong); }
+.cu-set__opts button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--surface);
+  border-color: var(--ink);
+}
+.cu-set__opts button:active { transform: scale(0.98); }
 
-/* One device at a time below the comparison breakpoint — so "All three" is
-   not offered at a width where it cannot mean anything. */
+/* --- the screens ---------------------------------------------------------- */
+
+.cu-screens { padding: 24px 20px 26px; }
+
+.cu-widths {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: max-content;
+  justify-content: center;
+  align-items: stretch;
+  gap: 24px;
+}
+
+.cu-w {
+  display: grid;
+  grid-template-rows: auto 1fr auto;   /* label · screen · readout */
+  gap: 12px;
+  margin: 0;
+  min-width: 0;
+}
+
+.cu-w__cap { display: flex; align-items: baseline; gap: 8px; margin: 0; }
+.cu-w__cap b { font-weight: 700; }
+.cu-w__cap span { color: var(--ink-muted); }
+
+.cu-w__fit {
+  position: relative;
+  overflow: hidden;
+  border-radius: 22px;
+  align-self: start;
+}
+
+.cu-w__read { margin: 0; color: var(--ink-secondary); }
+.cu-w__read b { color: var(--ink); font-weight: 700; }
+
+/* One device at a time below the comparison breakpoint, so "All three" is not
+   offered at a width where three frames are three slivers. */
 @media (max-width: 699px) {
   .cu-only-all { display: none; }
+  .cu-widths { grid-auto-flow: row; justify-items: center; }
+  .cu-screens { padding: 20px 16px 22px; }
 }
-
-.cu-widths[data-single="1"] { justify-content: center; }
-.cu-widths[data-single="1"] .cu-w { max-width: 100%; }
-
-/* The frame is a device, so it keeps the device's proportions and clips like
-   one rather than letting the app spill past the bottom edge. */
-.cu-w__fit { overflow: hidden; border-radius: 22px; }
 
 
 /* ===== css/14-case-type.css ===== */
@@ -14905,7 +14973,6 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .case .ar-table,
 .case .ar-table th,
 .case .ar-table td,
-.case .ar-demo__label,
 .case .ar-demo__intro,
 .case .ar-demo__note,
 .case .cs-source,
@@ -14949,7 +15016,6 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 /* The label tier is the same size and earns its difference the way a label
    does: uppercase, tracked, muted, and lighter than the copy around it. */
 .case .ar-kicker,
-.case .ar-demo__label,
 .case .cu-rail h4,
 .case .cu-copy__k,
 .case .cu-copy__tag,
@@ -25827,8 +25893,7 @@ it is the same discipline the case study argues for.</p>
 
 <section class="ar-demo ar-wide cu" data-cu="gallery">
   <div class="ar-demo__head">
-    <p class="ar-demo__label">Reference</p>
-    <p class="ar-demo__title">The components, as themselves</p>
+    <p class="ar-demo__title">One component library, used everywhere</p>
   </div>
   <p class="ar-demo__intro">Not screenshots. These are the same live components
     the prototypes below are assembled from, rendered on their own.</p>
@@ -25869,8 +25934,7 @@ optional, and what would happen if they touched it.</p>
 
 <section class="ar-demo ar-wide cu" data-cu="prepare">
   <div class="ar-demo__head">
-    <p class="ar-demo__label">Prototype &middot; Clarity</p>
-    <p class="ar-demo__title">Preparing for the conversation</p>
+    <p class="ar-demo__title">Suggested questions are optional, and reversible</p>
   </div>
   <p class="ar-demo__intro">Sign in, land on the dashboard, and prepare. Expand
     a suggested category and add a question &mdash; then undo it. Open the
@@ -25879,7 +25943,7 @@ optional, and what would happen if they touched it.</p>
     separate screen.</p>
   <div class="cu-embed">
     <div class="cu-embed__bar">
-      <b>Flows 1&ndash;3 &middot; sign in, prepare, edit</b>
+      <b>Sign in, prepare, edit</b>
       <span class="cu-cue" data-cue>Try it &mdash; tap a suggested question</span>
       <button class="cu-reset" type="button" data-act="reset">Reset</button>
     </div>
@@ -25929,49 +25993,47 @@ component's height; the layout does not clip content to stay rigid.</p>
 
 <section class="ar-demo ar-wide cu" data-cu="widths">
   <div class="ar-demo__head">
-    <p class="ar-demo__label">Prototype &middot; Clarity</p>
-    <p class="ar-demo__title">One question, three devices</p>
+    <p class="ar-demo__title">A question is never truncated — the row grows instead</p>
   </div>
   <p class="ar-demo__intro">Type a question, then switch device. Each frame is
     a real screen at its real height. The row height under it is measured from
     the live DOM, not written into the caption.</p>
-  <div class="cu-embed cu-embed--split">
-    
-    <div class="cu-panel">
-      <div class="cu-embed__bar">
-        <b>Molecule &middot; QuestionRow</b>
-        <span class="cu-cue" data-cue>Try it &mdash; type a longer question</span>
+  
+  <div class="cu-controls">
+    <div class="cu-controls__head">
+      <p class="cu-controls__t">Edit the question text</p>
+      <span class="cu-cue" data-cue>Try it &mdash; type a longer question</span>
+    </div>
+
+    <label class="cu-field">
+      <span class="cu-field__l visually-hidden">Question text</span>
+      <textarea rows="1" data-field="q" aria-label="Question text">Has anything changed since my last test?</textarea>
+    </label>
+
+    <div class="cu-sets">
+      <div class="cu-set">
+        <span class="cu-set__l">Examples</span>
+        <div class="cu-set__opts" role="group" aria-label="Sample lengths">
+          <button type="button" data-act="sample" data-i="0">One line at 440</button>
+          <button type="button" data-act="sample" data-i="1">Three lines, then two</button>
+          <button type="button" data-act="sample" data-i="2">Wraps everywhere</button>
+        </div>
       </div>
-      <div class="cu-wtools">
-        <label class="cu-wtools__field">Question text
-          <textarea rows="2" data-field="q" aria-label="Question text">Has anything changed since my last test?</textarea>
-        </label>
-        <div class="cu-wtools__sets">
-          <span class="cu-ctl">
-            <span class="cu-ctl__l">Examples</span>
-            <span class="cu-ctl__opts" role="group" aria-label="Sample lengths">
-              <button type="button" data-act="sample" data-i="0">One line at 440</button>
-              <button type="button" data-act="sample" data-i="1">Three lines, then two</button>
-              <button type="button" data-act="sample" data-i="2">Wraps at every width</button>
-            </span>
-          </span>
-          <span class="cu-ctl">
-            <span class="cu-ctl__l">Device</span>
-            <span class="cu-ctl__opts" role="group" aria-label="Device width">
-              <button class="cu-only-all" type="button" data-act="only" data-w="all" aria-pressed="true">All three</button>
-              <button type="button" data-act="only" data-w="375" aria-pressed="false">375</button>
-              <button type="button" data-act="only" data-w="390" aria-pressed="false">390</button>
-              <button type="button" data-act="only" data-w="440" aria-pressed="false">440</button>
-            </span>
-          </span>
+      <div class="cu-set">
+        <span class="cu-set__l">Device</span>
+        <div class="cu-set__opts" role="group" aria-label="Device width">
+          <button class="cu-only-all" type="button" data-act="only" data-w="all" aria-pressed="true">All three</button>
+          <button type="button" data-act="only" data-w="375" aria-pressed="false">375</button>
+          <button type="button" data-act="only" data-w="390" aria-pressed="false">390</button>
+          <button type="button" data-act="only" data-w="440" aria-pressed="false">440</button>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="cu-screens">
-      <div class="cu-widths" data-widths></div>
-      <span class="cu-live" data-live aria-live="polite"></span>
-    </div>
+  <div class="cu-embed cu-screens">
+    <div class="cu-widths" data-widths></div>
+    <span class="cu-live" data-live aria-live="polite"></span>
   </div>
   </section>
 
@@ -25984,8 +26046,7 @@ and the third one is the one products in this space usually skip.</p>
 
 <section class="ar-demo ar-wide cu">
   <div class="ar-demo__head">
-    <p class="ar-demo__label">Artifact &middot; Clarity</p>
-    <p class="ar-demo__title">What the words are doing</p>
+    <p class="ar-demo__title">The copy names the operation, not the feeling</p>
   </div>
   <div class="cu-copy">
     <div class="cu-copy__row">
@@ -26090,8 +26151,7 @@ dangerous to use.</p>
 
 <section class="ar-demo ar-wide cu" data-cu="match">
   <div class="ar-demo__head">
-    <p class="ar-demo__label">Prototype &middot; Trust</p>
-    <p class="ar-demo__title">Where every answer came from</p>
+    <p class="ar-demo__title">A matched answer is a quotation, not a summary</p>
   </div>
   <p class="ar-demo__intro">The Questions tab after transcription. Three of the
     six questions have defensible matches; three do not. Open a transcript to
@@ -26099,7 +26159,7 @@ dangerous to use.</p>
     dismiss one and undo it.</p>
   <div class="cu-embed">
     <div class="cu-embed__bar">
-      <b>States &middot; unanswered &middot; matched &middot; edited &middot; dismissed</b>
+      <b>Unanswered, matched, edited, dismissed</b>
       <span class="cu-cue" data-cue>Try it &mdash; open a transcript</span>
       <button class="cu-reset" type="button" data-act="reset">Reset</button>
     </div>
@@ -26154,8 +26214,7 @@ no dialog at all.</p>
 
 <section class="ar-demo ar-wide cu" data-cu="permit">
   <div class="ar-demo__head">
-    <p class="ar-demo__label">Prototype &middot; Trust</p>
-    <p class="ar-demo__title">Permission, picker, upload</p>
+    <p class="ar-demo__title">Carry receives a recording; it never starts one</p>
   </div>
   <p class="ar-demo__intro">From the default RecordingPanel through the
     permission dialog &mdash; try <b>Not now</b> as well as <b>Allow</b> &mdash;
@@ -26163,7 +26222,7 @@ no dialog at all.</p>
     and transcription.</p>
   <div class="cu-embed">
     <div class="cu-embed__bar">
-      <b>Flow 4 &middot; uploading a recording</b>
+      <b>Uploading a recording</b>
       <span class="cu-cue" data-cue>Try it &mdash; tap Upload recording</span>
       <button class="cu-reset" type="button" data-act="reset">Reset</button>
     </div>
@@ -26172,7 +26231,7 @@ no dialog at all.</p>
         <div class="cu-fit"><div class="cu-app" data-app></div></div>
         <div class="cu-rail">
           <div>
-            <h4>RecordingPanel state</h4>
+            <h4>Recording state</h4>
             <ul class="cu-states" data-strip></ul>
           </div>
           <div>
@@ -26207,14 +26266,13 @@ an unfinished task.</p>
 
 <section class="ar-demo ar-wide cu" data-cu="modes">
   <div class="ar-demo__head">
-    <p class="ar-demo__label">Prototype &middot; Trust</p>
-    <p class="ar-demo__title">Same data. Two interfaces based on patient intent.</p>
+    <p class="ar-demo__title">Capture and review are the same record, two interfaces</p>
   </div>
   <p class="ar-demo__intro">Switch between an active session and a past one.
     The conversation underneath does not change &mdash; the affordances do.</p>
   <div class="cu-embed">
     <div class="cu-embed__bar">
-      <b>Flow 5 &middot; capture and review</b>
+      <b>Capture and review</b>
       <div class="cu-modes" role="group" aria-label="Session mode">
         <button type="button" data-act="mode" data-m="capture" aria-pressed="true">Active session</button>
         <button type="button" data-act="mode" data-m="review" aria-pressed="false">Past session</button>
@@ -26277,8 +26335,7 @@ expected.</p>
 
 <section class="ar-demo ar-wide cu" data-cu="lab">
   <div class="ar-demo__head">
-    <p class="ar-demo__label">Prototype &middot; Performance</p>
-    <p class="ar-demo__title">The Performance Lab</p>
+    <p class="ar-demo__title">Every failure is a state of the real component</p>
   </div>
   <p class="ar-demo__intro">Set the conditions, then run the flow. These
     controls change what the prototype actually does &mdash; they do not swap
@@ -26286,7 +26343,7 @@ expected.</p>
     stop partway through the same panel, with the file still selected.</p>
   <div class="cu-embed">
     <div class="cu-embed__bar">
-      <b>Two state machines &middot; authentication and RecordingPanel</b>
+      <b>Authentication and recording</b>
       <span class="cu-cue" data-cue>Try it &mdash; set a condition, then sign in</span>
     </div>
     <div class="cu-stage">
@@ -28774,15 +28831,36 @@ window.PF = window.PF || {};
             '<div class="cu-app cu-w__app" style="--cu-w:' + d.w + 'px;height:' + d.h + 'px">' +
               appBar(SEED.title, SEED.whenShort, { back: 'noop', trail: 'gear' }) +
               '<div class="cu-scroll">' +
-                '<div class="cu-card"><div class="cu-sec"><b>My questions</b><span>3 prepared</span></div>' +
+                /* A REAL SCREEN HAS CONTENT ON IT. Three rows in a 956pt frame
+                   left most of the device empty, which read as a broken
+                   prototype rather than as a tall phone. This is the actual
+                   preparation screen, so the frame shows what the device would
+                   show and the row being measured sits in its real context. */
+                '<div class="cu-card"><div class="cu-sec"><b>Things to bring</b>' +
+                  '<span>2 of 6 checked</span></div>' +
+                  SEED.bring.slice(0, 4).map(function (t, k) {
+                    return checkRow(t, k < 2, 'noop', k, { readonly: true });
+                  }).join('') +
+                '</div>' +
+                '<div class="cu-card"><div class="cu-sec"><b>My questions</b><span>6 prepared</span></div>' +
                   '<div class="cu-q" data-measure="' + d.w + '">' +
                     '<span class="cu-q__t">' + esc(st.text || ' ') + '</span>' +
                     '<span class="cu-q__tools">' +
                       '<span class="cu-ico cu-ico--sm cu-ico--mute">' + ic('drag') + '</span>' +
                       '<span class="cu-ico cu-ico--sm">' + ic('kebab') + '</span></span></div>' +
-                  questionRow({ q: SEED.questions[2], i: 1, as: 'div' }) +
-                  questionRow({ q: SEED.questions[5], i: 2, as: 'div' }) +
+                  questionRow({ q: SEED.questions[1], i: 1, as: 'div' }) +
+                  questionRow({ q: SEED.questions[2], i: 2, as: 'div' }) +
+                  questionRow({ q: SEED.questions[3], i: 3, as: 'div' }) +
+                  questionRow({ q: SEED.questions[5], i: 4, as: 'div' }) +
+                  '<button class="cu-row cu-row--add" type="button" data-act="noop">' +
+                    '<span class="cu-row__ico">' + ic('plus') + '</span>' +
+                    '<span class="cu-row__t">Add your own question</span></button>' +
                 '</div>' +
+                '<div class="cu-card"><div class="cu-sec"><b>' + ic('sparkle') + 'Suggested questions</b>' +
+                  '<span>17 questions</span></div>' +
+                  '<p class="cu-hint">Tap any question to add it to your list.</p>' +
+                '</div>' +
+                '<div class="cu-pad"></div>' +
               '</div>' +
               '<div class="cu-foot"><button class="cu-btn" type="button" data-act="noop">Start the conversation</button></div>' +
             '</div>' +
