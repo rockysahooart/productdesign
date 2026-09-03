@@ -15242,22 +15242,29 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 /* ==========================================================================
    14 — THE CASE-STUDY TYPE SYSTEM
 
-   Two families and three sizes, and nothing else in the editorial layer.
+   Two families and TWO sizes, and nothing else in the editorial layer.
 
      FAMILY 1  Geist Pixel      the title, and only the title
      FAMILY 2  Be Vietnam Pro   everything else — headings, subtitles,
                                 body, captions, labels, tables, navigation
 
-     SIZE 1  --cs-t1   the title
-     SIZE 2  --cs-t2   headings, standfirst, pull quotes, the things that
-                       introduce a block
-     SIZE 3  --cs-t3   body, and every piece of supporting text
+     SIZE 1  --cs-t1   the case-study title and the section headlines
+     SIZE 2  --cs-t3   everything else: standfirst, sub-headings, body,
+                       metadata, status, captions, labels, navigation
 
    The audit that prompted this found twenty distinct size-and-weight pairs on
    the Carry page alone, and the pixel face doing duty as both the masthead and
-   every section heading — which left the title with nothing of its own.
+   every section heading — which left the title with nothing of its own. It got
+   the page to three sizes. This pass took away the third.
 
-   HIERARCHY WITHOUT MORE SIZES. Three sizes cannot carry six levels on size
+   WHY THE MIDDLE SIZE HAD TO GO. It was doing the least work for the most
+   confusion: a standfirst, a sub-heading, a pull quote and a demo title all
+   sat at 19–23px in four different weights, which is four levels the reader
+   has to learn on a page that only has two — this is a headline, and this is
+   everything supporting it. --cs-t2 is kept only as an alias so nothing
+   referencing it breaks; it now resolves to the body size.
+
+   HIERARCHY WITHOUT MORE SIZES. Two sizes cannot carry six levels on size
    alone, so the rest is done the way it is done in print: weight, colour, case
    and space. A section heading and a caption are the same size here; one is
    640 weight in full ink with room above it, the other is 400 weight in muted
@@ -15271,9 +15278,9 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    ========================================================================== */
 
 .case {
-  --cs-t1: clamp(30px, 7.4vw, 44px);   /* title */
-  --cs-t2: clamp(19px, 2.1vw, 23px);   /* heading, standfirst, pull */
-  --cs-t3: 15px;                        /* body and everything supporting */
+  --cs-t1: clamp(30px, 7.4vw, 44px);   /* title and section headlines */
+  --cs-t3: 15px;                        /* everything else */
+  --cs-t2: var(--cs-t3);                /* alias — the middle size is gone */
   --cs-lh1: 1.08;
   --cs-lh2: 1.28;
   --cs-lh3: 1.6;
@@ -15292,7 +15299,26 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
 /* --- 2. headings and the lines that introduce a block ---------------------- */
 
-.case .ar-h2,
+/* THE SECTION HEADLINE IS THE TITLE'S SIZE. Five of them down the page, one
+   per section, and at the body size they were indistinguishable from the label
+   above them — the accordion stack read as ten lines of small type rather than
+   five headlines you can find at a glance. It is set a step down from the
+   masthead so the page still has one title. */
+/* THE SECTION HEADLINE IS THE TITLE'S SIZE, AND THE FAMILY IS WHAT SEPARATES
+   THEM. One display size on the page, not one-and-a-half: the masthead is the
+   pixel face and the five section headlines are the body face at the same
+   size, which reads as one level used twice rather than as two levels a reader
+   has to rank. At the body size these headlines were indistinguishable from
+   the label above them and the accordion stack read as ten lines of small
+   type; at this size it reads as five headlines. */
+.case .ar-h2 {
+  font-family: var(--font-body);
+  font-size: var(--cs-t1);
+  line-height: 1.1;
+  letter-spacing: -0.022em;
+  font-weight: 600;
+}
+
 .case .ar-h3,
 .case .ar-standfirst,
 .case .ar-p--lead,
@@ -15307,7 +15333,6 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   letter-spacing: -0.008em;
 }
 
-.case .ar-h2 { font-weight: 640; }
 .case .ar-h3 { font-weight: 600; }
 .case .ar-standfirst,
 .case .ar-p--lead,
@@ -15329,7 +15354,11 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .case .ar-note p,
 .case .ar-end,
 .case .ar-end p,
-.case .ar li,
+/* `.case .ar li` never matched anything: .case and .ar are the same element,
+   so the selector asked for an .ar nested inside a .case. Every list on the
+   page was falling through to the document default. */
+.case li,
+.case .cs-did li,
 .case .ar-toc,
 .case .ar-toc p,
 .case .ar-toc a,
@@ -15682,12 +15711,16 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
 /* --- the outcome block ---------------------------------------------------- */
 
+/* The lead is the body size now, so its measure is the body's. At 34ch — a
+   width set when this was 23px type — the same sentence broke into three short
+   lines with a ragged edge, which read as a mistake rather than as emphasis.
+   Weight and ink carry it instead. */
 .cs-lead {
   margin: 0;
-  font-size: var(--cs-t2);
-  line-height: 1.35;
-  font-weight: 500;
-  max-width: 34ch;
+  line-height: 1.5;
+  font-weight: 600;
+  color: var(--ink);
+  max-width: var(--cs-read);
 }
 
 /* WHAT HAPPENED TO IT IS NOT WHAT IT IS.
@@ -15698,42 +15731,38 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    longer the headline. The pill states it, one quiet paragraph explains it, and
    the design gets the top of the page back. */
 .cs-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-block-start: 16px;
-  padding: 8px 14px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  color: var(--ink-secondary);
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--ink);
+  font-weight: 600;
+  max-width: var(--cs-read);
 }
 .case .acc__b > .cs-status + .ar-p--quiet { margin-block-start: 12px; }
 .case .ar-p--quiet { color: var(--ink-muted); }
-.cs-status::before {
-  content: "";
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--ink-muted);
-}
+/* No dot. It was a chip once; it is a sentence now, and a marker in front of
+   it would put the one line about what happened to the project 17px right of
+   every other line in the zone. */
 
 /* --- a compact list of contributions -------------------------------------- */
 
-.cs-did { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
-.cs-did li {
+/* FOUR SENTENCES, NOT FOUR BULLETS. Every one of them starts with "I" and
+   states a thing I did, which is already a list — the dots were ornament, and
+   they pushed the text off the left edge every other line in this zone is
+   aligned to. */
+.case .cs-did {
+  margin: 0;
+  padding-left: 0;      /* .ar ul sets 1.3em for bulleted lists; this has none */
+  padding-right: 0;
+  list-style: none;
   display: grid;
-  grid-template-columns: 18px minmax(0, 1fr);
-  gap: 12px;
-  align-items: start;
+  gap: 16px;
+  max-width: var(--cs-read);
 }
-.cs-did li::before {
-  content: "";
-  margin-block-start: 8px;
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--ink);
-}
-@media (min-width: 700px) {
-  .cs-did { grid-template-columns: 1fr 1fr; gap: 12px 32px; }
+.case .cs-did li { margin: 0; }
+@media (min-width: 900px) {
+  .case .cs-did { grid-template-columns: 1fr 1fr; gap: 20px 48px; max-width: none; }
 }
 
 /* --- what was difficult / what I changed / why it mattered ---------------- */
@@ -15747,6 +15776,81 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   color: var(--ink-muted);
 }
 .cs-move p { margin: 0; max-width: var(--cs-read); }
+
+/* ==========================================================================
+   THE OPENING — THREE ZONES AND TWO TYPE SIZES
+
+   What I designed → what happened to it → what I contributed. The old top of
+   the page had those three ideas separated by rules and three different type
+   sizes, which meant the borders were doing the work the spacing should have
+   done, and the reader had four levels of type to sort out before the first
+   sentence.
+
+   So the rules come off and the room goes in. Related lines sit 24px apart,
+   sub-groups 48–64, and the three zones 80–112 on a desktop — far enough that
+   nobody needs a line drawn to know one idea has ended. Everything lands on
+   one left edge, and everything that is not a headline is the same size,
+   separated by weight and ink instead.
+   ========================================================================== */
+
+.case {
+  --cs-z-tight: 24px;    /* inside a group */
+  --cs-z-group: 48px;    /* between sub-groups */
+  --cs-z-zone: 80px;     /* between the three zones */
+}
+@media (min-width: 900px) {
+  .case { --cs-z-group: 64px; --cs-z-zone: 104px; }
+}
+@media (max-width: 719px) {
+  .case { --cs-z-group: 40px; --cs-z-zone: 56px; }
+}
+
+/* --- zone 1: what I designed ---------------------------------------------- */
+
+/* ONE LEFT EDGE FOR THE WHOLE PAGE. The masthead was in the reading column and
+   the sections were in the wide one, so the title started 128px to the right
+   of the headline under it — two margins on a page that should have had one.
+   The masthead joins the sections. */
+.case .cs-mast { grid-column: wide; }
+
+.cs-mast .ar-kicker { margin-block-end: 16px; }
+
+.cs-mast .ar-standfirst {
+  margin-block-start: var(--cs-z-tight);
+  max-width: var(--cs-read);
+}
+
+/* The metadata is a group, not a section: no rule above it, and the labels
+   stay quiet through weight and ink rather than by shrinking — there is no
+   smaller size to shrink to any more. */
+.cs-mast .ar-meta {
+  margin-block-start: var(--cs-z-group);
+  padding-block-start: 0;
+  border-block-start: 0;
+  gap: 14px;
+}
+.cs-mast .ar-meta dt {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--ink-muted);
+}
+
+/* --- zone 2: what happened ------------------------------------------------- */
+
+/* The first section carries the gap between zone one and zone two, so the
+   accordion list starts where the masthead has finished speaking. */
+.case .cs-wrap > .acc:first-of-type { margin-block-start: var(--cs-z-zone); }
+
+.acc--static .cs-lead { margin-block-end: 0; }
+.case .acc--static .acc__b > .ar-p { margin-block-start: var(--cs-z-tight); }
+.case .acc--static .acc__b > .cs-status { margin-block-start: var(--cs-z-group); }
+.case .acc--static .acc__b > .cs-status + .ar-p--quiet { margin-block-start: 12px; }
+
+/* --- zone 3: what I contributed -------------------------------------------- */
+
+.case .acc--static .acc__b > .ar-h3 { margin-block-start: var(--cs-z-zone); }
+.case .acc--static .acc__b > .ar-h3 + .cs-did { margin-block-start: var(--cs-z-tight); }
 
 
 /* ===== css/06-responsive.css ===== */
@@ -26299,15 +26403,16 @@ em,
       </button>
     </nav>
 
-    <header class="ar-mast">
+    <header class="ar-mast cs-mast">
       <p class="ar-kicker">Case study</p>
       <h1 class="ar-title" id="carry-title">Carry: A Patient Experience Extension</h1>
-      <p class="ar-standfirst">Helping patients remember what happened after the
-        appointment.</p>
+      <p class="ar-standfirst">I designed and proposed an extension to an existing patient
+        experience that helps people prepare for a visit and remember what happened
+        afterwards.</p>
       <dl class="ar-meta">
         <div class="ar-meta__row">
           <dt>Role</dt>
-          <dd>Designer &mdash; clarity, trust, performance</dd>
+          <dd>Product designer &mdash; patient flow, states, visual language</dd>
         </div>
         <div class="ar-meta__row">
           <dt>Team</dt>
@@ -26315,7 +26420,7 @@ em,
         </div>
         <div class="ar-meta__row">
           <dt>Phase</dt>
-          <dd>MVP design exploration, evaluated by stakeholders</dd>
+          <dd>MVP design exploration, reviewed by stakeholders</dd>
         </div>
       </dl>
     </header>
@@ -26326,27 +26431,22 @@ em,
     <span class="ar-h2">A conversation patients can read back</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="cs-lead">Write your questions before the appointment, upload the recording
-      afterwards, and see the moments that answered them.</p>
+    <p class="cs-lead">I took Carry from an early workshop premise to a scoped experience
+      that moved into development.</p>
+    <p class="ar-p">Patients write their questions before the appointment, upload the
+      recording afterwards, and see the moments that answered them.</p>
 
-    <p class="ar-p">Carry is an extension of an existing patient experience rather than a
-      new app &mdash; identity, appointments and navigation were already there, and what
-      was missing was the fifteen minutes nobody remembers. It went from a workshop
-      premise to an evaluated, scoped design that was taken into build.</p>
-
-    <p class="cs-status">Design complete &middot; development halted</p>
-    <p class="ar-p ar-p--quiet">A change in leadership shifted organisational priorities
-      and implementation stopped before release. The decision was organisational, not a
-      judgement on the design.</p>
+    <p class="cs-status">I completed the design and handed it into development &middot;
+      implementation later halted</p>
+    <p class="ar-p ar-p--quiet">A leadership change shifted organisational priorities
+      before release.</p>
 
     <h3 class="ar-h3">What I contributed</h3>
     <ul class="cs-did">
-      <li>Turned the team&rsquo;s premises into a flow patients could actually walk</li>
-      <li>Set the boundary on AI-assisted content and designed the interface that holds it</li>
-      <li>Designed the upload, transcription and failure states end to end</li>
-      <li>Made the question row responsive so nothing a patient wrote is ever cut off</li>
-      <li>Pulled the visual language into one reference other designers could work from</li>
-      <li>Argued the tradeoffs with product and engineering before they became build cost</li>
+      <li>I turned the team&rsquo;s early premise into an end-to-end patient flow.</li>
+      <li>I proposed the boundaries for AI-assisted content, then designed the interface that holds them.</li>
+      <li>I designed the upload, transcription and failure states.</li>
+      <li>I worked with product and engineering to surface tradeoffs before they became build cost.</li>
     </ul>
   </div>
 </section>
@@ -26356,13 +26456,14 @@ em,
     <span class="ar-h2">Remembering a conversation you only get once</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="ar-p">A fifteen-minute appointment carries more than anyone remembers.
-      Patients arrive with questions, absorb a lot quickly, and leave trying to
-      reconstruct what was said.</p>
+    <p class="ar-p">I started with the patient feedback the product team already held,
+      looking for what people actually said they had lost. The complaint was rarely one
+      forgotten fact. It was the whole fifteen minutes &mdash; the appointment had
+      happened and they could not get back into it.</p>
 
-    <p class="ar-p">The constraint shaped everything: this had to be a layer on an existing
-      patient product, not a new app. Identity, appointments and navigation already
-      existed. We were adding one thing &mdash; the moment around the conversation.</p>
+    <p class="ar-p">Writing out everything a patient is carrying in that moment made the
+      shape of it clearer than any of my early screens did. Six kinds of thing, all
+      arriving at once, at the point somebody has the least capacity to hold any of them.</p>
 
     <figure class="ar-fig ar-wide">
       <ul class="cu-hold">
@@ -26373,9 +26474,15 @@ em,
         <li>Instructions to remember</li>
         <li>Follow-ups to complete</li>
       </ul>
-      <figcaption class="ar-cap">All of it at once, at the moment a patient has the least
-        capacity to hold any of it.</figcaption>
+      <figcaption class="ar-cap">Six things at once, at the worst possible moment to be
+        holding six things.</figcaption>
     </figure>
+
+    <p class="ar-p">What made it difficult was not the problem but the constraint I was
+      handed with it. This had to be a layer on a patient product that already existed
+      &mdash; identity, appointments and navigation were not mine to change. I was adding
+      one thing, the moment around the conversation, into a system I had not designed. So
+      I narrowed the problem to that moment and stopped trying to solve the appointment.</p>
   </div>
 </section>
 <section class="acc" data-open="0">
@@ -26384,17 +26491,22 @@ em,
     <span class="ar-h2">What changed the direction</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <div class="ar-note"><p>This began in a quarterly design workshop, with three
-      designers on it. There was no interview study behind it &mdash; the inputs were the
-      product team&rsquo;s stated premises and existing patient feedback. I have kept
-      the findings below to the ones that changed a decision.</p></div>
+    <div class="ar-note"><p>To be straight about the inputs: there was no interview study
+      behind this. I had the product team&rsquo;s stated premises and the patient feedback
+      they already held, and I have kept what follows to the three things that actually
+      changed a decision.</p></div>
 
-    <div class="cs-move"><p class="cs-move__l">Patients refine questions as they think</p>
-      <p>A question that starts as &ldquo;what does this mean?&rdquo; becomes something sharper by the day of. So editing had to live in the row, not behind a separate screen, and every action had to be reversible.</p></div>
-    <div class="cs-move"><p class="cs-move__l">Nobody trusts a summary they cannot check</p>
-      <p>We could not verify a generated answer against what was actually said. So matched content became a direct quotation with a route to the transcript, and never generated prose.</p></div>
-    <div class="cs-move"><p class="cs-move__l">Recording inside a consulting room is a consent problem</p>
-      <p>It varies by state and it is not the value the product is offering. So Carry never records: the patient uploads a file from their own phone.</p></div>
+    <div class="cs-move"><p class="cs-move__l">Patients keep rewriting the question</p>
+      <p>A question that starts as &ldquo;what does this mean?&rdquo; is sharper by the day of the appointment. That told me preparation is not a form you fill in once, so I put editing inside the row rather than behind a separate screen, and made every action reversible.</p></div>
+    <div class="cs-move"><p class="cs-move__l">I could not verify a generated answer</p>
+      <p>I tried to work out how we would check a written-up answer against what was actually said, and there was no way to do it that a patient could see. That ruled out generated prose entirely: matched content became a direct quotation with a route to the transcript.</p></div>
+    <div class="cs-move"><p class="cs-move__l">Recording in a consulting room is a consent problem</p>
+      <p>Once I looked at what recording would require, it varied by state and it was not the value we were offering anyway. So Carry never records. The patient uploads a file from their own phone, which moved the whole question outside the product.</p></div>
+
+    <p class="ar-p">Those three decisions were subtractions, and together they drew a
+      boundary I could design against. I mapped the product across the appointment to
+      make that boundary explicit &mdash; particularly the part where Carry does nothing
+      at all.</p>
 
     <figure class="ar-fig ar-wide">
       <div class="ar-fig__frame"><svg class="md" viewBox="0 0 960 320" width="960" height="320" role="img"
@@ -26449,7 +26561,8 @@ em,
   <text class="md-anno" x="480" y="284" text-anchor="middle">The hollow marker is deliberate. During the appointment the product has no job,</text>
   <text class="md-anno" x="480" y="304" text-anchor="middle">and designing it that way was a decision rather than an omission.</text>
 </svg></div>
-      <figcaption class="ar-cap">Where the product does and does not act.</figcaption>
+      <figcaption class="ar-cap">The hollow marker is the decision: during the
+        appointment the product has no job.</figcaption>
     </figure>
   </div>
 </section>
@@ -26459,19 +26572,21 @@ em,
     <span class="ar-h2">Clarity, Trust, Performance</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="acc__lede ar-p">Three things had to be true before this was a product and
-      not a demo.</p>
+    <p class="acc__lede ar-p">These three are not principles I applied afterwards. They
+      are the order the problems arrived in: clarity was the first thing that broke,
+      trust decided what the product would not do, and performance was what was left once
+      I started designing for the day it fails.</p>
 
     <h3 class="ar-h3" id="ar-clarity">Clarity</h3>
-    <div class="cs-move"><p class="cs-move__l">What was difficult</p>
-      <p>Everything on a healthcare screen competes for attention, and this screen had three different kinds of content on it &mdash; a checklist, the patient&rsquo;s own questions, and a library of suggestions.</p></div>
-    <div class="cs-move"><p class="cs-move__l">What I changed</p>
-      <p>Suggestions became optional and reversible, editing moved into the row, and the question row got a minimum height instead of a fixed one.</p></div>
-    <div class="cs-move"><p class="cs-move__l">Why it mattered</p>
-      <p>A patient wrote those questions to ask their provider. Showing two-thirds of one defeats the point.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I saw</p>
+      <p>The first screen I designed was the one before the appointment, and it went wrong immediately. Three different kinds of content were sharing it &mdash; a checklist, the patient&rsquo;s own questions, and a library of suggestions &mdash; and my early versions read as one undifferentiated list in which nothing looked like it belonged to the patient.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I did</p>
+      <p>I separated ownership before I separated layout. Suggestions became optional and reversible so taking one is a choice rather than a default, editing moved into the row so the list is never handed to another screen, and the row got a minimum height rather than a fixed one.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What changed</p>
+      <p>The list reads as the patient&rsquo;s own. They wrote those questions to ask a provider, and showing two-thirds of one defeats the point of having written it.</p></div>
 <section class="ar-demo ar-wide cu" data-cu="prepare">
   <h3 class="demo__h">Patients build their own list of questions.</h3>
-  <p class="demo__p">Add, edit, reorder or undo anything — without leaving the screen.</p>
+  <p class="demo__p">A static frame could not tell me whether taking a suggestion still felt like your own list, so I built it to find out.</p>
   <div class="cu-embed">
     <div class="cu-embed__bar">
       <span class="cu-cue" data-cue>Try it — add a suggested question, then undo it</span>
@@ -26486,9 +26601,10 @@ em,
   <div class="ar-demo__head">
     <p class="ar-demo__title">A question is never truncated — the row grows instead</p>
   </div>
-  <p class="ar-demo__intro">Type a question, then switch device. Each frame is
-    a real screen at its real height. The row height under it is measured from
-    the live DOM, not written into the caption.</p>
+  <p class="ar-demo__intro">The next thing to break was length. Patients write long
+    questions and my fixed row was cutting them off, so I made the row grow and checked
+    it at the three widths the product actually ships on. Type into it and switch
+    device — the height under each frame is measured live, not written into the caption.</p>
   
   <div class="cu-controls">
     <div class="cu-controls__head">
@@ -26529,15 +26645,15 @@ em,
   </section>
 
     <h3 class="ar-h3" id="ar-trust">Trust</h3>
-    <div class="cs-move"><p class="cs-move__l">What was difficult</p>
-      <p>The product sits around sensitive conversations, and the most impressive version of it &mdash; an assistant that answers your questions &mdash; is also the most dangerous.</p></div>
-    <div class="cs-move"><p class="cs-move__l">What I changed</p>
-      <p>Answers are quotations from the recording, badged and editable, with a route to the transcript. Where nothing was said clearly enough to quote, the question stays unanswered.</p></div>
-    <div class="cs-move"><p class="cs-move__l">Why it mattered</p>
-      <p>A wrong summary could send someone into the next three months acting on a sentence nobody said.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I saw</p>
+      <p>With the preparation flow working, the obvious next move was the impressive one: let the model answer the questions. I spent most of a week arguing against it. A patient cannot check a summary, and a wrong one could send someone into three months of surveillance acting on a sentence nobody said.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I did</p>
+      <p>I made the answer a quotation instead of a summary &mdash; badged, editable, with a route to the moment in the transcript it came from. Where nothing was said clearly enough to quote, I designed the question to stay visibly unanswered rather than be filled with the model&rsquo;s best guess.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What changed</p>
+      <p>Patients verify rather than trust. It cost the product its most demo-able feature and it is the decision I would defend hardest.</p></div>
 <section class="ar-demo ar-wide cu" data-cu="match">
   <h3 class="demo__h">Patients can see exactly what was said.</h3>
-  <p class="demo__p">Carry links each question to the part of the conversation that answered it.</p>
+  <p class="demo__p">I wanted to know whether someone else’s words still read as an answer, or just as a transcript with a highlight on it.</p>
   <div class="cu-embed">
     <div class="cu-embed__bar">
       <span class="cu-cue" data-cue>Try it — open a transcript, or dismiss an answer</span>
@@ -26550,7 +26666,7 @@ em,
 </section>
 <section class="ar-demo ar-wide cu" data-cu="permit">
   <h3 class="demo__h">Patients choose what to upload.</h3>
-  <p class="demo__p">Carry asks once, shows only audio, and saying no changes nothing.</p>
+  <p class="demo__p">Since the patient supplies the recording, I had to make declining a real option rather than a dead end.</p>
   <div class="cu-embed">
     <div class="cu-embed__bar">
       <span class="cu-cue" data-cue>Try it — tap Upload recording</span>
@@ -26563,7 +26679,7 @@ em,
 </section>
 <section class="ar-demo ar-wide cu" data-cu="modes">
   <h3 class="demo__h">One conversation, whether it’s live or saved.</h3>
-  <p class="demo__p">Once a session is saved, the editing controls go away.</p>
+  <p class="demo__p">The last trust problem was time: a record you can still edit is not a record, so the controls leave when it is saved.</p>
   <div class="cu-embed">
     <div class="cu-embed__bar">
       <span class="cu-cue" data-cue>Try switching between Active and Saved</span>
@@ -26576,15 +26692,15 @@ em,
 </section>
 
     <h3 class="ar-h3" id="ar-performance">Performance</h3>
-    <div class="cs-move"><p class="cs-move__l">What was difficult</p>
-      <p>Upload, transcription and matching all take time and all fail. A concept that only works on the happy path is a concept, not a product.</p></div>
-    <div class="cs-move"><p class="cs-move__l">What I changed</p>
-      <p>Every failure became a designed state of the real component, each answering three questions: what happened, what was kept, what to do next.</p></div>
-    <div class="cs-move"><p class="cs-move__l">Why it mattered</p>
-      <p>It was the difference between something engineering could estimate and something they would have had to invent during build.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I saw</p>
+      <p>I took the finished happy path to engineering and it did not survive the first question. Upload, transcription and matching all take real time and all fail, and every one of those moments was a blank in my file &mdash; which meant it would be invented during build, by whoever hit it first.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I did</p>
+      <p>I worked back through the flow and designed each failure as a state of the real component rather than an error screen bolted on the side. Each one answers the same three questions in the same order: what happened, what was kept, and what to do next. I took the model back to engineering to check that the recovery paths were ones the system could actually offer.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What changed</p>
+      <p>The flow became estimable. It was also the point where the work stopped being a concept &mdash; a design that only holds on the happy path is a demo.</p></div>
 <section class="ar-demo ar-wide cu" data-cu="lab">
   <h3 class="demo__h">It still makes sense when things go wrong.</h3>
-  <p class="demo__p">Change a condition. The product responds.</p>
+  <p class="demo__p">I rebuilt the failure states as a live rig so the recovery paths could be checked rather than described. Change a condition.</p>
   <div class="cu-embed">
     
     <div class="cu-stage cu-lab">
@@ -26622,17 +26738,22 @@ em,
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">The work reached development with the flows, the states and the
-      component set defined. Priorities changed above it and the build stopped there.</p>
+      component set defined, and then priorities changed above it and the build stopped.
+      I do not have a launch, adoption numbers or anything measured after release, and I
+      am not going to pretend otherwise.</p>
 
     <h3 class="ar-h3">What I would do differently</h3>
-    <p class="ar-p">Every premise this rests on is testable and none of them were tested.
-      I would want to sit with people in surveillance before another design phase &mdash;
-      to find out whether preparation is really where the anxiety lives, and whether
-      anyone would record an appointment at all.</p>
+    <p class="ar-p">I would put people in front of the premises before the design phase,
+      not after it. Every assumption this rests on is testable and none of them were
+      tested &mdash; whether preparation is really where the anxiety lives, and whether
+      anyone would record an appointment at all. Designing confidently on top of
+      untested premises is the habit I took away from this.</p>
 
-    <p class="ar-p">The part I would defend is the subtraction. Deciding early that Carry
-      does not record, does not deliver results and does not let the model write anything
-      removed most of the hard questions before they became interface problems.</p>
+    <h3 class="ar-h3">What I carry forward</h3>
+    <p class="ar-p">The subtraction. Deciding early that Carry does not record, does not
+      deliver results and does not let a model write anything removed most of the hard
+      questions before they could become interface problems &mdash; and it is now the
+      first thing I look for on a new brief: what should this refuse to do.</p>
 
     <div class="ar-end"><p>The design system, the five documented flows and the seeded
       content come from the project&rsquo;s own documentation. The prototypes are rebuilt
@@ -26664,15 +26785,15 @@ em,
     </div>
 
     
-    <header class="ar-mast">
+    <header class="ar-mast cs-mast">
       <p class="ar-kicker">Case study</p>
       <h1 class="ar-title" id="of-title">OptiFlow</h1>
-      <p class="ar-standfirst">Training smarter models by designing the moment a person
-        disagrees with one.</p>
+      <p class="ar-standfirst">I designed the moment a reviewer disagrees with a model,
+        and turned that disagreement into feedback the system could learn from.</p>
       <dl class="ar-meta">
-        <div class="ar-meta__row"><dt>Role</dt><dd>Product Designer &mdash; tagging stage, review flow</dd></div>
+        <div class="ar-meta__row"><dt>Role</dt><dd>Product designer &mdash; tagging stage, review flow</dd></div>
         <div class="ar-meta__row"><dt>Team</dt><dd>Ops reviewers, product, engineering</dd></div>
-        <div class="ar-meta__row"><dt>Status</dt><dd>Design delivered and handed off</dd></div>
+        <div class="ar-meta__row"><dt>Phase</dt><dd>Design delivered and handed to engineering</dd></div>
       </dl>
     </header>
 
@@ -26683,22 +26804,25 @@ em,
     <span class="ar-h2">Human judgement in the loop</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="cs-lead">I designed the tagging stage &mdash; where a reviewer accepts,
-      corrects or adds to what the model proposed, and where that judgement becomes
+    <p class="cs-lead">I designed the tagging stage, where a reviewer accepts, corrects
+      or adds to what the model proposed &mdash; and where that judgement becomes
       feedback the system can use.</p>
-    <p class="cs-status">Design delivered &middot; handed to engineering</p>
 
-    <p class="ar-p">optiSTREAM reads insurance and billing correspondence, classifies it,
-      extracts what matters and suggests billing tags. Ingest and extraction were already
-      accurate. Tagging still needed a person, and had no interface designed for making
-      that judgement quickly.</p>
+    <p class="cs-status">I delivered the design and handed it to engineering</p>
+
+    <p class="ar-p">I came in after the pipeline already worked. optiSTREAM reads
+      insurance and billing correspondence, classifies it, extracts what matters and
+      suggests billing tags, and ingest and extraction were both running at around 99%.
+      The one stage that still needed a person &mdash; agreeing or disagreeing with a
+      suggested tag &mdash; had no interface designed for it. That stage was what I was
+      given, and I kept the work inside it rather than spreading across the system.</p>
 
     <div class="ar-note"><p><b>On the numbers.</b> Measured accuracy was 99.5% at ingest
       and 99% at extraction. Tagging carried a <b>target</b> of 75% &mdash; a goal the
       feedback loop was meant to move toward, not a result measured after release. I have
       not claimed it as an outcome because I cannot evidence it as one.</p></div>
 
-    <h3 class="ar-h3">What I contributed</h3>
+    <h3 class="ar-h3">What I owned</h3>
     <ul class="cs-did">
       <li>Designed the tagging workspace and the accept / correct / add interaction</li>
       <li>Made model confidence and its evidence visible at the moment of judgement</li>
@@ -26715,12 +26839,17 @@ em,
     <span class="ar-h2">Corrections with no reasoning attached</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="ar-p">Reviewers were correcting a model all day with no way to say
-      <em>why</em> it was wrong. The correction landed; the reasoning did not. So the same
-      mistakes came back.</p>
+    <p class="ar-p">I started by watching what reviewers were actually doing, and the
+      thing that stood out was how much judgement was evaporating. They corrected the
+      model all day and had no way to say <em>why</em> it was wrong. The correction
+      landed, the reasoning did not, and the same mistakes came back next week.</p>
 
-    <p class="ar-p">The constraint was throughput. Ops reviewers work at volume, and any
-      step that added seconds per document would not survive contact with the floor.</p>
+    <p class="ar-p">That narrowed the problem for me: this was not a model accuracy
+      problem, it was a problem with the moment a person disagrees with one. What made it
+      hard was the constraint sitting on top of it. Ops reviewers work at volume, and I
+      was proposing to ask them for something extra at exactly the point they were
+      trying to move on &mdash; any step that added seconds per document would not
+      survive contact with the floor.</p>
   </div>
 </section>
 <section class="acc" data-open="0">
@@ -26729,12 +26858,16 @@ em,
     <span class="ar-h2">What changed the direction</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <div class="cs-move"><p class="cs-move__l">Reviewers could not tell a confident suggestion from a guess</p>
-      <p>Everything arrived looking equally certain. So confidence and the evidence behind it moved next to the tag itself, where the decision is actually made.</p></div>
-    <div class="cs-move"><p class="cs-move__l">A correction without a reason teaches the model nothing</p>
-      <p>Engineering could only act on categorised feedback. So Validate stays disabled until a reason is given &mdash; the one place I deliberately added friction.</p></div>
-    <div class="cs-move"><p class="cs-move__l">The pipeline was not the problem; the handoff to a person was</p>
-      <p>Ingest and extraction were already at 99%. So the work stayed inside one stage rather than spreading across the whole system.</p></div>
+    <div class="cs-move"><p class="cs-move__l">Every suggestion looked equally certain</p>
+      <p>Watching a review pass, I noticed reviewers had no way to tell a confident suggestion from a guess &mdash; the confidence figure existed, but not where the decision was being made. So I moved confidence and the evidence behind it next to the tag itself.</p></div>
+    <div class="cs-move"><p class="cs-move__l">Engineering could only use categorised feedback</p>
+      <p>I asked what the feedback loop could actually consume, and free-text corrections were not it. That reframed the whole design for me: the reason was not metadata on the correction, it was the product. So Validate stays disabled until a reason is given &mdash; the one place I deliberately added friction.</p></div>
+    <div class="cs-move"><p class="cs-move__l">Disagreement was being treated as an exception</p>
+      <p>The existing flow made accepting easy and correcting awkward, which quietly taught reviewers to accept. So I designed disagreement as a first-class action with the same weight as agreement.</p></div>
+
+    <p class="ar-p">Before designing screens I walked the whole path a document takes, so
+      I could see exactly where my stage sat and what it owed the stages either side of
+      it. The reviewer&rsquo;s judgement is the only human step in it.</p>
 
     <div class="cs-band">
 
@@ -26820,29 +26953,34 @@ em,
     <span class="ar-h2">Clarity, Trust, Performance</span>
   </div>
   <div class="acc__b" data-acc-b>
+    <p class="acc__lede ar-p">These arrived in order. Clarity was the first thing I had
+      to fix before a reviewer could decide anything, trust was what stopped them
+      accepting on autopilot, and performance was the argument I had to win to keep the
+      one piece of friction I had added.</p>
+
     <h3 class="ar-h3">Clarity</h3>
-    <div class="cs-move"><p class="cs-move__l">What was difficult</p>
-      <p>A reviewer sees a document, a suggested tag and a confidence figure, and has seconds to decide whether to trust it.</p></div>
-    <div class="cs-move"><p class="cs-move__l">What I changed</p>
-      <p>Confidence, the evidence for it and the action sit in one place, in a fixed order, so the reviewer reads the same shape every time.</p></div>
-    <div class="cs-move"><p class="cs-move__l">Why it mattered</p>
-      <p>At volume, a consistent layout is what makes a decision fast.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I saw</p>
+      <p>My first layout put the document, the suggested tag and the confidence figure in three separate places, and timing a reviewer against it made the problem obvious: they were hunting for the second and third before they could act on the first, several hundred times a day.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I did</p>
+      <p>I collapsed the decision into one place and fixed the order &mdash; what the model proposed, how sure it is, what it read to get there, then the action &mdash; so the reviewer reads the same shape every time and stops re-learning the screen.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What changed</p>
+      <p>The decision became a glance instead of a search. At volume, a layout you do not have to read is what makes it fast.</p></div>
 
     <h3 class="ar-h3">Trust</h3>
-    <div class="cs-move"><p class="cs-move__l">What was difficult</p>
-      <p>The model is wrong often enough that a reviewer who stops checking is worse than no model at all.</p></div>
-    <div class="cs-move"><p class="cs-move__l">What I changed</p>
-      <p>Every suggestion shows what it was based on, and disagreeing is a first-class action rather than an exception path.</p></div>
-    <div class="cs-move"><p class="cs-move__l">Why it mattered</p>
-      <p>The feedback loop only works if people are willing to disagree with it.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I saw</p>
+      <p>Once it was quick, a worse failure came into view: a reviewer who stops checking is worse than no model at all, and a fast Accept button is very good at producing one. The model is wrong often enough to matter.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I did</p>
+      <p>I put the evidence for each suggestion where the reviewer has to pass it to accept, and gave disagreeing the same weight as agreeing instead of routing it through an exception path.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What changed</p>
+      <p>Disagreement became the normal thing it needed to be. The feedback loop only produces anything if people are willing to use it.</p></div>
 
     <h3 class="ar-h3">Performance</h3>
-    <div class="cs-move"><p class="cs-move__l">What was difficult</p>
-      <p>Requiring a reason for every correction is friction, and friction at volume is expensive.</p></div>
-    <div class="cs-move"><p class="cs-move__l">What I changed</p>
-      <p>The reasons are a short fixed list rather than free text, so the cost is one tap and the output is something engineering can group.</p></div>
-    <div class="cs-move"><p class="cs-move__l">Why it mattered</p>
-      <p>That was the tradeoff I had to argue for: slightly slower per correction, in exchange for feedback that could actually change the model.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I saw</p>
+      <p>Requiring a reason before Validate is friction, and friction at volume is a cost somebody has to sign off. Ops were right to push back on it &mdash; I was adding a step to the most repeated action in their day.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What I did</p>
+      <p>I made the reasons a short fixed list rather than free text, so the cost is one tap and the output is already categorised. Then I took the numbers to product and engineering and made the tradeoff explicit rather than hoping nobody measured it.</p></div>
+    <div class="cs-move"><p class="cs-move__l">What changed</p>
+      <p>The step survived review. Slightly slower per correction, in exchange for the only feedback that could actually move the model &mdash; and that was the argument I had to win for any of the rest to matter.</p></div>
   </div>
 </section>
 <section class="acc" data-open="0">
@@ -26851,14 +26989,22 @@ em,
     <span class="ar-h2">Where it landed</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="ar-p">The tagging stage was designed, specified and handed to engineering
-      with its states and feedback categories defined. I did not own the model, the
-      pipeline or the release, and I have no post-launch measurement to point at.</p>
+    <p class="ar-p">I specified the tagging stage with its states and feedback
+      categories and handed it to engineering. I did not own the model, the pipeline or
+      the release, and I have no post-launch measurement to point at &mdash; the 75%
+      tagging figure was the target we were designing toward, not a result.</p>
 
     <h3 class="ar-h3">What I would do differently</h3>
     <p class="ar-p">I would have pushed to instrument the reason codes from day one. The
-      design assumes reviewers pick an accurate reason under time pressure, and that
-      assumption was never tested.</p>
+      whole design rests on reviewers picking an accurate reason under time pressure, and
+      I never tested whether they do &mdash; which means the loop could have been
+      collecting confident noise and nobody would have known.</p>
+
+    <h3 class="ar-h3">What I carry forward</h3>
+    <p class="ar-p">Asking engineering what the system can consume before designing what
+      the person does. Starting from the shape of the feedback rather than the shape of
+      the screen is what turned this from a nicer tagging UI into something that could
+      change the model.</p>
 
     <div class="ar-end"><p>Structure, terminology, examples, tags, confidence levels and
       justification reasons are taken from the project&rsquo;s own Figma file. The diagrams
