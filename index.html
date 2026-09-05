@@ -244,6 +244,16 @@
   --surface-sunken: #DEDEDE;
   --surface-raised: #F7F7F7;
 
+  /* Case studies run on a brighter wall than the rest of the site: the page is
+     mostly long-form reading and device frames, and the darker grey of the work
+     index made both sit heavy. The card still lifts off it, just by less, so
+     the borders do more of the structural work. Dark keeps its own values —
+     these are aliases, so nothing needs restating below. */
+  --canvas-case:         #F6F6F6;
+  --surface-case:        #FFFFFF;
+  --surface-sunken-case: #E8E8E8;
+  --surface-raised-case: #FFFFFF;
+
   --ink:            #262626;   /* 12.46:1 on canvas, 14.13:1 on a card */
   --ink-secondary:  #4A4A4A;   /* 8.27:1 on a card */
   --ink-muted:      #6A6A6A;   /* 5.05:1 on a card, 4.46:1 on canvas */
@@ -396,6 +406,11 @@
   --surface-sunken: #08080A;
   --surface-raised: #35353A;
 
+  --canvas-case:         #0D0D0E;
+  --surface-case:        #2A2A2C;
+  --surface-sunken-case: #08080A;
+  --surface-raised-case: #35353A;
+
   --ink:            #EDEDED;   /* 16.00:1 on canvas, 13.26:1 on a card */
   --ink-secondary:  #D2D2D2;   /* 11.42:1 on a card — body copy was reading as
                                   a muted tier against a 13.26:1 title; this is
@@ -514,6 +529,11 @@
     --surface:        #2A2A2C;   /* cards lift 1.42:1 */
     --surface-sunken: #08080A;
     --surface-raised: #35353A;
+
+    --canvas-case:         #0D0D0E;
+    --surface-case:        #2A2A2C;
+    --surface-sunken-case: #08080A;
+    --surface-raised-case: #35353A;
 
     --ink:            #EDEDED;   /* 16.00:1 on canvas, 13.26:1 on a card */
     --ink-secondary:  #D2D2D2;   /* 11.42:1 on a card — body copy was reading as
@@ -4395,6 +4415,22 @@ em,
     max-width: 100%;
     margin-left: var(--year-x, 0px);
   }
+
+  /* THE MARK, THE ROLE AND THE FIELD SHARE ONE AXIS.
+
+     They were three things left-aligned to a column edge, and the mark is the
+     only one of the three whose width varies — so the two narrow marks, CVS
+     and CG Infinity, sat well left of the wide ones while the two lines of
+     text under them started at the same place in every column. The result was
+     a row where the logos wandered and the text did not, and neither of them
+     agreed with the other.
+
+     Centred, the three read as one stack per employer. The dot follows for
+     free: js/clients.js measures where the mark actually ended up and puts the
+     dot under its middle, so moving the mark moves the dot and the year above
+     it without a single number changing hands. */
+  .tl__stop { text-align: center; }
+  .tl__org { justify-content: center; }
 }
 
 .tl__years {
@@ -11268,6 +11304,46 @@ em,
    ========================================================================== */
 
 .cu {
+  /* --- the hardware, which is not part of the product palette ------------
+     The frame is a phone, not a screenshot border, so it gets the four
+     values a real edge is made of: the black mask at the glass, the bezel,
+     the machined band around it, and the dark contour where the band turns
+     away from the light. Flat colours — no gradient, no reflection. These
+     are the same in both themes, because the hardware is. */
+  --cu-mask:    #0A0B0C;
+  --cu-bezel:   #16181A;
+  --cu-seam:    #303539;      /* bezel meets band */
+  --cu-rail:    #8E959B;      /* the band */
+  --cu-contour: rgba(0, 0, 0, 0.55);
+
+  /* THE SIDE BUTTONS, as one reusable background stack.
+
+     They are machined out of the same band as the edge, so they are the band
+     colour with a dark seam under them rather than four black tabs stuck on
+     the side. Flat rectangles: at every scale these frames are drawn at, the
+     real 1.6pt corner radius is under a pixel, and a stretched rounded SVG
+     would read softer than the hardware, not sharper.
+
+     Geometry is the current iPhone: action button, volume up, volume down on
+     the left; the side button on the right, longer and starting lower. All
+     four are measured from the top of the device and multiplied by the scale
+     the frame is drawn at, so they stay in proportion at any size. */
+  --cu-btn-seam: rgba(0, 0, 0, 0.45);
+  --cu-btns:
+    linear-gradient(var(--cu-rail), var(--cu-rail)) no-repeat left 0    top calc(118px * var(--cu-scale, 1)) / calc(3px * var(--cu-scale, 1)) calc(30px * var(--cu-scale, 1)),
+    linear-gradient(var(--cu-rail), var(--cu-rail)) no-repeat left 0    top calc(166px * var(--cu-scale, 1)) / calc(3px * var(--cu-scale, 1)) calc(58px * var(--cu-scale, 1)),
+    linear-gradient(var(--cu-rail), var(--cu-rail)) no-repeat left 0    top calc(236px * var(--cu-scale, 1)) / calc(3px * var(--cu-scale, 1)) calc(58px * var(--cu-scale, 1)),
+    linear-gradient(var(--cu-rail), var(--cu-rail)) no-repeat right 0   top calc(196px * var(--cu-scale, 1)) / calc(3px * var(--cu-scale, 1)) calc(92px * var(--cu-scale, 1));
+
+  /* The SE puts the side button higher and its buttons sit against a much
+     taller chassis, so it gets its own offsets rather than the same numbers
+     landing halfway down the bezel. */
+  --cu-btns-se:
+    linear-gradient(var(--cu-rail), var(--cu-rail)) no-repeat left 0    top calc(140px * var(--cu-scale, 1)) / calc(3px * var(--cu-scale, 1)) calc(26px * var(--cu-scale, 1)),
+    linear-gradient(var(--cu-rail), var(--cu-rail)) no-repeat left 0    top calc(186px * var(--cu-scale, 1)) / calc(3px * var(--cu-scale, 1)) calc(56px * var(--cu-scale, 1)),
+    linear-gradient(var(--cu-rail), var(--cu-rail)) no-repeat left 0    top calc(252px * var(--cu-scale, 1)) / calc(3px * var(--cu-scale, 1)) calc(56px * var(--cu-scale, 1)),
+    linear-gradient(var(--cu-rail), var(--cu-rail)) no-repeat right 0   top calc(150px * var(--cu-scale, 1)) / calc(3px * var(--cu-scale, 1)) calc(88px * var(--cu-scale, 1));
+
   /* --- the documented palette, light ------------------------------------ */
   --cu-app: #F8F9FA;          /* background.default */
   --cu-surface: #FCFCFD;      /* background.paper */
@@ -11397,7 +11473,6 @@ em,
    for on each side (412 x 866). */
 .cu-app {
   --cu-w: 390px;
-  --cu-bezel: #16181A;
   /* The island is a variable so a device that does not have one can switch it
      off without restating the rest of the status bar. */
   --cu-island: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20108%2030%22%3E%3Crect%20width%3D%22108%22%20height%3D%2230%22%20rx%3D%2215%22%20fill%3D%22%2316181A%22%2F%3E%3C%2Fsvg%3E");
@@ -11415,10 +11490,50 @@ em,
   border-radius: 44px;
   overflow: hidden;
   isolation: isolate;
+  /* THE EDGE IS FIVE RINGS INSIDE THE SAME 11 POINTS.
+     A single black ring at 10px read as a sticker: black, then page, with
+     nothing in between that a phone actually has. These are the layers you
+     can see on the real hardware, in order out from the glass — the black
+     mask at the display edge, the bezel, the seam, the machined band, and
+     the contour line where the band stops. Every one is a flat colour and
+     the total is still 11px, so no measurement on this page moves. */
   box-shadow:
-    0 0 0 10px var(--cu-bezel),                    /* the bezel */
-    0 0 0 11px rgba(255, 255, 255, 0.10),          /* the machined edge */
+    0 0 0 1px  var(--cu-mask),
+    0 0 0 7px  var(--cu-bezel),
+    0 0 0 8px  var(--cu-seam),
+    0 0 0 10px var(--cu-rail),
+    0 0 0 11px var(--cu-contour),
     0 6px 22px rgba(0, 0, 0, 0.14);                /* it is sitting on a page */
+}
+
+/* THE BUTTONS GO ON THE FIT, NOT ON THE APP.
+
+   The app clips its own overflow — it has to, it is a scrolling viewport — so
+   nothing drawn inside it can reach the outside of the frame. The fit is the
+   box the app is centred in, it is not scaled itself, and it already carries
+   --cu-scale, which is everything the hardware needs. The overlay is 3 points
+   wider than the device on each side so the buttons stand slightly proud of
+   the band, the way they do on the hardware.
+
+   The comparison frames draw their own chassis and get their buttons from
+   that rule instead, so they are excluded here. */
+.cu-fit:not(.cu-w__fit)::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset-block-start: 0;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  width: calc(418px * var(--cu-scale, 1));
+  /* Only as tall as it needs to be: every button is in the top third. */
+  height: calc(340px * var(--cu-scale, 1));
+  pointer-events: none;
+  background: var(--cu-btns);
+}
+/* The stage hangs the device 11 points below the top of the fit so the bezel
+   is not cropped; the hardware follows it. */
+.cu-stage .cu-fit:not(.cu-w__fit)::before {
+  inset-block-start: calc(11px * var(--cu-scale, 1));
 }
 
 /* And the home indicator. Current ink at low opacity rather than a fixed
@@ -15555,10 +15670,34 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   inset-block-end: calc(var(--dev-bot) * -1 * var(--cu-scale, 1));
   inset-inline: calc(var(--dev-side) * -1 * var(--cu-scale, 1));
   border-radius: calc(var(--dev-r) * var(--cu-scale, 1));
-  background: #16181A;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.16);
+  background: var(--cu-bezel, #16181A);
+  /* The same edge the interactive frames have, drawn from the outside in
+     because this one is a filled chassis rather than a ring of shadow: the
+     contour, then the machined band, then the seam where it meets the bezel.
+     Scaled, so a frame at a third of the size gets a third of the edge
+     instead of a band as thick as its own bezel. */
+  box-shadow:
+    inset 0 0 0 calc(1px * var(--cu-scale, 1)) var(--cu-contour, rgba(0,0,0,0.55)),
+    inset 0 0 0 calc(3px * var(--cu-scale, 1)) var(--cu-rail, #8E959B),
+    inset 0 0 0 calc(4px * var(--cu-scale, 1)) var(--cu-seam, #303539);
 }
 .cu-w__fit > .cu-app { z-index: 1; }
+
+/* The buttons sit on their own layer above the chassis, because an inset
+   shadow paints over the background and would otherwise cover them. The box
+   is 3 points wider than the chassis on each side, so they stand proud of the
+   band rather than being sunk into it. */
+.cu-w__fit:not([data-dev="android"])::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  inset-block-start: calc(var(--dev-top) * -1 * var(--cu-scale, 1));
+  inset-block-end: calc(var(--dev-bot) * -1 * var(--cu-scale, 1));
+  inset-inline: calc((var(--dev-side) + 3px) * -1 * var(--cu-scale, 1));
+  pointer-events: none;
+  background: var(--cu-btns);
+}
+.cu-w__fit[data-dev="se"]::after { background: var(--cu-btns-se); }
 
 /* The comparison frames carry no drop shadow: three of them at a third of the
    size is a row of smudges rather than three phones, and a shadow under a
@@ -15877,6 +16016,27 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   line-height: var(--cs-lh1);
   font-weight: 560;
   letter-spacing: -0.015em;
+}
+
+/* --------------------------------------------------------------------------
+   THE CASE-STUDY WALL
+
+   The site index runs on #E9E9E9, which is the right value behind a grid of
+   dense project cards. Behind the Carry case study it is the wrong one: the
+   page is long-form reading and a run of dark device frames, and the darker
+   grey pulled both down. The case study gets its own, brighter wall, and its
+   cards go to plain white so they still lift off it.
+
+   The values are aliases resolved per theme in 01-tokens.css, so the dark
+   theme is untouched — it maps to the same values it always had. --canvas is
+   read by <body>, which sits outside .case, so the override has to be written
+   on :root and keyed off the route rather than on the article itself.
+   -------------------------------------------------------------------------- */
+:root[data-route="carry"] {
+  --canvas:         var(--canvas-case);
+  --surface:        var(--surface-case);
+  --surface-sunken: var(--surface-sunken-case);
+  --surface-raised: var(--surface-raised-case);
 }
 
 
@@ -16381,20 +16541,36 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
 /* --- the tasks ------------------------------------------------------------- */
 
+/* FIVE TASKS, NOT ONE SENTENCE.
+
+   They were a run-on line with middots between them, which at most widths
+   broke mid-list and left one task orphaned on a second line under the label
+   — five separate things pretending to be prose. They are a list, so they are
+   set as one: the label on its own line, the tasks in even columns that
+   reflow from three to two to one. Nothing is added to say they are separate;
+   the column does that. */
 .ts-tasks {
   margin-block-start: var(--cs-group);
-  color: var(--ink-secondary);
-  max-width: none;
+  display: grid;
+  gap: 12px;
 }
 .ts-tasks__l {
-  display: inline-block;
-  margin-inline-end: 12px;
+  margin: 0;
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--ink-muted);
 }
-.ts-tasks i { font-style: normal; color: var(--ink-muted); padding-inline: 4px; }
+.ts-tasks__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(172px, 1fr));
+  gap: 10px 32px;
+  color: var(--ink-secondary);
+}
+.ts-tasks__list li { margin: 0; }
 
 /* --- figures --------------------------------------------------------------- */
 
@@ -18374,6 +18550,16 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   --surface-sunken: #DEDEDE;
   --surface-raised: #F7F7F7;
 
+  /* Case studies run on a brighter wall than the rest of the site: the page is
+     mostly long-form reading and device frames, and the darker grey of the work
+     index made both sit heavy. The card still lifts off it, just by less, so
+     the borders do more of the structural work. Dark keeps its own values —
+     these are aliases, so nothing needs restating below. */
+  --canvas-case:         #F6F6F6;
+  --surface-case:        #FFFFFF;
+  --surface-sunken-case: #E8E8E8;
+  --surface-raised-case: #FFFFFF;
+
   --ink:            #262626;   /* 12.46:1 on canvas, 14.13:1 on a card */
   --ink-secondary:  #4A4A4A;   /* 8.27:1 on a card */
   --ink-muted:      #6A6A6A;   /* 5.05:1 on a card, 4.46:1 on canvas */
@@ -18526,6 +18712,11 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   --surface-sunken: #08080A;
   --surface-raised: #35353A;
 
+  --canvas-case:         #0D0D0E;
+  --surface-case:        #2A2A2C;
+  --surface-sunken-case: #08080A;
+  --surface-raised-case: #35353A;
+
   --ink:            #EDEDED;   /* 16.00:1 on canvas, 13.26:1 on a card */
   --ink-secondary:  #D2D2D2;   /* 11.42:1 on a card — body copy was reading as
                                   a muted tier against a 13.26:1 title; this is
@@ -18644,6 +18835,11 @@ button.cu-q:hover { background: var(--cu-teal-8); }
     --surface:        #2A2A2C;   /* cards lift 1.42:1 */
     --surface-sunken: #08080A;
     --surface-raised: #35353A;
+
+    --canvas-case:         #0D0D0E;
+    --surface-case:        #2A2A2C;
+    --surface-sunken-case: #08080A;
+    --surface-raised-case: #35353A;
 
     --ink:            #EDEDED;   /* 16.00:1 on canvas, 13.26:1 on a card */
     --ink-secondary:  #D2D2D2;   /* 11.42:1 on a card — body copy was reading as
@@ -20848,6 +21044,16 @@ em,
   --surface-sunken: #DEDEDE;
   --surface-raised: #F7F7F7;
 
+  /* Case studies run on a brighter wall than the rest of the site: the page is
+     mostly long-form reading and device frames, and the darker grey of the work
+     index made both sit heavy. The card still lifts off it, just by less, so
+     the borders do more of the structural work. Dark keeps its own values —
+     these are aliases, so nothing needs restating below. */
+  --canvas-case:         #F6F6F6;
+  --surface-case:        #FFFFFF;
+  --surface-sunken-case: #E8E8E8;
+  --surface-raised-case: #FFFFFF;
+
   --ink:            #262626;   /* 12.46:1 on canvas, 14.13:1 on a card */
   --ink-secondary:  #4A4A4A;   /* 8.27:1 on a card */
   --ink-muted:      #6A6A6A;   /* 5.05:1 on a card, 4.46:1 on canvas */
@@ -21000,6 +21206,11 @@ em,
   --surface-sunken: #08080A;
   --surface-raised: #35353A;
 
+  --canvas-case:         #0D0D0E;
+  --surface-case:        #2A2A2C;
+  --surface-sunken-case: #08080A;
+  --surface-raised-case: #35353A;
+
   --ink:            #EDEDED;   /* 16.00:1 on canvas, 13.26:1 on a card */
   --ink-secondary:  #D2D2D2;   /* 11.42:1 on a card — body copy was reading as
                                   a muted tier against a 13.26:1 title; this is
@@ -21118,6 +21329,11 @@ em,
     --surface:        #2A2A2C;   /* cards lift 1.42:1 */
     --surface-sunken: #08080A;
     --surface-raised: #35353A;
+
+    --canvas-case:         #0D0D0E;
+    --surface-case:        #2A2A2C;
+    --surface-sunken-case: #08080A;
+    --surface-raised-case: #35353A;
 
     --ink:            #EDEDED;   /* 16.00:1 on canvas, 13.26:1 on a card */
     --ink-secondary:  #D2D2D2;   /* 11.42:1 on a card — body copy was reading as
@@ -27336,9 +27552,16 @@ em,
       <li class="ts-node"><b>Retest</b></li>
     </ol>
 
-    <p class="ts-tasks"><span class="ts-tasks__l">Tasks tested</span>
-      Prepare for visit <i>&middot;</i> Add a question <i>&middot;</i> Reorder questions
-      <i>&middot;</i> Upload recording <i>&middot;</i> Find what the doctor said</p>
+    <div class="ts-tasks">
+      <p class="ts-tasks__l">Tasks tested</p>
+      <ul class="ts-tasks__list">
+        <li>Prepare for visit</li>
+        <li>Add a question</li>
+        <li>Reorder questions</li>
+        <li>Upload recording</li>
+        <li>Find what the doctor said</li>
+      </ul>
+    </div>
 
     <ul class="ts-figs">
       <li><b>~85&ndash;90%</b><span>completed preparation unassisted, after iteration</span></li>
@@ -27451,7 +27674,7 @@ em,
 </section>
 <section class="ar-demo ar-wide cu" data-cu="widths">
   <div class="ar-demo__head">
-    <p class="ar-demo__title">One rule set, three viewports — the row grows, nothing is retuned</p>
+    <p class="ar-demo__title">Responsiveness across different devices</p>
   </div>
   <p class="ar-demo__intro">The next thing to break was length. Patients write long
     questions and my fixed row was cutting them off, so I made the row grow and checked
@@ -30975,12 +31198,24 @@ window.PF = window.PF || {};
 
     function scenario() { return st.sc; }
 
+    /* SIGN-IN IS A SCENE, NOT A TOLL GATE.
+
+       Every run used to start at the phone-number screen and spend four
+       seconds signing in before it reached the thing the reader had actually
+       asked to see. That is right when the condition IS the sign-in — a wrong
+       code, an expired one, or a connection that cannot check either, all of
+       which happen on that screen and nowhere else. For every other condition
+       it is a preamble, so the run starts where the condition lives. */
+    function authIsTheScene(sc) {
+      return sc.auth !== HAPPY.auth || sc.conn === 'offline';
+    }
+
     function init(keepScenario) {
       stop();
       if (auth) auth.clear();
       if (panel) panel.clear();
       var sc = keepScenario && st ? st.sc : JSON.parse(JSON.stringify(HAPPY));
-      st = { sc: sc, view: 'auth', tab: 'q' };
+      st = { sc: sc, view: authIsTheScene(sc) ? 'auth' : 'capture', tab: 'q' };
       auth = makeAuth({
         scenario: scenario,
         render: render,
