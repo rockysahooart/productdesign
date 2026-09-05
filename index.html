@@ -3354,17 +3354,6 @@ em,
    no logo.
    -------------------------------------------------------------------------- */
 
-.hero__edu {
-  width: 100%;
-  margin: 0;
-  /* No rule of its own. One hairline under the portrait separates the picture
-     from the metadata; everything below that is grouped by space, which is
-     quieter than four stacked dividers. */
-  padding-top: 4px;
-  font-family: var(--font-sans);
-}
-
-.hero__edu dt,
 .hero__lbl--block {
   font-size: 10.5px;
   font-weight: 500;
@@ -3379,19 +3368,6 @@ em,
   width: 100%;
   margin: 14px 0 6px;
   font-family: var(--font-sans);
-}
-
-.hero__edu dd {
-  margin: 0;
-  font-size: clamp(11px, 0.55vw + 7.5px, 12.5px);
-  line-height: 1.5;
-  color: var(--ink-muted);
-}
-
-.hero__edu dd b {
-  display: block;
-  font-weight: 500;
-  color: var(--ink-secondary);
 }
 
 /* --------------------------------------------------------------------------
@@ -3645,7 +3621,6 @@ em,
   }
 }
 
-.section--capsslot .hero__edu,
 .section--capsslot .hero__caps { margin: 0; padding: 0; border: 0; }
 
 /* Both columns start on the same line. The skills label carries 14px of top
@@ -16549,28 +16524,75 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    set as one: the label on its own line, the tasks in even columns that
    reflow from three to two to one. Nothing is added to say they are separate;
    the column does that. */
+/* --- the task list ---------------------------------------------------------
+
+   This was five names flowed across an auto-fit grid, which put four on one
+   line and one underneath — a ragged block that looked like a wrapping
+   accident rather than a list of five things. It is a fixed protocol, so it
+   is drawn as one: its own box, a header that names it, one task per row,
+   and a designation on each so a task can be referred to by name.
+
+   One column, not two. Two columns of five leaves an orphan in the third
+   row, which is the problem this is fixing; a single column puts every
+   designation on one axis and every task name on another, and the box is
+   held to the reading measure so the space beside it is deliberate.
+   -------------------------------------------------------------------------- */
+
 .ts-tasks {
   margin-block-start: var(--cs-group);
-  display: grid;
-  gap: 12px;
+  max-width: var(--cs-read);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  /* The rows run to the edge, so the corners have to clip them. */
+  overflow: hidden;
 }
+
 .ts-tasks__l {
   margin: 0;
+  padding: 13px 18px;
+  border-block-end: 1px solid var(--border);
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--ink-muted);
 }
+
+/* .ar ol carries a left indent and a bottom margin for prose lists; this one
+   is a table, and its rows have to reach the box edge. */
+.ar .ts-tasks__list,
 .ts-tasks__list {
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.ar .ts-tasks__list li,
+.ts-tasks__list li {
+  margin: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(172px, 1fr));
-  gap: 10px 32px;
+  grid-template-columns: 32px 1fr;
+  align-items: baseline;
+  gap: 14px;
+  padding: 12px 18px;
   color: var(--ink-secondary);
 }
-.ts-tasks__list li { margin: 0; }
+.ts-tasks__list li + li { border-block-start: 1px solid var(--border); }
+
+/* The designation is the only thing in full ink: it is what the rest of the
+   section points at when it says which task moved. Tabular figures so the
+   column does not shift between T1 and T5. */
+.ts-tasks__id {
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 559px) {
+  .ts-tasks__l { padding-inline: 14px; }
+  .ts-tasks__list li { padding-inline: 14px; gap: 12px; grid-template-columns: 28px 1fr; }
+}
 
 /* --- figures --------------------------------------------------------------- */
 
@@ -17043,7 +17065,6 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   }
 
   .hero__contact a { display: inline-block; min-height: 24px; font-size: 14px; }
-  .hero__edu { padding-top: 0; }
   .hero__copy { margin-top: 36px; }
 }
 
@@ -17522,10 +17543,8 @@ button.cu-q:hover { background: var(--cu-teal-8); }
      what lets all six be ordered against the card's own grid. */
   .hero__copy { display: contents; }
 
-  /* The selector and the education line are gone from the phone entirely.
-     Both still exist at every other width. */
-  .hero__eyebrow,
-  .hero__edu { display: none; }
+  /* The selector is gone from the phone entirely. */
+  .hero__eyebrow { display: none; }
 
   /* Zone 3 — the conversation, which is the point of the screen. */
   .hero__thread {
@@ -18290,12 +18309,6 @@ button.cu-q:hover { background: var(--cu-teal-8); }
                 <a class="link-out" data-link="linkedin">LinkedIn <span class="cta__arrow" aria-hidden="true">&#8599;</span></a>
               </span>
             </address>
-
-            <dl class="hero__edu">
-              <dt>Education</dt>
-              <dd><b>University of North Texas</b>
-                BFA, Communication Design &mdash; User Experience Design</dd>
-            </dl>
 
             <details class="hero__caps" open>
               <summary class="hero__caps__sum">10 capabilities <span
@@ -27553,14 +27566,14 @@ em,
     </ol>
 
     <div class="ts-tasks">
-      <p class="ts-tasks__l">Tasks tested</p>
-      <ul class="ts-tasks__list">
-        <li>Prepare for visit</li>
-        <li>Add a question</li>
-        <li>Reorder questions</li>
-        <li>Upload recording</li>
-        <li>Find what the doctor said</li>
-      </ul>
+      <p class="ts-tasks__l" id="ts-tasks-l">Tasks tested</p>
+      <ol class="ts-tasks__list" aria-labelledby="ts-tasks-l">
+        <li><span class="ts-tasks__id">T1</span><span>Prepare for visit</span></li>
+        <li><span class="ts-tasks__id">T2</span><span>Add a question</span></li>
+        <li><span class="ts-tasks__id">T3</span><span>Reorder questions</span></li>
+        <li><span class="ts-tasks__id">T4</span><span>Upload recording</span></li>
+        <li><span class="ts-tasks__id">T5</span><span>Find what the doctor said</span></li>
+      </ol>
     </div>
 
     <ul class="ts-figs">
@@ -34448,6 +34461,10 @@ window.PF = window.PF || {};
        seventh message is added to the array. */
     var ZONE = 0.55;     /* where a comfortable stack is centred */
     var ANCHOR = 0.81;   /* where a tall stack's bottom parks */
+    /* The last line the invitation may reach before the stack has to yield.
+       Not 1: a button flush against the bottom edge of the box reads as
+       clipped even when it is whole. */
+    var CTA_FLOOR = 0.98;
     /* And where a stack that never has to move sits: a fixed inset from the
        top of the box, above and below. Only used when the whole conversation
        fits — see place(). */
@@ -34511,13 +34528,20 @@ window.PF = window.PF || {};
       if (plist && !plist.hasAttribute('hidden') && plist.offsetHeight) {
         bottom = plist.offsetTop - base + plist.offsetHeight;
       }
-      /* The invitation is content too. It hangs below the last bubble, under
-         the reactions, and if the canvas does not know about it the box parks
-         the conversation perfectly and clips the one thing it wants clicked. */
+      /* THE INVITATION IS MEASURED, BUT IT IS NOT PART OF THE STACK.
+
+         It used to be folded straight into the span, which made the whole
+         conversation eighty pixels taller the instant it appeared — so every
+         message shoved upwards to make room for a button arriving underneath
+         them. Nothing was said, nothing was added to the thread, and the
+         thread moved. It is reported separately now: place() positions the
+         messages without it and only looks at this to check the invitation
+         still fits in the box. */
+      var ctaBottom = null;
       if (ctaRow && !ctaRow.hasAttribute('hidden') && ctaRow.offsetHeight) {
-        bottom = ctaRow.offsetTop - base + ctaRow.offsetHeight;
+        ctaBottom = ctaRow.offsetTop - base + ctaRow.offsetHeight;
       }
-      return { top: top, bottom: bottom, h: bottom - top };
+      return { top: top, bottom: bottom, h: bottom - top, ctaBottom: ctaBottom };
     }
 
     function place(instant) {
@@ -34556,6 +34580,22 @@ window.PF = window.PF || {};
          is there yet or not, which is what makes the arrival a fade rather
          than a shove. */
       if (whole()) wantTop = phone() ? FLAT_PAD : STILL_PAD;
+
+      /* THE INVITATION FITS IN THE ROOM THAT IS ALREADY THERE.
+
+         The stack parks its bottom at the anchor, which leaves the last fifth
+         of the box empty on purpose — that is where the invitation goes. So
+         its arrival costs the conversation nothing: the messages stay exactly
+         where they were and the button fades in underneath them.
+
+         The clamp is the safety net, not the plan. If a longer label or a
+         narrower card ever wrapped the invitation onto a second line and it
+         genuinely could not fit, the stack gives up only the pixels needed to
+         bring it back inside — not the whole height of the row. */
+      if (s.ctaBottom !== null) {
+        var over = (s.ctaBottom - s.top + wantTop) - H * CTA_FLOOR;
+        if (over > 0) wantTop -= over;
+      }
 
       /* Absolute, not incremental. Whatever the track was doing, this is where
          it belongs. */
@@ -35421,24 +35461,25 @@ window.PF = window.PF || {};
 
   /* ---- the credentials move down the page -------------------------------
 
-     Education and the ten skills are not hero content. A recruiter looks at a
-     portfolio for who this is, what he says, and who he has worked for; where
-     he studied and what he can list are read after the work, if at all. So
-     both nodes are moved out of the hero and into a slot below Selected Work
-     — moved, not duplicated, so there is only ever one of each on the page, in
-     the accessibility tree as much as on screen.
+     The ten skills are not hero content. A recruiter looks at a portfolio for
+     who this is, what he says, and who he has worked for; what he can list is
+     read after the work, if at all. So the node is moved out of the hero and
+     into a slot below Selected Work — moved, not duplicated, so there is only
+     ever one of it on the page, in the accessibility tree as much as on
+     screen.
 
      The skills stay behind a disclosure on a phone and stand open on a wider
      screen. `open` is an attribute rather than a style, so the breakpoint has
      to be read here rather than in CSS. */
   function credentials() {
     var slot = document.querySelector('[data-caps-slot]');
-    var edu = document.querySelector('.hero__edu');
     var caps = document.querySelector('.hero__caps');
 
-    /* Education leaves the hero for good. Where he studied is something you
-       check after the work, not before it. */
-    if (slot && edu) slot.appendChild(edu);
+    /* Education used to be moved down here too. On a desktop it was the only
+       thing in the slot, which made a band of its own between the last
+       project and Everything else — two lines of degree with forty pixels of
+       padding above and below, holding the page apart for nothing. It is off
+       the page now, and the slot collapses when there is nothing in it. */
 
     if (!caps) return;
 
