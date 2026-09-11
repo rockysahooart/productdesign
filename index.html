@@ -7943,41 +7943,268 @@ em,
 .cta [data-cta-label][data-external] ~ .cta__arrow { display: none; }
 
 /* --------------------------------------------------------------------------
-   IN THE PROJECT BROWSER
+   IN THE PROJECT BROWSER — ONE REWRITE AT A TIME, AND YOU WATCH IT HAPPEN
 
-   The browser's visual area is a tall portrait column, so the thumbnail gets
-   room it does not have on the card and uses it the way a printed comparison
-   would: the rows open up, and the block sits against the top of the column
-   rather than stretched to fill it. Nothing about the component changes —
-   only how much air is between its rows.
+   The card down the page carries all five rewrites, because the set is the
+   finding: one relabelled status is an edit, five under one rule is a system.
+   The browser slide is not that. It is a preview in a tall narrow column, and
+   five pairs at that width came out as a stack of pills you scan instead of
+   read — the same shape five times, none of them big enough to be the point.
+
+   So the slide shows one at reading size and walks the five. And because the
+   work WAS a rewrite, the slide performs it rather than presenting the result:
+   the category, then the old label, then the line that carries it across, then
+   the new one, then why it moved. Watching it happen once says more than five
+   finished pairs sitting still.
+
+   ALL FIVE ARE STACKED IN ONE GRID CELL. That is what keeps the block the
+   height of its tallest member from the first frame — no measuring pass, no
+   jump when a two-line label follows a one-line one, and a cross-fade for
+   free. Only opacity moves here, and the one line that draws.
+
+   WITHOUT SCRIPT IT IS THE FIRST ONE, FINISHED. The markup ships with
+   data-on on item one and on the first tick, and every rule below is written
+   against that attribute — so the slide is a complete, legible artifact with
+   no JS at all. js/dsa.js only moves the attribute along.
    -------------------------------------------------------------------------- */
 
-.pv__dsa {
-  display: block;
-  width: 100%;
-  align-self: start;
+.pv__dsa { display: block; width: 100%; align-self: start; }
+
+.ds-cyc {
+  --ds-warn:    #9A5B06;   --ds-warn-bg:   #FBF0DE;
+  --ds-review:  #5B4AD4;   --ds-review-bg: #EDEAFC;
+  --ds-error:   #A8322A;   --ds-error-bg:  #FAE6E4;
+  --ds-lab:     #1F5F8B;   --ds-lab-bg:    #E3EFF7;
+  --ds-done:    #1C6B4B;   --ds-done-bg:   #E1F1E9;
+  --ds-line:   var(--border);
+  --ds-muted:  var(--ink-muted);
+  --ds-sunken: var(--surface-sunken);
+
+  /* The beats. One place, so the rhythm can be retimed without hunting
+     through six rules for the numbers that make it up. */
+  --b1: 0ms;      /* the category */
+  --b2: 140ms;    /* the old label */
+  --b3: 420ms;    /* the line across */
+  --b4: 760ms;    /* the new label */
+  --b5: 1020ms;   /* why it moved */
+
+  margin: 0;
+  padding: clamp(18px, 1.9vw, 26px);
+  border: 1px solid var(--ds-line);
+  border-radius: var(--r-md, 14px);
+  font-family: var(--font-sans);
 }
 
-.pv__dsa .ds-thumb {
-  --ds-pad: clamp(14px, 1.4vw, 20px);
-  gap: clamp(14px, 1.5vw, 20px);
-  /* The browser column already sits on a card; a second surface inside it is
-     a box in a box. The comparison keeps its hairline and loses its fill. */
-  background: none;
+.ds-cyc__set {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
 }
 
-.pv__dsa .ds-rows { gap: clamp(10px, 1.1vw, 14px); }
+/* Every item in the same cell, so the tallest sets the height and nothing
+   below this block ever moves. */
+.ds-cyc__item {
+  grid-area: 1 / 1;
+  margin: 0;
+  /* Out of the accessibility tree as well as off the screen: five near
+     identical blocks read one after another is not what is on the page. */
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 300ms linear, visibility 0s linear 300ms;
+}
+.ds-cyc__item[data-on] {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 300ms linear, visibility 0s linear 0s;
+}
 
-/* The column is narrow enough that a long "after" label would be trimmed to
-   an ellipsis, which is the one thing this artifact must never do to a label
-   — the labels ARE the work. So here they wrap, and the row aligns on the
-   first line rather than on the middle. */
-.pv__dsa .ds-chip {
+/* --- the parts, each on its own beat -------------------------------------- */
+
+.ds-cyc__l,
+.ds-cyc__k,
+.ds-cyc__chip,
+.ds-cyc__why {
+  opacity: 0;
+  transition: opacity 420ms cubic-bezier(0.3, 0.05, 0.25, 1);
+}
+.ds-cyc__item[data-on] .ds-cyc__l,
+.ds-cyc__item[data-on] .ds-cyc__k,
+.ds-cyc__item[data-on] .ds-cyc__chip,
+.ds-cyc__item[data-on] .ds-cyc__why { opacity: 1; }
+
+/* WHAT KIND OF STATE THIS IS. The audit sorted the rewrites by who the state
+   belongs to, and that category is the reason the label reads the way it does
+   — so it is the first thing on the block and the first thing to arrive. */
+.ds-cyc__l {
+  margin: 0 0 clamp(16px, 1.7vw, 22px);
+  padding-block-end: clamp(11px, 1.2vw, 14px);
+  border-block-end: 1px solid var(--ds-line);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  transition-delay: var(--b1);
+}
+
+.ds-cyc__k {
+  margin: 0 0 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-muted);
+}
+.ds-cyc__chip { margin: 0; }
+
+/* Before: label and chip on beat two. After: label and chip on beat four. */
+.ds-cyc__k:nth-of-type(1),
+.ds-cyc__chip:nth-of-type(1) { transition-delay: var(--b2); }
+.ds-cyc__k:nth-of-type(2),
+.ds-cyc__chip:nth-of-type(2) { transition-delay: var(--b4); }
+.ds-cyc__why { transition-delay: var(--b5); }
+
+/* --- the line that carries the label across ------------------------------- */
+
+/* THE ARROW IS THE EDIT, so it is the only thing here that is drawn rather
+   than faded: a hairline extending down the page, with the head arriving as
+   it lands. Nothing else moves, which is what keeps one moving line legible.
+   Scale rather than height, so it costs no layout. */
+.ds-cyc__arrow {
+  position: relative;
+  margin: clamp(12px, 1.3vw, 16px) 0 clamp(14px, 1.5vw, 18px);
+  margin-inline-start: 18px;
+  height: clamp(26px, 2.6vw, 34px);
+}
+.ds-cyc__arrow i {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 1px;
+  background: var(--ds-line);
+  transform: scaleY(0);
+  transform-origin: top center;
+  transition: transform 380ms cubic-bezier(0.3, 0.05, 0.25, 1);
+}
+.ds-cyc__arrow::after {
+  content: "";
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-start: -2.5px;
+  width: 6px;
+  height: 6px;
+  border-inline-end: 1px solid var(--ds-line);
+  border-block-end: 1px solid var(--ds-line);
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 200ms linear;
+}
+.ds-cyc__item[data-on] .ds-cyc__arrow i {
+  transform: scaleY(1);
+  transition-delay: var(--b3);
+}
+.ds-cyc__item[data-on] .ds-cyc__arrow::after {
+  opacity: 1;
+  transition-delay: calc(var(--b3) + 320ms);
+}
+
+/* --- the labels themselves ------------------------------------------------ */
+
+/* AT PREVIEW SIZE THE LABEL IS THE ARTIFACT, so the chip is set at reading
+   size rather than at badge size, and it wraps rather than clipping — an
+   ellipsis through the middle of "Awaiting provider action" would remove the
+   one thing the slide is showing. */
+.ds-cyc .ds-chip {
+  display: inline-block;
+  justify-self: auto;
+  padding: 9px 16px;
+  border-radius: 999px;
+  font-size: clamp(13px, 0.7vw + 9px, 15px);
+  line-height: 1.3;
+  letter-spacing: -0.005em;
   white-space: normal;
   overflow: visible;
   text-overflow: clip;
 }
-.pv__dsa .ds-row { align-items: start; }
+.ds-cyc .ds-chip--was {
+  border: 1px solid var(--ds-line);
+  background: var(--ds-sunken);
+  color: var(--ds-muted);
+  font-weight: 500;
+}
+.ds-cyc .ds-chip--is { border: 1px solid transparent; font-weight: 600; }
+
+.ds-cyc__item[data-tone="warn"]   .ds-chip--is { background: var(--ds-warn-bg);   color: var(--ds-warn); }
+.ds-cyc__item[data-tone="review"] .ds-chip--is { background: var(--ds-review-bg); color: var(--ds-review); }
+.ds-cyc__item[data-tone="error"]  .ds-chip--is { background: var(--ds-error-bg);  color: var(--ds-error); }
+.ds-cyc__item[data-tone="lab"]    .ds-chip--is { background: var(--ds-lab-bg);    color: var(--ds-lab); }
+.ds-cyc__item[data-tone="done"]   .ds-chip--is { background: var(--ds-done-bg);   color: var(--ds-done); }
+
+.ds-cyc__why {
+  margin: clamp(18px, 1.9vw, 24px) 0 0;
+  padding-block-start: clamp(14px, 1.5vw, 18px);
+  border-block-start: 1px solid var(--ds-line);
+  font-size: clamp(12px, 0.55vw + 9px, 13.5px);
+  line-height: 1.5;
+  color: var(--ink-secondary);
+}
+
+/* --- which of the five, and how many there are ---------------------------- */
+
+/* Five ticks rather than a counter: the number is not the point, the fact
+   that this is one of a set is. Same hairline the rest of the block is built
+   from, inked when it is the one showing. */
+.ds-cyc__ticks {
+  list-style: none;
+  display: flex;
+  gap: 6px;
+  margin: clamp(16px, 1.7vw, 22px) 0 0;
+  padding: 0;
+}
+.ds-cyc__tick {
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--ds-line);
+  transition: background-color 300ms linear;
+}
+.ds-cyc__tick[data-on] { background: var(--ink); }
+
+/* --------------------------------------------------------------------------
+   DARK, AND STILL
+
+   The tints again, and nothing else — every other value is a site token that
+   themes on its own. And under reduced motion the block stops walking (the
+   script never starts) and stops performing: the first rewrite is simply
+   there, whole, on the first frame.
+   -------------------------------------------------------------------------- */
+
+:root[data-theme="dark"] .ds-cyc {
+  --ds-warn:    #E8B55F;   --ds-warn-bg:   rgba(232, 181, 95, 0.14);
+  --ds-review:  #A9A0FF;   --ds-review-bg: rgba(169, 160, 255, 0.15);
+  --ds-error:   #F0908A;   --ds-error-bg:  rgba(240, 144, 138, 0.14);
+  --ds-lab:     #7FB6DD;   --ds-lab-bg:    rgba(127, 182, 221, 0.14);
+  --ds-done:    #71C79E;   --ds-done-bg:   rgba(113, 199, 158, 0.14);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .ds-cyc {
+    --ds-warn:    #E8B55F;   --ds-warn-bg:   rgba(232, 181, 95, 0.14);
+    --ds-review:  #A9A0FF;   --ds-review-bg: rgba(169, 160, 255, 0.15);
+    --ds-error:   #F0908A;   --ds-error-bg:  rgba(240, 144, 138, 0.14);
+    --ds-lab:     #7FB6DD;   --ds-lab-bg:    rgba(127, 182, 221, 0.14);
+    --ds-done:    #71C79E;   --ds-done-bg:   rgba(113, 199, 158, 0.14);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ds-cyc__item,
+  .ds-cyc__item[data-on],
+  .ds-cyc__l, .ds-cyc__k, .ds-cyc__chip, .ds-cyc__why,
+  .ds-cyc__arrow i, .ds-cyc__arrow::after { transition: none; }
+  .ds-cyc__arrow i { transform: scaleY(1); }
+  .ds-cyc__arrow::after { opacity: 1; }
+}
 
 
 /* ===== css/07-clients.css ===== */
@@ -24327,43 +24554,64 @@ em,
                 </div>
                 <div class="pv__vis">
                   
+                  
                   <div class="pv__dsa">
-                    <div class="ds-thumb">
-                      <div class="ds-thumb__head">
-                        <span class="ds-thumb__t">Status language</span>
-                        <span class="ds-thumb__k"><i>Before</i><b>After</b></span>
-                      </div>
-
-                      <ul class="ds-rows">
-                        <li class="ds-row" data-tone="warn">
-                          <span class="ds-chip ds-chip--was">Pending</span>
-                          <span class="ds-arrow" aria-hidden="true">&rarr;</span>
-                          <span class="ds-chip ds-chip--is">Awaiting provider action</span>
-                        </li>
-                        <li class="ds-row" data-tone="review">
-                          <span class="ds-chip ds-chip--was">Review</span>
-                          <span class="ds-arrow" aria-hidden="true">&rarr;</span>
-                          <span class="ds-chip ds-chip--is">Needs clinical review</span>
-                        </li>
-                        <li class="ds-row" data-tone="error">
-                          <span class="ds-chip ds-chip--was">Failed</span>
-                          <span class="ds-arrow" aria-hidden="true">&rarr;</span>
-                          <span class="ds-chip ds-chip--is">Submission error</span>
-                        </li>
-                        <li class="ds-row" data-tone="lab">
-                          <span class="ds-chip ds-chip--was">In Progress</span>
-                          <span class="ds-arrow" aria-hidden="true">&rarr;</span>
-                          <span class="ds-chip ds-chip--is">Lab review in progress</span>
-                        </li>
-                        <li class="ds-row" data-tone="done">
-                          <span class="ds-chip ds-chip--was">Complete</span>
-                          <span class="ds-arrow" aria-hidden="true">&rarr;</span>
-                          <span class="ds-chip ds-chip--is">Results delivered</span>
-                        </li>
+                    <figure class="ds-cyc" data-ds-cyc>
+                      <ul class="ds-cyc__set">
+                      <li class="ds-cyc__item" data-tone="warn" data-on>
+                        <p class="ds-cyc__l">Provider-owned status</p>
+                        <p class="ds-cyc__k">Before</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--was">Pending</span></p>
+                        <p class="ds-cyc__arrow" aria-hidden="true"><i></i></p>
+                        <p class="ds-cyc__k">After</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--is">Awaiting provider action</span></p>
+                        <p class="ds-cyc__why">The label now says the provider owns the next step.</p>
+                      </li>
+                      <li class="ds-cyc__item" data-tone="review">
+                        <p class="ds-cyc__l">Clinical review status</p>
+                        <p class="ds-cyc__k">Before</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--was">Review</span></p>
+                        <p class="ds-cyc__arrow" aria-hidden="true"><i></i></p>
+                        <p class="ds-cyc__k">After</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--is">Needs clinical review</span></p>
+                        <p class="ds-cyc__why">A review needs a clinician, and the label says which kind.</p>
+                      </li>
+                      <li class="ds-cyc__item" data-tone="error">
+                        <p class="ds-cyc__l">Recoverable error</p>
+                        <p class="ds-cyc__k">Before</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--was">Failed</span></p>
+                        <p class="ds-cyc__arrow" aria-hidden="true"><i></i></p>
+                        <p class="ds-cyc__k">After</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--is">Submission error</span></p>
+                        <p class="ds-cyc__why">Failed read as terminal. This one reads as something to fix.</p>
+                      </li>
+                      <li class="ds-cyc__item" data-tone="lab">
+                        <p class="ds-cyc__l">Lab-owned status</p>
+                        <p class="ds-cyc__k">Before</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--was">In Progress</span></p>
+                        <p class="ds-cyc__arrow" aria-hidden="true"><i></i></p>
+                        <p class="ds-cyc__k">After</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--is">Lab review in progress</span></p>
+                        <p class="ds-cyc__why">In progress hid whose progress it was. Now it is the lab’s.</p>
+                      </li>
+                      <li class="ds-cyc__item" data-tone="done">
+                        <p class="ds-cyc__l">Completion status</p>
+                        <p class="ds-cyc__k">Before</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--was">Complete</span></p>
+                        <p class="ds-cyc__arrow" aria-hidden="true"><i></i></p>
+                        <p class="ds-cyc__k">After</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--is">Results delivered</span></p>
+                        <p class="ds-cyc__why">Complete ended the workflow. Delivered names what arrived.</p>
+                      </li>
                       </ul>
-
-                      <p class="ds-thumb__foot">Every label names the owner and the next step.</p>
-                    </div>
+                      <ul class="ds-cyc__ticks" aria-hidden="true">
+                      <li class="ds-cyc__tick" data-on></li>
+                      <li class="ds-cyc__tick"></li>
+                      <li class="ds-cyc__tick"></li>
+                      <li class="ds-cyc__tick"></li>
+                      <li class="ds-cyc__tick"></li>
+                      </ul>
+                    </figure>
                   </div>
                 </div>
               </article>
@@ -35160,6 +35408,127 @@ window.PF = window.PF || {};
 
   /* For the console, and for anything that later needs to say "stop this". */
   PF.revealAll = all;
+
+})(window.PF);
+
+
+/* ===== js/dsa.js ===== */
+/* ==========================================================================
+   dsa.js — THE AUDIT SLIDE WALKS ITS FIVE REWRITES
+
+   The Design System Audit's finding is language: a status that named a state,
+   rewritten as one that names the owner and the next step. The project card
+   down the page shows all five at once, because the set is the argument. The
+   browser slide shows one at a time and performs the change — the old label,
+   the line that carries it across, the new one — because the work was a
+   rewrite, and watching it happen once reads better than five finished pairs
+   sitting still.
+
+   THIS FILE MOVES ONE ATTRIBUTE. Every beat, every fade and the line that
+   draws are in css/05-dsa.css, written against `data-on`. The markup ships
+   with it on the first item, so with no script at all the slide is a complete
+   artifact rather than an empty box — this only walks it along.
+
+   IT DOES NOT RUN WHEN NOBODY IS LOOKING. A loop behind a hidden carousel
+   slide, in a background tab, or under a reduced-motion preference is work
+   nobody asked for: the timer is armed, and every time it fires it checks
+   whether the thing is actually on screen before it advances. When it is not,
+   it waits rather than stepping through the set into an empty room.
+   ========================================================================== */
+
+window.PF = window.PF || {};
+
+(function (PF) {
+  'use strict';
+
+  /* Long enough that the last beat — why the label moved — can be read
+     without hurrying, which is the beat the whole slide is for. The write
+     itself takes about 1.3s of that; the rest is the sentence. */
+  var HOLD_MS = 4200;
+  /* The cross-fade out and in overlap by design: the outgoing item is gone
+     before the incoming one has finished arriving, so there is never a frame
+     with two labels on it. */
+  var GAP_MS = 340;
+
+  function init(root) {
+    var items = root.querySelectorAll('.ds-cyc__item');
+    var ticks = root.querySelectorAll('.ds-cyc__tick');
+    if (items.length < 2) return;
+
+    var reduce = window.matchMedia &&
+                 matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) return;   /* the markup's own first item is the whole answer */
+
+    var i = 0;
+    var timer = null;
+
+    /* On screen means: the slide is the one the carousel is showing (a hidden
+       slide has no offsetParent), the tab is in front, and the block is
+       actually in the viewport. */
+    var visible = true;
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) {
+        visible = es[0].isIntersecting;
+      }, { threshold: 0.15 }).observe(root);
+    }
+
+    function showing() {
+      return visible && !document.hidden && root.offsetParent !== null;
+    }
+
+    function paint(n) {
+      var k;
+      for (k = 0; k < items.length; k++) {
+        if (k === n) items[k].setAttribute('data-on', '');
+        else items[k].removeAttribute('data-on');
+      }
+      for (k = 0; k < ticks.length; k++) {
+        if (k === n) ticks[k].setAttribute('data-on', '');
+        else ticks[k].removeAttribute('data-on');
+      }
+    }
+
+    function step() {
+      if (!showing()) { timer = setTimeout(step, 900); return; }
+
+      /* Out first, then in. The gap is what makes the next category read as a
+         new one rather than as the same block changing its words. */
+      items[i].removeAttribute('data-on');
+      timer = setTimeout(function () {
+        i = (i + 1) % items.length;
+        paint(i);
+        timer = setTimeout(step, HOLD_MS);
+      }, GAP_MS);
+    }
+
+    /* The first item is already on in the markup; the clock starts from it. */
+    paint(0);
+    timer = setTimeout(step, HOLD_MS);
+
+    /* Coming back to a tab should not fire a burst of queued steps. */
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden && timer) { clearTimeout(timer); timer = null; }
+      else if (!document.hidden && !timer) timer = setTimeout(step, HOLD_MS);
+    });
+  }
+
+  function boot(scope) {
+    scope = scope || document;
+    var els = scope.querySelectorAll('[data-ds-cyc]');
+    for (var i = 0; i < els.length; i++) {
+      if (els[i].hasAttribute('data-ds-built')) continue;
+      els[i].setAttribute('data-ds-built', '');
+      init(els[i]);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { boot(); });
+  } else {
+    boot();
+  }
+
+  PF.initAudit = boot;
 
 })(window.PF);
 
