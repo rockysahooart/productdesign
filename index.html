@@ -5909,14 +5909,6 @@ em,
   color: var(--statement-em);
 }
 
-/* The other kind of emphasis in the thread: weight. One run uses it — the
-   half of the claim that is about people — and it keeps the line's face. */
-.msg__text b {
-  font-family: inherit;
-  font-weight: 700;
-  font-style: normal;
-}
-
 /* THE WORDS THAT ARRIVE OUT OF NOISE.
 
    A marked group is the word plus whatever punctuation it carries: it hides,
@@ -5947,10 +5939,46 @@ em,
 .msg__text .sc--plain.is-lit { animation: sc-lit 520ms cubic-bezier(.2, .7, .3, 1) both; }
 @keyframes sc-lit { from { opacity: 0; } to { opacity: 1; } }
 
+/* THE FAULT.
+
+   Two words in the thread arrive badly on purpose. It is a fault, not a
+   style: it happens once, as the word lands, and then it is over — no loop,
+   no idle jitter, nothing left running behind the sentence.
+
+   WHAT IT IS MADE OF, and the list is the restraint. A brief drop in opacity,
+   a shift of a pixel or two, and two frames where a horizontal band of the
+   word is all that is drawn. No colour separation, no channel offset, no
+   skew, no shadow, no scanlines. The word is its own colour throughout and
+   legible in every frame that shows it whole, which is most of them.
+
+   Stepped rather than eased, because an interpolated glitch is a wobble. Each
+   frame holds until the next one replaces it, the way a dropped frame does.
+   The whole thing is over in under half a second and the last two thirds of
+   it are already clean.
+
+   It runs on the marked run rather than on the gradient inside it, so the
+   keyword mask is untouched and the transform has the outer box — which was
+   measured and held before any of this started — to move within. */
+.msg__text .sc--gl.is-gl { animation: sc-gl 440ms steps(1, end) both; }
+
+@keyframes sc-gl {
+  0%   { opacity: 0;    transform: translate3d(-2px, 0, 0); clip-path: inset(42% 0 44% 0); }
+  10%  { opacity: 1;    transform: translate3d(2px, 0, 0);  clip-path: inset(0 0 0 0); }
+  18%  { opacity: 0.4;  transform: translate3d(-1px, 0, 0); clip-path: inset(14% 0 62% 0); }
+  26%  { opacity: 1;    transform: translate3d(1px, 0, 0);  clip-path: inset(0 0 0 0); }
+  34%  { opacity: 1;    transform: translate3d(-1.5px, 0, 0); clip-path: inset(58% 0 10% 0); }
+  42%  { opacity: 1;    transform: none;                    clip-path: inset(0 0 0 0); }
+  52%  { opacity: 0.55; transform: translate3d(1px, 0, 0);  clip-path: inset(0 0 0 0); }
+  60%  { opacity: 1;    transform: none;                    clip-path: inset(0 0 0 0); }
+  100% { opacity: 1;    transform: none;                    clip-path: inset(0 0 0 0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .msg__text .sc { transition: none; }
   .msg__text .sc.is-noise { transform: none; }
   .msg__text .sc--plain.is-lit { animation: none; }
+  /* A fault is motion. Asked for less of it, the two words simply arrive. */
+  .msg__text .sc--gl.is-gl { animation: none; }
 }
 
 /* --------------------------------------------------------------------------
@@ -18623,8 +18651,13 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   position: absolute;
   inset-block-start: 0;
   inset-inline-start: 0;
-  width: 12px;
-  height: 18px;
+  /* A little larger than the system pointer it stands in for. At twelve
+     pixels it was accurate and hard to follow: this is a recording somebody
+     watches from reading distance, and the one thing that has to be
+     trackable in it is where the hand is. The viewBox is unchanged, so the
+     shape, the outline and the tip are the same — only bigger. */
+  width: 14px;
+  height: 21px;
   pointer-events: none;
   z-index: 4;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
@@ -18636,10 +18669,10 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 #audit .ap__cur::before {
   content: "";
   position: absolute;
-  inset-block-start: -6px;
-  inset-inline-start: -6px;
-  width: 18px;
-  height: 18px;
+  inset-block-start: -7px;
+  inset-inline-start: -7px;
+  width: 21px;
+  height: 21px;
   border: 1.5px solid #14181D;
   border-radius: 50%;
   opacity: calc(var(--ap-press, 0) * 0.7);
@@ -20688,8 +20721,8 @@ button.cu-q:hover { background: var(--cu-teal-8); }
               
               <span class="msg" data-msg data-cluster data-scramble data-shuffle data-dwell="700">
                 <span class="msg__from" aria-hidden="true">SS</span>
-                <span class="msg__bubble msg__bubble--reacted"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;ve
-                  <span class="sc sc--plain">designed</span> <span class="sc sc--plain"><b class="kw kw--craft">human-centered</b></span> products in an <span class="sc sc--enc"><span class="kw kw--craft">AI-saturated</span></span> <span class="sc sc--plain"><span class="kw kw--craft">world</span>.</span></span><span class="msg__reactions"><button type="button" class="rx" data-rx="fire" aria-label="React with fire"><span class="rx__e" aria-hidden="true">🔥</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="clap" aria-label="React with applause"><span class="rx__e" aria-hidden="true">👏</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hundred" aria-label="React with hundred"><span class="rx__e" aria-hidden="true">💯</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hands" aria-label="React with raised hands"><span class="rx__e" aria-hidden="true">🙌</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="rocket" aria-label="React with rocket"><span class="rx__e" aria-hidden="true">🚀</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="heart" aria-label="React with heart"><span class="rx__e" aria-hidden="true">❤️</span><span class="rx__n" aria-hidden="true"></span></button></span></span>
+                <span class="msg__bubble msg__bubble--reacted"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text"><span class="sc sc--plain">I&rsquo;ve</span>
+                  <span class="sc sc--plain">designed</span> <span class="sc sc--plain"><span class="kw kw--craft">human-centered</span></span> <span class="sc sc--plain">products</span> <span class="sc sc--plain">in</span> <span class="sc sc--plain">an</span> <span class="sc sc--plain sc--gl"><span class="kw kw--craft">AI-saturated</span></span> <span class="sc sc--plain sc--gl"><span class="kw kw--craft">world</span>.</span></span><span class="msg__reactions"><button type="button" class="rx" data-rx="fire" aria-label="React with fire"><span class="rx__e" aria-hidden="true">🔥</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="clap" aria-label="React with applause"><span class="rx__e" aria-hidden="true">👏</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hundred" aria-label="React with hundred"><span class="rx__e" aria-hidden="true">💯</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hands" aria-label="React with raised hands"><span class="rx__e" aria-hidden="true">🙌</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="rocket" aria-label="React with rocket"><span class="rx__e" aria-hidden="true">🚀</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="heart" aria-label="React with heart"><span class="rx__e" aria-hidden="true">❤️</span><span class="rx__n" aria-hidden="true"></span></button></span></span>
               </span>
               </span>
             </h1>
@@ -35208,24 +35241,37 @@ window.PF = window.PF || {};
          its turn is the verb and the two words the sentence is actually for.
          Only the spaces between the groups stay, because a space is what holds
          the line's shape while the words are still out. */
-      /* ONE WORD COMES OUT OF NOISE. THE REST COME UP OUT OF NOTHING.
-         The sentence now names what the work is for as well as what it was
-         made in, and only one of those two halves is the machine's: the human
-         half arrives the way a person would write it — a word at a time,
-         fading up — and "AI-saturated" is the only run that is decrypted.
-         Both carry the keyword mask, because both are the claim. */
-      [{ t: 'I’ve ' },
+      /* THE SENTENCE IS WRITTEN A WORD AT A TIME.
+
+         Every word is its own run, so every word waits its turn and arrives
+         on its own beat — the rhythm the thread already had, applied to the
+         whole line rather than to three words inside it. Nothing is typed and
+         no letters are revealed one at a time: a word is not there, and then
+         it is.
+
+         Nothing is emphasised on the way through, either. The line reads as
+         one voice until its last two words, which is where the claim actually
+         is. */
+      [{ t: 'I’ve', sc: true, plain: true },
+       { t: ' ' },
        { t: 'designed', sc: true, plain: true },
        { t: ' ' },
-       { t: 'human-centered', k: 'craft', b: true, sc: true, plain: true },
-       { t: ' products in an ' },
-       /* The machine's half of the sentence does not come out of noise, it
-          comes out of ciphertext — digits, in the one face that has always
-          meant a machine here. It is the only word on the page where the
-          effect and the meaning are the same thing. */
-       { t: 'AI-saturated', k: 'craft', sc: true, enc: true },
+       { t: 'human-centered', k: 'craft', sc: true, plain: true },
        { t: ' ' },
-       { t: 'world', k: 'craft', sc: true, plain: true, post: '.' }]
+       { t: 'products', sc: true, plain: true },
+       { t: ' ' },
+       { t: 'in', sc: true, plain: true },
+       { t: ' ' },
+       { t: 'an', sc: true, plain: true },
+       { t: ' ' },
+       /* THE MACHINE'S HALF ARRIVES BADLY. Not decrypted out of ciphertext —
+          that made the two words unreadable for the second and a half they
+          were the point of the sentence. A brief fault instead: the word is
+          there, it is legible, and for a third of a second the medium it was
+          made in shows through it. Then it settles and is simply text. */
+       { t: 'AI-saturated', k: 'craft', sc: true, gl: true },
+       { t: ' ' },
+       { t: 'world', k: 'craft', sc: true, gl: true, post: '.' }]
     ],
     illustration: [
       [{ t: 'I draw as much as I design.' }],
@@ -35285,11 +35331,7 @@ window.PF = window.PF || {};
       var t = esc(r.t || '');   /* an icon run carries no text */
       var piece;
       /* The name is both: emphasised, and carrying a gradient of its own. */
-      /* And one run is set in weight rather than in value: the half of the
-         claim that is about people. It carries its own gradient the same way
-         the name does; only the weight is different. */
-      if (r.b) piece = '<b class="' + (r.k ? 'kw kw--' + r.k : '') + '">' + t + '</b>';
-      else if (r.em) piece = '<em class="' + (r.k ? 'kw kw--' + r.k : '') + '">' + t + '</em>';
+      if (r.em) piece = '<em class="' + (r.k ? 'kw kw--' + r.k : '') + '">' + t + '</em>';
       else if (r.k) piece = '<span class="kw kw--' + r.k + '">' + t + '</span>';
       /* An icon run is a pixel symbol from the sprite, not a character. It
          carries its meaning as a label because there is no longer an emoji
@@ -35305,8 +35347,13 @@ window.PF = window.PF || {};
          carries, so the gradient span inside is left exactly as it was.
          `enc` asks for ciphertext rather than noise \u2014 digits, in the one face
          that has always meant a machine. */
+      /* `gl` is a plain run with a fault in its arrival, so it carries the
+         plain mark as well: everything that asks "does this word perform?" —
+         the face shuffle, the character decode — already answers no to
+         sc--plain, and none of them need to learn a second word for it. */
       if (r.sc) piece = '<span class="sc' + (r.enc ? ' sc--enc' : '') +
-                        (r.plain ? ' sc--plain' : '') + '">' +
+                        (r.plain || r.gl ? ' sc--plain' : '') +
+                        (r.gl ? ' sc--gl' : '') + '">' +
                         piece + (r.post ? esc(r.post) : '') + '</span>';
       out += piece;
     }
@@ -35535,7 +35582,17 @@ window.PF = window.PF || {};
       slots.push({ node: nodes[i], text: text, pool: pool, order: null,
                    group: gi });
     }
-    if (!total) { if (done) done(); return; }
+    /* NOTHING TO DECODE IS NOT NOTHING TO WAIT FOR.
+
+       When every run on the line is plain there are no characters to hide,
+       and this used to call back on the same frame — which, since the callback
+       is what ends the word-by-word reveal, showed the whole sentence at once
+       the instant it was asked to arrive a word at a time. The decode has
+       nothing to do; the line still takes as long as it takes. */
+    if (!total) {
+      var idle = setTimeout(function () { if (done) done(); }, ms);
+      return function cancel() { clearTimeout(idle); };
+    }
 
     /* When each slot resolves. One group is a left-to-right ramp across the
        whole message, as before. Several groups are dealt a window each, in
@@ -36215,6 +36272,12 @@ window.PF = window.PF || {};
        replaces them in place rather than rewriting the message. */
     var SHUFFLE_STEP = 185;    /* how long one face is held */
     var SHUFFLE_TRIES = 4;     /* how many it tries before the real one */
+    /* AND THE BEAT WHEN NOTHING IS BEING PERFORMED. A word hunting for a
+       typeface needs as long as the hunt takes; a word that simply arrives
+       needs as long as it takes to read. Four faces at 185ms is the wrong
+       length for the second kind, and across a line of eight words it is six
+       seconds of watching a sentence appear. */
+    var WORD_BEAT = 360;
     /* The face a machine reads out of. The encrypted word does not hunt for a
        typeface at all — it holds this one until it is plaintext. */
     var CIPHER_FACE = '"JetBrains Mono", monospace';
@@ -36275,7 +36338,15 @@ window.PF = window.PF || {};
       if (!words.length) return null;
 
       var timers = [];
-      var cycle = SHUFFLE_TRIES * SHUFFLE_STEP;
+
+      /* If no word in the line performs, the line is a sentence being written
+         rather than a sentence hunting for its face, and it gets the reading
+         beat instead of the length of a shuffle. */
+      var performs = false;
+      for (var q = 0; q < words.length; q++) {
+        if (!words[q].classList.contains('sc--plain')) { performs = true; break; }
+      }
+      var cycle = performs ? SHUFFLE_TRIES * SHUFFLE_STEP : WORD_BEAT;
 
       /* NOTHING IS THERE BEFORE ITS TURN. The line is not a sentence being
          restyled, it is a sentence being written: noise, then a word, then
@@ -36317,7 +36388,10 @@ window.PF = window.PF || {};
             /* A plain run still has a moment: it comes up out of nothing
                rather than switching on. Opacity only — the box was measured
                and held above, so nothing on the line moves while it does. */
-            if (bare) { el.classList.add('is-lit'); return; }
+            if (bare) {
+              el.classList.add(el.classList.contains('sc--gl') ? 'is-gl' : 'is-lit');
+              return;
+            }
             /* The scale is the scramble being SEEN — a word comes apart a size
                up and settles back down into the line as it resolves, so what
                is happening reads from across the room rather than only if you
