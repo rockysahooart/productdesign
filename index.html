@@ -16593,7 +16593,15 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    read by <body>, which sits outside .case, so the override has to be written
    on :root and keyed off the route rather than on the article itself.
    -------------------------------------------------------------------------- */
-:root[data-route="carry"] {
+/* ALL THREE CASE STUDIES, NOT JUST CARRY. Carry moved to the brighter wall
+   first; leaving the other two on the index's darker grey meant a reader
+   walking Previous and Next watched the page change colour between studies,
+   which reads as a bug rather than as a choice. The audit needs it most —
+   it is dense clinical tables end to end — but the reason they all have it
+   is that they are one document type. */
+:root[data-route="carry"],
+:root[data-route="optiflow"],
+:root[data-route="audit"] {
   --canvas:         var(--canvas-case);
   --surface:        var(--surface-case);
   --surface-sunken: var(--surface-sunken-case);
@@ -17371,6 +17379,774 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   :root[data-stage] [data-reveal],
   :root[data-stage] [data-reveal="3"] { --rv-ms: 200ms; --rv-ease: linear; }
 }
+
+
+/* ===== css/17-audit.css ===== */
+/* ==========================================================================
+   17 — THE DESIGN SYSTEM AUDIT
+
+   The audit's output was a table, a set of badges, a set of buttons and a
+   spec. So this page IS those things rather than a page of screenshots of
+   them: every artifact below is live markup in the site's own type, which
+   means it is sharp at any width, it themes with the page, it reflows on a
+   phone, and the colour relationships on screen are the documented ones
+   rather than a JPEG of them.
+
+   WHAT IS THE PRODUCT'S AND WHAT IS THE SITE'S. The five status hues are the
+   audit's, because they carry the finding: orange is provider action, purple
+   is clinical review, blue is lab progress, red is a recoverable issue, green
+   is delivered. Everything around them — type, hairlines, spacing, surfaces,
+   ink — is this site's, unchanged. The two systems meet at the badge and
+   nowhere else, which is why a dense clinical table can sit inside an
+   editorial page without either one looking borrowed.
+
+   The same five hues are already defined in 05-dsa.css for the project card
+   and the browser slide. They are restated here rather than shared, because
+   these two files are read separately and a colour that has to be looked up
+   in another stylesheet is a colour that drifts.
+   ========================================================================== */
+
+.case #audit,
+#audit {
+  /* The audit's semantic palette. Light first; dark restates only these. */
+  --au-provider:  #9A5B06;   --au-provider-bg:  #FBF0DE;
+  --au-review:    #5B4AD4;   --au-review-bg:    #EDEAFC;
+  --au-error:     #A8322A;   --au-error-bg:     #FAE6E4;
+  --au-lab:       #1F5F8B;   --au-lab-bg:       #E3EFF7;
+  --au-done:      #1C6B4B;   --au-done-bg:      #E1F1E9;
+}
+
+/* --------------------------------------------------------------------------
+   THE BADGE
+
+   One component, six labels, and the whole of finding 02 is the difference
+   between the words in it. Which is why the before and after tables use the
+   SAME badge with the SAME tones: the colour was already doing its job, and
+   showing the old states in grey would have quietly blamed the palette for a
+   copy problem.
+   -------------------------------------------------------------------------- */
+
+#audit .au-b {
+  display: inline-block;
+  max-width: 100%;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+}
+
+/* The one state with no meaning attached: Pending, Open. Grey because it was
+   grey, not to make a point. */
+#audit .au-b[data-t="flat"] {
+  border-color: var(--border);
+  background: var(--surface-sunken);
+  color: var(--ink-muted);
+}
+#audit .au-b[data-t="provider"] { background: var(--au-provider-bg); color: var(--au-provider); }
+#audit .au-b[data-t="review"]   { background: var(--au-review-bg);   color: var(--au-review); }
+#audit .au-b[data-t="error"]    { background: var(--au-error-bg);    color: var(--au-error); }
+#audit .au-b[data-t="lab"]      { background: var(--au-lab-bg);      color: var(--au-lab); }
+#audit .au-b[data-t="done"]     { background: var(--au-done-bg);     color: var(--au-done); }
+
+/* --------------------------------------------------------------------------
+   THE ACTION
+
+   Five treatments, and the ranking between them is the finding. A filled
+   button outranks an outlined one outranks a link outranks a menu — which is
+   exactly the hierarchy the before state did not have.
+   -------------------------------------------------------------------------- */
+
+#audit .au-a {
+  display: inline-block;
+  padding: 6px 13px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+#audit .au-a[data-k="provider"] { background: var(--au-lab);      color: #FFF; }
+#audit .au-a[data-k="review"]   { background: var(--au-review);   color: #FFF; }
+#audit .au-a[data-k="recovery"] { background: var(--au-error);    color: #FFF; }
+#audit .au-a[data-k="complete"] { background: var(--au-done);     color: #FFF; }
+#audit .au-a[data-k="info"]     { background: var(--surface); border-color: var(--border-strong); color: var(--ink); }
+
+/* The three that had no rank. An outlined button, a bare link and an overflow
+   menu, each one carrying a required action somewhere in the portal. */
+#audit .au-a[data-k="ghost"] { background: var(--surface); border-color: var(--border); color: var(--ink-secondary); }
+#audit .au-a[data-k="link"]  { padding-inline: 0; background: none; color: var(--au-lab); text-decoration: underline; text-underline-offset: 2px; }
+#audit .au-a[data-k="menu"]  {
+  padding: 6px 10px;
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--ink-muted);
+  letter-spacing: 0.06em;
+}
+
+/* Priority, which the before rows did not carry at all. */
+#audit .au-p {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+#audit .au-p[data-p="high"] { background: var(--au-error-bg); color: var(--au-error); }
+#audit .au-p[data-p="med"]  { background: var(--surface-sunken); color: var(--ink-secondary); }
+
+/* --------------------------------------------------------------------------
+   BEFORE AND AFTER
+
+   Stacked rather than side by side. Two seven-column clinical tables next to
+   each other at half width each is two tables nobody can read; stacked, they
+   are the same table twice and the eye can travel down a column. The label
+   above each is the only thing that marks which is which, and the after block
+   carries a rule down its left edge — the same mark the rest of the site uses
+   for "this is the turn".
+   -------------------------------------------------------------------------- */
+
+#audit .au-ba { margin-block-start: var(--cs-group, 28px); }
+
+#audit .au-ba__l {
+  margin: 0 0 12px;
+  font-size: var(--cs-t3, 15px);
+  font-weight: 400;
+  color: var(--ink-secondary);
+}
+#audit .au-ba__l b {
+  display: inline-block;
+  margin-inline-end: 10px;
+  padding: 2px 9px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  vertical-align: 1px;
+}
+#audit .au-ba[data-after] .au-ba__l b {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--on-ink);
+}
+
+/* --------------------------------------------------------------------------
+   THE TABLE
+
+   The site's own .ar-table, which already fixes its layout and contains its
+   inline size so a wide table cannot push the page sideways. What is added
+   here is density: a clinical work queue is read by scanning a column, and
+   the rhythm that suits a prose table is too loose for one.
+   -------------------------------------------------------------------------- */
+
+/* AUTO LAYOUT, AGAINST THE PAGE'S DEFAULT — and the id in the selector is
+   what wins that argument.
+
+   Long-form tables on this site are fixed-layout inside a contained wrapper,
+   which is right for a two- or three-column table of prose: the columns are
+   equal, nothing measures its own contents, and a wide table can never push
+   the page sideways. Applied to a seven-column clinical queue it gave the
+   Priority chip the same width as Required action and broke a badge across
+   two columns. These tables size to their contents and overflow into the
+   wrapper's own scroll instead — the wrapper is still contained, so the page
+   still cannot move. A work queue is read by scanning a column, and a column
+   the width of the column beside it is not one. */
+#audit .au-tbl {
+  table-layout: auto;
+  width: 100%;
+  min-width: 660px;
+}
+/* Eight-eighty rather than nine-twenty: at 1280 the reading column is 896,
+   and forty-eight pixels over is a table that scrolls on a desktop for no
+   reason a reader can see. Below that it does scroll, the way every other
+   wide table on this site does. */
+#audit .au-tbl--q { min-width: 880px; }
+#audit .au-tbl--tok { min-width: 680px; }
+/* The cells hold their own words; only the long prose ones are allowed to
+   wrap, and nothing breaks mid-word any more. */
+#audit .au-tbl td { overflow-wrap: normal; }
+/* And where it does scroll, the scrollbar is the affordance — thin, so it
+   reads as an edge of the table rather than as page furniture. */
+#audit .ar-table__wrap { scrollbar-width: thin; }
+
+#audit .au-tbl th {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+#audit .au-tbl td {
+  font-size: 13px;
+  line-height: 1.45;
+  vertical-align: middle;
+  color: var(--ink-secondary);
+}
+#audit .au-tbl td b { color: var(--ink); font-weight: 640; }
+/* The question the old status left behind, and the cause the new error names:
+   both are the point of their row, so both are set apart from the data. */
+#audit .au-tbl td em { font-style: italic; color: var(--ink-muted); }
+#audit .au-tbl--tok code {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12px;
+  color: var(--ink);
+}
+
+/* The WCAG level, which is evidence rather than decoration — so the one
+   pairing that only clears AA at badge size wears that instead of an AA. */
+#audit .au-w {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--ink-secondary);
+  white-space: nowrap;
+}
+#audit .au-w[data-l="aaa"] { border-color: var(--ink); color: var(--ink); }
+#audit .au-w[data-l="lg"]  { font-size: 10.5px; letter-spacing: 0.02em; }
+
+/* --------------------------------------------------------------------------
+   THE SCOPE, THE SEQUENCE, THE PATTERN NOTES
+
+   Three small lists, each with the same shape: a name, what it is, and what
+   changed about it. Hairlines rather than boxes — four boxed cards in a row
+   is a dashboard, and there is enough table on this page already.
+   -------------------------------------------------------------------------- */
+
+#audit .au-scope,
+#audit .au-pat {
+  list-style: none;
+  margin: var(--cs-group, 28px) 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+@media (min-width: 760px) {
+  #audit .au-scope, #audit .au-pat { grid-template-columns: 1fr 1fr; column-gap: 48px; }
+}
+
+#audit .au-scope li,
+#audit .au-pat li {
+  margin: 0;
+  padding-block: 16px;
+  border-block-start: 1px solid var(--border);
+  display: grid;
+  gap: 4px;
+}
+#audit .au-scope li b,
+#audit .au-pat li b { font-weight: 640; color: var(--ink); }
+#audit .au-scope li span,
+#audit .au-pat li span { color: var(--ink-secondary); }
+#audit .au-scope li i,
+#audit .au-pat li i {
+  font-style: normal;
+  color: var(--ink-muted);
+}
+#audit .au-pat li i { color: var(--ink); }
+
+/* The sequence every finding sits inside. Numbered by counter rather than by
+   a list marker, so the number is a component and not a bullet. */
+#audit .au-flow {
+  list-style: none;
+  counter-reset: au 0;
+  margin: var(--cs-group, 28px) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+}
+#audit .au-flow li {
+  counter-increment: au;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 13px;
+  color: var(--ink-secondary);
+}
+#audit .au-flow li::before {
+  content: counter(au);
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--on-ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   THE HANDOFF GAP
+
+   Four columns: what design gave, what was missing, what engineering had to
+   guess, and what that cost. The last three are the same list read three
+   ways, so they share one treatment and the first one does not.
+   -------------------------------------------------------------------------- */
+
+#audit .au-gap {
+  display: grid;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+@media (min-width: 600px) { #audit .au-gap { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 960px) { #audit .au-gap { grid-template-columns: repeat(4, 1fr); } }
+
+#audit .au-gap > div { padding: 18px 20px; background: var(--surface); }
+#audit .au-gap__l {
+  margin: 0 0 12px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+#audit .au-gap ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+#audit .au-gap li { margin: 0; font-size: 13px; line-height: 1.4; color: var(--ink-secondary); }
+/* The three columns that are absences rather than deliverables. */
+#audit .au-gap ul[data-miss] li { color: var(--au-error); }
+
+/* --------------------------------------------------------------------------
+   THE BUILD SPEC
+
+   The document the audit actually shipped. It is drawn as a document —
+   headed, sectioned, hairlines between — because that is what it is.
+   -------------------------------------------------------------------------- */
+
+#audit .au-spec {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  overflow: hidden;
+}
+#audit .au-spec__h {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+  padding: 18px 22px;
+  border-block-end: 1px solid var(--border);
+  background: var(--surface-sunken);
+}
+#audit .au-spec__k {
+  margin: 0;
+  flex: 1 0 100%;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+#audit .au-spec__t { margin: 0; font-weight: 700; color: var(--ink); }
+#audit .au-spec__s {
+  margin: 0 0 0 auto;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--au-done-bg);
+  color: var(--au-done);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#audit .au-spec__b { padding: 20px 22px 24px; }
+#audit .au-spec__l {
+  margin: 22px 0 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+#audit .au-spec__b > .au-spec__l:first-child { margin-block-start: 0; }
+#audit .au-spec__p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--ink-secondary); }
+
+#audit .au-spec__chips { margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+#audit .au-spec__chips > span {
+  padding: 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface-sunken);
+  font-size: 12px;
+  color: var(--ink-secondary);
+}
+/* The approved copy row is the badges themselves, so it drops the chip. */
+#audit .au-spec__chips--b > .au-b { border: 1px solid transparent; }
+
+#audit .au-spec__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+#audit .au-spec__list li {
+  margin: 0;
+  padding-inline-start: 16px;
+  position: relative;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-secondary);
+}
+#audit .au-spec__list li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0.62em;
+  width: 5px;
+  height: 1px;
+  background: var(--border-strong);
+}
+
+/* --------------------------------------------------------------------------
+   THE PROMPT
+
+   The clearest evidence on the page that the spec is doing something: the
+   same request, written twice. Monospace, because both halves are input to a
+   machine rather than prose about one.
+   -------------------------------------------------------------------------- */
+
+#audit .au-prompt { display: grid; gap: 14px; }
+@media (min-width: 860px) { #audit .au-prompt { grid-template-columns: 0.8fr 1.2fr; align-items: start; } }
+
+#audit .au-prompt__c {
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+#audit .au-prompt__c[data-after] { border-color: var(--border-strong); }
+
+#audit .au-prompt__l {
+  margin: 0 0 12px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+#audit .au-prompt__t {
+  margin: 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--ink);
+}
+#audit .au-prompt__n {
+  margin: 12px 0 0;
+  padding-block-start: 12px;
+  border-block-start: 1px solid var(--border);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+/* --------------------------------------------------------------------------
+   THE ACCESSIBILITY RULES, AND THE SYSTEM RULE
+
+   The rules are numbered because the audit numbered them. The system rule is
+   the site's own turn-mark — a 2px rule in full ink down the left — rather
+   than the source's blue card, because a blue card here would be the only
+   blue card on the site and would read as an import.
+   -------------------------------------------------------------------------- */
+
+#audit .au-rules {
+  counter-reset: aur 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+  max-width: var(--cs-read);
+}
+#audit .au-rules li {
+  counter-increment: aur;
+  margin: 0;
+  padding-inline-start: 32px;
+  position: relative;
+  color: var(--ink-secondary);
+}
+#audit .au-rules li::before {
+  content: counter(aur, decimal-leading-zero);
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 0.15em;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+#audit .au-rules li b { color: var(--ink); font-weight: 640; }
+
+#audit .au-rule {
+  margin-block-start: var(--cs-zone, 56px);
+  display: grid;
+  gap: 6px;
+  padding-inline-start: 18px;
+  border-inline-start: 2px solid var(--ink);
+  max-width: var(--cs-read);
+}
+#audit .au-rule__l {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+#audit .au-rule p:last-child { margin: 0; color: var(--ink); font-weight: 640; }
+
+/* --------------------------------------------------------------------------
+   DARK
+
+   The five hues come up to a tinted ink rather than down to near-black: a
+   badge darker than the table behind it reads as a hole rather than a badge.
+   The filled actions keep white type, which is what their measured ratios
+   were measured against.
+   -------------------------------------------------------------------------- */
+
+:root[data-theme="dark"] #audit {
+  --au-provider:  #E8B55F;   --au-provider-bg:  rgba(232, 181, 95, 0.15);
+  --au-review:    #A9A0FF;   --au-review-bg:    rgba(169, 160, 255, 0.16);
+  --au-error:     #F0908A;   --au-error-bg:     rgba(240, 144, 138, 0.15);
+  --au-lab:       #7FB6DD;   --au-lab-bg:       rgba(127, 182, 221, 0.15);
+  --au-done:      #71C79E;   --au-done-bg:      rgba(113, 199, 158, 0.15);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) #audit {
+    --au-provider:  #E8B55F;   --au-provider-bg:  rgba(232, 181, 95, 0.15);
+    --au-review:    #A9A0FF;   --au-review-bg:    rgba(169, 160, 255, 0.16);
+    --au-error:     #F0908A;   --au-error-bg:     rgba(240, 144, 138, 0.15);
+    --au-lab:       #7FB6DD;   --au-lab-bg:       rgba(127, 182, 221, 0.15);
+    --au-done:      #71C79E;   --au-done-bg:      rgba(113, 199, 158, 0.15);
+  }
+}
+/* A filled action on a lit hue needs dark type, not white: these are the same
+   pairings inverted, and inverting the ground without the type would take a
+   6:1 button to about 2:1. */
+:root[data-theme="dark"] #audit .au-a[data-k="provider"],
+:root[data-theme="dark"] #audit .au-a[data-k="review"],
+:root[data-theme="dark"] #audit .au-a[data-k="recovery"],
+:root[data-theme="dark"] #audit .au-a[data-k="complete"] { color: #14161A; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) #audit .au-a[data-k="provider"],
+  :root:not([data-theme="light"]) #audit .au-a[data-k="review"],
+  :root:not([data-theme="light"]) #audit .au-a[data-k="recovery"],
+  :root:not([data-theme="light"]) #audit .au-a[data-k="complete"] { color: #14161A; }
+}
+
+/* --------------------------------------------------------------------------
+   NARROW
+
+   The tables keep their minimum width and scroll inside their own wrapper —
+   that is the site's existing behaviour and it is the right one here: a
+   seven-column clinical queue reflowed into stacked key/value pairs stops
+   being a queue, and the whole finding is about reading down a column.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 599px) {
+  #audit .au-gap > div,
+  #audit .au-spec__b { padding-inline: 16px; }
+  #audit .au-spec__h { padding-inline: 16px; }
+  #audit .au-row { padding-inline: 16px; }
+}
+
+/* --------------------------------------------------------------------------
+   THE ARTIFACT IN THE MASTHEAD
+
+   Five pairs of words, set at label size under the metadata. It is the whole
+   audit in one glance — the status a provider used to read, and the one that
+   replaced it — and it is the project's own copy rather than a picture of a
+   screen, so it can sit in an introduction without competing with the title.
+
+   Held to the reading measure and set quiet: the two loudest things in this
+   header are still the project name and the sentence under it, which is the
+   test this had to pass.
+   -------------------------------------------------------------------------- */
+
+#audit .au-key {
+  margin: var(--cs-zone, 56px) 0 0;
+  max-width: var(--cs-read);
+}
+
+#audit .au-key__l {
+  margin: 0 0 14px;
+  padding-block-end: 11px;
+  border-block-end: 1px solid var(--border);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+#audit .au-key__set { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+#audit .au-key__set li {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(0, auto) 14px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+#audit .au-key__set em {
+  font-style: normal;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--ink-muted);
+  text-align: center;
+}
+/* At this size the badge is a label rather than a control — and it ends where
+   its words do. Stretched to the column it stops reading as a badge and starts
+   reading as a table cell, which is the one thing this row must not be. */
+#audit .au-key .au-b {
+  justify-self: start;
+  font-size: 11.5px;
+  padding: 3px 9px;
+  white-space: normal;
+}
+
+@media (max-width: 559px) {
+  #audit .au-key__set li { grid-template-columns: auto minmax(0, 1fr); gap: 6px 8px; }
+  #audit .au-key__set li > .au-b:first-child { grid-column: 1 / -1; justify-self: start; }
+  #audit .au-key__set em { transform: rotate(90deg); }
+}
+
+/* --------------------------------------------------------------------------
+   A FIGURE, AND ITS ONE LINE OF CAPTION
+
+   Every artifact on this page is evidence for a sentence next to it, so each
+   one says what it is proving before it is looked at. The caption is above
+   rather than below: it is a label on a piece of evidence, not a note about
+   a picture.
+   -------------------------------------------------------------------------- */
+
+#audit .au-fig { margin: var(--cs-zone, 56px) 0 0; }
+/* THE CAPTION IS EDITORIAL, so it is set at the body size like every other
+   sentence I wrote on this page. The artifact under it keeps its own scale —
+   a clinical table is the product's type, not the page's — and the line
+   between those two things is the line between my voice and the work's. */
+#audit .au-fig__c {
+  margin: 0 0 14px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+#audit .au-fig__c b {
+  color: var(--ink);
+  font-weight: 640;
+  margin-inline-end: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   ONE ROW, ENLARGED
+
+   The error finding is a detail rather than a pattern, so the row comes out
+   of the table and is set at reading size with its parts stacked: status,
+   message, action. Two of them, one above the other, and the second carries
+   the rule down its left edge that the rest of the site uses for the turn.
+   -------------------------------------------------------------------------- */
+
+#audit .au-fig--row { display: grid; gap: 12px; }
+#audit .au-fig--row .au-fig__c { grid-column: 1 / -1; margin: 0 0 2px; }
+@media (min-width: 760px) { #audit .au-fig--row { grid-template-columns: 1fr 1fr; align-items: start; } }
+
+#audit .au-row {
+  display: grid;
+  gap: 10px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+#audit .au-row[data-s="after"] {
+  border-inline-start: 2px solid var(--ink);
+}
+
+#audit .au-row__l {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+#audit .au-row__b,
+#audit .au-row__a { margin: 0; }
+#audit .au-row__m {
+  margin: 0;
+  display: grid;
+  gap: 4px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+#audit .au-row__m b { color: var(--ink); font-weight: 640; }
+#audit .au-row__m span { color: var(--ink-secondary); }
+
+/* --------------------------------------------------------------------------
+   THE SEQUENCE
+
+   Five rewrites read straight down, each under the question it answers. A
+   table would have made them five rows of data; this way each one is a small
+   argument — question, change, consequence — and the five of them together
+   are the shape of the finding.
+   -------------------------------------------------------------------------- */
+
+#audit .au-seq {
+  counter-reset: aus 0;
+  list-style: none;
+  margin: var(--cs-zone, 56px) 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+#audit .au-seq li {
+  counter-increment: aus;
+  margin: 0;
+  padding: 18px 0 18px 34px;
+  border-block-start: 1px solid var(--border);
+  position: relative;
+  display: grid;
+  gap: 9px;
+}
+#audit .au-seq li:last-child { border-block-end: 1px solid var(--border); }
+#audit .au-seq li::before {
+  content: counter(aus, decimal-leading-zero);
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The question the old label left behind — set in the voice a provider would
+   have asked it in. */
+#audit .au-seq__q { margin: 0; font-style: italic; color: var(--ink); }
+#audit .au-seq__p {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+#audit .au-seq__p em { font-style: normal; color: var(--ink); font-size: 14px; line-height: 1; }
+#audit .au-seq__w { margin: 0; line-height: 1.5; color: var(--ink-secondary); }
 
 
 /* ===== css/06-responsive.css ===== */
@@ -21622,6 +22398,76 @@ em,
                        alt="A Natera specimen kit opened flat — the printed tissue preparation instructions in the lid, the moulded foam insert below it with an FFPE block cassette seated in its well."
                        width="1200" height="2231" loading="lazy" decoding="async"></div>
               </article>
+              
+              <article class="pv__slide" data-project="dsa" data-pv-slide data-mode="design"
+                       role="tabpanel" aria-label="Design System Audit" hidden>
+                <div class="pv__head">
+                  <h3 class="pv__title">Design System Audit</h3>
+                  <p class="pv__sub">The same action as a button, a link, and a menu item — audited into one set of rules across four provider workflows.</p>
+                </div>
+                <div class="pv__vis">
+                  
+                  
+                  <div class="pv__dsa">
+                    <figure class="ds-cyc" data-ds-cyc>
+                      <ul class="ds-cyc__set">
+                      <li class="ds-cyc__item" data-tone="warn" data-on>
+                        <p class="ds-cyc__l">Provider-owned status</p>
+                        <p class="ds-cyc__k">Before</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--was">Pending</span></p>
+                        <p class="ds-cyc__arrow" aria-hidden="true"><i></i></p>
+                        <p class="ds-cyc__k">After</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--is">Awaiting provider action</span></p>
+                        <p class="ds-cyc__why">The label now says the provider owns the next step.</p>
+                      </li>
+                      <li class="ds-cyc__item" data-tone="review">
+                        <p class="ds-cyc__l">Clinical review status</p>
+                        <p class="ds-cyc__k">Before</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--was">Review</span></p>
+                        <p class="ds-cyc__arrow" aria-hidden="true"><i></i></p>
+                        <p class="ds-cyc__k">After</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--is">Needs clinical review</span></p>
+                        <p class="ds-cyc__why">A review needs a clinician, and the label says which kind.</p>
+                      </li>
+                      <li class="ds-cyc__item" data-tone="error">
+                        <p class="ds-cyc__l">Recoverable error</p>
+                        <p class="ds-cyc__k">Before</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--was">Failed</span></p>
+                        <p class="ds-cyc__arrow" aria-hidden="true"><i></i></p>
+                        <p class="ds-cyc__k">After</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--is">Submission error</span></p>
+                        <p class="ds-cyc__why">Failed read as terminal. This one reads as something to fix.</p>
+                      </li>
+                      <li class="ds-cyc__item" data-tone="lab">
+                        <p class="ds-cyc__l">Lab-owned status</p>
+                        <p class="ds-cyc__k">Before</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--was">In Progress</span></p>
+                        <p class="ds-cyc__arrow" aria-hidden="true"><i></i></p>
+                        <p class="ds-cyc__k">After</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--is">Lab review in progress</span></p>
+                        <p class="ds-cyc__why">In progress hid whose progress it was. Now it is the lab’s.</p>
+                      </li>
+                      <li class="ds-cyc__item" data-tone="done">
+                        <p class="ds-cyc__l">Completion status</p>
+                        <p class="ds-cyc__k">Before</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--was">Complete</span></p>
+                        <p class="ds-cyc__arrow" aria-hidden="true"><i></i></p>
+                        <p class="ds-cyc__k">After</p>
+                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--is">Results delivered</span></p>
+                        <p class="ds-cyc__why">Complete ended the workflow. Delivered names what arrived.</p>
+                      </li>
+                      </ul>
+                      <ul class="ds-cyc__ticks" aria-hidden="true">
+                      <li class="ds-cyc__tick" data-on></li>
+                      <li class="ds-cyc__tick"></li>
+                      <li class="ds-cyc__tick"></li>
+                      <li class="ds-cyc__tick"></li>
+                      <li class="ds-cyc__tick"></li>
+                      </ul>
+                    </figure>
+                  </div>
+                </div>
+              </article>
               <article class="pv__slide" data-project="optiflow" data-pv-slide data-mode="design"
                        role="tabpanel" aria-label="OptiFlow" hidden>
                 <div class="pv__head">
@@ -24590,76 +25436,6 @@ em,
                             title="OptiFlow — tagging preview" loading="lazy"
                             scrolling="no" tabindex="-1"></iframe>
                   </div></div>
-              </article>
-              
-              <article class="pv__slide" data-project="dsa" data-pv-slide data-mode="design"
-                       role="tabpanel" aria-label="Design System Audit" hidden>
-                <div class="pv__head">
-                  <h3 class="pv__title">Design System Audit</h3>
-                  <p class="pv__sub">The same action as a button, a link, and a menu item — audited into one set of rules across four provider workflows.</p>
-                </div>
-                <div class="pv__vis">
-                  
-                  
-                  <div class="pv__dsa">
-                    <figure class="ds-cyc" data-ds-cyc>
-                      <ul class="ds-cyc__set">
-                      <li class="ds-cyc__item" data-tone="warn" data-on>
-                        <p class="ds-cyc__l">Provider-owned status</p>
-                        <p class="ds-cyc__k">Before</p>
-                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--was">Pending</span></p>
-                        <p class="ds-cyc__arrow" aria-hidden="true"><i></i></p>
-                        <p class="ds-cyc__k">After</p>
-                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--is">Awaiting provider action</span></p>
-                        <p class="ds-cyc__why">The label now says the provider owns the next step.</p>
-                      </li>
-                      <li class="ds-cyc__item" data-tone="review">
-                        <p class="ds-cyc__l">Clinical review status</p>
-                        <p class="ds-cyc__k">Before</p>
-                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--was">Review</span></p>
-                        <p class="ds-cyc__arrow" aria-hidden="true"><i></i></p>
-                        <p class="ds-cyc__k">After</p>
-                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--is">Needs clinical review</span></p>
-                        <p class="ds-cyc__why">A review needs a clinician, and the label says which kind.</p>
-                      </li>
-                      <li class="ds-cyc__item" data-tone="error">
-                        <p class="ds-cyc__l">Recoverable error</p>
-                        <p class="ds-cyc__k">Before</p>
-                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--was">Failed</span></p>
-                        <p class="ds-cyc__arrow" aria-hidden="true"><i></i></p>
-                        <p class="ds-cyc__k">After</p>
-                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--is">Submission error</span></p>
-                        <p class="ds-cyc__why">Failed read as terminal. This one reads as something to fix.</p>
-                      </li>
-                      <li class="ds-cyc__item" data-tone="lab">
-                        <p class="ds-cyc__l">Lab-owned status</p>
-                        <p class="ds-cyc__k">Before</p>
-                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--was">In Progress</span></p>
-                        <p class="ds-cyc__arrow" aria-hidden="true"><i></i></p>
-                        <p class="ds-cyc__k">After</p>
-                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--is">Lab review in progress</span></p>
-                        <p class="ds-cyc__why">In progress hid whose progress it was. Now it is the lab’s.</p>
-                      </li>
-                      <li class="ds-cyc__item" data-tone="done">
-                        <p class="ds-cyc__l">Completion status</p>
-                        <p class="ds-cyc__k">Before</p>
-                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--was">Complete</span></p>
-                        <p class="ds-cyc__arrow" aria-hidden="true"><i></i></p>
-                        <p class="ds-cyc__k">After</p>
-                        <p class="ds-cyc__chip"><span class="ds-chip ds-chip--is">Results delivered</span></p>
-                        <p class="ds-cyc__why">Complete ended the workflow. Delivered names what arrived.</p>
-                      </li>
-                      </ul>
-                      <ul class="ds-cyc__ticks" aria-hidden="true">
-                      <li class="ds-cyc__tick" data-on></li>
-                      <li class="ds-cyc__tick"></li>
-                      <li class="ds-cyc__tick"></li>
-                      <li class="ds-cyc__tick"></li>
-                      <li class="ds-cyc__tick"></li>
-                      </ul>
-                    </figure>
-                  </div>
-                </div>
               </article>
               <article class="pv__slide" data-project="pnc" data-pv-slide data-mode="design"
                        role="tabpanel" aria-label="PNC Bank" hidden>
@@ -27942,6 +28718,520 @@ em,
 
   </main>
 
+  
+  <main class="page case ar" id="audit" data-view="audit" aria-labelledby="au-title" hidden>
+
+    <div class="cs-bar">
+      <a class="cs-bar__back" href="#work"><span aria-hidden="true">&larr;</span> Back to Work</a>
+      <p class="cs-bar__where">Design System Audit</p>
+      <div class="cs-bar__end">
+        <button class="theme-toggle" type="button" data-theme-toggle
+                aria-label="Switch to dark theme" aria-pressed="false">
+          <svg class="icon theme-toggle__moon" aria-hidden="true"><use href="#i-moon"/></svg>
+          <svg class="icon theme-toggle__sun" aria-hidden="true"><use href="#i-sun"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <header class="ar-mast cs-mast">
+      <p class="ar-kicker">Case study</p>
+      <h1 class="ar-title" id="au-title">Design System Audit</h1>
+      <p class="ar-standfirst">I audited a clinical portal against the decisions a provider
+        has to make in it, and rewrote the parts of the system that were making them stop
+        and interpret.</p>
+      <dl class="ar-meta">
+        <div class="ar-meta__row"><dt>Role</dt><dd>Product designer &mdash; audit, component and copy standards, handoff</dd></div>
+        <div class="ar-meta__row"><dt>Team</dt><dd>Product, engineering, design system</dd></div>
+        <div class="ar-meta__row"><dt>Phase</dt><dd>Audit delivered as documentation and system rules</dd></div>
+      </dl>
+
+      
+      <figure class="au-key" aria-label="Five status labels, before and after the audit">
+        <figcaption class="au-key__l">Status copy, before &rarr; after</figcaption>
+        <ul class="au-key__set">
+          <li><span class="au-b" data-t="flat">Pending</span><em aria-hidden="true">&rarr;</em><span class="au-b" data-t="provider">Awaiting provider action</span></li>
+          <li><span class="au-b" data-t="provider">Review</span><em aria-hidden="true">&rarr;</em><span class="au-b" data-t="review">Needs clinical review</span></li>
+          <li><span class="au-b" data-t="error">Failed</span><em aria-hidden="true">&rarr;</em><span class="au-b" data-t="error">Submission error</span></li>
+          <li><span class="au-b" data-t="lab">In Progress</span><em aria-hidden="true">&rarr;</em><span class="au-b" data-t="lab">Lab review in progress</span></li>
+          <li><span class="au-b" data-t="done">Complete</span><em aria-hidden="true">&rarr;</em><span class="au-b" data-t="done">Results delivered</span></li>
+        </ul>
+      </figure>
+    </header>
+
+<div class="cs-wrap">
+
+
+<section class="acc acc--static" data-open="1">
+  <div data-acc-h>
+    <span class="acc__n">Outcome</span>
+    <span class="ar-h2">The library passed. The workflow did not.</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <p class="ar-p">The portal moves a clinical test through its life: an order is created,
+      a specimen is collected and tracked to the lab, a result comes back, a provider
+      reviews it, a task closes it out. The components carrying all of that were already in
+      a library and already consistent inside it. Audited inside the workflows they serve,
+      the same action was a filled button in one row, a text link in the next and an icon
+      menu in a third; statuses named a system state without saying whose move it was;
+      errors announced a problem without naming the fix. I audited orders, specimens,
+      results and tasks against one question &mdash; can a provider tell what is happening,
+      what needs attention, and what to do next &mdash; and turned each answer into a rule
+      the team could apply without asking me.</p>
+
+    <div class="ar-note"><p><b>On the evidence.</b> The contrast ratios on this page are
+      measured pairings from the audit, not estimates &mdash; and one of them is reported
+      as it came out: the red error badge clears <b>AA at badge size only</b>, at 3.95:1,
+      so it is documented as large-text-only and paired with an icon rather than rounded up
+      to a pass. There are no adoption or task-time numbers here, because the audit
+      produced standards and documentation; I did not run a study after it.</p></div>
+
+    <h3 class="ar-h3">What I owned</h3>
+    <ul class="cs-did">
+      <li>Audited four provider workflows against the decisions inside them, not against the library</li>
+      <li>Rewrote status and action copy so every label names an owner and a next step</li>
+      <li>Set the rule for how a next-step action is ranked against the others in a row</li>
+      <li>Documented the colour system with a measured contrast ratio behind every pairing</li>
+      <li>Defined the Provider Action Queue as one pattern for all four workflows</li>
+      <li>Wrote the pattern as a build spec with states, approved copy and acceptance criteria</li>
+    </ul>
+  </div>
+</section>
+
+
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">Problem &amp; Context</span>
+    <span class="ar-h2">A library is not a workflow</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <p class="acc__lede ar-p">A design system is normally audited against itself: are the
+      components consistent, are the tokens applied, is anything drifting. That audit
+      passes here. The one that mattered was whether the system made a clinical workflow
+      easier to scan, understand and hand off &mdash; a different question, asked in a
+      different place.</p>
+
+    <p class="ar-p">So the unit of review was the workflow, not the component. Four of them,
+      each a place where a provider has to decide something, each audited for the parts of
+      the interface that carry that decision.</p>
+
+    <ul class="au-scope">
+      <li><b>Orders</b><span>Providers review and complete test orders before submission.</span>
+        <i>Status labels, table actions, submission errors</i></li>
+      <li><b>Specimens</b><span>Providers and lab teams track specimens through collection, transit, receipt, review and completion.</span>
+        <i>Tracking states, timelines, ownership</i></li>
+      <li><b>Results</b><span>Providers review results, sign off when needed, and access reports.</span>
+        <i>Review states, alerts, report actions</i></li>
+      <li><b>Tasks</b><span>The portal surfaces missing information, submission errors, clinical review and overdue work.</span>
+        <i>Priority, required action, due dates</i></li>
+    </ul>
+
+    <p class="ar-p">All four sit on one sequence, and every finding on this page is about a
+      moment inside it where the interface stopped saying whose move it was.</p>
+
+    <ol class="au-flow">
+      <li>Order created</li>
+      <li>Specimen collected</li>
+      <li>Lab reviews specimen</li>
+      <li>Result generated</li>
+      <li>Provider reviews result</li>
+      <li>Task resolved</li>
+    </ol>
+
+    
+    <figure class="au-fig">
+      <figcaption class="au-fig__c"><b>The work queue as audited</b> Four required actions, four different treatments, one table.</figcaption>
+      <div class="ar-table__wrap">
+        <table class="ar-table au-tbl">
+          <thead><tr><th>Workflow</th><th>Clinical context</th><th>Status</th><th>Last updated</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><b>Orders</b></td><td>ORD-458732 &middot; John Doe &middot; Signatera</td><td><span class="au-b" data-t="flat">Pending</span></td><td>2h ago</td><td><span class="au-a" data-k="ghost">Submit Order</span></td></tr>
+            <tr><td><b>Results</b></td><td>Robert Brown &middot; Signatera result</td><td><span class="au-b" data-t="provider">Review</span></td><td>4h ago</td><td><span class="au-a" data-k="link">Open</span></td></tr>
+            <tr><td><b>Specimens</b></td><td>SPEC-884522 &middot; Jane Smith &middot; Blood</td><td><span class="au-b" data-t="lab">In Progress</span></td><td>1h ago</td><td><span class="au-a" data-k="ghost">Details</span></td></tr>
+            <tr><td><b>Tasks</b></td><td>Missing specimen source &middot; A. Smith</td><td><span class="au-b" data-t="flat">Open</span></td><td>30m ago</td><td><span class="au-a" data-k="menu">&hellip;</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </figure>
+
+    <div class="cs-move"><p class="cs-move__l">The question the audit asked of every screen</p>
+      <p>Can a provider quickly understand what is happening, what needs attention, and
+        what action to take next?</p></div>
+  </div>
+</section>
+
+
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">What the Audit Found</span>
+    <span class="ar-h2">Three ways a row stopped saying whose move it was</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <p class="acc__lede ar-p">The findings landed on the three things a work-queue row is
+      made of: the action at the end of it, the status at the front, and what the row says
+      when something has gone wrong. Each one is shown here the way it is best understood
+      &mdash; a table against a table where the comparison is the point, a run of pairs
+      where the progression is, and one row enlarged where the detail is.</p>
+
+    <h3 class="ar-h3">Actions had no rank</h3>
+    <p class="ar-p">A provider reads a queue to decide what to do next. When the same kind
+      of action is a button in one row, a link in another and a menu in a third, the row
+      stops being scannable &mdash; you have to reinterpret the interface before you can
+      act in it. The fix was not a new component. It was ranking the ones already there by
+      what the action means, and replacing every generic verb with the task.</p>
+
+    
+    <div class="au-ba">
+      <p class="au-ba__l"><b>Before</b> Similar actions looked different across workflows</p>
+      <div class="ar-table__wrap">
+        <table class="ar-table au-tbl">
+          <thead><tr><th>Workflow</th><th>Status</th><th>Last updated</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><b>Orders</b></td><td><span class="au-b" data-t="flat">Pending</span></td><td>2h ago</td><td><span class="au-a" data-k="ghost">Submit Order</span></td></tr>
+            <tr><td><b>Results</b></td><td><span class="au-b" data-t="provider">Review</span></td><td>4h ago</td><td><span class="au-a" data-k="link">Open</span></td></tr>
+            <tr><td><b>Specimens</b></td><td><span class="au-b" data-t="lab">In Progress</span></td><td>1h ago</td><td><span class="au-a" data-k="ghost">Details</span></td></tr>
+            <tr><td><b>Tasks</b></td><td><span class="au-b" data-t="flat">Open</span></td><td>30m ago</td><td><span class="au-a" data-k="menu">&hellip;</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="au-ba" data-after>
+      <p class="au-ba__l"><b>After</b> Every row exposes the next required action</p>
+      <div class="ar-table__wrap">
+        <table class="ar-table au-tbl">
+          <thead><tr><th>Workflow</th><th>Status</th><th>Required action</th><th>Next step</th></tr></thead>
+          <tbody>
+            <tr><td><b>Orders</b></td><td><span class="au-b" data-t="provider">Awaiting provider action</span></td><td>Confirm order details</td><td><span class="au-a" data-k="provider">Review order</span></td></tr>
+            <tr><td><b>Results</b></td><td><span class="au-b" data-t="review">Needs clinical review</span></td><td>Review and sign off on result</td><td><span class="au-a" data-k="review">Review result</span></td></tr>
+            <tr><td><b>Specimens</b></td><td><span class="au-b" data-t="lab">Lab review in progress</span></td><td>Track specimen progress</td><td><span class="au-a" data-k="info">View details</span></td></tr>
+            <tr><td><b>Tasks</b></td><td><span class="au-b" data-t="error">Submission error</span></td><td>Add missing specimen source</td><td><span class="au-a" data-k="recovery">Resolve issue</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="ar-p">Submit Order became <b>Review order</b>, because the label should
+      describe the provider&rsquo;s task rather than the system&rsquo;s operation. Open became
+      <b>Review result</b> and took the clinical-review treatment, because sign-off is not
+      navigation. Details became <b>View details</b> and stayed outlined, because specimen
+      tracking is informational and should not compete with required work. And the overflow
+      menu became <b>Resolve issue</b>, because a recoverable error is the last thing that
+      should be hidden behind three dots.</p>
+
+    <div class="au-rule"><p class="au-rule__l">System rule</p>
+      <p>Next-step actions use a distinct treatment per workflow meaning &mdash; provider
+        action, clinical review, informational detail, recovery, completion &mdash; and a
+        task-specific label instead of Open, View or Details.</p></div>
+
+    <h3 class="ar-h3">Statuses left a question behind</h3>
+    <p class="ar-p">The colour was already doing its job. The words were not: every status
+      named a system state and left the provider holding a question about ownership. The
+      clearest way to show it is to write the question down next to the label.</p>
+
+    
+    <ol class="au-seq">
+      <li>
+        <p class="au-seq__q">Who is it pending on?</p>
+        <p class="au-seq__p"><span class="au-b" data-t="flat">Pending</span><em aria-hidden="true">&rarr;</em><span class="au-b" data-t="provider">Awaiting provider action</span></p>
+        <p class="au-seq__w">The provider owns the next step, and the label now says so.</p>
+      </li>
+      <li>
+        <p class="au-seq__q">Who needs to review it?</p>
+        <p class="au-seq__p"><span class="au-b" data-t="provider">Review</span><em aria-hidden="true">&rarr;</em><span class="au-b" data-t="review">Needs clinical review</span></p>
+        <p class="au-seq__w">A clinical interpretation or sign-off is required &mdash; not an inbox glance.</p>
+      </li>
+      <li>
+        <p class="au-seq__q">What failed, and how do I fix it?</p>
+        <p class="au-seq__p"><span class="au-b" data-t="error">Failed</span><em aria-hidden="true">&rarr;</em><span class="au-b" data-t="error">Submission error</span></p>
+        <p class="au-seq__w">Framed as recoverable, which prepares the provider for a fix rather than an escalation.</p>
+      </li>
+      <li>
+        <p class="au-seq__q">Where is it in progress?</p>
+        <p class="au-seq__p"><span class="au-b" data-t="lab">In Progress</span><em aria-hidden="true">&rarr;</em><span class="au-b" data-t="lab">Lab review in progress</span></p>
+        <p class="au-seq__w">The lab owns this step, so the provider knows there is nothing to do.</p>
+      </li>
+      <li>
+        <p class="au-seq__q">Was it delivered, reviewed, or closed?</p>
+        <p class="au-seq__p"><span class="au-b" data-t="done">Complete</span><em aria-hidden="true">&rarr;</em><span class="au-b" data-t="done">Results delivered</span></p>
+        <p class="au-seq__w">Completion tied to a clinical outcome rather than to a workflow ending.</p>
+      </li>
+    </ol>
+
+    <div class="au-rule"><p class="au-rule__l">System rule</p>
+      <p>Status copy must clarify ownership, workflow state, and whether the provider needs
+        to act.</p></div>
+
+    <h3 class="ar-h3">Errors named a problem, not a fix</h3>
+    <p class="ar-p">An order that fails to submit stops a clinical test, and somebody is
+      waiting on the result. The error states were visible enough; they just did not say
+      what had happened, what was missing, or what to do about it. This one is a detail
+      rather than a pattern, so it is shown as one row, enlarged.</p>
+
+    
+    <figure class="au-fig au-fig--row">
+      <figcaption class="au-fig__c"><b>ORD-458734 &middot; Robert Brown</b> One row, before and after.</figcaption>
+      <div class="au-row" data-s="before">
+        <p class="au-row__l">Before</p>
+        <p class="au-row__b"><span class="au-b" data-t="error">Failed</span></p>
+        <p class="au-row__m">Submission failed. Please check order details.</p>
+        <p class="au-row__a"><span class="au-a" data-k="link">Details</span></p>
+      </div>
+      <div class="au-row" data-s="after">
+        <p class="au-row__l">After</p>
+        <p class="au-row__b"><span class="au-b" data-t="error">Submission error</span></p>
+        <p class="au-row__m"><b>Missing specimen source</b><span>Add specimen source to complete submission</span></p>
+        <p class="au-row__a"><span class="au-a" data-k="recovery">Resolve issue</span></p>
+      </div>
+    </figure>
+
+    <p class="ar-p">Three changes in one row: the status stops sounding final, the message
+      names the exact field, and the action says what pressing it will do. The other two
+      error rows took the same shape &mdash; an incomplete insurance field routed to
+      <b>Complete order</b>, a missing provider signature to <b>Review order</b> &mdash; so
+      the recovery action matches the work rather than always being the same red button.</p>
+
+    <div class="au-rule"><p class="au-rule__l">System rule</p>
+      <p>Every error carries four things: the error type, the specific cause, the recovery
+        instruction, and an action-specific next step.</p></div>
+  </div>
+</section>
+
+
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">System Decisions</span>
+    <span class="ar-h2">One pattern, and colour that had to earn it</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <p class="acc__lede ar-p">Rewriting labels fixes rows one at a time. Two decisions had
+      to hold across all four workflows for the fixes to stay fixed: a single row structure
+      the workflows share, and a colour system where every pairing carrying meaning has a
+      measured ratio behind it.</p>
+
+    <h3 class="ar-h3">The Provider Action Queue</h3>
+    <p class="ar-p">Orders, specimens, results and tasks ask a provider the same question in
+      four different vocabularies, and each had assembled its own answer from generic
+      components. The library had parts; it did not have this. Seven fields, in this order,
+      reusable wherever clinical work needs a decision.</p>
+
+    <figure class="au-fig">
+      <figcaption class="au-fig__c"><b>Provider Action Queue</b> One row structure, carrying all four workflows.</figcaption>
+      <div class="ar-table__wrap">
+        <table class="ar-table au-tbl au-tbl--q">
+          <thead><tr><th>Priority</th><th>Patient / workflow</th><th>Status</th><th>Required action</th><th>Owner</th><th>Due</th><th>Next step</th></tr></thead>
+          <tbody>
+            <tr><td><span class="au-p" data-p="high">High</span></td><td>John Doe &middot; Signatera order</td><td><span class="au-b" data-t="provider">Awaiting provider action</span></td><td>Confirm order details</td><td>A. Smith</td><td>Today 11:00 AM</td><td><span class="au-a" data-k="provider">Review order</span></td></tr>
+            <tr><td><span class="au-p" data-p="med">Medium</span></td><td>Jane Smith &middot; Blood specimen</td><td><span class="au-b" data-t="lab">Lab review in progress</span></td><td>Track specimen progress</td><td>Lab</td><td>Updated 1h ago</td><td><span class="au-a" data-k="info">View details</span></td></tr>
+            <tr><td><span class="au-p" data-p="high">High</span></td><td>Robert Brown &middot; Signatera result</td><td><span class="au-b" data-t="review">Needs clinical review</span></td><td>Review and sign off result</td><td>A. Smith</td><td>Today 2:00 PM</td><td><span class="au-a" data-k="review">Review result</span></td></tr>
+            <tr><td><span class="au-p" data-p="high">High</span></td><td>Maria Chen &middot; Missing signature</td><td><span class="au-b" data-t="error">Submission error</span></td><td>Add provider signature</td><td>A. Smith</td><td>Today 4:00 PM</td><td><span class="au-a" data-k="recovery">Resolve issue</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </figure>
+
+    <ul class="au-pat">
+      <li><b>Patient context</b><span>Appeared differently in every workflow.</span>
+        <i>One structure, so work can be compared across all four.</i></li>
+      <li><b>Required action</b><span>Supporting details mixed IDs, test names and vague descriptions.</span>
+        <i>A field that says what to do, without opening the item.</i></li>
+      <li><b>Priority</b><span>Not shown in workflow rows at all.</span>
+        <i>A visible field, so urgent work is identifiable at a glance.</i></li>
+      <li><b>Row structure</b><span>Each workflow built its own.</span>
+        <i>One pattern that scales across orders, specimens, results and tasks.</i></li>
+    </ul>
+
+    <h3 class="ar-h3">Colour had to survive a dense table</h3>
+    <p class="ar-p">Four of the five findings hand work to colour: a status that names an
+      owner, an action that ranks itself against the others, an error that reads as
+      recoverable. None of that survives being unreadable, and clinical tables are dense.
+      So each pairing carries its measured ratio and the level it actually meets.</p>
+
+    <div class="ar-table__wrap">
+      <table class="ar-table au-tbl au-tbl--tok">
+        <thead><tr><th>Status token</th><th>Workflow meaning</th><th>Contrast</th><th>WCAG</th><th>Badge</th></tr></thead>
+        <tbody>
+          <tr><td><b>Awaiting provider action</b></td><td>Provider owns the next step</td><td><code>4.52:1</code></td><td><span class="au-w">AA</span></td><td><span class="au-b" data-t="provider">Awaiting provider action</span></td></tr>
+          <tr><td><b>Needs clinical review</b></td><td>Clinical interpretation or sign-off needed</td><td><code>5.98:1</code></td><td><span class="au-w">AA</span></td><td><span class="au-b" data-t="review">Needs clinical review</span></td></tr>
+          <tr><td><b>Submission error</b></td><td>Recoverable issue needs correction</td><td><code>3.95:1</code></td><td><span class="au-w" data-l="lg">AA large text</span></td><td><span class="au-b" data-t="error">Submission error</span></td></tr>
+          <tr><td><b>Lab review in progress</b></td><td>Lab owns the current step</td><td><code>5.54:1</code></td><td><span class="au-w">AA</span></td><td><span class="au-b" data-t="lab">Lab review in progress</span></td></tr>
+          <tr><td><b>Results delivered</b></td><td>Workflow reached delivered state</td><td><code>4.57:1</code></td><td><span class="au-w">AA</span></td><td><span class="au-b" data-t="done">Results delivered</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="ar-p">The action tokens were measured the same way &mdash; provider action at
+      <code>6.24:1</code>, clinical review at <code>7.54:1</code>, recovery at
+      <code>4.51:1</code>, completion at <code>5.11:1</code>, and the informational outline
+      at <code>17.85:1</code>. Underneath them the foundation set: primary text at
+      <code>17.85:1</code> and secondary at <code>7.58:1</code> both clear AAA, metadata at
+      <code>4.76:1</code> clears AA, and the border token is marked decoration only &mdash;
+      the one value on the sheet never allowed to carry a label.</p>
+
+    <ol class="au-rules">
+      <li><b>Status is never colour alone.</b> Always paired with visible text, and with an icon on warning and error states.</li>
+      <li><b>Semantic colour is used consistently.</b> Orange is provider action or missing information; purple is clinical review; blue is a standard provider action or lab progress; red is a recoverable issue; green is complete or delivered.</li>
+      <li><b>Low-contrast values are decoration only.</b> Borders and dividers need not meet text contrast, and must never carry a label or essential information.</li>
+      <li><b>Red badge copy is handled carefully.</b> Red on light red is acceptable at badge size and not for small paragraph text; it is paired with an icon and clear recovery copy.</li>
+      <li><b>New tokens are validated before use.</b> Any new status, action or alert colour is checked for contrast before it enters the system.</li>
+    </ol>
+
+    <div class="au-rule"><p class="au-rule__l">System rule</p>
+      <p>Colour tokens are tied to workflow meaning rather than decoration. Every status and
+        action colour communicates ownership, urgency or completion, and meets the contrast
+        a dense clinical table needs.</p></div>
+  </div>
+</section>
+
+
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">Handoff &amp; Reflection</span>
+    <span class="ar-h2">A screen is not an instruction</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <p class="acc__lede ar-p">The inconsistencies were not only appearing in the interface.
+      They were appearing at handoff, where a static screen and a component example get
+      read four different ways by design, product, engineering, and whatever AI-assisted
+      tool is generating the first pass. The last finding is about the document rather than
+      the design.</p>
+
+    
+    <figure class="au-fig">
+      <figcaption class="au-fig__c"><b>Before</b> What a visual spec left open</figcaption>
+      <div class="au-gap">
+        <div><p class="au-gap__l">What design provided</p>
+          <ul><li>Static screen</li><li>Visual component example</li><li>Basic labels</li></ul></div>
+        <div><p class="au-gap__l">What was missing</p>
+          <ul data-miss><li>Behaviour rules</li><li>Approved copy</li><li>States</li><li>Accessibility</li><li>Acceptance criteria</li></ul></div>
+        <div><p class="au-gap__l">What engineering had to guess</p>
+          <ul data-miss><li>Where actions belong</li><li>Which labels to use</li><li>How errors behave</li><li>What happens in edge cases</li></ul></div>
+        <div><p class="au-gap__l">What it cost</p>
+          <ul data-miss><li>UI drift</li><li>Inconsistent copy</li><li>Missing states</li><li>Harder QA</li></ul></div>
+      </div>
+    </figure>
+
+    <p class="ar-p">So the pattern was written as build instructions rather than drawn as a
+      screen. The same document does three jobs: it gives product the behaviour, edge cases
+      and acceptance criteria before build starts; it tells engineering which states to
+      support and which labels are approved; and it turns a one-line prompt into something
+      an AI-assisted tool can build to.</p>
+
+    <div class="au-spec">
+      <div class="au-spec__h">
+        <p class="au-spec__k">Build spec</p>
+        <p class="au-spec__t">Provider Action Queue Row</p>
+        <p class="au-spec__s">Build ready</p>
+      </div>
+
+      <div class="au-spec__b">
+        <p class="au-spec__l">Purpose</p>
+        <p class="au-spec__p">Shows urgent provider work in a scan-friendly row with status,
+          required action, owner, due date and next step.</p>
+
+        <p class="au-spec__l">Required fields</p>
+        <p class="au-spec__chips"><span>Priority</span><span>Patient / workflow</span><span>Status</span><span>Required action</span><span>Owner</span><span>Due</span><span>Next step</span></p>
+
+        <p class="au-spec__l">Approved status copy</p>
+        <p class="au-spec__chips au-spec__chips--b">
+          <span class="au-b" data-t="provider">Awaiting provider action</span>
+          <span class="au-b" data-t="review">Needs clinical review</span>
+          <span class="au-b" data-t="error">Submission error</span>
+          <span class="au-b" data-t="lab">Lab review in progress</span>
+          <span class="au-b" data-t="done">Results delivered</span>
+          <span class="au-b" data-t="provider">Missing information</span></p>
+
+        <p class="au-spec__l">Action rules</p>
+        <ul class="au-spec__list">
+          <li>Use task-specific labels.</li>
+          <li>Use &ldquo;Review order,&rdquo; &ldquo;Review result,&rdquo; &ldquo;Resolve issue&rdquo; or &ldquo;View details.&rdquo;</li>
+          <li>Do not use &ldquo;Open,&rdquo; &ldquo;View,&rdquo; &ldquo;Done,&rdquo; &ldquo;Failed&rdquo; or &ldquo;Pending&rdquo; in updated workflow tables.</li>
+          <li>Place the next step action in the far-right column.</li>
+        </ul>
+
+        <p class="au-spec__l">Required states</p>
+        <p class="au-spec__chips"><span>Default</span><span>Hover</span><span>Focus</span><span>Selected</span><span>Loading</span><span>Empty</span><span>Error</span><span>Disabled</span><span>Overdue</span></p>
+
+        <p class="au-spec__l">Accessibility rules</p>
+        <ul class="au-spec__list">
+          <li>Status must include visible text.</li>
+          <li>Do not rely on colour alone.</li>
+          <li>All actions must be keyboard accessible.</li>
+          <li>Focus states must be visible.</li>
+          <li>Error states must include recovery guidance.</li>
+        </ul>
+
+        <p class="au-spec__l">Definition of done</p>
+        <ul class="au-spec__list">
+          <li>The row includes all required fields.</li>
+          <li>The status uses approved design system copy.</li>
+          <li>The next step action appears in the far-right column.</li>
+          <li>The action label describes the task.</li>
+          <li>Error states explain what happened and how to recover.</li>
+          <li>Keyboard focus is visible.</li>
+          <li>Meaning remains clear without relying on colour.</li>
+          <li>The pattern works across orders, results, specimens and tasks.</li>
+        </ul>
+      </div>
+    </div>
+
+    
+    <figure class="au-fig">
+      <figcaption class="au-fig__c"><b>The same request, before and after the spec</b></figcaption>
+      <div class="au-prompt">
+        <div class="au-prompt__c">
+          <p class="au-prompt__l">Before</p>
+          <p class="au-prompt__t">Create a provider task table.</p>
+          <p class="au-prompt__n">Does not define fields, states, labels, accessibility or
+            behaviour &mdash; so every one of those is invented by whoever builds it.</p>
+        </div>
+        <div class="au-prompt__c" data-after>
+          <p class="au-prompt__l">After</p>
+          <p class="au-prompt__t">Create a Provider Action Queue Row using the Clinical
+            Workflow Design System. Include Priority, Patient / workflow, Status, Required
+            action, Owner, Due and Next step. Use approved status labels only. Place the
+            next step action in the far-right column. Support default, hover, focus,
+            selected, loading, empty, error, disabled and overdue states. Do not rely on
+            colour alone to communicate status.</p>
+        </div>
+      </div>
+    </figure>
+
+    <h3 class="ar-h3">What I would do differently</h3>
+    <p class="ar-p">The audit produced standards, and standards are only worth what gets
+      adopted. I documented the rules well and did not build the thing that would have
+      made them stick: a check somebody runs on a screen before it ships. Every rule on
+      this page is testable &mdash; approved copy is a list, contrast is a number, required
+      states are an enumeration &mdash; and none of them were wired to anything that would
+      catch a regression.</p>
+
+    <p class="ar-p">I also changed the words before I watched anybody read them. The
+      rewrites are defensible on their own terms, and I would still make them, but
+      &ldquo;Awaiting provider action&rdquo; being clearer than &ldquo;Pending&rdquo; is an
+      argument I made rather than a result I measured.</p>
+
+    <h3 class="ar-h3">What I carry forward</h3>
+    <p class="ar-p">Auditing the workflow rather than the library. A component set can be
+      perfectly consistent and still leave a provider unable to tell whose move it is,
+      because consistency is measured inside the system and comprehension is measured
+      inside the work. The useful question was never whether the components matched each
+      other &mdash; it was whether a row could be read once.</p>
+
+    <div class="ar-end"><p>Contrast ratios, token names, status copy, the build spec and the
+      workflow examples are the audit&rsquo;s own. The tables, badges and actions here are
+      rebuilt as live components in this site&rsquo;s type rather than reproduced as
+      screenshots, so the colour relationships are the documented ones and the type is the
+      type you are reading.</p></div>
+  </div>
+</section>
+</div>
+
+    
+    <nav class="csnav" data-study="dsa"
+           aria-label="Case study navigation"></nav>
+
+  </main>
+
+
 
 <script>
 /* ===== js/routes.js ===== */
@@ -28011,13 +29301,19 @@ window.PF = window.PF || {};
       context: 'Physical experience · Healthcare',
       route: 'https://rockysahoo.design/project/specimenkit', status: 'live' },
 
+    /* THIRD, AND IN THIS DOCUMENT. The audit was a link out to its Figma Make
+       page until it was rebuilt here; the source is untouched and this is
+       simply where the case study lives now. It sits directly after Specimen
+       Kit because that is the order of the work — and because order in this
+       table is the order everything else reads: the carousel's count, the
+       cards, previous and next at the foot of a study. */
+    { key: 'dsa', mode: 'design', name: 'Design System Audit',
+      context: 'Design systems · Healthcare',
+      route: '#/audit', status: 'live' },
+
     { key: 'optiflow', mode: 'design', name: 'OptiFlow',
       context: 'AI-assisted operations · Healthcare',
       route: '#/optiflow', status: 'live' },
-
-    { key: 'dsa', mode: 'design', name: 'Design System Audit',
-      context: 'Design systems · Healthcare',
-      route: 'https://rockysahoo.design/project/audit', status: 'live' },
 
     { key: 'pnc', mode: 'design', name: 'PNC Bank',
       context: 'Securities-based lending · Finance',
@@ -28052,8 +29348,9 @@ window.PF = window.PF || {};
 
   /* A ROUTE IS EITHER IN THIS DOCUMENT OR IT IS NOT.
 
-     Two of these studies live here as a second <main>; the rest are published
-     elsewhere — on rockysahoo.design, on GitHub Pages, in a Figma prototype.
+     Three of these studies live here as a second <main>; the rest are
+     published elsewhere — on rockysahoo.design, on GitHub Pages, in a Figma
+     prototype.
      The distinction is the URL itself rather than a second flag that could
      disagree with it: a hash stays in the tab, anything absolute opens in a
      new one with rel="noopener" and the external mark. Nothing that consumes
