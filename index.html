@@ -25061,6 +25061,15 @@ body{display:grid;place-items:center;min-height:100vh}
 .dh text{font-family:ui-sans-serif,system-ui,&quot;Segoe UI&quot;,Helvetica,Arial,sans-serif;
   font-weight:700}
 .dh .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700}
+/* THE TERM LABELS ARE SECONDARY AND THEY SAY SO.
+
+   Lighter than everything that is happening, set in the empty column between
+   the two machines and in the band under the wire, so a person skimming the
+   card can name what they are watching without anything moving to make room
+   for the words. Nothing is drawn over a face, a laptop or a line. */
+.dh .lbl{font-weight:600;letter-spacing:.02em}
+.dh .lbl-m{font-weight:600;letter-spacing:.05em}
+.dh .lbl-f{font-weight:500;letter-spacing:.03em}
 
 /* EVERY MOVING PART SHARES ONE SIX-SECOND CLOCK. No element has its own
    duration, delay or count, so nothing can drift out of step with anything
@@ -25097,6 +25106,12 @@ body{display:grid;place-items:center;min-height:100vh}
 @keyframes evanmsg { 0% { opacity:0 } 81% { opacity:0 } 82.5% { opacity:1 } 92% { opacity:1 } 93.5% { opacity:0 } 100% { opacity:0 } }
 @keyframes strike { 0% { opacity:0 } 84.5% { opacity:0 } 86% { opacity:1 } 92% { opacity:1 } 93.5% { opacity:0 } 100% { opacity:0 } }
 .a-priv{animation-name:priv}.a-mine{animation-name:mine}.a-theirs{animation-name:theirs}.a-evanpub{animation-name:evanpub}.a-secret{animation-name:secret}.a-quest{animation-name:quest}.a-msgM{animation-name:msgM}.a-msgL{animation-name:msgL}.a-evanmsg{animation-name:evanmsg}.a-strike{animation-name:strike}
+@keyframes lprv { 0% { opacity:0 } 20% { opacity:0 } 21.5% { opacity:1 } 35.5% { opacity:1 } 37% { opacity:0 } 100% { opacity:0 } }
+@keyframes lpub { 0% { opacity:0 } 36.5% { opacity:0 } 38% { opacity:1 } 57% { opacity:1 } 58.5% { opacity:0 } 100% { opacity:0 } }
+@keyframes lasym { 0% { opacity:0 } 20% { opacity:0 } 22% { opacity:1 } 57% { opacity:1 } 58.5% { opacity:0 } 100% { opacity:0 } }
+@keyframes lsym { 0% { opacity:0 } 73.5% { opacity:0 } 75% { opacity:1 } 92% { opacity:1 } 93.5% { opacity:0 } 100% { opacity:0 } }
+@keyframes lfoot { 0% { opacity:0 } 20% { opacity:0 } 22% { opacity:1 } 57% { opacity:1 } 58.5% { opacity:0 } 100% { opacity:0 } }
+.a-lprv{animation-name:lprv}.a-lpub{animation-name:lpub}.a-lasym{animation-name:lasym}.a-lsym{animation-name:lsym}.a-lfoot{animation-name:lfoot}
 @keyframes ride { 0% { offset-distance:0%;opacity:0 } 39% { offset-distance:0%;opacity:0 } 40.5% { offset-distance:0%;opacity:1 } 52% { offset-distance:100%;opacity:1 } 53.5% { offset-distance:100%;opacity:0 } 100% { offset-distance:100%;opacity:0 } }
 @keyframes rideC { 0% { offset-distance:0%;opacity:0 } 77% { offset-distance:0%;opacity:0 } 78.5% { offset-distance:0%;opacity:1 } 84% { offset-distance:100%;opacity:1 } 85.5% { offset-distance:100%;opacity:0 } 100% { offset-distance:100%;opacity:0 } }
 .a-ride{animation-name:ride}.a-rideC{animation-name:rideC}
@@ -25232,6 +25247,8 @@ body{display:grid;place-items:center;min-height:100vh}
     &lt;g class=&quot;chip a-ride&quot; style=&quot;offset-path:path(&#x27;M246 686 V560 H448 V458 H552 V560 H754 V686&#x27;)&quot;&gt;&lt;rect x=&quot;-27&quot; y=&quot;-18&quot; width=&quot;54&quot; height=&quot;36&quot; rx=&quot;8&quot; fill=&quot;var(--r-surface)&quot; stroke=&quot;var(--r-key)&quot; stroke-width=&quot;2.6&quot;/&gt;&lt;text x=&quot;0&quot; y=&quot;0&quot; font-size=&quot;26&quot; fill=&quot;var(--r-key)&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot;&gt;10&lt;/text&gt;&lt;text x=&quot;0&quot; y=&quot;38&quot; font-size=&quot;20&quot; fill=&quot;var(--r-ink-2)&quot; text-anchor=&quot;middle&quot;&gt;public&lt;/text&gt;&lt;/g&gt;
     &lt;g class=&quot;chip a-ride&quot; style=&quot;offset-path:path(&#x27;M754 686 V560 H552 V458 H448 V560 H246 V686&#x27;)&quot;&gt;&lt;rect x=&quot;-27&quot; y=&quot;-18&quot; width=&quot;54&quot; height=&quot;36&quot; rx=&quot;8&quot; fill=&quot;var(--r-surface)&quot; stroke=&quot;var(--r-key)&quot; stroke-width=&quot;2.6&quot;/&gt;&lt;text x=&quot;0&quot; y=&quot;0&quot; font-size=&quot;26&quot; fill=&quot;var(--r-key)&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot;&gt;16&lt;/text&gt;&lt;text x=&quot;0&quot; y=&quot;38&quot; font-size=&quot;20&quot; fill=&quot;var(--r-ink-2)&quot; text-anchor=&quot;middle&quot;&gt;public&lt;/text&gt;&lt;/g&gt;
     &lt;g class=&quot;chip a-rideC&quot; style=&quot;offset-path:path(&#x27;M246 686 V560 H448 V458 H552 V560 H754 V686&#x27;)&quot;&gt;&lt;rect x=&quot;-62&quot; y=&quot;-17&quot; width=&quot;124&quot; height=&quot;34&quot; rx=&quot;8&quot; fill=&quot;var(--r-surface)&quot; stroke=&quot;var(--r-key)&quot; stroke-width=&quot;2.6&quot;/&gt;&lt;text class=&quot;mono&quot; x=&quot;0&quot; y=&quot;0&quot; font-size=&quot;15&quot; fill=&quot;var(--r-key)&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot;&gt;8X#q2Lm!4KzR&lt;/text&gt;&lt;/g&gt;
+
+    &lt;g class=&quot;a-lpub&quot;&gt;&lt;text class=&quot;lbl&quot; x=&quot;500&quot; y=&quot;640&quot; font-size=&quot;22&quot; fill=&quot;var(--r-ink-2)&quot; text-anchor=&quot;middle&quot;&gt;Public Key&lt;/text&gt;&lt;/g&gt;&lt;g class=&quot;a-lprv&quot;&gt;&lt;text class=&quot;lbl&quot; x=&quot;500&quot; y=&quot;782&quot; font-size=&quot;22&quot; fill=&quot;var(--r-ink-2)&quot; text-anchor=&quot;middle&quot;&gt;Private Key&lt;/text&gt;&lt;/g&gt;&lt;g class=&quot;a-lasym&quot;&gt;&lt;text class=&quot;lbl-m&quot; x=&quot;500&quot; y=&quot;830&quot; font-size=&quot;18&quot; fill=&quot;var(--r-ink-3)&quot; text-anchor=&quot;middle&quot;&gt;Asymmetric Encryption&lt;/text&gt;&lt;/g&gt;&lt;g class=&quot;a-lsym&quot;&gt;&lt;text class=&quot;lbl-m&quot; x=&quot;500&quot; y=&quot;830&quot; font-size=&quot;18&quot; fill=&quot;var(--r-ink-3)&quot; text-anchor=&quot;middle&quot;&gt;Symmetric Encryption&lt;/text&gt;&lt;/g&gt;&lt;g class=&quot;a-lfoot&quot;&gt;&lt;text class=&quot;lbl-f&quot; x=&quot;500&quot; y=&quot;968&quot; font-size=&quot;17&quot; fill=&quot;var(--r-ink-3)&quot; text-anchor=&quot;middle&quot;&gt;Diffie&amp;#8211;Hellman key exchange&lt;/text&gt;&lt;/g&gt;
   &lt;/g&gt;
 &lt;/svg&gt;
 
@@ -29808,6 +29825,15 @@ body{display:grid;place-items:center;min-height:100vh}
 .dh text{font-family:ui-sans-serif,system-ui,&quot;Segoe UI&quot;,Helvetica,Arial,sans-serif;
   font-weight:700}
 .dh .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700}
+/* THE TERM LABELS ARE SECONDARY AND THEY SAY SO.
+
+   Lighter than everything that is happening, set in the empty column between
+   the two machines and in the band under the wire, so a person skimming the
+   card can name what they are watching without anything moving to make room
+   for the words. Nothing is drawn over a face, a laptop or a line. */
+.dh .lbl{font-weight:600;letter-spacing:.02em}
+.dh .lbl-m{font-weight:600;letter-spacing:.05em}
+.dh .lbl-f{font-weight:500;letter-spacing:.03em}
 
 /* EVERY MOVING PART SHARES ONE SIX-SECOND CLOCK. No element has its own
    duration, delay or count, so nothing can drift out of step with anything
@@ -29844,6 +29870,12 @@ body{display:grid;place-items:center;min-height:100vh}
 @keyframes evanmsg { 0% { opacity:0 } 81% { opacity:0 } 82.5% { opacity:1 } 92% { opacity:1 } 93.5% { opacity:0 } 100% { opacity:0 } }
 @keyframes strike { 0% { opacity:0 } 84.5% { opacity:0 } 86% { opacity:1 } 92% { opacity:1 } 93.5% { opacity:0 } 100% { opacity:0 } }
 .a-priv{animation-name:priv}.a-mine{animation-name:mine}.a-theirs{animation-name:theirs}.a-evanpub{animation-name:evanpub}.a-secret{animation-name:secret}.a-quest{animation-name:quest}.a-msgM{animation-name:msgM}.a-msgL{animation-name:msgL}.a-evanmsg{animation-name:evanmsg}.a-strike{animation-name:strike}
+@keyframes lprv { 0% { opacity:0 } 20% { opacity:0 } 21.5% { opacity:1 } 35.5% { opacity:1 } 37% { opacity:0 } 100% { opacity:0 } }
+@keyframes lpub { 0% { opacity:0 } 36.5% { opacity:0 } 38% { opacity:1 } 57% { opacity:1 } 58.5% { opacity:0 } 100% { opacity:0 } }
+@keyframes lasym { 0% { opacity:0 } 20% { opacity:0 } 22% { opacity:1 } 57% { opacity:1 } 58.5% { opacity:0 } 100% { opacity:0 } }
+@keyframes lsym { 0% { opacity:0 } 73.5% { opacity:0 } 75% { opacity:1 } 92% { opacity:1 } 93.5% { opacity:0 } 100% { opacity:0 } }
+@keyframes lfoot { 0% { opacity:0 } 20% { opacity:0 } 22% { opacity:1 } 57% { opacity:1 } 58.5% { opacity:0 } 100% { opacity:0 } }
+.a-lprv{animation-name:lprv}.a-lpub{animation-name:lpub}.a-lasym{animation-name:lasym}.a-lsym{animation-name:lsym}.a-lfoot{animation-name:lfoot}
 @keyframes ride { 0% { offset-distance:0%;opacity:0 } 39% { offset-distance:0%;opacity:0 } 40.5% { offset-distance:0%;opacity:1 } 52% { offset-distance:100%;opacity:1 } 53.5% { offset-distance:100%;opacity:0 } 100% { offset-distance:100%;opacity:0 } }
 @keyframes rideC { 0% { offset-distance:0%;opacity:0 } 77% { offset-distance:0%;opacity:0 } 78.5% { offset-distance:0%;opacity:1 } 84% { offset-distance:100%;opacity:1 } 85.5% { offset-distance:100%;opacity:0 } 100% { offset-distance:100%;opacity:0 } }
 .a-ride{animation-name:ride}.a-rideC{animation-name:rideC}
@@ -29979,6 +30011,8 @@ body{display:grid;place-items:center;min-height:100vh}
     &lt;g class=&quot;chip a-ride&quot; style=&quot;offset-path:path(&#x27;M246 686 V560 H448 V458 H552 V560 H754 V686&#x27;)&quot;&gt;&lt;rect x=&quot;-27&quot; y=&quot;-18&quot; width=&quot;54&quot; height=&quot;36&quot; rx=&quot;8&quot; fill=&quot;var(--r-surface)&quot; stroke=&quot;var(--r-key)&quot; stroke-width=&quot;2.6&quot;/&gt;&lt;text x=&quot;0&quot; y=&quot;0&quot; font-size=&quot;26&quot; fill=&quot;var(--r-key)&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot;&gt;10&lt;/text&gt;&lt;text x=&quot;0&quot; y=&quot;38&quot; font-size=&quot;20&quot; fill=&quot;var(--r-ink-2)&quot; text-anchor=&quot;middle&quot;&gt;public&lt;/text&gt;&lt;/g&gt;
     &lt;g class=&quot;chip a-ride&quot; style=&quot;offset-path:path(&#x27;M754 686 V560 H552 V458 H448 V560 H246 V686&#x27;)&quot;&gt;&lt;rect x=&quot;-27&quot; y=&quot;-18&quot; width=&quot;54&quot; height=&quot;36&quot; rx=&quot;8&quot; fill=&quot;var(--r-surface)&quot; stroke=&quot;var(--r-key)&quot; stroke-width=&quot;2.6&quot;/&gt;&lt;text x=&quot;0&quot; y=&quot;0&quot; font-size=&quot;26&quot; fill=&quot;var(--r-key)&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot;&gt;16&lt;/text&gt;&lt;text x=&quot;0&quot; y=&quot;38&quot; font-size=&quot;20&quot; fill=&quot;var(--r-ink-2)&quot; text-anchor=&quot;middle&quot;&gt;public&lt;/text&gt;&lt;/g&gt;
     &lt;g class=&quot;chip a-rideC&quot; style=&quot;offset-path:path(&#x27;M246 686 V560 H448 V458 H552 V560 H754 V686&#x27;)&quot;&gt;&lt;rect x=&quot;-62&quot; y=&quot;-17&quot; width=&quot;124&quot; height=&quot;34&quot; rx=&quot;8&quot; fill=&quot;var(--r-surface)&quot; stroke=&quot;var(--r-key)&quot; stroke-width=&quot;2.6&quot;/&gt;&lt;text class=&quot;mono&quot; x=&quot;0&quot; y=&quot;0&quot; font-size=&quot;15&quot; fill=&quot;var(--r-key)&quot; text-anchor=&quot;middle&quot; dominant-baseline=&quot;central&quot;&gt;8X#q2Lm!4KzR&lt;/text&gt;&lt;/g&gt;
+
+    &lt;g class=&quot;a-lpub&quot;&gt;&lt;text class=&quot;lbl&quot; x=&quot;500&quot; y=&quot;640&quot; font-size=&quot;22&quot; fill=&quot;var(--r-ink-2)&quot; text-anchor=&quot;middle&quot;&gt;Public Key&lt;/text&gt;&lt;/g&gt;&lt;g class=&quot;a-lprv&quot;&gt;&lt;text class=&quot;lbl&quot; x=&quot;500&quot; y=&quot;782&quot; font-size=&quot;22&quot; fill=&quot;var(--r-ink-2)&quot; text-anchor=&quot;middle&quot;&gt;Private Key&lt;/text&gt;&lt;/g&gt;&lt;g class=&quot;a-lasym&quot;&gt;&lt;text class=&quot;lbl-m&quot; x=&quot;500&quot; y=&quot;830&quot; font-size=&quot;18&quot; fill=&quot;var(--r-ink-3)&quot; text-anchor=&quot;middle&quot;&gt;Asymmetric Encryption&lt;/text&gt;&lt;/g&gt;&lt;g class=&quot;a-lsym&quot;&gt;&lt;text class=&quot;lbl-m&quot; x=&quot;500&quot; y=&quot;830&quot; font-size=&quot;18&quot; fill=&quot;var(--r-ink-3)&quot; text-anchor=&quot;middle&quot;&gt;Symmetric Encryption&lt;/text&gt;&lt;/g&gt;&lt;g class=&quot;a-lfoot&quot;&gt;&lt;text class=&quot;lbl-f&quot; x=&quot;500&quot; y=&quot;968&quot; font-size=&quot;17&quot; fill=&quot;var(--r-ink-3)&quot; text-anchor=&quot;middle&quot;&gt;Diffie&amp;#8211;Hellman key exchange&lt;/text&gt;&lt;/g&gt;
   &lt;/g&gt;
 &lt;/svg&gt;
 
@@ -31100,7 +31134,7 @@ body{display:grid;place-items:center;min-height:100vh}
       <li>Turned the premise into an end-to-end patient flow.</li>
       <li>Proposed the boundaries for AI-assisted content and designed the interface that holds them.</li>
       <li>Designed the upload, transcription and failure states.</li>
-      <li>Surfaced tradeoffs with product and engineering before they became build cost.</li>
+      <li>Raised tradeoffs with product and engineering before they became build cost.</li>
     </ul>
   </div>
 </section>
@@ -31443,7 +31477,7 @@ body{display:grid;place-items:center;min-height:100vh}
       </figure>
     </article>
 
-    <p class="ar-p">The complaint in the feedback the team held was rarely one forgotten fact. It was the whole fifteen minutes.</p>
+    <p class="ar-p">In the feedback the team held, the complaint was rarely one forgotten fact; patients said they had lost the whole fifteen minutes.</p>
 
 
     <figure class="ar-fig ar-wide">
@@ -31463,7 +31497,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Research &amp; Direction</span>
-    <span class="ar-h2">What changed the direction</span>
+    <span class="ar-h2">Three decisions made before drawing</span>
   </div>
   <div class="acc__b" data-acc-b>
     <div class="ar-note"><p>No interview study. I had the team&rsquo;s premises and the feedback they held.</p></div>
@@ -31528,7 +31562,7 @@ body{display:grid;place-items:center;min-height:100vh}
   <text class="md-anno" x="480" y="290" text-anchor="middle">For the whole of the appointment Carry does nothing: it does not record, listen,</text>
   <text class="md-anno" x="480" y="312" text-anchor="middle">prompt or advise. The open marker is that decision, not a gap in the diagram.</text>
 </svg></div>
-      <figcaption class="ar-cap">The open marker is a decision, not a gap.</figcaption>
+      <figcaption class="ar-cap">The open marker is deliberate: nothing in the recording answered the question clearly enough to quote.</figcaption>
     </figure>
   </div>
 </section>
@@ -31618,7 +31652,7 @@ body{display:grid;place-items:center;min-height:100vh}
     </ul>
     <p class="ts-note">Reconstructed pilot patterns. The sequence change is not the only thing that moved between rounds, and these do not prove it caused every improvement.</p>
 
-    <h3 class="ar-h3">Finding an answer wasn&rsquo;t enough</h3>
+    <h3 class="ar-h3">Where the answer came from</h3>
     <p class="ar-p">Patients reached an answer without knowing where it came from.</p>
 
     <section class="ar-demo ar-wide cu" data-cu="source">
@@ -31641,7 +31675,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <span class="ar-h2">Clarity, Trust, Performance</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="acc__lede ar-p">The order the problems arrived in: clarity broke first, trust decided what the product would not do, performance was what was left.</p>
+    <p class="acc__lede ar-p">The order the problems arrived in: clarity first, then what the product should not do, then the states around upload and transcription.</p>
 
     <h3 class="ar-h3" id="ar-clarity">Clarity</h3>
     <div class="cs-move"><p class="cs-move__l">What I saw</p>
@@ -31713,7 +31747,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <div class="cs-move"><p class="cs-move__l">What I did</p>
       <p>The answer is a quotation, badged and editable, with a route to the moment it came from. Where nothing was said clearly enough to quote, the question stays visibly unanswered.</p></div>
     <div class="cs-move"><p class="cs-move__l">What changed</p>
-      <p>It cost the product its most demo-able feature, and it is the decision I would defend hardest.</p></div>
+      <p>It cost the product its most demo-able feature. I would still make the same call.</p></div>
 <section class="ar-demo ar-wide cu" data-cu="match">
   <h3 class="demo__h">Patients can see exactly what was said.</h3>
   <p class="demo__p">Open a transcript, or dismiss an answer.</p>
@@ -31760,7 +31794,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <div class="cs-move"><p class="cs-move__l">What I did</p>
       <p>Each failure is a state of the real component, answering three questions in order: what happened, what was kept, what to do next. I checked the recovery paths with engineering.</p></div>
     <div class="cs-move"><p class="cs-move__l">What changed</p>
-      <p>The flow became estimable.</p></div>
+      <p>Engineering could estimate the flow.</p></div>
 <section class="ar-demo ar-wide cu" data-cu="lab">
   <h3 class="demo__h">It still makes sense when things go wrong.</h3>
   <p class="demo__p">Change a condition.</p>
@@ -31867,7 +31901,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Reflection</span>
-    <span class="ar-h2">Where it landed</span>
+    <span class="ar-h2">Where Carry stopped</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">The flows, states and component set were defined and a Playground build had started when priorities changed above me.</p>
@@ -31876,7 +31910,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <p class="ar-p">I would test the premises before drawing. Every assumption here is testable and none of them were tested first.</p>
 
     <h3 class="ar-h3">What I carry forward</h3>
-    <p class="ar-p">The subtraction. Deciding early that Carry does not record, does not deliver results and does not let a model write anything removed most of the hard problems before they became design problems.</p>
+    <p class="ar-p">Deciding early what Carry would not do. That it does not record, does not deliver results and does not let a model write anything removed most of the hard problems before they became design problems.</p>
 
     <div class="ar-end"><p>The design system, flows and seeded content are the project&rsquo;s own. The prototypes are rebuilt here from that documentation, so they behave rather than being screenshots.</p></div>
   </div>
@@ -31918,7 +31952,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc acc--static" data-open="1">
   <div data-acc-h>
     <span class="acc__n">Outcome</span>
-    <span class="ar-h2">Human judgement in the loop</span>
+    <span class="ar-h2">The stage where a reviewer checks the model</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">I designed the tagging stage: a reviewer accepts, corrects or adds to what the model proposed, and that judgement becomes feedback.</p>
@@ -31942,21 +31976,21 @@ body{display:grid;place-items:center;min-height:100vh}
     <span class="ar-h2">Corrections with no reasoning attached</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="ar-p">Reviewers were correcting the model all day and none of it reached the model. The judgement evaporated.</p>
+    <p class="ar-p">Reviewers were correcting the model all day and none of those corrections reached it.</p>
 
-    <p class="ar-p">The problem was the moment a person disagrees with a model. Accepting was easy and correcting was awkward, so the interface was teaching reviewers to accept.</p>
+    <p class="ar-p">The problem sat at the moment a person disagrees with a model. Accepting was easy and correcting was awkward, so the interface was teaching reviewers to accept.</p>
   </div>
 </section>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Research &amp; Direction</span>
-    <span class="ar-h2">What changed the direction</span>
+    <span class="ar-h2">Three things that changed the design</span>
   </div>
   <div class="acc__b" data-acc-b>
     <div class="cs-move"><p class="cs-move__l">Every suggestion looked equally certain</p>
       <p>Reviewers had no way to tell a confident suggestion from a guess. The confidence figure existed; the evidence behind it did not.</p></div>
     <div class="cs-move"><p class="cs-move__l">Engineering could only use categorised feedback</p>
-      <p>Free-text corrections were not something the loop could consume. That reframed the design: the reason had to be categorised at the point of correction.</p></div>
+      <p>Free-text corrections were not something the loop could consume. That set the constraint: the reason had to be categorised at the point of correction.</p></div>
     <div class="cs-move"><p class="cs-move__l">Disagreement was being treated as an exception</p>
       <p>So I designed disagreement as a first-class action rather than an exception.</p></div>
 
@@ -32045,7 +32079,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <span class="ar-h2">Clarity, Trust, Performance</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="acc__lede ar-p">Clarity before a reviewer can decide anything, trust to stop them accepting on autopilot, performance because the step costs time somebody signs off.</p>
+    <p class="acc__lede ar-p">Clarity so a reviewer can decide at all, trust so they do not accept on autopilot, and performance because the step costs time somebody signs off.</p>
 
     <h3 class="ar-h3">Clarity</h3>
     <div class="cs-move"><p class="cs-move__l">What I saw</p>
@@ -32053,11 +32087,11 @@ body{display:grid;place-items:center;min-height:100vh}
     <div class="cs-move"><p class="cs-move__l">What I did</p>
       <p>One place, fixed order: what the model proposed, how sure it is, what it read to get there, then the action.</p></div>
     <div class="cs-move"><p class="cs-move__l">What changed</p>
-      <p>The decision became a glance instead of a search.</p></div>
+      <p>A reviewer reads all three in one place.</p></div>
 
     <h3 class="ar-h3">Trust</h3>
     <div class="cs-move"><p class="cs-move__l">What I saw</p>
-      <p>A reviewer who stops checking is worse than no model at all, and a fast Accept button is very good at producing one.</p></div>
+      <p>A reviewer who stops checking is worse than no model at all, and a fast Accept button makes that easy to fall into.</p></div>
     <div class="cs-move"><p class="cs-move__l">What I did</p>
       <p>The evidence sits where a reviewer has to pass it to accept, and disagreeing carries the same weight as agreeing.</p></div>
     <div class="cs-move"><p class="cs-move__l">What changed</p>
@@ -32069,13 +32103,13 @@ body{display:grid;place-items:center;min-height:100vh}
     <div class="cs-move"><p class="cs-move__l">What I did</p>
       <p>I made the reasons a short fixed list rather than free text: one tap, and the output is already categorised. Then I took the numbers to review.</p></div>
     <div class="cs-move"><p class="cs-move__l">What changed</p>
-      <p>The step survived review. Slower per correction, in exchange for the only feedback that could move the model.</p></div>
+      <p>The step survived review: slower per correction, in exchange for feedback the model could actually use.</p></div>
   </div>
 </section>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Reflection</span>
-    <span class="ar-h2">Where it landed</span>
+    <span class="ar-h2">What I owned, and what I did not</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">I did not own the model, the pipeline or the release. What I owned was the stage where a person disagrees with a suggestion, and what that disagreement becomes.</p>
@@ -32115,7 +32149,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <header class="ar-mast cs-mast">
       <p class="ar-kicker">Case study</p>
       <h1 class="ar-title" id="au-title">Design System Audit</h1>
-      <p class="ar-standfirst">I audited a clinical portal against the decisions a provider makes in it, and rewrote the parts that were making them stop and interpret.</p>
+      <p class="ar-standfirst">I reviewed four workflows in a clinical provider portal and rewrote the statuses, actions and error messages that were slowing providers down.</p>
       <dl class="ar-meta">
         <div class="ar-meta__row"><dt>Role</dt><dd>Product designer &mdash; audit, component and copy standards, handoff</dd></div>
         <div class="ar-meta__row"><dt>Team</dt><dd>Product, engineering, design system</dd></div>
@@ -32205,21 +32239,21 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc acc--static" data-open="1">
   <div data-acc-h>
     <span class="acc__n">Outcome</span>
-    <span class="ar-h2">The library passed. The workflow did not.</span>
+    <span class="ar-h2">A design system audit of four provider workflows</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="ar-p">The library was consistent. The workflows were not: the same required action appeared as a button, a link and a menu, and statuses named system states rather than whose move it was.</p>
+    <p class="ar-p">The component library was consistent. In the four workflows it was used in, the same required action showed up as a button in one row, a link in another and a menu item in a third, and statuses described what the system was doing instead of who needed to act.</p>
 
     
     <div class="ar-note"><p>Contrast ratios are measured pairings from the audit, including one reported as it came out rather than corrected. Delivered as documentation and system rules, so there are no adoption figures here.</p></div>
 
     <h3 class="ar-h3">What I owned</h3>
     <ul class="cs-did">
-      <li>Audited four workflows against the decisions inside them, not the library</li>
+      <li>Audited four provider workflows against the decisions providers make in them</li>
       <li>Rewrote status and action copy to name an owner and a next step</li>
-      <li>Set how a next-step action ranks against the others in a row</li>
+      <li>Set how the next required action ranks against the other actions in a row</li>
       <li>Documented the colour system with a measured ratio behind every pairing</li>
-      <li>Defined the Provider Action Queue: one pattern for all four workflows</li>
+      <li>Defined the Provider Action Queue, one row pattern used by all four workflows</li>
       <li>Wrote it as a build spec with states, approved copy and acceptance criteria</li>
     </ul>
   </div>
@@ -32229,12 +32263,12 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Problem &amp; Context</span>
-    <span class="ar-h2">A library is not a workflow</span>
+    <span class="ar-h2">Auditing the workflows instead of the component library</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="acc__lede ar-p">A design system is normally audited against itself. That audit passes here, and the provider still cannot tell whose move it is.</p>
+    <p class="acc__lede ar-p">A design system audit usually checks components against the library. That check passed here, and providers still could not tell which items were waiting on them.</p>
 
-    <p class="ar-p">So the unit of review was the workflow, not the component.</p>
+    <p class="ar-p">So I reviewed the four workflows providers spend their time in.</p>
 
     <ul class="au-scope">
       <li><b>Orders</b><span>Providers review and complete test orders before submission.</span>
@@ -32243,7 +32277,7 @@ body{display:grid;place-items:center;min-height:100vh}
         <i>Tracking states, timelines, ownership</i></li>
       <li><b>Results</b><span>Providers review results, sign off when needed, and access reports.</span>
         <i>Review states, alerts, report actions</i></li>
-      <li><b>Tasks</b><span>The portal surfaces missing information, submission errors, clinical review and overdue work.</span>
+      <li><b>Tasks</b><span>The portal lists missing information, submission errors, clinical review and overdue work.</span>
         <i>Priority, required action, due dates</i></li>
     </ul>
 
@@ -32259,7 +32293,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
     
     <figure class="au-fig">
-      <figcaption class="au-fig__c"><b>The work queue as audited</b> Four required actions, four different treatments, one table.</figcaption>
+      <figcaption class="au-fig__c"><b>The work queue as audited.</b> Four rows, four required actions, four different treatments.</figcaption>
       <div class="ar-table__wrap">
         <table class="ar-table au-tbl">
           <thead><tr><th>Workflow</th><th>Clinical context</th><th>Status</th><th>Last updated</th><th>Action</th></tr></thead>
@@ -32278,10 +32312,10 @@ body{display:grid;place-items:center;min-height:100vh}
     <section class="acc acc--sub" data-open="0">
       <div data-acc-h>
         <span class="acc__n">Proto personas</span>
-        <span class="ar-h2">Where this system sits in a working day</span>
+        <span class="ar-h2">Where the portal sits in a provider&rsquo;s day</span>
       </div>
       <div class="acc__b" data-acc-b>
-        <p class="acc__lede ar-p">Three roles the four workflows are built for. The portal is one stop in each of their days.</p>
+        <p class="acc__lede ar-p">Three roles the four workflows are built for. For each of them the portal is one stop among several.</p>
 
         <div class="ar-note"><p>Proto personas: composites of the roles the audited workflows serve, not people I interviewed. No quotes, histories or figures are claimed for them.</p></div>
 
@@ -32307,7 +32341,7 @@ body{display:grid;place-items:center;min-height:100vh}
         </dl>
 
         <figure class="ape__eco">
-          <figcaption class="ape__eco-l">Ecosystem</figcaption>
+          <figcaption class="ape__eco-l">The working day</figcaption>
           <div class="ape__frame">
             <ol class="ape__flow" data-ape-flow>
           <li class="ape__n"><span class="ape__t">Patient visit</span></li>
@@ -32335,7 +32369,7 @@ body{display:grid;place-items:center;min-height:100vh}
         </dl>
 
         <figure class="ape__eco">
-          <figcaption class="ape__eco-l">Ecosystem</figcaption>
+          <figcaption class="ape__eco-l">The working day</figcaption>
           <div class="ape__frame">
             <ol class="ape__flow" data-ape-flow>
           <li class="ape__n"><span class="ape__t">Work queue</span></li>
@@ -32363,7 +32397,7 @@ body{display:grid;place-items:center;min-height:100vh}
         </dl>
 
         <figure class="ape__eco">
-          <figcaption class="ape__eco-l">Ecosystem</figcaption>
+          <figcaption class="ape__eco-l">The working day</figcaption>
           <div class="ape__frame">
             <ol class="ape__flow" data-ape-flow>
           <li class="ape__n"><span class="ape__t">Work queue</span></li>
@@ -32392,13 +32426,13 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">What the Audit Found</span>
-    <span class="ar-h2">Three ways a row stopped saying whose move it was</span>
+    <span class="ar-h2">What I found in the work-queue rows</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="acc__lede ar-p">Three things a work-queue row is made of: the action at the end, the status at the front, and what it says when something fails.</p>
+    <p class="acc__lede ar-p">I looked at three parts of a work-queue row: the status at the front, the action at the end, and what the row says when something fails.</p>
 
-    <h3 class="ar-h3">Actions had no rank</h3>
-    <p class="ar-p">When the same action is a button in one row, a link in another and a menu in a third, the provider ranks the work instead of the interface.</p>
+    <h3 class="ar-h3">Finding the required action in a row</h3>
+    <p class="ar-p">The same action was a button in one row, a link in another and a menu item in a third, which left the provider working out which row mattered most.</p>
 
     
     <div class="au-ba">
@@ -32431,13 +32465,13 @@ body{display:grid;place-items:center;min-height:100vh}
       </div>
     </div>
 
-    <p class="ar-p">Labels now describe the provider&rsquo;s task rather than the system&rsquo;s operation, and the next step sits in the same column in every row.</p>
+    <p class="ar-p">Labels now describe the provider&rsquo;s task instead of the system&rsquo;s operation, and the next step sits in the same column in every row.</p>
 
     <div class="au-rule"><p class="au-rule__l">System rule</p>
-      <p>Next-step actions take a distinct treatment per meaning &mdash; provider action, clinical review, detail, recovery, completion &mdash; and sit in the same column in every row.</p></div>
+      <p>Next-step actions take a distinct treatment for each meaning (provider action, clinical review, detail, recovery, completion) and sit in the same column in every row.</p></div>
 
-    <h3 class="ar-h3">Statuses left a question behind</h3>
-    <p class="ar-p">The colour was already doing its job. Every status named a system state and left the provider holding a question about ownership.</p>
+    <h3 class="ar-h3">Reading a status in the work queue</h3>
+    <p class="ar-p">The colour coding was already working. Every status named a system state, so the provider still had to work out who owned the next step.</p>
 
     
     <ol class="au-seq">
@@ -32472,8 +32506,8 @@ body{display:grid;place-items:center;min-height:100vh}
       <p>Status copy must clarify ownership, workflow state, and whether the provider needs
         to act.</p></div>
 
-    <h3 class="ar-h3">Errors named a problem, not a fix</h3>
-    <p class="ar-p">A failed submission stops a clinical test. The error states were visible; they did not say what to fix.</p>
+    <h3 class="ar-h3">When a submission fails</h3>
+    <p class="ar-p">A failed submission stops a clinical test. The error states were visible, but they did not say what to fix.</p>
 
     
     <figure class="au-fig au-fig--row">
@@ -32492,7 +32526,7 @@ body{display:grid;place-items:center;min-height:100vh}
       </div>
     </figure>
 
-    <p class="ar-p">The status stops sounding final, the message names the field, and the action says what pressing it will do.</p>
+    <p class="ar-p">The status no longer sounds final, the message names the missing field, and the button says what pressing it does.</p>
 
     <div class="au-rule"><p class="au-rule__l">System rule</p>
       <p>Every error carries four things: the error type, the specific cause, the recovery
@@ -32504,13 +32538,13 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">System Decisions</span>
-    <span class="ar-h2">One pattern, and colour that had to earn it</span>
+    <span class="ar-h2">One row pattern, and rules for colour</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="acc__lede ar-p">Rewriting labels fixes rows one at a time. Two decisions had to hold across all four workflows.</p>
+    <p class="acc__lede ar-p">Rewriting labels only fixes one row at a time. Two decisions had to hold across all four workflows.</p>
 
     <h3 class="ar-h3">The Provider Action Queue</h3>
-    <p class="ar-p">Four workflows ask the same question in four vocabularies, each answered with generic components.</p>
+    <p class="ar-p">All four workflows ask the same thing of a provider &mdash; what needs doing next &mdash; and each asks it in different words, using the same generic components.</p>
 
     <figure class="au-fig">
       <figcaption class="au-fig__c"><b>Provider Action Queue</b> One row structure, carrying all four workflows.</figcaption>
@@ -32538,8 +32572,8 @@ body{display:grid;place-items:center;min-height:100vh}
         <i>One pattern for all four.</i></li>
     </ul>
 
-    <h3 class="ar-h3">Colour had to survive a dense table</h3>
-    <p class="ar-p">Four of the five findings hand work to colour, in a dense table read at speed.</p>
+    <h3 class="ar-h3">Colour in a dense table</h3>
+    <p class="ar-p">Four of the five findings put work on colour, in a dense table providers read quickly.</p>
 
     <div class="ar-table__wrap">
       <table class="ar-table au-tbl au-tbl--tok">
@@ -32573,10 +32607,10 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Handoff &amp; Reflection</span>
-    <span class="ar-h2">A screen is not an instruction</span>
+    <span class="ar-h2">Writing the pattern as build instructions</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="acc__lede ar-p">The inconsistencies were also appearing at handoff, where a static screen and a component example get read four different ways.</p>
+    <p class="acc__lede ar-p">Some of the inconsistencies started at handoff. A static screen and a component example left four teams to fill in the same blanks differently.</p>
 
     
     <figure class="au-fig">
@@ -32593,7 +32627,7 @@ body{display:grid;place-items:center;min-height:100vh}
       </div>
     </figure>
 
-    <p class="ar-p">So the pattern was written as build instructions rather than drawn as a screen: behaviour and acceptance criteria for product, states and approved labels for engineering, and enough for an AI-assisted tool to build to.</p>
+    <p class="ar-p">So I wrote the pattern as build instructions instead of drawing another screen: behaviour and acceptance criteria for product, states and approved labels for engineering, and enough detail for an AI-assisted tool to build from.</p>
 
     <div class="au-spec">
       <div class="au-spec__h">
@@ -32676,12 +32710,12 @@ body{display:grid;place-items:center;min-height:100vh}
     </figure>
 
     <h3 class="ar-h3">What I would do differently</h3>
-    <p class="ar-p">Standards are worth what gets adopted. I documented the rules and did not build the check somebody runs on a screen before it ships &mdash; every rule here is testable, and none of them were wired to anything that would catch a regression.</p>
+    <p class="ar-p">I documented the rules but never built the check somebody runs on a screen before it ships. Every rule here is testable, and none of them were wired to anything that would catch a regression.</p>
 
-    <p class="ar-p">I also changed the words before I watched anybody read them. &ldquo;Awaiting provider action&rdquo; being clearer than &ldquo;Pending&rdquo; is an argument I made, not a result I measured.</p>
+    <p class="ar-p">I also changed the words before watching anybody read them. That &ldquo;Awaiting provider action&rdquo; reads more clearly than &ldquo;Pending&rdquo; is an argument I made; I never tested it.</p>
 
     <h3 class="ar-h3">What I carry forward</h3>
-    <p class="ar-p">Auditing the workflow rather than the library. A component set can be perfectly consistent and still leave a provider unable to tell whose move it is.</p>
+    <p class="ar-p">Audit the workflow, not just the library. A component set can be completely consistent and still leave a provider unsure whose move it is.</p>
 
     <div class="ar-end"><p>Contrast ratios, token names, status copy, the build spec and the workflow examples are the audit&rsquo;s own. The tables, badges and actions are rebuilt here as live components.</p></div>
   </div>
@@ -32733,7 +32767,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc acc--static" data-open="1">
   <div data-acc-h>
     <span class="acc__n">Outcome</span>
-    <span class="ar-h2">Make the right preparation obvious. Give the specimen a place.</span>
+    <span class="ar-h2">Rewriting the instruction lid and adding a foam insert</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">Two changes to the same box. The preparation instructions moved into the
@@ -32777,7 +32811,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
     <h3 class="ar-h3">What the audit found</h3>
     <ol class="sk-find">
-      <li><b>Reads like a spec sheet, not an instruction.</b></li>
+      <li><b>Reads like a spec sheet.</b> A clinician has to work the steps out from it.</li>
       <li><b>Hard to scan.</b> Compressed type and tight leading, which makes it slow and error-prone.</li>
       <li><b>Repeated information.</b> The block specification is printed three times, and the detail that differentiates the tests &mdash; the slide count &mdash; gets lost inside it.</li>
       <li><b>Critical warnings buried.</b> The rejection criteria are the costliest thing to get wrong and the least visible thing on the sheet.</li>
@@ -32804,8 +32838,8 @@ body{display:grid;place-items:center;min-height:100vh}
     <span class="ar-h2">What I saw, and what I took it to mean</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="ar-p">I worked from the kit itself and from the printed sheet in it. I have kept
-      what I observed apart from what I concluded, because the second one is mine.</p>
+    <p class="ar-p">I worked from the kit itself and from the printed sheet in it. What I
+      observed is kept separate below from what I concluded.</p>
 
     <div class="sk-sep">
       <div class="sk-sep__c">
@@ -32822,8 +32856,8 @@ body{display:grid;place-items:center;min-height:100vh}
         <p class="sk-sep__l">What I took it to mean</p>
         <ul>
           <li>Repeating the constant and burying the variable makes the reader compare rows to find the one number that differs.</li>
-          <li>A rejection sent at the foot of the page is read after the decision it was meant to prevent.</li>
-          <li>An empty base is an instruction too: it says the specimen can go anywhere in the box.</li>
+          <li>Rejection criteria at the foot of the page get read after the decision they were meant to prevent.</li>
+          <li>An empty base leaves the clinician to decide where the specimen sits, and it can sit anywhere.</li>
         </ul>
       </div>
     </div>
@@ -32861,7 +32895,7 @@ body{display:grid;place-items:center;min-height:100vh}
       <figcaption class="ar-cap">The same content, in a different order.</figcaption>
     </figure>
 
-    <h3 class="ar-h3">One specification, not three</h3>
+    <h3 class="ar-h3">One block specification instead of three</h3>
     <p class="ar-p">The block requirement is the same for every test on the sheet. It is now a
       single cell across all three rows, which leaves the slide count as the only thing that
       changes down the table.</p>
@@ -32960,8 +32994,8 @@ body{display:grid;place-items:center;min-height:100vh}
 
 <section class="acc" data-open="0">
   <div data-acc-h>
-    <span class="acc__n">Making it real</span>
-    <span class="ar-h2">It had to fold, and it had to be printed</span>
+    <span class="acc__n">Production</span>
+    <span class="ar-h2">Fitting both changes onto the die-cut sheet</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">Both changes land on a flat sheet of board that gets die-cut and folded.
@@ -33085,14 +33119,14 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Reflection</span>
-    <span class="ar-h2">What I took from it</span>
+    <span class="ar-h2">Ordering information, in print and in foam</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">Most of the work was ordering information that already existed: one
       specification instead of three, and the rejection criteria above the fold rather than
-      below it. The insert does the same job physically &mdash; a cavity shaped like the
-      thing that goes in it is an instruction you cannot misread &mdash; and both had to
-      survive being die-cut, folded and printed on a box that was already in production.</p>
+      below it. The insert does the same job physically: the cavity is
+      shaped like the container that goes in it. Both changes had to survive being die-cut,
+      folded and printed on a box that was already in production.</p>
 
     <div class="ar-end"><p>The kit photography, the printed sheet, the redesign, the folding
       architecture, the insert specification and the subteam board are the project&rsquo;s
