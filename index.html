@@ -5433,21 +5433,32 @@ em,
 .msg[data-state="idle"] > .msg__from,
 .msg[data-state="idle"] > .msg__bubble { opacity: 0; }
 
-/* The message arriving. The bubble is already on screen carrying the dots, so
-   this is the moment it becomes the message: it grows from the tail, overshoots
-   by a little over one percent, and settles. Restraint is the whole point — the
-   overshoot is small enough to feel like weight rather than like a bounce, and
-   the curve has no spring in it. */
+/* THE MESSAGE IS PLACED, NOT SWITCHED ON.
+
+   The bubble is already on screen carrying the dots, so this is the moment it
+   becomes the message. It comes up from 8px below at 96%, passes its resting
+   place by a pixel and a half, and settles — one overshoot, then still. The
+   travel is what gives it weight: a thing with mass arrives from somewhere
+   and takes a moment to stop, where a thing without mass simply appears.
+
+   RESTRAINT IS THE WHOLE POINT. 4% of scale and 8px of travel, once, over
+   420ms. Any more of either and it is a notification, not a message.
+
+   THE FADE STARTS AT 0.4 RATHER THAN 0. The bubble is the same element that
+   was holding the dots a frame ago, so taking it to nothing would blink it
+   out and bring it back. Starting part-lit reads as the message settling
+   into a bubble that was already there, which is what is actually
+   happening. */
 @keyframes msg-pop {
-  0%   { transform: scale(0.955); }
-  58%  { transform: scale(1.012); }
-  100% { transform: scale(1); }
+  0%   { opacity: 0.4; transform: translateY(8px)    scale(0.96); }
+  55%  { opacity: 1;   transform: translateY(-1.5px) scale(1.011); }
+  100% { opacity: 1;   transform: translateY(0)      scale(1); }
 }
 
 .msg[data-state="live"] > .msg__bubble {
   transform-origin: left top;   /* the corner the tail points from */
-  animation: msg-pop 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  will-change: transform;
+  animation: msg-pop 420ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  will-change: transform, opacity;
 }
 
 /* THE ONE THAT ARRIVES WITH THE ONE BEFORE IT FADES INSTEAD.
@@ -5458,9 +5469,12 @@ em,
    one breath. Two bubbles popping together read as one gesture happening
    twice; this one comes up out of the card instead, over rather longer than
    the pop takes, and the greeting keeps the gesture to itself. */
+   It still arrives with a little weight, so it belongs to the same thread:
+   the same short lift from below, without the scale or the overshoot that
+   would make it a second pop. */
 @keyframes msg-fade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .msg[data-together][data-state="live"] > .msg__bubble,
@@ -20481,13 +20495,42 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 #audit .ape__card { display: none; }
 #audit .ape__card[data-ape-on] { display: block; }
 
+/* THE AVATAR IS A ROLE, NOT A FACE.
+
+   A proto-persona is a composite, so a portrait would be claiming a person
+   who does not exist. What is drawn instead is a figure with the tool of the
+   role beside it — a trace for the oncologist, a clipboard for the nurse
+   coordinating care, a vial for the testing coordinator — in the same
+   hairline the rest of the audit is drawn in, and in currentColor, so it
+   takes the theme with everything else. */
 #audit .ape__who {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px 12px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 13px;
+  row-gap: 2px;
   margin-block-end: 14px;
 }
+
+#audit .ape__who > .ape__av {
+  grid-row: 1 / span 2;
+  width: 46px;
+  height: 46px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface-raised);
+  color: var(--ink-secondary);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#audit .ape__who > .ape__name,
+#audit .ape__who > .ape__role { grid-column: 2; align-self: end; }
+#audit .ape__who > .ape__role { align-self: start; }
 
 #audit .ape__who > .ape__name {
   margin: 0;
@@ -32490,6 +32533,119 @@ body{display:grid;place-items:center;min-height:100vh}
   <div class="acc__b" data-acc-b>
     <p class="acc__lede ar-p">A design system audit usually checks components against the library. That check passed here, and providers still could not tell which items were waiting on them.</p>
 
+    <p class="ar-p">Three roles use these four workflows: a medical oncologist, an oncology nurse coordinating care, and a testing coordinator working a queue of cases. None of them are in the portal for long &mdash; they come in when something needs them and go back to their own work, which is the whole reason a row has to say whose move it is.</p>
+
+    
+    <section class="acc acc--sub" data-open="0">
+      <div data-acc-h>
+        <span class="acc__n">Proto personas</span>
+        <span class="ar-h2">Three provider roles, and where the portal sits in their day</span>
+      </div>
+      <div class="acc__b" data-acc-b>
+        <p class="acc__lede ar-p">A medical oncologist, an oncology nurse coordinating care, and a testing coordinator working a queue of cases. For the first two the portal is a checkpoint between other work; for the third it is the queue he works from.</p>
+
+        <div class="ar-note"><p>Proto personas: composites of the roles the audited workflows serve, not people I interviewed. No quotes, histories or figures are claimed for them.</p></div>
+
+        <div class="ape__deck" data-ape>
+          <div class="ape__bar">
+            <button class="ape__nav" type="button" data-ape-prev>
+              <span aria-hidden="true">&larr;</span> Previous</button>
+            <button class="ape__nav" type="button" data-ape-next>
+              Next <span aria-hidden="true">&rarr;</span></button>
+            <p class="ape__pos"><span data-ape-i>1</span> / 3</p>
+          </div>
+
+      <article class="ape__card" data-ape-card data-ape-on="1" aria-label="Dr. Maya Shah, 44">
+        <header class="ape__who">
+          <svg class="ape__av" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><circle cx="21" cy="19" r="7"/><path d="M8 41a13 13 0 0 1 26 0"/><path d="M31.8 15h2.6l1.5-4 1.9 8 1.5-4h2.5"/></svg>
+          <h4 class="ape__name">Dr. Maya Shah, 44</h4>
+          <p class="ape__role">Medical oncologist</p>
+        </header>
+
+        <dl class="ape__facts">
+          <div><dt>Everyday work</dt><dd>Patient visits, labs and imaging, treatment planning, molecular results, documenting decisions, answering questions from patients and the care team, coordinating with other specialists.</dd></div>
+          <div><dt>Provider experience</dt><dd>A checkpoint in the day, not a workspace. She is in it when a result or an order needs her, and out of it again.</dd></div>
+          <div><dt>What they need here</dt><dd>Understand what needs attention, review the information behind it, take the required action, and get back to patient care.</dd></div>
+        </dl>
+
+        <figure class="ape__eco">
+          <figcaption class="ape__eco-l">The working day</figcaption>
+          <div class="ape__frame">
+            <ol class="ape__flow" data-ape-flow>
+          <li class="ape__n"><span class="ape__t">Patient visit</span></li>
+          <li class="ape__n"><span class="ape__t">EHR</span></li>
+          <li class="ape__n"><span class="ape__t">Labs &amp; imaging</span></li>
+          <li class="ape__n ape__n--px" data-ape-px><span class="ape__t">Provider experience</span>
+            <ul class="ape__ex"><li>What needs her attention</li><li>The result behind it</li><li>One action, then out</li></ul></li>
+          <li class="ape__n"><span class="ape__t">Clinical decision</span></li>
+          <li class="ape__n"><span class="ape__t">EHR</span></li>
+            </ol>
+          </div>
+        </figure>
+      </article>
+
+      <article class="ape__card" data-ape-card aria-label="Elena Torres, 36">
+        <header class="ape__who">
+          <svg class="ape__av" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><circle cx="21" cy="19" r="7"/><path d="M8 41a13 13 0 0 1 26 0"/><rect x="32.6" y="10.4" width="10" height="11.4" rx="2.4"/><path d="M35.1 10.4V9.6a1.4 1.4 0 0 1 1.4-1.4h2.2a1.4 1.4 0 0 1 1.4 1.4v.8"/><path d="M35.2 14.4h4.8M35.2 17.6h3"/></svg>
+          <h4 class="ape__name">Elena Torres, 36</h4>
+          <p class="ape__role">Oncology nurse / clinical coordinator</p>
+        </header>
+
+        <dl class="ape__facts">
+          <div><dt>Everyday work</dt><dd>Preparing for appointments, coordinating testing, tracking outstanding orders and specimens, arranging blood draws, talking to patients, following up on missing requirements, escalating clinical decisions to physicians.</dd></div>
+          <div><dt>Provider experience</dt><dd>One of several stops, returned to more than once while a case moves forward.</dd></div>
+          <div><dt>What they need here</dt><dd>Read the state of a case immediately, see who owns the next step, and know whether to act or wait.</dd></div>
+        </dl>
+
+        <figure class="ape__eco">
+          <figcaption class="ape__eco-l">The working day</figcaption>
+          <div class="ape__frame">
+            <ol class="ape__flow" data-ape-flow>
+          <li class="ape__n"><span class="ape__t">Work queue</span></li>
+          <li class="ape__n"><span class="ape__t">EHR</span></li>
+          <li class="ape__n"><span class="ape__t">Patient coordination</span></li>
+          <li class="ape__n ape__n--px" data-ape-px><span class="ape__t">Provider experience</span>
+            <ul class="ape__ex"><li>The state of the case</li><li>Who owns the next step</li><li>Act now or wait</li></ul></li>
+          <li class="ape__n"><span class="ape__t">Resolve issue</span></li>
+          <li class="ape__n"><span class="ape__t">EHR</span></li>
+            </ol>
+          </div>
+        </figure>
+      </article>
+
+      <article class="ape__card" data-ape-card aria-label="Daniel Kim, 39">
+        <header class="ape__who">
+          <svg class="ape__av" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><circle cx="21" cy="19" r="7"/><path d="M8 41a13 13 0 0 1 26 0"/><path d="M33.2 9.4h8.8"/><path d="M34.8 9.4v9a2.8 2.8 0 0 0 5.6 0v-9"/><path d="M34.8 15.2h5.6"/></svg>
+          <h4 class="ape__name">Daniel Kim, 39</h4>
+          <p class="ape__role">Oncology testing coordinator</p>
+        </header>
+
+        <dl class="ape__facts">
+          <div><dt>Everyday work</dt><dd>Managing testing across many patients, checking case progress, finding stalled cases, resolving requisition and specimen issues, locating completed reports, routing them to the clinical team, moving to the next case.</dd></div>
+          <div><dt>Provider experience</dt><dd>An operational work queue. Most of his time in the portal is spent here, moving between cases.</dd></div>
+          <div><dt>What they need here</dt><dd>Status that names an owner, the action in the same place in every row, and a way to filter to the cases that are stuck.</dd></div>
+        </dl>
+
+        <figure class="ape__eco">
+          <figcaption class="ape__eco-l">The working day</figcaption>
+          <div class="ape__frame">
+            <ol class="ape__flow" data-ape-flow>
+          <li class="ape__n"><span class="ape__t">Work queue</span></li>
+          <li class="ape__n ape__n--px" data-ape-px><span class="ape__t">Provider experience</span>
+            <ul class="ape__ex"><li>Which cases are stuck</li><li>Whose move each one is</li><li>The action, same place</li></ul></li>
+          <li class="ape__n"><span class="ape__t">Identify exception</span></li>
+          <li class="ape__n"><span class="ape__t">Coordinate requirement</span></li>
+          <li class="ape__n"><span class="ape__t">Track resolution</span></li>
+          <li class="ape__n"><span class="ape__t">Route result</span></li>
+          <li class="ape__n"><span class="ape__t">Next case</span></li>
+            </ol>
+          </div>
+        </figure>
+      </article>
+        </div>
+      </div>
+    </section>
+
     <p class="ar-p">So I went the other way round and audited the four workflows providers actually spend their time in, one at a time, looking at the decisions they make in each.</p>
 
     <ul class="au-scope">
@@ -32530,113 +32686,6 @@ body{display:grid;place-items:center;min-height:100vh}
     </figure>
 
 
-    
-    <section class="acc acc--sub" data-open="0">
-      <div data-acc-h>
-        <span class="acc__n">Proto personas</span>
-        <span class="ar-h2">Where the portal sits in a provider&rsquo;s day</span>
-      </div>
-      <div class="acc__b" data-acc-b>
-        <p class="acc__lede ar-p">Three roles the four workflows are built for. For each of them the portal is one stop among several.</p>
-
-        <div class="ar-note"><p>Proto personas: composites of the roles the audited workflows serve, not people I interviewed. No quotes, histories or figures are claimed for them.</p></div>
-
-        <div class="ape__deck" data-ape>
-          <div class="ape__bar">
-            <button class="ape__nav" type="button" data-ape-prev>
-              <span aria-hidden="true">&larr;</span> Previous</button>
-            <button class="ape__nav" type="button" data-ape-next>
-              Next <span aria-hidden="true">&rarr;</span></button>
-            <p class="ape__pos"><span data-ape-i>1</span> / 3</p>
-          </div>
-
-      <article class="ape__card" data-ape-card data-ape-on="1" aria-label="Dr. Maya Shah, 44">
-        <header class="ape__who">
-          <h4 class="ape__name">Dr. Maya Shah, 44</h4>
-          <p class="ape__role">Medical oncologist</p>
-        </header>
-
-        <dl class="ape__facts">
-          <div><dt>Everyday work</dt><dd>Patient visits, labs and imaging, treatment planning, molecular results, documenting decisions, answering questions from patients and the care team, coordinating with other specialists.</dd></div>
-          <div><dt>Provider experience</dt><dd>A checkpoint in the day, not a workspace. She is in it when a result or an order needs her, and out of it again.</dd></div>
-          <div><dt>What they need here</dt><dd>Understand what needs attention, review the information behind it, take the required action, and get back to patient care.</dd></div>
-        </dl>
-
-        <figure class="ape__eco">
-          <figcaption class="ape__eco-l">The working day</figcaption>
-          <div class="ape__frame">
-            <ol class="ape__flow" data-ape-flow>
-          <li class="ape__n"><span class="ape__t">Patient visit</span></li>
-          <li class="ape__n"><span class="ape__t">EHR</span></li>
-          <li class="ape__n"><span class="ape__t">Labs &amp; imaging</span></li>
-          <li class="ape__n ape__n--px" data-ape-px><span class="ape__t">Provider experience</span>
-            <ul class="ape__ex"><li>What needs her attention</li><li>The result behind it</li><li>One action, then out</li></ul></li>
-          <li class="ape__n"><span class="ape__t">Clinical decision</span></li>
-          <li class="ape__n"><span class="ape__t">EHR</span></li>
-            </ol>
-          </div>
-        </figure>
-      </article>
-
-      <article class="ape__card" data-ape-card aria-label="Elena Torres, 36">
-        <header class="ape__who">
-          <h4 class="ape__name">Elena Torres, 36</h4>
-          <p class="ape__role">Oncology nurse / clinical coordinator</p>
-        </header>
-
-        <dl class="ape__facts">
-          <div><dt>Everyday work</dt><dd>Preparing for appointments, coordinating testing, tracking outstanding orders and specimens, arranging blood draws, talking to patients, following up on missing requirements, escalating clinical decisions to physicians.</dd></div>
-          <div><dt>Provider experience</dt><dd>One of several stops, returned to more than once while a case moves forward.</dd></div>
-          <div><dt>What they need here</dt><dd>Read the state of a case immediately, see who owns the next step, and know whether to act or wait.</dd></div>
-        </dl>
-
-        <figure class="ape__eco">
-          <figcaption class="ape__eco-l">The working day</figcaption>
-          <div class="ape__frame">
-            <ol class="ape__flow" data-ape-flow>
-          <li class="ape__n"><span class="ape__t">Work queue</span></li>
-          <li class="ape__n"><span class="ape__t">EHR</span></li>
-          <li class="ape__n"><span class="ape__t">Patient coordination</span></li>
-          <li class="ape__n ape__n--px" data-ape-px><span class="ape__t">Provider experience</span>
-            <ul class="ape__ex"><li>The state of the case</li><li>Who owns the next step</li><li>Act now or wait</li></ul></li>
-          <li class="ape__n"><span class="ape__t">Resolve issue</span></li>
-          <li class="ape__n"><span class="ape__t">EHR</span></li>
-            </ol>
-          </div>
-        </figure>
-      </article>
-
-      <article class="ape__card" data-ape-card aria-label="Daniel Kim, 39">
-        <header class="ape__who">
-          <h4 class="ape__name">Daniel Kim, 39</h4>
-          <p class="ape__role">Oncology testing coordinator</p>
-        </header>
-
-        <dl class="ape__facts">
-          <div><dt>Everyday work</dt><dd>Managing testing across many patients, checking case progress, finding stalled cases, resolving requisition and specimen issues, locating completed reports, routing them to the clinical team, moving to the next case.</dd></div>
-          <div><dt>Provider experience</dt><dd>An operational work queue. Most of his time in the portal is spent here, moving between cases.</dd></div>
-          <div><dt>What they need here</dt><dd>Status that names an owner, the action in the same place in every row, and a way to filter to the cases that are stuck.</dd></div>
-        </dl>
-
-        <figure class="ape__eco">
-          <figcaption class="ape__eco-l">The working day</figcaption>
-          <div class="ape__frame">
-            <ol class="ape__flow" data-ape-flow>
-          <li class="ape__n"><span class="ape__t">Work queue</span></li>
-          <li class="ape__n ape__n--px" data-ape-px><span class="ape__t">Provider experience</span>
-            <ul class="ape__ex"><li>Which cases are stuck</li><li>Whose move each one is</li><li>The action, same place</li></ul></li>
-          <li class="ape__n"><span class="ape__t">Identify exception</span></li>
-          <li class="ape__n"><span class="ape__t">Coordinate requirement</span></li>
-          <li class="ape__n"><span class="ape__t">Track resolution</span></li>
-          <li class="ape__n"><span class="ape__t">Route result</span></li>
-          <li class="ape__n"><span class="ape__t">Next case</span></li>
-            </ol>
-          </div>
-        </figure>
-      </article>
-        </div>
-      </div>
-    </section>
 
     <div class="cs-move"><p class="cs-move__l">The question the audit asked of every screen</p>
       <p>Can a provider quickly understand what is happening, what needs attention, and
@@ -38375,7 +38424,9 @@ window.PF = window.PF || {};
 
    Five messages arrive in order, and four of them are on screen at a time.
    Each one shows three dots in its place for a beat, then the finished message
-   replaces them. Nothing types and nothing scales.
+   replaces them. Nothing types. The message lands with a little weight — up
+   from a few pixels below, one small overshoot, still — and the box it lands
+   in never changes size, so the page under it cannot feel any of it.
 
    THE WINDOW. Once four messages are up, the next one does not extend the
    stack — the oldest slides out of the top and the remaining two move up to
@@ -38581,7 +38632,7 @@ window.PF = window.PF || {};
      loading, and a gap that is a beat rather than a pause. */
   var DOTS_FAST = 360;
   var OPEN_GAP = 440;
-  var POP_MS = 360;     /* the bubble's arrival, matched to the CSS */
+  var POP_MS = 420;     /* the bubble's arrival, matched to the CSS */
   /* THE PAUSE IS THE MESSAGE'S OWN LENGTH. A one-line greeting and a
      two-hundred-character sentence about six industries are not the same
      thing to read, and giving them the same pause means one of them is always
