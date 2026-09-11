@@ -20721,6 +20721,189 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 }
 
 
+/* ===== css/22-patientx.css ===== */
+/* ==========================================================================
+   22 — WHERE CARRY LIVES
+
+   One figure, near the top of Carry, answering the question the rest of the
+   study assumes an answer to: Carry is not a patient portal. It is a small
+   piece of an existing one.
+
+   THE FIGURE IS TWO BOXES AND THE ZOOM BETWEEN THEM. The upper box is
+   PatientX, and it holds only the three areas the project material actually
+   names as already built — sign-in, appointments, navigation. Nothing has
+   been added to it to make the picture look complete. The band across the
+   bottom of that box is the visit, which is the only part of PatientX this
+   work went near, and the two lines under it open out into the lower box,
+   which is Carry.
+
+   THE PROPORTION IS THE ARGUMENT. The band is a little over half the width
+   of the thing it sits inside, and everything my team drew is inside what
+   that band magnifies into.
+
+   THE FAN IS ONE STRETCHED SVG. preserveAspectRatio="none" lets the two
+   lines take whatever box the layout gives them, and non-scaling-stroke
+   keeps them a hairline while they do it — so the zoom is correct at any
+   width without a single measurement in JavaScript. The band is 52% of the
+   box it sits in, which lands between 24.8% and 25.8% of the figure at every
+   width the page is used at; 26 and 74 are those numbers.
+
+   THE THREE-CLASS SELECTORS ARE LOAD-BEARING. 14-case-type.css ends with an
+   :is() catch-all at (0,2,2) that reaches every span and li inside a case
+   study, and a child combinator adds no specificity. #carry wins, so every
+   rule here is written from it.
+   ========================================================================== */
+
+#carry .px {
+  container-type: inline-size;
+  margin: var(--cs-group, 28px) 0 0;
+}
+
+#carry .px__c {
+  margin: 0 0 12px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* --- the two boxes -------------------------------------------------------- */
+
+#carry .px__box {
+  padding: 16px 14px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+/* Carry's box is the one with a drawn edge, because it is the one that was
+   drawn. Same device the audit's ecosystem uses for the node it is about. */
+#carry .px__box--mine {
+  border-color: var(--ink);
+  border-width: 1.5px;
+  background: var(--surface-raised);
+}
+
+#carry .px__box > .px__l {
+  margin: 0 0 11px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-secondary);
+}
+
+#carry .px__box > .px__l--mine { color: var(--ink); }
+
+#carry .px__l > .px__note {
+  font-weight: 400;
+  color: var(--ink-muted);
+}
+
+/* --- what was already there ----------------------------------------------- */
+
+#carry .px__grid,
+#carry .px__steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+#carry .px__steps { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+#carry .px__grid > li,
+#carry .px__steps > li {
+  margin: 0;
+  padding: 10px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface-raised);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--ink-secondary);
+  text-align: center;
+}
+
+#carry .px__steps > li { background: var(--surface); }
+
+#carry .px__steps > li > .px__k {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-block-end: 3px;
+}
+
+/* The one step Carry deliberately has nothing in. */
+#carry .px__steps > .px__step--off {
+  border-style: dashed;
+  color: var(--ink-muted);
+}
+
+/* --- the slice the zoom starts from --------------------------------------- */
+
+#carry .px__slice {
+  width: 52%;
+  margin: 10px auto 0;
+  padding: 9px 10px;
+  border: 1.5px solid var(--ink);
+  border-radius: 7px;
+  background: var(--surface-raised);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink);
+  text-align: center;
+}
+
+/* Two pairs of lines, one for each width the band takes. The wide pair is
+   off by default and the container query below turns them over — declared
+   here rather than after it, because two rules of the same specificity are
+   settled by which one comes last in the file. */
+#carry .px__fan > .px__fan-w { display: none; }
+
+#carry .px__fan {
+  display: block;
+  width: 100%;
+  height: 26px;
+  overflow: visible;
+  fill: none;
+  stroke: var(--ink-muted);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+/* --------------------------------------------------------------------------
+   NARROW
+
+   The tiles stop pretending to be a row. The zoom still reads, because the
+   band is still narrower than the box above it and still opens onto Carry.
+   -------------------------------------------------------------------------- */
+
+@container (max-width: 520px) {
+  #carry .px__grid,
+  #carry .px__steps { grid-template-columns: minmax(0, 1fr); }
+
+  #carry .px__grid > li,
+  #carry .px__steps > li { text-align: start; }
+
+  #carry .px__slice { width: 66%; }
+
+  /* The band is wider here, so the lines start further out. */
+  #carry .px__fan { height: 22px; }
+  #carry .px__fan > .px__fan-w { display: inline; }
+  #carry .px__fan > .px__fan-n { display: none; }
+}
+
+
 /* ===== css/06-responsive.css ===== */
 /* ==========================================================================
    06 — RESPONSIVE RULES
@@ -31099,7 +31282,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <header class="ar-mast cs-mast">
       <p class="ar-kicker">Case study</p>
       <h1 class="ar-title" id="carry-title">Designing continuity of care for patients</h1>
-      <p class="ar-standfirst">An extension to an existing patient experience: prepare for a visit, then read the conversation back afterwards.</p>
+      <p class="ar-standfirst">A small extension to PatientX, the patient experience it plugs into: prepare for a visit, then read the conversation back afterwards.</p>
       <dl class="ar-meta">
         <div class="ar-meta__row">
           <dt>Role</dt>
@@ -31127,14 +31310,14 @@ body{display:grid;place-items:center;min-height:100vh}
     <span class="ar-h2">A conversation patients can read back</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="ar-p">I took Carry from a workshop premise to a scoped MVP and into an initial Playground build. A leadership change stopped the work before release.</p>
+    <p class="ar-p">Carry started as a premise from a workshop. I took it to a scoped MVP, that went through stakeholder review, and an initial build began in Playground. A leadership change stopped it before release.</p>
 
     <h3 class="ar-h3">What I contributed</h3>
     <ul class="cs-did">
-      <li>Turned the premise into an end-to-end patient flow.</li>
-      <li>Proposed the boundaries for AI-assisted content and designed the interface that holds them.</li>
-      <li>Designed the upload, transcription and failure states.</li>
-      <li>Raised tradeoffs with product and engineering before they became build cost.</li>
+      <li>Turned the premise into an end-to-end patient flow, from writing questions before a visit to reading the conversation back after it.</li>
+      <li>Ruled out generated answers, and designed the quotation pattern that took their place.</li>
+      <li>Designed the upload, transcription and matching states, and what each one does when it fails.</li>
+      <li>Took tradeoffs to product and engineering while they were still drawings.</li>
     </ul>
   </div>
 </section>
@@ -31144,6 +31327,46 @@ body{display:grid;place-items:center;min-height:100vh}
     <span class="ar-h2">Remembering a conversation you only get once</span>
   </div>
   <div class="acc__b" data-acc-b>
+    
+    <p class="ar-p">Carry is not a patient portal. It is a small piece of one. PatientX already
+      handled sign-in, appointments and navigation, and none of that was ours to reopen, so
+      the first thing I had to find was somewhere in a patient&rsquo;s care that Carry could
+      sit without needing any of it changed. I scoped it to the moment around the
+      conversation &mdash; the visit belongs to PatientX, and Carry picks up on either side
+      of it.</p>
+
+    <figure class="px">
+      <figcaption class="px__c">Where Carry lives</figcaption>
+
+      <div class="px__box">
+        <p class="px__l">PatientX <span class="px__note">&mdash; the patient experience Carry plugs into. Already built, and outside my scope.</span></p>
+        <ul class="px__grid">
+          <li>Sign-in and identity</li>
+          <li>Appointments</li>
+          <li>Navigation</li>
+        </ul>
+        <p class="px__slice">The visit</p>
+      </div>
+
+      <svg class="px__fan" viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true"
+           focusable="false">
+        <path class="px__fan-n" d="M25 0 L0 26" vector-effect="non-scaling-stroke"/>
+        <path class="px__fan-n" d="M75 0 L100 26" vector-effect="non-scaling-stroke"/>
+        <path class="px__fan-w" d="M20 0 L0 26" vector-effect="non-scaling-stroke"/>
+        <path class="px__fan-w" d="M80 0 L100 26" vector-effect="non-scaling-stroke"/>
+      </svg>
+
+      <div class="px__box px__box--mine">
+        <p class="px__l px__l--mine">Carry <span class="px__note">&mdash; the part my team designed</span></p>
+        <ol class="px__steps">
+          <li><span class="px__k">Before</span>Prepare the questions</li>
+          <li class="px__step--off"><span class="px__k">During</span>Carry does not operate</li>
+          <li><span class="px__k">After</span>Upload and match</li>
+          <li><span class="px__k">Later</span>Read it back</li>
+        </ol>
+      </div>
+    </figure>
+
     
     <h3 class="ar-h3">Proto personas</h3>
 
@@ -31477,7 +31700,7 @@ body{display:grid;place-items:center;min-height:100vh}
       </figure>
     </article>
 
-    <p class="ar-p">In the feedback the team held, the complaint was rarely one forgotten fact; patients said they had lost the whole fifteen minutes.</p>
+    <p class="ar-p">I started from the feedback the team was already sitting on. The complaint in it was rarely one forgotten fact; patients said they had lost the whole fifteen minutes.</p>
 
 
     <figure class="ar-fig ar-wide">
@@ -31491,7 +31714,6 @@ body{display:grid;place-items:center;min-height:100vh}
       </ul>
     </figure>
 
-    <p class="ar-p">Carry had to be a layer on an existing patient product &mdash; identity, appointments and navigation were not mine &mdash; so I scoped it to the moment around the conversation.</p>
   </div>
 </section>
 <section class="acc" data-open="0">
@@ -31502,7 +31724,7 @@ body{display:grid;place-items:center;min-height:100vh}
   <div class="acc__b" data-acc-b>
     <div class="ar-note"><p>No interview study. I had the team&rsquo;s premises and the feedback they held.</p></div>
 
-    <p class="ar-p">Patients kept refining questions, so editing is immediate and reversible. I ruled out generated answers, because patients need to verify what was said. Recording moved outside Carry, to avoid consent complexity.</p>
+    <p class="ar-p">Three things got decided before I drew a screen, and they set the shape of everything after. Patients in the pilot kept rewriting their questions, so editing had to happen in place and be undoable rather than living on its own screen. I ruled out generated answers &mdash; a patient cannot check a summary against what was actually said in the room. And recording moved out of Carry altogether, to keep the consent complexity out of the product; Carry takes a file that already exists on the phone.</p>
 
     <figure class="ar-fig ar-wide">
       <div class="ar-fig__frame ar-fig__frame--bare"><svg class="md md--phases" viewBox="0 0 960 340" width="960" height="340" role="img"
@@ -31614,13 +31836,13 @@ body{display:grid;place-items:center;min-height:100vh}
     <p class="ts-note">Reconstructed ranges from onsite and Maze pilot testing. Exact
       historical Maze exports are not available.</p>
 
-    <p class="ar-p">Testing separated a usability problem from a difference in intent.</p>
+    <p class="ar-p">Two things came out of the sessions, and only one of them was a usability problem.</p>
 
     <div class="ts-ver">
       <p class="ts-ver__l">Version 1</p>
       <p class="ts-ver__seq">Preparation checklist &rarr; My questions &rarr; Suggested questions</p>
     </div>
-    <p class="ar-p">I had put logistics first. Patients with a specific concern went straight past the checklist.</p>
+    <p class="ar-p">I had put the logistics first &mdash; what to bring, what to check off. Patients who arrived with something specific on their mind scrolled straight past it.</p>
     <ul class="ts-obs">
       <li><b>~70&ndash;80%</b> completed the whole flow without help</li>
       <li><b>~20&ndash;30%</b> hesitated, backtracked, or bypassed the checklist</li>
@@ -31638,7 +31860,7 @@ body{display:grid;place-items:center;min-height:100vh}
       <p class="ts-ver__l">Version 2</p>
       <p class="ts-ver__seq">My questions &rarr; Suggested questions &rarr; Preparation checklist</p>
     </div>
-    <p class="ar-p">I changed the sequence rather than the component.</p>
+    <p class="ar-p">Nothing was wrong with the checklist. It was in the way. I changed the order and left the component alone.</p>
 
     <section class="ar-demo ar-wide cu" data-cu="order">
       <div class="cs-frames" data-frames></div>
@@ -31653,7 +31875,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <p class="ts-note">Reconstructed pilot patterns. The sequence change is not the only thing that moved between rounds, and these do not prove it caused every improvement.</p>
 
     <h3 class="ar-h3">Where the answer came from</h3>
-    <p class="ar-p">Patients reached an answer without knowing where it came from.</p>
+    <p class="ar-p">The other one was harder. Patients could land on an answer without being able to tell where in the conversation it had come from, so every matched answer now opens onto the moment it was taken from.</p>
 
     <section class="ar-demo ar-wide cu" data-cu="source">
       <div class="cs-frames" data-frames></div>
@@ -31675,13 +31897,13 @@ body{display:grid;place-items:center;min-height:100vh}
     <span class="ar-h2">Clarity, Trust, Performance</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="acc__lede ar-p">The order the problems arrived in: clarity first, then what the product should not do, then the states around upload and transcription.</p>
+    <p class="acc__lede ar-p">In the order the problems turned up: what was on the screen, what the product should not do, and what happens when upload and transcription go wrong.</p>
 
     <h3 class="ar-h3" id="ar-clarity">Clarity</h3>
     <div class="cs-move"><p class="cs-move__l">What I saw</p>
-      <p>Three kinds of content shared the pre-appointment screen and nothing looked like it belonged to the patient.</p></div>
+      <p>The pre-appointment screen carried three kinds of content at once &mdash; a checklist of things to bring, the patient&rsquo;s own questions, and a set of suggested ones &mdash; and all three were dressed the same, so none of it read as the patient&rsquo;s.</p></div>
     <div class="cs-move"><p class="cs-move__l">What I did</p>
-      <p>Suggestions became optional and reversible, editing moved into the row, and the row got a minimum height rather than a fixed one.</p></div>
+      <p>I made suggestions opt-in with an undo, moved editing into the row instead of a separate screen, and gave the row a minimum height instead of a fixed one so a long question stops being clipped.</p></div>
     <div class="cs-move"><p class="cs-move__l">What changed</p>
       <p>The list reads as the patient&rsquo;s own.</p></div>
 <section class="ar-demo ar-wide cu" data-cu="prepare">
@@ -31792,7 +32014,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <div class="cs-move"><p class="cs-move__l">What I saw</p>
       <p>Upload, transcription and matching all take real time and all fail, and every one of those moments was a blank in my file.</p></div>
     <div class="cs-move"><p class="cs-move__l">What I did</p>
-      <p>Each failure is a state of the real component, answering three questions in order: what happened, what was kept, what to do next. I checked the recovery paths with engineering.</p></div>
+      <p>Each failure is a state of the real component and answers the same three things in the same order: what happened, what was kept, what to do next. I checked every recovery path with engineering before drawing the state.</p></div>
     <div class="cs-move"><p class="cs-move__l">What changed</p>
       <p>Engineering could estimate the flow.</p></div>
 <section class="ar-demo ar-wide cu" data-cu="lab">
@@ -31904,7 +32126,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <span class="ar-h2">Where Carry stopped</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="ar-p">The flows, states and component set were defined and a Playground build had started when priorities changed above me.</p>
+    <p class="ar-p">The flows, states and component set were done, stakeholder review was behind us and the first build was running in Playground when priorities changed above me. It never shipped.</p>
 
     <h3 class="ar-h3">What I would do differently</h3>
     <p class="ar-p">I would test the premises before drawing. Every assumption here is testable and none of them were tested first.</p>
@@ -31955,7 +32177,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <span class="ar-h2">The stage where a reviewer checks the model</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="ar-p">I designed the tagging stage: a reviewer accepts, corrects or adds to what the model proposed, and that judgement becomes feedback.</p>
+    <p class="ar-p">OptiFlow ingests billing documents, extracts fields from them and tags them. I designed the tagging stage &mdash; the one place a person sees what the model proposed and accepts it, corrects it or adds to it &mdash; and the point where that judgement leaves the screen as feedback the loop can use.</p>
 
     <div class="ar-note"><p>Measured accuracy was 99.5% at ingest and 99% at extraction. Tagging carried a 75% target the feedback loop was meant to move. I did not own the model, so these are context rather than my result.</p></div>
 
@@ -31978,7 +32200,7 @@ body{display:grid;place-items:center;min-height:100vh}
   <div class="acc__b" data-acc-b>
     <p class="ar-p">Reviewers were correcting the model all day and none of those corrections reached it.</p>
 
-    <p class="ar-p">The problem sat at the moment a person disagrees with a model. Accepting was easy and correcting was awkward, so the interface was teaching reviewers to accept.</p>
+    <p class="ar-p">The problem sat in one moment: a person disagreeing with a model. Accepting was easy and correcting was awkward, so the interface was quietly teaching reviewers to accept.</p>
   </div>
 </section>
 <section class="acc" data-open="0">
@@ -32242,7 +32464,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <span class="ar-h2">A design system audit of four provider workflows</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="ar-p">The component library was consistent. In the four workflows it was used in, the same required action showed up as a button in one row, a link in another and a menu item in a third, and statuses described what the system was doing instead of who needed to act.</p>
+    <p class="ar-p">The component library checked out. What did not was what the components were saying: across the four workflows they are used in, the same required action showed up as a button in one row, a link in another and a menu item in a third, and statuses described what the system was doing instead of who needed to act.</p>
 
     
     <div class="ar-note"><p>Contrast ratios are measured pairings from the audit, including one reported as it came out rather than corrected. Delivered as documentation and system rules, so there are no adoption figures here.</p></div>
@@ -32268,7 +32490,7 @@ body{display:grid;place-items:center;min-height:100vh}
   <div class="acc__b" data-acc-b>
     <p class="acc__lede ar-p">A design system audit usually checks components against the library. That check passed here, and providers still could not tell which items were waiting on them.</p>
 
-    <p class="ar-p">So I reviewed the four workflows providers spend their time in.</p>
+    <p class="ar-p">So I went the other way round and audited the four workflows providers actually spend their time in, one at a time, looking at the decisions they make in each.</p>
 
     <ul class="au-scope">
       <li><b>Orders</b><span>Providers review and complete test orders before submission.</span>
@@ -32544,7 +32766,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <p class="acc__lede ar-p">Rewriting labels only fixes one row at a time. Two decisions had to hold across all four workflows.</p>
 
     <h3 class="ar-h3">The Provider Action Queue</h3>
-    <p class="ar-p">All four workflows ask the same thing of a provider &mdash; what needs doing next &mdash; and each asks it in different words, using the same generic components.</p>
+    <p class="ar-p">All four workflows ask a provider the same thing &mdash; what needs doing next &mdash; and each of them asks it in different words, out of the same generic components. So I defined one row and wrote it up for all four: priority, patient and workflow, status, required action, owner, due, next step, in that order, whichever workflow the row came from.</p>
 
     <figure class="au-fig">
       <figcaption class="au-fig__c"><b>Provider Action Queue</b> One row structure, carrying all four workflows.</figcaption>
@@ -32573,7 +32795,7 @@ body{display:grid;place-items:center;min-height:100vh}
     </ul>
 
     <h3 class="ar-h3">Colour in a dense table</h3>
-    <p class="ar-p">Four of the five findings put work on colour, in a dense table providers read quickly.</p>
+    <p class="ar-p">Four of the five findings put work on colour, in a dense table read at speed, which meant I had to know what every pairing measured before I handed any of it over.</p>
 
     <div class="ar-table__wrap">
       <table class="ar-table au-tbl au-tbl--tok">
@@ -32610,7 +32832,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <span class="ar-h2">Writing the pattern as build instructions</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="acc__lede ar-p">Some of the inconsistencies started at handoff. A static screen and a component example left four teams to fill in the same blanks differently.</p>
+    <p class="acc__lede ar-p">Some of the inconsistencies started at handoff. A static screen and a component example left engineering filling in the same blanks a different way each time.</p>
 
     
     <figure class="au-fig">
@@ -32770,10 +32992,10 @@ body{display:grid;place-items:center;min-height:100vh}
     <span class="ar-h2">Rewriting the instruction lid and adding a foam insert</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="ar-p">Two changes to the same box. The preparation instructions moved into the
-      lid and were rewritten so the requirements and the rejection criteria read first. The
-      base got a one-piece die-cut foam insert with a cavity for a slide holder and a cavity
-      for a tissue block container.</p>
+    <p class="ar-p">Two changes to the same box, neither of them a new box. The sheet in the
+      lid was rewritten so the requirements and the rejection criteria read first, and the
+      empty base got a one-piece die-cut foam insert with a cavity for a slide holder and a
+      cavity for a tissue block container.</p>
 
     <div class="ar-note"><p>The kit is documentation and specification, produced across a
       two-week subteam engagement. I did not see it through manufacture, so there are no
@@ -32838,8 +33060,9 @@ body{display:grid;place-items:center;min-height:100vh}
     <span class="ar-h2">What I saw, and what I took it to mean</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="ar-p">I worked from the kit itself and from the printed sheet in it. What I
-      observed is kept separate below from what I concluded.</p>
+    <p class="ar-p">I worked from the kit itself and the printed sheet in it, alongside the
+      onsite research I was synthesising for the subteam. What I observed is kept separate
+      below from what I concluded.</p>
 
     <div class="sk-sep">
       <div class="sk-sep__c">
@@ -32873,9 +33096,10 @@ body{display:grid;place-items:center;min-height:100vh}
     <span class="ar-h2">Put the instructions on the lid</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="ar-p">I kept the sheet where it was and changed what it puts first. The table
-      holds one block specification instead of three, the slide counts sit beside the test
-      they belong to, and the rejection criteria get a row of their own.</p>
+    <p class="ar-p">The box was already in production, so the sheet stayed exactly where it
+      was and what changed was the order of things on it. The table holds one block
+      specification instead of three, the slide counts sit beside the test they belong to,
+      and the rejection criteria get a row of their own.</p>
 
     <figure class="sk-fig">
       <div class="sk-ba">
