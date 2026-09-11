@@ -8838,15 +8838,6 @@ em,
   height: 1px;
 }
 
-/* The phrase in the middle steps aside for them: the same three words are the
-   shelf labels now, and one of them turning over in the centre while all
-   three stand still underneath is the card arguing with itself. */
-.hero__tools.is-sorted .tools__core {
-  opacity: 0;
-  transition: opacity 200ms linear;
-}
-.tools__core { transition: opacity 320ms linear 120ms; }
-
 /* The marks are driven from script while they are moving, so nothing here may
    put a transition on them — two engines on one transform is a fight. */
 .tools__seat { transition: none; }
@@ -8858,34 +8849,15 @@ em,
 
 /* ---- the middle of the ring ----------------------------------------------
 
-   The tools go round the outside; what they are for sits still in the centre.
-   Held to the clear space inside the circle — two radii less the width of a
-   mark and a margin — so a phrase can never run under a logo, and centred by
-   the orbit's own grid rather than by a translate, which keeps it on the
-   pixel at every card width. */
-.tools__core {
-  margin: 0;
-  max-width: calc(var(--tools-r, 120px) * 2 - 72px);
-  text-align: center;
-  font-family: var(--font-body);
-  font-size: clamp(12.5px, 1.06vw, 15.5px);
-  font-weight: var(--fw-strong, 600);
-  line-height: 1.28;
-  letter-spacing: 0.005em;
-  color: var(--ink);
-  /* The ring turns behind it; nothing here is a target. */
-  pointer-events: none;
-}
+   Nothing. The tools go round the outside and the inside is left alone.
 
-.tools__core-w {
-  display: inline-block;
-  transition: opacity 380ms linear, transform 380ms cubic-bezier(.2, .8, .3, 1);
-}
+   There was a phrase here once, held to the clear space inside the circle and
+   turning over every couple of seconds, and before that a set of needles
+   reaching from it out to the marks. Both are gone, and nothing took their
+   place — the ring reads as an orbit rather than as a diagram when its centre
+   is empty. The radius, the seats, the speed and the shelves are untouched;
+   the marks do not move inward to fill it. */
 
-/* Out through the top, in from the bottom: three phrases advancing rather
-   than three phrases cross-fading. */
-.tools__core-w.is-out   { opacity: 0; transform: translateY(-8px); }
-.tools__core-w.is-under { opacity: 0; transform: translateY(8px); transition: none; }
 
 @keyframes tools-orbit {
   from { transform: rotate(0deg); }
@@ -20416,6 +20388,325 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
 @media (prefers-reduced-motion: reduce) {
   .hw__paint { animation: none; transform: translateX(-1405px); }
+}
+
+
+/* ===== css/21-au-personas.css ===== */
+/* ==========================================================================
+   21 — THE AUDIT'S PROTO PERSONAS
+
+   Three workflow proto-personas inside Problem & Context. They exist to
+   answer one question the rest of the study assumes: who is in this portal,
+   and how much of their day is it?
+
+   THE ECOSYSTEM IS THE CONTENT. Each card is a few lines of fact and then a
+   diagram of a working day, in which the audited portal is ONE node. That is
+   the whole argument — a provider arrives from somewhere, does one thing, and
+   leaves again — and it is why the audit spent its time on statuses and
+   actions rather than on components.
+
+   NOTHING HERE IS A PERSONA POSTER. No portrait, no quote, no motivation, no
+   archetype. Name, age, role, what the day contains, where this sits in it,
+   and what the person needs while they are here.
+
+   The register is the audit's: --border hairlines, --surface panels, the same
+   small sans, the same restraint. Styles are namespaced ape-.
+
+   THE THREE-CLASS SELECTORS ARE LOAD-BEARING. 14-case-type.css ends with an
+   :is() catch-all at (0,2,2) that reaches every span and li inside a case
+   study, and a child combinator adds no specificity — only another class
+   does. Do not flatten the ones marked below.
+   ========================================================================== */
+
+#audit .ape__deck {
+  container-type: inline-size;
+  margin-block-start: var(--cs-group, 28px);
+}
+
+/* --- the deck bar --------------------------------------------------------- */
+
+#audit .ape__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-block-end: 16px;
+  padding-block-end: 12px;
+  border-block-end: 1px solid var(--border);
+}
+
+#audit .ape__nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.2;
+  color: var(--ink-secondary);
+  cursor: pointer;
+}
+
+#audit .ape__nav:hover { color: var(--ink); border-color: var(--ink-muted); }
+#audit .ape__nav:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+#audit .ape__nav[disabled] { opacity: 0.4; cursor: default; }
+#audit .ape__nav[disabled]:hover { color: var(--ink-secondary); border-color: var(--border); }
+
+#audit .ape__pos {
+  margin: 0 0 0 auto;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-muted);
+}
+
+/* --- a card --------------------------------------------------------------- */
+
+#audit .ape__card { display: none; }
+#audit .ape__card[data-ape-on] { display: block; }
+
+#audit .ape__who {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+  margin-block-end: 14px;
+}
+
+#audit .ape__who > .ape__name {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 17px;
+  font-weight: 640;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+#audit .ape__who > .ape__role {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: var(--ink-muted);
+}
+
+/* Three facts, set as a definition list because that is what they are. */
+#audit .ape__facts { margin: 0; display: grid; gap: 12px; }
+
+#audit .ape__facts > div {
+  display: grid;
+  gap: 3px;
+}
+
+#audit .ape__facts dt {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+#audit .ape__facts dd {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-secondary);
+  max-width: 64ch;
+}
+
+/* --- the ecosystem -------------------------------------------------------- */
+
+#audit .ape__eco { margin: var(--cs-group, 28px) 0 0; }
+
+#audit .ape__eco-l {
+  margin: 0 0 12px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* The window the zoom happens inside. It clips, which is the only reason the
+   magnification can read as moving closer rather than as the diagram growing
+   out of the page. */
+/* THE FRAME IS AS TALL AS THE MAGNIFIED NODE WILL BE, from the start.
+
+   Scaling the row about its own middle keeps the portal node's centre where
+   it was, so a frame sized to the node's height times the magnification holds
+   it exactly — and the resting diagram sits in the middle of that height with
+   air above and below rather than the panel growing under the reader's hands
+   halfway through. js/au-personas.js measures the node and writes --ape-h. */
+#audit .ape__frame {
+  overflow: hidden;
+  display: grid;
+  align-content: center;
+  min-height: var(--ape-h, auto);
+  padding: 18px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+#audit .ape__flow {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  align-items: stretch;
+  /* The gap is where the connector lives, so it is a named number. */
+  --ape-gap: 26px;
+  gap: var(--ape-gap);
+  transform-origin: 0 50%;
+  transition: transform 620ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+#audit .ape__flow > .ape__n {
+  position: relative;
+  margin: 0;
+  /* Room on every side, so a label never touches its own boundary. */
+  padding: 12px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-raised);
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  text-align: center;
+  /* Every node is the height of the tallest one, which is the portal node
+     with its examples already inside it — so nothing in the row moves when
+     they are revealed. */
+  min-height: 100%;
+}
+
+/* THREE CLASSES. See the file header. */
+/* The face is named on both of these because the case-study catch-all sets
+   one for every span and li it reaches, and these are inside an li. */
+#audit .ape__flow > .ape__n > .ape__t {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--ink-secondary);
+}
+
+/* THE CONNECTOR IS PART OF THE NODE IT LEAVES. It starts at that node's own
+   right edge and stops at the next node's left edge, so it cannot float, drift
+   or cross a label — there is nowhere for it to go. */
+#audit .ape__flow > .ape__n:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 100%;
+  inset-block-start: 50%;
+  width: var(--ape-gap);
+  border-block-start: 1px solid var(--border);
+}
+
+/* --- the one node this study is about ------------------------------------- */
+
+#audit .ape__flow > .ape__n--px {
+  border-color: var(--ink);
+  border-width: 1.5px;
+  background: var(--surface);
+}
+
+#audit .ape__flow > .ape__n--px > .ape__t {
+  font-weight: 640;
+  color: var(--ink);
+}
+
+/* The examples are in the node from the start and take their space from the
+   start; all that changes is whether they can be seen. */
+#audit .ape__ex {
+  list-style: none;
+  margin: 9px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 5px;
+  opacity: 0;
+  transition: opacity 300ms linear;
+}
+
+/* A hair of word-spacing: these are only ever read magnified, where four
+   short words in a row otherwise close up on each other. */
+#audit .ape__n--px .ape__ex > li {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  line-height: 1.45;
+  word-spacing: 0.08em;
+  color: var(--ink-muted);
+}
+
+/* --- the run -------------------------------------------------------------- */
+
+/* Each node arrives on its own beat, left to right, which is the order the
+   day runs in. Translation and opacity only. */
+#audit .ape__card[data-ape-on] .ape__n {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+#audit .ape__card.is-run .ape__n {
+  opacity: 1;
+  transform: none;
+  transition: opacity 300ms linear var(--d, 0ms),
+              transform 300ms cubic-bezier(0.4, 0, 0.2, 1) var(--d, 0ms);
+}
+
+#audit .ape__card.is-zoom .ape__ex { opacity: 1; }
+
+/* --------------------------------------------------------------------------
+   NARROW
+
+   A working day read down the page rather than across it. The zoom is not
+   attempted here: at this width the portal node is already most of the
+   column, so the examples are simply shown, which is what the zoom was for.
+   -------------------------------------------------------------------------- */
+
+@container (max-width: 700px) {
+  #audit .ape__flow {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    --ape-gap: 20px;
+    /* Never scaled at this width. */
+    transform: none !important;
+  }
+
+  #audit .ape__flow > .ape__n {
+    justify-items: start;
+    text-align: start;
+    min-height: 0;
+  }
+
+  /* The connector turns with the flow: still leaving the node it belongs to,
+     now from its bottom edge. */
+  #audit .ape__flow > .ape__n:not(:last-child)::after {
+    inset-inline-start: 22px;
+    inset-block-start: 100%;
+    width: 0;
+    height: var(--ape-gap);
+    border-block-start: 0;
+    border-inline-start: 1px solid var(--border);
+  }
+
+  #audit .ape__ex { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #audit .ape__flow { transition: none; transform: none !important; }
+  #audit .ape__card[data-ape-on] .ape__n { opacity: 1; transform: none; }
+  #audit .ape__card.is-run .ape__n { transition: none; }
+  #audit .ape__ex { opacity: 1; transition: none; }
 }
 
 
@@ -31975,6 +32266,115 @@ body{display:grid;place-items:center;min-height:100vh}
       </div>
     </figure>
 
+
+    
+    <section class="acc acc--sub" data-open="0">
+      <div data-acc-h>
+        <span class="acc__n">Proto personas</span>
+        <span class="ar-h2">Where this system sits in a working day</span>
+      </div>
+      <div class="acc__b" data-acc-b>
+        <p class="acc__lede ar-p">Three roles the four workflows are built for. The portal is one stop in each of their days.</p>
+
+        <div class="ar-note"><p>Proto personas: composites of the roles the audited workflows serve, not people I interviewed. No quotes, histories or figures are claimed for them.</p></div>
+
+        <div class="ape__deck" data-ape>
+          <div class="ape__bar">
+            <button class="ape__nav" type="button" data-ape-prev>
+              <span aria-hidden="true">&larr;</span> Previous</button>
+            <button class="ape__nav" type="button" data-ape-next>
+              Next <span aria-hidden="true">&rarr;</span></button>
+            <p class="ape__pos"><span data-ape-i>1</span> / 3</p>
+          </div>
+
+      <article class="ape__card" data-ape-card data-ape-on="1" aria-label="Dr. Maya Shah, 44">
+        <header class="ape__who">
+          <h4 class="ape__name">Dr. Maya Shah, 44</h4>
+          <p class="ape__role">Medical oncologist</p>
+        </header>
+
+        <dl class="ape__facts">
+          <div><dt>Everyday work</dt><dd>Patient visits, labs and imaging, treatment planning, molecular results, documenting decisions, answering questions from patients and the care team, coordinating with other specialists.</dd></div>
+          <div><dt>Provider experience</dt><dd>A checkpoint in the day, not a workspace. She is in it when a result or an order needs her, and out of it again.</dd></div>
+          <div><dt>What they need here</dt><dd>Understand what needs attention, review the information behind it, take the required action, and get back to patient care.</dd></div>
+        </dl>
+
+        <figure class="ape__eco">
+          <figcaption class="ape__eco-l">Ecosystem</figcaption>
+          <div class="ape__frame">
+            <ol class="ape__flow" data-ape-flow>
+          <li class="ape__n"><span class="ape__t">Patient visit</span></li>
+          <li class="ape__n"><span class="ape__t">EHR</span></li>
+          <li class="ape__n"><span class="ape__t">Labs &amp; imaging</span></li>
+          <li class="ape__n ape__n--px" data-ape-px><span class="ape__t">Provider experience</span>
+            <ul class="ape__ex"><li>What needs her attention</li><li>The result behind it</li><li>One action, then out</li></ul></li>
+          <li class="ape__n"><span class="ape__t">Clinical decision</span></li>
+          <li class="ape__n"><span class="ape__t">EHR</span></li>
+            </ol>
+          </div>
+        </figure>
+      </article>
+
+      <article class="ape__card" data-ape-card aria-label="Elena Torres, 36">
+        <header class="ape__who">
+          <h4 class="ape__name">Elena Torres, 36</h4>
+          <p class="ape__role">Oncology nurse / clinical coordinator</p>
+        </header>
+
+        <dl class="ape__facts">
+          <div><dt>Everyday work</dt><dd>Preparing for appointments, coordinating testing, tracking outstanding orders and specimens, arranging blood draws, talking to patients, following up on missing requirements, escalating clinical decisions to physicians.</dd></div>
+          <div><dt>Provider experience</dt><dd>One of several stops, returned to more than once while a case moves forward.</dd></div>
+          <div><dt>What they need here</dt><dd>Read the state of a case immediately, see who owns the next step, and know whether to act or wait.</dd></div>
+        </dl>
+
+        <figure class="ape__eco">
+          <figcaption class="ape__eco-l">Ecosystem</figcaption>
+          <div class="ape__frame">
+            <ol class="ape__flow" data-ape-flow>
+          <li class="ape__n"><span class="ape__t">Work queue</span></li>
+          <li class="ape__n"><span class="ape__t">EHR</span></li>
+          <li class="ape__n"><span class="ape__t">Patient coordination</span></li>
+          <li class="ape__n ape__n--px" data-ape-px><span class="ape__t">Provider experience</span>
+            <ul class="ape__ex"><li>The state of the case</li><li>Who owns the next step</li><li>Act now or wait</li></ul></li>
+          <li class="ape__n"><span class="ape__t">Resolve issue</span></li>
+          <li class="ape__n"><span class="ape__t">EHR</span></li>
+            </ol>
+          </div>
+        </figure>
+      </article>
+
+      <article class="ape__card" data-ape-card aria-label="Daniel Kim, 39">
+        <header class="ape__who">
+          <h4 class="ape__name">Daniel Kim, 39</h4>
+          <p class="ape__role">Oncology testing coordinator</p>
+        </header>
+
+        <dl class="ape__facts">
+          <div><dt>Everyday work</dt><dd>Managing testing across many patients, checking case progress, finding stalled cases, resolving requisition and specimen issues, locating completed reports, routing them to the clinical team, moving to the next case.</dd></div>
+          <div><dt>Provider experience</dt><dd>An operational work queue. Most of his time in the portal is spent here, moving between cases.</dd></div>
+          <div><dt>What they need here</dt><dd>Status that names an owner, the action in the same place in every row, and a way to filter to the cases that are stuck.</dd></div>
+        </dl>
+
+        <figure class="ape__eco">
+          <figcaption class="ape__eco-l">Ecosystem</figcaption>
+          <div class="ape__frame">
+            <ol class="ape__flow" data-ape-flow>
+          <li class="ape__n"><span class="ape__t">Work queue</span></li>
+          <li class="ape__n ape__n--px" data-ape-px><span class="ape__t">Provider experience</span>
+            <ul class="ape__ex"><li>Which cases are stuck</li><li>Whose move each one is</li><li>The action, same place</li></ul></li>
+          <li class="ape__n"><span class="ape__t">Identify exception</span></li>
+          <li class="ape__n"><span class="ape__t">Coordinate requirement</span></li>
+          <li class="ape__n"><span class="ape__t">Track resolution</span></li>
+          <li class="ape__n"><span class="ape__t">Route result</span></li>
+          <li class="ape__n"><span class="ape__t">Next case</span></li>
+            </ol>
+          </div>
+        </figure>
+      </article>
+        </div>
+      </div>
+    </section>
+
     <div class="cs-move"><p class="cs-move__l">The question the audit asked of every screen</p>
       <p>Can a provider quickly understand what is happening, what needs attention, and
         what action to take next?</p></div>
@@ -41192,6 +41592,194 @@ window.PF = window.PF || {};
 })();
 
 
+/* ===== js/au-personas.js ===== */
+/* ==========================================================================
+   au-personas.js — the audit's proto-persona deck
+
+   Three cards, one at a time, previous and next. The card that is showing
+   runs its ecosystem once: the nodes arrive left to right, the diagram moves
+   in on the portal node, the two or three things that matter to that role
+   inside it are readable for a few seconds, and then it pulls back out.
+
+   THE ZOOM IS ARITHMETIC, NOT A GUESS. Scaling a row about its own left edge
+   maps a point x to tx + x·s, so putting the portal node's centre in the
+   middle of the window is one line: tx = W/2 − cx·s. Measured from the live
+   boxes every time it runs, so it is right at any width, at any type size,
+   and after any reflow.
+
+   It runs once per card rather than looping. The point lands the first time,
+   and a diagram that keeps moving under a paragraph is a diagram nobody
+   finishes reading.
+   ========================================================================== */
+
+window.PF = window.PF || {};
+
+(function (PF) {
+  'use strict';
+
+  var STEP = 90;      /* between one node arriving and the next */
+  var HOLD = 520;     /* after the last node, before moving in */
+  var ZOOM = 2600;    /* how long the examples stay readable */
+  var SCALE = 1.75;
+
+  function build(deck) {
+    if (deck.hasAttribute('data-ape-ready')) return;
+    deck.setAttribute('data-ape-ready', '1');
+
+    var cards = deck.querySelectorAll('[data-ape-card]');
+    var prev = deck.querySelector('[data-ape-prev]');
+    var next = deck.querySelector('[data-ape-next]');
+    var pos = deck.querySelector('[data-ape-i]');
+    if (!cards.length) return;
+
+    var at = 0;
+    var timers = [];
+
+    function clear() {
+      for (var i = 0; i < timers.length; i++) clearTimeout(timers[i]);
+      timers = [];
+    }
+
+    var still = !!(window.matchMedia &&
+                   window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+    /* Below the deck's own breakpoint the ecosystem is a column, the portal
+       node is already most of the width, and the examples are simply shown —
+       so there is nothing to move in on. */
+    function narrow() { return deck.clientWidth <= 700; }
+
+    function run(card) {
+      var flow = card.querySelector('[data-ape-flow]');
+      var px = card.querySelector('[data-ape-px]');
+      var nodes = card.querySelectorAll('.ape__n');
+      if (!flow) return;
+
+      flow.style.transform = '';
+      card.classList.remove('is-run', 'is-zoom');
+
+      for (var i = 0; i < nodes.length; i++) {
+        nodes[i].style.setProperty('--d', (still ? 0 : i * STEP) + 'ms');
+      }
+
+      /* The frame has to be as tall as the magnified node will be, or the
+         magnification runs off the top and bottom of its own window. The node
+         is measured here rather than guessed, so it holds at any width and
+         after any reflow. */
+      var frame = flow.parentNode;
+      if (px && !narrow()) {
+        frame.style.setProperty('--ape-h',
+          Math.ceil(px.getBoundingClientRect().height * SCALE + 10) + 'px');
+      } else {
+        frame.style.removeProperty('--ape-h');
+      }
+
+      /* Reading a box forces the browser to settle the frame it was just
+         given, so the beats below start from the layout the card actually
+         has rather than the one it had a frame ago. */
+      void card.offsetWidth;
+      card.classList.add('is-run');
+
+      if (still || narrow() || !px) return;
+
+      var inAt = nodes.length * STEP + HOLD;
+
+      timers.push(setTimeout(function () {
+        var fw = frame.clientWidth;
+        var fr = frame.getBoundingClientRect();
+        var pr = px.getBoundingClientRect();
+        /* The portal node's centre in the flow's own coordinates, before any
+           transform — the flow is untransformed at this moment, so the live
+           box is that coordinate. */
+        var cx = (pr.left - fr.left) + pr.width / 2 - frameInset(frame);
+        var tx = fw / 2 - cx * SCALE;
+        flow.style.transform = 'translateX(' + tx.toFixed(1) + 'px) scale(' + SCALE + ')';
+        card.classList.add('is-zoom');
+      }, inAt));
+
+      timers.push(setTimeout(function () {
+        flow.style.transform = '';
+        card.classList.remove('is-zoom');
+      }, inAt + ZOOM));
+    }
+
+    /* The frame's own padding is not part of the flow's coordinate system. */
+    function frameInset(frame) {
+      var pad = parseFloat(getComputedStyle(frame).paddingLeft);
+      return isNaN(pad) ? 0 : pad;
+    }
+
+    function show(i, focus) {
+      clear();
+      at = Math.max(0, Math.min(cards.length - 1, i));
+      for (var k = 0; k < cards.length; k++) {
+        var on = k === at;
+        if (on) cards[k].setAttribute('data-ape-on', '1');
+        else {
+          cards[k].removeAttribute('data-ape-on');
+          cards[k].classList.remove('is-run', 'is-zoom');
+          var f = cards[k].querySelector('[data-ape-flow]');
+          if (f) f.style.transform = '';
+        }
+      }
+      if (pos) pos.textContent = String(at + 1);
+      if (prev) prev.disabled = at === 0;
+      if (next) next.disabled = at === cards.length - 1;
+      run(cards[at]);
+      if (focus) {
+        var live = cards[at].querySelector('.ape__name');
+        if (live) { live.setAttribute('tabindex', '-1'); live.focus(); }
+      }
+    }
+
+    if (prev) prev.addEventListener('click', function () { show(at - 1, true); });
+    if (next) next.addEventListener('click', function () { show(at + 1, true); });
+
+    /* THE DECK IS MEASURED AT ZERO UNTIL SOMEONE OPENS THE SECTION.
+
+       It lives inside a closed accordion, which is display:none, so every
+       width this file reads at load time is 0 — and a zoom computed from a
+       window that is not there puts the portal node nowhere. So the run is
+       tied to the deck actually having a size: the moment it goes from no
+       width to a width, the card on screen runs. That covers the section
+       being opened, the window being resized, and the page being restored at
+       a different size, with one observer and no polling. */
+    var had = 0;
+    if (window.ResizeObserver) {
+      var ro = new ResizeObserver(function () {
+        var w = deck.clientWidth;
+        if (!w) { had = 0; return; }
+        /* Only on the transition into having a size, or across the
+           breakpoint the layout changes at — not on every pixel of a drag. */
+        var crossed = (had === 0) || ((had <= 700) !== (w <= 700));
+        had = w;
+        if (crossed) show(at, false);
+      });
+      ro.observe(deck);
+    }
+
+    show(0, false);
+  }
+
+  function init(scope) {
+    scope = scope || document;
+    var decks = scope.querySelectorAll('[data-ape]');
+    for (var i = 0; i < decks.length; i++) build(decks[i]);
+  }
+
+  var prevInit = PF.initRoutes;
+  if (typeof prevInit === 'function') {
+    PF.initRoutes = function (scope) { prevInit(scope); init(scope); };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { init(document); });
+  } else {
+    init(document);
+  }
+
+})(window.PF);
+
+
 /* ===== js/projects.js ===== */
 /* ==========================================================================
    projects.js — the hero's project browser
@@ -42230,42 +42818,16 @@ window.PF = window.PF || {};
 
   orbit.appendChild(ring);
 
-  /* ---- what the ring is going round ---------------------------------------
+  /* ---- the middle stays empty ---------------------------------------------
 
-     A circle of logos is a list of software; the middle of it is what the
-     software is FOR. Three phrases in turn, in the dead centre, saying where
-     the judgment sits. Without it the card is a tool shelf. With it the tools
-     are the outer ring of something.
+     There used to be a phrase here, turning over every couple of seconds in
+     the dead centre of the wheel, and before that a set of hairline needles
+     reaching from it out to the marks it meant. Both are gone. The orbit
+     reads as an orbit when the middle of it is nothing — a phrase in there
+     turns a constellation into a diagram with a caption, and the caption was
+     the loudest thing on a card whose subject is the ring.
 
-     It is outside .tools__ring on purpose — the ring turns, this does not, and
-     a counter-rotation to hold text still is a wobble waiting to happen. The
-     orbit is a centred grid, so the middle is simply where it lands.
-
-     THE PHRASES USED TO REACH OUT WITH HAIRLINES to the marks they meant: a
-     needle from the centre to each logo, with a dot at the joint. It answered
-     a real question — which of these does this phrase mean — and it answered
-     it as a network diagram, four lines at a time, over a wheel that was
-     already turning. The answer is the hover now. The lines are gone.
-
-     Marked aria-hidden with the rest of the ring: the same three phrases are
-     in the markup as one static line for anything that reads the card. */
-  var CORE = [
-    { t: 'Human Judgment' },
-    { t: 'Design Decisions' },
-    { t: 'AI Execution' }
-  ];
-  var CORE_HOLD = 2600;    /* long enough to be read, not long enough to sit */
-  var CORE_FADE = 420;
-
-  var core = document.createElement('p');
-  core.className = 'tools__core';
-  core.setAttribute('aria-hidden', 'true');
-  var coreWord = document.createElement('span');
-  coreWord.className = 'tools__core-w';
-  coreWord.textContent = CORE[0].t;
-  core.appendChild(coreWord);
-
-  orbit.appendChild(core);
+     Nothing replaces it. The empty centre is the change. */
   card.appendChild(orbit);
 
   /* ======================================================================
@@ -42590,34 +43152,6 @@ window.PF = window.PF || {};
       put(seats[i], d.x, d.y);
     }
   }
-
-  var coreAt = 0, coreTimer = null;
-
-  function coreTick() {
-    /* Nothing to read while the card is counting, the ring is down, or the
-       shelves are up — the phrases are the shelf labels then, all three at
-       once, and a fourth copy of one of them turning over in the middle is
-       the card arguing with itself. The clock keeps its place rather than
-       resetting, so the phrase that comes back is the next one. */
-    if (!open || atShelf) { coreTimer = setTimeout(coreTick, CORE_HOLD); return; }
-    coreWord.classList.add('is-out');
-    setTimeout(function () {
-      coreAt = (coreAt + 1) % CORE.length;
-      coreWord.textContent = CORE[coreAt].t;
-      /* In from the other side: out through the top, in from the bottom, so
-         the three phrases read as one thing advancing rather than as a
-         crossfade between three unrelated ones. */
-      coreWord.classList.add('is-under');
-      coreWord.classList.remove('is-out');
-      window.requestAnimationFrame(function () {
-        window.requestAnimationFrame(function () {
-          coreWord.classList.remove('is-under');
-        });
-      });
-      coreTimer = setTimeout(coreTick, CORE_HOLD);
-    }, CORE_FADE);
-  }
-  coreTimer = setTimeout(coreTick, CORE_HOLD);
 
   /* ---- the square ------------------------------------------------------- */
 
