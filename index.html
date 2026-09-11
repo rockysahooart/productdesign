@@ -7918,6 +7918,54 @@ em,
 }
 
 /* --------------------------------------------------------------------------
+   ONE PAIR, MAGNIFIED
+
+   Five stacked pairs in a card this narrow is a list of ten chips read at
+   eleven pixels, which is a picture of a table rather than a piece of
+   evidence. At this width the card shows one transformation at the size it
+   deserves: Pending to Awaiting provider action, which is the finding in a
+   single line — a state that says nothing about ownership, replaced by one
+   that names the owner and the next step.
+
+   The card is not resized around it. The pair takes the room the five rows
+   had, centred in it, so the thumbnail reads as the desktop artifact cropped
+   and enlarged rather than as a smaller version of itself. The header and
+   the closing line are untouched, and every value below is the component's
+   own — the same tones, the same pill, the same arrow, the same ink.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 719px) {
+  /* The other four are still in the markup and still read by anything that
+     is not painting pixels; they are simply not drawn here. */
+  .ds-row:not(:first-child) { display: none; }
+
+  /* The single pair takes the whole of the space the five had. */
+  .ds-rows {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .ds-row { gap: 14px; row-gap: 14px; }
+
+  .ds-chip {
+    /* Still one line. The upper bound is set so the longer of the two labels
+       clears the card's inner width at the narrowest phone rather than
+       arriving at an ellipsis. */
+    font-size: clamp(14px, 4.4vw, 19px);
+    padding: 10px 18px;
+    line-height: 1.3;
+  }
+
+  .ds-arrow {
+    font-size: 20px;
+    margin-inline-start: 16px;
+  }
+}
+
+/* --------------------------------------------------------------------------
    ONE ARROW PER ACTION
 
    A card CTA already ends in →, and an off-site study adds ↗ after the label.
@@ -21202,7 +21250,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
               <span class="msg" data-msg data-cluster data-scramble data-shuffle data-dwell="700">
                 <span class="msg__from" aria-hidden="true">SS</span>
                 <span class="msg__bubble msg__bubble--reacted"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text"><span class="sc sc--plain">I&rsquo;ve</span>
-                  <span class="sc sc--plain">designed</span> <span class="sc sc--plain"><span class="kw kw--craft">human-centered</span></span> <span class="sc sc--plain">products</span> <span class="sc sc--plain">in</span> <span class="sc sc--plain">an</span> <span class="sc sc--plain sc--gl"><span class="kw kw--craft">AI-saturated</span></span> <span class="sc sc--plain sc--gl"><span class="kw kw--craft">world</span>.</span></span><span class="msg__reactions"><button type="button" class="rx" data-rx="fire" aria-label="React with fire"><span class="rx__e" aria-hidden="true">🔥</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="clap" aria-label="React with applause"><span class="rx__e" aria-hidden="true">👏</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hundred" aria-label="React with hundred"><span class="rx__e" aria-hidden="true">💯</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hands" aria-label="React with raised hands"><span class="rx__e" aria-hidden="true">🙌</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="rocket" aria-label="React with rocket"><span class="rx__e" aria-hidden="true">🚀</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="heart" aria-label="React with heart"><span class="rx__e" aria-hidden="true">❤️</span><span class="rx__n" aria-hidden="true"></span></button></span></span>
+                  <span class="sc sc--plain">designed</span> <span class="sc sc--plain sc--hum"><span class="kw kw--craft">human-centered</span></span> <span class="sc sc--plain">products</span> <span class="sc sc--plain">in</span> <span class="sc sc--plain">an</span> <span class="sc sc--plain sc--gl"><span class="kw kw--craft">AI-saturated</span></span> <span class="sc sc--plain sc--gl"><span class="kw kw--craft">world</span>.</span></span><span class="msg__reactions"><button type="button" class="rx" data-rx="fire" aria-label="React with fire"><span class="rx__e" aria-hidden="true">🔥</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="clap" aria-label="React with applause"><span class="rx__e" aria-hidden="true">👏</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hundred" aria-label="React with hundred"><span class="rx__e" aria-hidden="true">💯</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hands" aria-label="React with raised hands"><span class="rx__e" aria-hidden="true">🙌</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="rocket" aria-label="React with rocket"><span class="rx__e" aria-hidden="true">🚀</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="heart" aria-label="React with heart"><span class="rx__e" aria-hidden="true">❤️</span><span class="rx__n" aria-hidden="true"></span></button></span></span>
               </span>
               </span>
             </h1>
@@ -35861,7 +35909,7 @@ window.PF = window.PF || {};
        { t: ' ' },
        { t: 'designed', sc: true, plain: true },
        { t: ' ' },
-       { t: 'human-centered', k: 'craft', sc: true, plain: true },
+       { t: 'human-centered', k: 'craft', sc: true, plain: true, hum: true },
        { t: ' ' },
        { t: 'products', sc: true, plain: true },
        { t: ' ' },
@@ -35958,7 +36006,8 @@ window.PF = window.PF || {};
          sc--plain, and none of them need to learn a second word for it. */
       if (r.sc) piece = '<span class="sc' + (r.enc ? ' sc--enc' : '') +
                         (r.plain || r.gl ? ' sc--plain' : '') +
-                        (r.gl ? ' sc--gl' : '') + '">' +
+                        (r.gl ? ' sc--gl' : '') +
+                        (r.hum ? ' sc--hum' : '') + '">' +
                         piece + (r.post ? esc(r.post) : '') + '</span>';
       out += piece;
     }
@@ -36953,6 +37002,21 @@ window.PF = window.PF || {};
       }
       var cycle = performs ? SHUFFLE_TRIES * SHUFFLE_STEP : WORD_BEAT;
 
+      /* ONE BEAT BELOW THE DESKTOP WIDTH.
+
+         A word at a time is a desktop reading: the bubble is wide, the line
+         holds three or four words, and the sentence assembles across it. On a
+         phone or a tablet the same line is four or five short rows, so the
+         words arrive down the bubble rather than across it and the effect
+         reads as stuttering rather than as writing.
+
+         So at these widths every word takes the same beat. What is left is
+         the thing the line is actually for: the whole sentence fading up, and
+         the fault on the two words the claim is made of. Same markup, same
+         metrics, same glitch — one clock instead of eight. */
+      var oneBeat = !!(window.matchMedia &&
+                       window.matchMedia('(max-width: 1023px)').matches);
+
       /* NOTHING IS THERE BEFORE ITS TURN. The line is not a sentence being
          restyled, it is a sentence being written: noise, then a word, then
          noise, then a word. So every word starts hidden and is shown on the
@@ -36970,15 +37034,111 @@ window.PF = window.PF || {};
          box than the same one set in the pixel face, and a taller box on the
          line is the line itself moving. Both dimensions held, both measured
          from the finished word. */
+      /* AND ONLY A LINE THAT PERFORMS NEEDS BOXING.
+
+         The box exists because six typefaces disagree about how wide a word
+         is. A line where every word simply arrives changes face never, so the
+         box buys nothing — and it costs something real: the measurement is
+         taken the moment the bubble lands, which on a cold load is before the
+         pixel face has finished swapping in. The fallback face measured about
+         five per cent narrow, the word was then pinned to that width with
+         nowrap, and the glyphs ran out over the space after them. That is
+         where `human-centeredproducts` came from.
+
+         Hidden is enough on its own: a hidden element still occupies exactly
+         the space it will occupy when it is shown, so the line cannot move
+         under itself as the words arrive. */
       for (var h = 0; h < words.length; h++) {
         words[h].style.width = '';
         words[h].style.height = '';
-        var box = words[h].getBoundingClientRect();
-        if (box.width) {
-          words[h].style.width = box.width.toFixed(2) + 'px';
-          words[h].style.height = box.height.toFixed(2) + 'px';
+        if (performs) {
+          var box = words[h].getBoundingClientRect();
+          if (box.width) {
+            words[h].style.width = box.width.toFixed(2) + 'px';
+            words[h].style.height = box.height.toFixed(2) + 'px';
+          }
         }
         words[h].style.visibility = 'hidden';
+      }
+
+      /* ----------------------------------------------------------------
+         THE PEOPLE INSIDE THE WORD
+
+         "human-centered" already carries a gradient clipped to its own
+         letterforms, which is the whole mechanism this needs: whatever is
+         painted behind the glyphs is seen only through them. So for about
+         nine tenths of a second the paint is not a gradient but a row of
+         people, shifted along by one on every frame, and then it is the
+         gradient again.
+
+         NOTHING MOVES. The only property that changes is background-image.
+         The span keeps its text, its face, its metrics and its box, so the
+         bubble is the same number of pixels wide and tall on every frame of
+         this — there is no overlay, no extra element, no second row and
+         nothing that could reflow.
+
+         It is fast on purpose. At ninety-five milliseconds a frame nobody
+         reads an individual figure; what registers is that the word is full
+         of different people, which is the point being made.
+
+         AND IT STAYS LEGIBLE. The frame is painted over a solid fill in the
+         word's own ink, so the letterforms are never hollow — if a platform
+         cannot draw colour emoji into an SVG background the word simply
+         stays the colour it was. */
+
+      var HUMANS = ['\uD83E\uDDD1\u200D\u2695\uFE0F',   /* health worker */
+                    '\uD83E\uDDD1\u200D\uD83D\uDD2C',   /* scientist */
+                    '\uD83E\uDDD1\u200D\uD83D\uDCBC',   /* office worker */
+                    '\uD83E\uDD30',                       /* pregnant person */
+                    '\uD83E\uDDD3',                       /* older adult */
+                    '\uD83E\uDDD1'];                      /* person */
+
+      var HUM_FRAMES = 9, HUM_STEP = 95;
+
+      function humanFrame(w, h, shift, ink) {
+        /* Bigger than the line and overlapping, so a figure is large enough
+           for part of one to fall inside a letter stroke and there is never a
+           gap between two of them for a frame to land in. */
+        var size = h * 1.3, step = size * 0.66;
+        var n = Math.ceil(w / step) + 2, g = '', i;
+        for (i = 0; i < n; i++) {
+          /* A half-step of drift every other frame, so the figures land in
+             different letters rather than blinking in place. */
+          var x = i * step - shift * step * 0.37;
+          g += '<text x="' + x.toFixed(1) + '" y="' + (h * 0.5 + size * 0.36).toFixed(1) +
+               '" font-size="' + size.toFixed(1) + '">' +
+               HUMANS[(i + shift) % HUMANS.length] + '</text>';
+        }
+        return 'url("data:image/svg+xml,' + encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '">' +
+          '<rect width="100%" height="100%" fill="' + ink + '"/>' +
+          '<g font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,EmojiOne Color,sans-serif">' +
+          g + '</g></svg>') + '")';
+      }
+
+      function humans(el) {
+        if (!el) return;
+        if (window.matchMedia &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var b = el.getBoundingClientRect();
+        var w = Math.max(1, Math.round(b.width)), h = Math.max(1, Math.round(b.height));
+        if (w < 2 || h < 2) return;
+        var ink = (getComputedStyle(el).getPropertyValue('--kw-a') || '#3A34B8').trim();
+        el.style.backgroundRepeat = 'no-repeat';
+        el.style.backgroundSize = '100% 100%';
+        var f = 0;
+        (function tick() {
+          if (f >= HUM_FRAMES) {
+            /* Back to the stylesheet's own paint, with nothing left behind. */
+            el.style.backgroundImage = '';
+            el.style.backgroundSize = '';
+            el.style.backgroundRepeat = '';
+            return;
+          }
+          el.style.backgroundImage = humanFrame(w, h, f, ink);
+          f++;
+          timers.push(setTimeout(tick, HUM_STEP));
+        })();
       }
 
       for (var k = 0; k < words.length; k++) {
@@ -36995,6 +37155,7 @@ window.PF = window.PF || {};
                and held above, so nothing on the line moves while it does. */
             if (bare) {
               el.classList.add(el.classList.contains('sc--gl') ? 'is-gl' : 'is-lit');
+              if (!oneBeat && el.classList.contains('sc--hum')) humans(el.querySelector('.kw'));
               return;
             }
             /* The scale is the scramble being SEEN — a word comes apart a size
@@ -37020,7 +37181,7 @@ window.PF = window.PF || {};
             el.style.fontFamily = '';
             el.classList.remove('is-noise');
           }, at * cycle + SHUFFLE_TRIES * SHUFFLE_STEP));
-        })(words[k], k);
+        })(words[k], oneBeat ? 0 : k);
       }
 
       return {
@@ -37028,7 +37189,7 @@ window.PF = window.PF || {};
         sel: words[0].classList.contains('sc') ? '.sc' : '.sh',
         /* The letters resolve on the same clock as the faces, so a word comes
            out of the noise on the beat it stops changing typeface. */
-        ms: words.length * cycle,
+        ms: oneBeat ? (cycle + 340) : words.length * cycle,
         stop: function () {
           for (var t = 0; t < timers.length; t++) clearTimeout(timers[t]);
           for (var w = 0; w < words.length; w++) {
