@@ -8645,81 +8645,127 @@ em,
 .tools__orbit .tools__logo--chatgpt { width: calc(clamp(26px, 2.4vw, 34px) * 0.98); }
 
 
-/* ---- the wires ----------------------------------------------------------
+/* ---- the shelves ---------------------------------------------------------
 
-   Hairlines from the phrase in the middle out to the marks it means. Drawn in
-   the orbit's own pixels by js/tools.js, one frame at a time, because the ring
-   they attach to is turning.
+   THE CARD HAS TWO STATES AND THEY ARE THE SAME OBJECTS.
 
-   As thin as a line can be and still be there: this is a connection being
-   stated, not a diagram being drawn, and anything heavier turns a card with
-   twelve logos on it into a network graph. Overflow visible because the joint
-   dots sit exactly on the marks at the box's edge. */
-.tools__wire {
+   At rest the marks go round loosely: active, a little unruly, and saying
+   nothing about themselves except that there are ten of them. Under the
+   pointer they sort — a short scramble in js/tools.js, and then three rows
+   with the categories named. Chaos, then categorisation, with nothing added
+   and nothing swapped out.
+
+   THE SHELF IS A HAIRLINE. Not a container, not a pill, not a card inside a
+   card: one rule per row, the same rule this site draws everywhere else, and
+   the marks sitting on top of it. It is invisible while the wheel is turning
+   because there is nothing on it to hold up yet — it arrives with the things
+   it is holding.
+
+   The label above each line rather than beside it: five labels of different
+   lengths down the left of a narrow card would set the rows in a column that
+   has nothing to do with the marks, and the row would start wherever the
+   longest category happened to end.
+
+   This block replaces the wires — hairlines that used to run from the phrase
+   in the middle out to the marks it meant. They answered the same question
+   this does and answered it as a diagram over a moving wheel, four lines at a
+   time. The hover answers it now, once, with the marks themselves.
+   -------------------------------------------------------------------------- */
+
+.tools__shelves {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
+  /* Clear of the card's own label at the top, and on the card's padding at
+     the sides so the rows sit on the same margin as everything else. */
+  inset: calc(clamp(22px, 1.8vw, 30px) + 2.1em) var(--tile-pad, 22px)
+         clamp(18px, 1.5vw, 26px);
+  display: flex;
+  flex-direction: column;
   pointer-events: none;
+  opacity: 0;
+  /* Out of the way entirely while the wheel turns: a shelf line crossing a
+     logo's path is the one thing that would make the idle state look broken. */
+  visibility: hidden;
+  transition: opacity 300ms linear, visibility 0s linear 300ms;
 }
 
-.tools__wires {
-  transition: opacity 380ms linear;
+.hero__tools.is-sorted .tools__shelves {
+  opacity: 1;
+  visibility: visible;
+  /* Behind the marks arriving: the structure is there a beat before the
+     things it holds, which is the order those two events happen in when
+     somebody tidies a shelf. */
+  transition: opacity 360ms linear 90ms, visibility 0s linear 0s;
 }
 
-.tools__wires.is-out { opacity: 0; }
+/* EQUAL THIRDS, AND THE AIR GOES ABOVE EACH SHELF.
 
-.tools__wire line {
-  stroke: var(--ink);
-  stroke-width: 0.8;
-  stroke-linecap: round;
-  opacity: 0.2;
+   These were spread with space-between, which pinned the first row to the top
+   and the last to the bottom and pooled a hundred pixels of nothing between
+   them — three rows floating in a square rather than three shelves in it. Each
+   row takes exactly a third of the height now and sits at the BOTTOM of its
+   own third, so the interval from one line to the next is constant and the
+   slack becomes headroom above each shelf. Which is where the space is on a
+   real one: above the things standing on it. */
+.tools__shelf {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  /* Room above the line for a mark to stand in, plus the gap that keeps the
+     label off the tops of the logos. The marks are absolutely positioned and
+     do not participate here, so this is reserved rather than occupied. */
+  padding-block-end: calc(clamp(26px, 2.4vw, 34px) + 21px);
+  position: relative;
 }
 
-/* The joint. A line that stops in mid-air reads as unfinished; the same line
-   with a dot on the end reads as attached to what it stopped at. */
-.tools__wire circle {
-  fill: var(--ink);
-  opacity: 0.28;
+.tools__shelf-l {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
 }
 
-/* ONE OF THEM IS THE POINT. A list of equal connections says the phrase is
-   about all of these; one line with weight on it says which of them it is
-   really about, and the others become its company. */
-.tools__wire line.is-key {
-  stroke-width: 1.4;
-  opacity: 0.34;
+.tools__shelf-line {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  height: 1px;
+  background: var(--border);
+  /* It draws rather than appears — left to right, the way a shelf is put up.
+     Two hundred milliseconds apart down the card so three lines read as three
+     decisions. */
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 420ms cubic-bezier(0.22, 0.68, 0.24, 1);
 }
 
-.tools__wire circle.is-key { opacity: 0.44; }
+.hero__tools.is-sorted .tools__shelf-line { transform: scaleX(1); }
+.hero__tools.is-sorted .tools__shelf:nth-child(1) .tools__shelf-line { transition-delay: 90ms; }
+.hero__tools.is-sorted .tools__shelf:nth-child(2) .tools__shelf-line { transition-delay: 170ms; }
+.hero__tools.is-sorted .tools__shelf:nth-child(3) .tools__shelf-line { transition-delay: 230ms; }
 
-/* And it is live: a ring going out of the joint, over and over. transform-box
-   keeps the scale about the circle's own centre rather than about the SVG's
-   origin, which is the difference between a pulse and a dot flying off the
-   card. */
-.tools__pulse {
-  fill: none;
-  stroke: var(--ink);
-  stroke-width: 1;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: tools-pulse 1.9s cubic-bezier(0.25, 0.6, 0.3, 1) infinite;
+/* The phrase in the middle steps aside for them: the same three words are the
+   shelf labels now, and one of them turning over in the centre while all
+   three stand still underneath is the card arguing with itself. */
+.hero__tools.is-sorted .tools__core {
+  opacity: 0;
+  transition: opacity 200ms linear;
 }
+.tools__core { transition: opacity 320ms linear 120ms; }
 
-@keyframes tools-pulse {
-  0%   { transform: scale(1);   opacity: 0.5; }
-  70%  { transform: scale(3.4); opacity: 0; }
-  100% { transform: scale(3.4); opacity: 0; }
-}
+/* The marks are driven from script while they are moving, so nothing here may
+   put a transition on them — two engines on one transform is a fight. */
+.tools__seat { transition: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .tools__pulse { animation: none; opacity: 0.28; }
+  .tools__shelf-line { transition: none; transform: scaleX(1); }
+  .tools__shelves { transition: none; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .tools__wires { transition: none; }
-}
 
 /* ---- the middle of the ring ----------------------------------------------
 
@@ -36544,6 +36590,10 @@ window.PF = window.PF || {};
   /* Which seat each tool ended up in, so the wires below can find a mark
      without knowing anything about the order of the rail. */
   var seatOf = {};
+  /* And the other direction: which tool is in seat i. The shelves walk the
+     seats in order, so they need the name at the index rather than the index
+     at the name. */
+  var nameOf = [];
   for (var i = 0; i < n; i++) {
     var seat = document.createElement('span');
     seat.className = 'tools__seat';
@@ -36552,6 +36602,7 @@ window.PF = window.PF || {};
     var cls = marks[i].firstElementChild.getAttribute('class') || '';
     var name = /tools__logo--([a-z0-9]+)/.exec(cls);
     if (name) seatOf[name[1]] = i;
+    nameOf.push(name ? name[1] : null);
 
     /* The mark itself counter-turns, so it stays upright while its seat goes
        round — a logo that rotates with the ring is a logo upside down for half
@@ -36569,29 +36620,26 @@ window.PF = window.PF || {};
   /* ---- what the ring is going round ---------------------------------------
 
      A circle of logos is a list of software; the middle of it is what the
-     software is FOR. Three words in turn, in the dead centre, saying where the
-     judgment sits: a person decides, the design decides, the machine executes.
-     Without it the card is a tool shelf. With it the tools are the outer ring
-     of something.
+     software is FOR. Three phrases in turn, in the dead centre, saying where
+     the judgment sits. Without it the card is a tool shelf. With it the tools
+     are the outer ring of something.
 
      It is outside .tools__ring on purpose — the ring turns, this does not, and
      a counter-rotation to hold text still is a wobble waiting to happen. The
      orbit is a centred grid, so the middle is simply where it lands.
 
+     THE PHRASES USED TO REACH OUT WITH HAIRLINES to the marks they meant: a
+     needle from the centre to each logo, with a dot at the joint. It answered
+     a real question — which of these does this phrase mean — and it answered
+     it as a network diagram, four lines at a time, over a wheel that was
+     already turning. The answer is the hover now. The lines are gone.
+
      Marked aria-hidden with the rest of the ring: the same three phrases are
      in the markup as one static line for anything that reads the card. */
-  /* AND WHICH TOOLS ANSWER TO EACH PHRASE. This is the whole point of the
-     wires: the ring stops being a shelf of logos and becomes a claim about
-     which part of the work each of them is for. A phrase with no marks named
-     simply draws nothing. */
-  /* A named tool is an ordinary hairline. One marked `key` is the tool that
-     phrase is really about — heavier, and with a pulse where it meets the
-     mark, so one of the connections is a statement rather than a member of a
-     list. Design decisions get made in Figma; that is the claim. */
   var CORE = [
-    { t: 'Human Judgment',  to: ['figma', 'miro', 'notion'] },
-    { t: 'Design Decisions', to: ['axure', 'wisprflow', { m: 'figma', key: true }] },
-    { t: 'AI Execution',    to: ['claude', 'github', 'cursor', 'chatgpt'] }
+    { t: 'Human Judgment' },
+    { t: 'Design Decisions' },
+    { t: 'AI Execution' }
   ];
   var CORE_HOLD = 2600;    /* long enough to be read, not long enough to sit */
   var CORE_FADE = 420;
@@ -36604,62 +36652,90 @@ window.PF = window.PF || {};
   coreWord.textContent = CORE[0].t;
   core.appendChild(coreWord);
 
-  /* ---- the wires ---------------------------------------------------------
-
-     A phrase in the middle and a ring of logos around it are two things in a
-     box until something says which of them it means. So each phrase reaches
-     out to its own marks with a hairline, and the hairline STAYS on the mark
-     while the ring turns — the wheel is untouched, the wires follow it.
-
-     Which means these cannot be drawn once. Every frame the ring's current
-     angle is read off its computed transform — one read, no layout, and it
-     costs nothing next to the twelve marks already being composited — and
-     each seat's position is worked out from it: a seat sits at `rotate(a)
-     translateY(-r)`, so its centre is the ring's centre plus (r sin θ,
-     −r cos θ) with θ its own angle plus the ring's.
-
-     The line runs from the edge of the phrase's own box, not from a point in
-     the middle of the type, and stops a mark's radius short of the seat so it
-     touches the logo rather than crossing it. A dot at that end is the joint:
-     it is what makes a line ending in space read as a line attached to
-     something. */
-  var SVGNS = 'http://www.w3.org/2000/svg';
-  var wire = document.createElementNS(SVGNS, 'svg');
-  wire.setAttribute('class', 'tools__wire');
-  wire.setAttribute('aria-hidden', 'true');
-  var wireG = document.createElementNS(SVGNS, 'g');
-  wireG.setAttribute('class', 'tools__wires');
-  wire.appendChild(wireG);
-  /* Under the phrase and under the marks, so a hairline never crosses type. */
-  orbit.insertBefore(wire, orbit.firstChild);
   orbit.appendChild(core);
-
   card.appendChild(orbit);
 
-  var wires = [];        /* { line, dot, seat } for the phrase on screen */
-  var wireRaf = 0;
-  /* THEY ARE A GLANCE, NOT A DIAGRAM. The wires say which marks the phrase
-     means and then get out of the way — a card that holds its lines up for the
-     whole beat is a network graph with a caption, and the ring stops being the
-     thing you are looking at. So they come up under the phrase, stand for
-     about a second, and go. */
-  var WIRE_SHOW = 820;
-  var WIRE_FADE = 400;   /* matches the transition in 07-clients.css */
-  var wireHide = null;
-  var wireDown = true;   /* down, and no longer worth a frame */
-  /* CLEAR OF THE MARK'S OWN EDGE, and then some. A dot that lands on the logo's
-     boundary reads as stuck to it; the wire should stop well short and let the
-     empty last stretch do the pointing. Held to a share of the ring so the gap
-     stays the same SIZE OF GAP at every width rather than eating the whole run
-     once the card shrinks. */
-  var TIP_MIN = 12, TIP_MAX = 30, TIP_R = 0.19;
-  /* AND WELL CLEAR OF THE PHRASE. A line that starts a few pixels off the type
-     reads as growing out of the word rather than pointing at something from
-     it — the gap is what makes the phrase an object the wires arrive at. */
-  var LEAD_MIN = 14, LEAD_MAX = 24, LEAD_R = 0.14;
-  /* Below this a wire is a speck, not a line. Better absent than a stub. */
-  var MIN_RUN = 14;
+  /* ======================================================================
+     THE SHELVES
 
+     At rest the marks go round loosely and the card is a claim with no
+     evidence: ten logos and a phrase. Under the pointer they sort themselves
+     — a short scramble, and then three rows with the categories named.
+
+     WHICH TOOL BELONGS WHERE is the whole content of this interaction, so it
+     is a plain table rather than something inferred. A tool named in no shelf
+     simply keeps spinning; a shelf with nothing on it draws nothing.
+
+     The order is the order of the work: what gets decided, what executes it,
+     and what is left to a person.
+     ====================================================================== */
+  var SHELVES = [
+    { t: 'Design Decisions', to: ['figma', 'axure', 'miro'] },
+    { t: 'AI Execution',     to: ['claude', 'chatgpt', 'gemini', 'cursor', 'github'] },
+    { t: 'Human Judgment',   to: ['notion', 'wisprflow'] }
+  ];
+
+  var shelfWrap = document.createElement('div');
+  shelfWrap.className = 'tools__shelves';
+  shelfWrap.setAttribute('aria-hidden', 'true');
+  var shelfEls = [];
+  for (var sI = 0; sI < SHELVES.length; sI++) {
+    var sh = document.createElement('div');
+    sh.className = 'tools__shelf';
+    var shl = document.createElement('p');
+    shl.className = 'tools__shelf-l';
+    shl.textContent = SHELVES[sI].t;
+    var shline = document.createElement('span');
+    shline.className = 'tools__shelf-line';
+    sh.appendChild(shl);
+    sh.appendChild(shline);
+    shelfWrap.appendChild(sh);
+    shelfEls.push({ el: sh, label: shl, line: shline });
+  }
+  /* Behind the marks, in front of nothing: the shelf is a surface the logos
+     land on, so it must never draw over one. */
+  orbit.insertBefore(shelfWrap, orbit.firstChild);
+
+  /* ---- the mover ---------------------------------------------------------
+
+     The ring is a CSS animation, which is the right way to turn ten things
+     forever and the wrong way to send them somewhere. So the hover FREEZES
+     the wheel and bakes its angle into the marks: each seat is written at the
+     exact place it already was, in the orbit's own pixels, and from that
+     frame on this file is moving plain coordinates. Leaving reverses it —
+     the marks are tweened back to the circle at the angle the wheel stopped
+     at, then handed to the animation again with a negative delay so it picks
+     up mid-turn rather than snapping to zero.
+
+     Nothing is cloned and nothing is hidden. The things on the shelves are
+     the things that were going round. */
+
+  var seats = ring.children;
+  var frozen = false;        /* the wheel's angle is now in the marks */
+  var atShelf = false;
+  var raf = 0;
+  var moves = [];            /* one per mark, while a move is running */
+  var SPIN_MS = 30000;       /* must match the keyframe duration in CSS */
+
+  function now() {
+    return (window.performance && performance.now) ? performance.now() : Date.now();
+  }
+
+  /* Where a mark sits on the circle when the wheel is at angle R. */
+  function onCircle(i, R) {
+    var th = R + i * (2 * Math.PI / n);
+    var r = parseFloat(card.style.getPropertyValue('--tools-r')) || 120;
+    return { x: r * Math.sin(th), y: -r * Math.cos(th) };
+  }
+
+  function put(el, x, y) {
+    el.style.transform = 'translate(' + x.toFixed(2) + 'px,' + y.toFixed(2) + 'px)';
+  }
+
+  var heldAngle = 0;
+
+  /* The wheel's angle right now, read off its own computed transform. One
+     read, no layout, and it happens once per hover rather than per frame. */
   function ringAngle() {
     var t = window.getComputedStyle(ring).transform;
     if (!t || t.indexOf('matrix') !== 0) return 0;
@@ -36667,139 +36743,251 @@ window.PF = window.PF || {};
     return Math.atan2(parseFloat(p[1]), parseFloat(p[0]));
   }
 
-  /* The one measurement that is not the ring's angle: how big the phrase is
-     and how big a mark is. Both change with the window and with the phrase, so
-     it is taken when either does rather than every frame. */
-  var geom = { cx: 0, cy: 0, r: 0, hw: 0, hh: 0, tip: 0, lead: 24 };
+  function freeze() {
+    if (frozen) return;
+    heldAngle = ringAngle();
+    ring.style.animation = 'none';
+    ring.style.transform = 'none';
+    for (var i = 0; i < seats.length; i++) {
+      var p = onCircle(i, heldAngle);
+      var sp = seats[i].firstElementChild;
+      if (sp) { sp.style.animation = 'none'; sp.style.transform = 'none'; }
+      put(seats[i], p.x, p.y);
+    }
+    frozen = true;
+  }
 
-  function measureWires() {
+  function thaw() {
+    if (!frozen) return;
+    for (var i = 0; i < seats.length; i++) {
+      seats[i].style.transform = '';
+      var sp = seats[i].firstElementChild;
+      if (sp) { sp.style.animation = ''; sp.style.transform = ''; }
+    }
+    ring.style.transform = '';
+    ring.style.animation = '';
+    /* Pick the turn back up where it stopped. A wheel that restarts at zero
+       after every hover is a wheel that tells you it is an animation. */
+    var turns = (heldAngle / (2 * Math.PI)) % 1;
+    if (turns < 0) turns += 1;
+    ring.style.animationDelay = (-turns * SPIN_MS).toFixed(0) + 'ms';
+    frozen = false;
+  }
+
+  /* ---- where the shelves put each mark ----------------------------------
+
+     Measured, not guessed: the shelf rows are laid out by the stylesheet at
+     whatever width the card has, and this reads back where each line landed.
+     A mark sits ON its shelf — its bottom edge just above the hairline —
+     which is the difference between a row of logos and a row of logos on a
+     shelf. */
+  function shelfTargets() {
     var ob = orbit.getBoundingClientRect();
-    var cb = core.getBoundingClientRect();
+    var cx = ob.width / 2, cy = ob.height / 2;
     var logo = orbit.querySelector('.tools__logo');
-    var lb = logo ? logo.getBoundingClientRect() : null;
-    geom.cx = ob.width / 2;
-    geom.cy = ob.height / 2;
-    geom.r = parseFloat(card.style.getPropertyValue('--tools-r')) ||
-             Math.round(ob.width * 0.33);
-    geom.hw = cb.width / 2;
-    geom.hh = cb.height / 2;
-    geom.tip = (lb ? Math.max(lb.width, lb.height) / 2 : 16) +
-               Math.max(TIP_MIN, Math.min(TIP_MAX, geom.r * TIP_R));
-    geom.lead = Math.max(LEAD_MIN, Math.min(LEAD_MAX, geom.r * LEAD_R));
-  }
+    var lh = logo ? logo.getBoundingClientRect().height : 30;
+    var out = {};
 
-  function drawWires() {
-    if (!wires.length || !open) { wireRaf = 0; return; }
-    /* Nothing to follow once they are gone: the marks move on without them and
-       the next flash measures the ring where it is by then. Not while they are
-       FADING, though — a line that stops tracking the moment it starts to leave
-       comes off its mark on the way out, which is the one frame anybody would
-       notice. */
-    if (wireDown) { wireRaf = 0; return; }
-    var R = ringAngle();
-    for (var i = 0; i < wires.length; i++) {
-      var w = wires[i];
-      var th = R + w.seat * (2 * Math.PI / n);
-      var dx = Math.sin(th), dy = -Math.cos(th);
-      /* Where the ray leaves the phrase's box: the nearer of the two walls it
-         would cross, which is what a rectangle's edge is. */
-      var t = Math.min(
-        Math.abs(dx) > 1e-4 ? geom.hw / Math.abs(dx) : 1e9,
-        Math.abs(dy) > 1e-4 ? geom.hh / Math.abs(dy) : 1e9
-      ) + geom.lead;
-      var e = geom.r - geom.tip;
-      if (e - t < MIN_RUN) {
-        w.line.setAttribute('opacity', '0');
-        w.dot.setAttribute('opacity', '0');
-        if (w.pulse) w.pulse.setAttribute('opacity', '0');
-        continue;
+    for (var s = 0; s < SHELVES.length; s++) {
+      /* THE SHELF'S OWN BOX, NOT THE LINE'S. The line draws itself in with a
+         scaleX, and a transformed element reports the rectangle it is drawn
+         at — which is nothing at all on the frame this runs. The shelf around
+         it is untransformed and the line is pinned to its bottom edge, so
+         that box is the same measurement without the timing trap. */
+      var sb = shelfEls[s].el.getBoundingClientRect();
+      var lb = { left: sb.left, width: sb.width, top: sb.bottom };
+      if (!lb.width) continue;
+      var list = SHELVES[s].to;
+      var have = [];
+      for (var k = 0; k < list.length; k++) {
+        if (list[k] in seatOf) have.push(list[k]);
       }
-      w.line.setAttribute('opacity', '1');
-      w.dot.setAttribute('opacity', '1');
-      if (w.pulse) w.pulse.removeAttribute('opacity');
-      w.line.setAttribute('x1', (geom.cx + dx * t).toFixed(1));
-      w.line.setAttribute('y1', (geom.cy + dy * t).toFixed(1));
-      w.line.setAttribute('x2', (geom.cx + dx * e).toFixed(1));
-      w.line.setAttribute('y2', (geom.cy + dy * e).toFixed(1));
-      w.dot.setAttribute('cx', (geom.cx + dx * e).toFixed(1));
-      w.dot.setAttribute('cy', (geom.cy + dy * e).toFixed(1));
-      if (w.pulse) {
-        w.pulse.setAttribute('cx', (geom.cx + dx * e).toFixed(1));
-        w.pulse.setAttribute('cy', (geom.cy + dy * e).toFixed(1));
+      if (!have.length) continue;
+
+      /* Left-aligned on the shelf, because a shelf fills from one end — three
+         objects centred on a line read as a composition, and the point here
+         is that they were put away. */
+      var step = Math.min(lh + 18, (lb.width - lh) / Math.max(1, have.length - 1));
+      var x0 = lb.left - ob.left + lh / 2;
+      var y = lb.top - ob.top - lh / 2 - 7;
+
+      for (k = 0; k < have.length; k++) {
+        /* A HAIR OF ASYMMETRY. Objects a person put on a shelf are not on a
+           grid; these are off by a pixel or two, deterministically, so the
+           row reads as placed rather than as generated. */
+        var nudgeX = ((k * 7) % 5) - 2;
+        var nudgeY = ((k * 11) % 4) - 1.5;
+        out[have[k]] = {
+          x: x0 + k * step + nudgeX - cx,
+          y: y + nudgeY - cy
+        };
       }
     }
-    wireRaf = window.requestAnimationFrame(drawWires);
+    return out;
   }
 
-  function runWires() {
-    if (!wireRaf && wires.length && open) wireRaf = window.requestAnimationFrame(drawWires);
+  /* ---- the move itself ---------------------------------------------------
+
+     Not a straight line and not a fade. Each mark does three things in about
+     two thirds of a second: it breaks off its orbit the way something does
+     when it has been called, it crosses the card on an arc — which is what
+     makes the ten paths cross each other rather than run in parallel — and it
+     arrives a little past its place and settles back onto it.
+
+     The arc's bow alternates and varies by index, so this is choreography
+     rather than ten objects sharing one curve. Same numbers every time: it is
+     authored, not random, and it plays the same way twice. */
+
+  var KICK = 0.17;    /* the share of the move spent breaking away */
+
+  function easeOutBack(p) {
+    var c = 1.14;
+    return 1 + (c + 1) * Math.pow(p - 1, 3) + c * Math.pow(p - 1, 2);
   }
+  function easeOut(p) { return 1 - Math.pow(1 - p, 3); }
 
-  /* Up, held, gone. The timer is cleared first so a phrase that changes early
-     — a discipline switch, a card reopening — never has the last one's
-     disappearance landing in the middle of this one. */
-  function flashWires() {
-    clearTimeout(wireHide);
-    wireDown = false;
-    wireG.classList.remove('is-out');
-    runWires();
-    wireHide = setTimeout(function () {
-      wireG.classList.add('is-out');
-      wireHide = setTimeout(function () { wireDown = true; }, WIRE_FADE);
-    }, WIRE_SHOW);
-  }
+  function plan(toShelf) {
+    var targets = toShelf ? shelfTargets() : null;
+    var R = heldAngle;
+    moves = [];
+    var t0 = now();
 
-  function setWires(at) {
-    while (wireG.firstChild) wireG.removeChild(wireG.firstChild);
-    wires = [];
-    var to = CORE[at].to || [];
-    for (var i = 0; i < to.length; i++) {
-      var spec = to[i];
-      var mark = spec.m || spec;
-      var key = !!spec.key;
-      if (!(mark in seatOf)) continue;    /* a tool that is not on this rail */
+    for (var i = 0; i < seats.length; i++) {
+      var el = seats[i];
+      var cur = read(el);
+      var dest;
 
-      var line = document.createElementNS(SVGNS, 'line');
-      var dot = document.createElementNS(SVGNS, 'circle');
-      dot.setAttribute('r', key ? '2.9' : '2.1');
-      if (key) {
-        line.setAttribute('class', 'is-key');
-        dot.setAttribute('class', 'is-key');
-      }
-      wireG.appendChild(line);
-      wireG.appendChild(dot);
-
-      /* The pulse is a second circle on the same point, scaled and faded by
-         CSS. Its own element because the joint has to stay solid while the
-         thing going out of it does not. */
-      var pulse = null;
-      if (key) {
-        pulse = document.createElementNS(SVGNS, 'circle');
-        pulse.setAttribute('class', 'tools__pulse');
-        pulse.setAttribute('r', '2.9');
-        wireG.appendChild(pulse);
+      if (toShelf) {
+        var name = nameOf[i];
+        dest = (name && targets[name]) ? targets[name] : null;
+        /* A tool on no shelf keeps its place on the circle rather than
+           drifting into a row it does not belong to. */
+        if (!dest) dest = onCircle(i, R);
+      } else {
+        dest = onCircle(i, R);
       }
 
-      wires.push({ line: line, dot: dot, pulse: pulse, seat: seatOf[mark] });
+      var dx = dest.x - cur.x, dy = dest.y - cur.y;
+      var len = Math.sqrt(dx * dx + dy * dy) || 1;
+      /* The bow: perpendicular to the run, alternating side, varying depth.
+         Capped against the run's own length so a short hop does not swing
+         halfway across the card to get there. */
+      var bow = (i % 2 ? 1 : -1) * Math.min(len * 0.34, 26 + (i * 13) % 24);
+      var px = -dy / len, py = dx / len;
+
+      /* The break-away is along the orbit's tangent — the direction it was
+         already travelling — which is why it reads as breaking off rather
+         than as a wobble. */
+      var tan = { x: Math.cos(R + i * (2 * Math.PI / n)),
+                  y: Math.sin(R + i * (2 * Math.PI / n)) };
+
+      moves.push({
+        el: el,
+        x0: cur.x, y0: cur.y,
+        cx: cur.x + dx / 2 + px * bow,
+        cy: cur.y + dy / 2 + py * bow,
+        x1: dest.x, y1: dest.y,
+        tan: tan,
+        kick: toShelf ? 7 + (i * 5) % 9 : 0,
+        start: t0 + (toShelf ? (i * 37) % 132 : (i * 23) % 84),
+        ms: toShelf ? 520 + (i * 53) % 190 : 380 + (i * 41) % 120,
+        back: toShelf
+      });
     }
-    measureWires();
-    drawWires();
-    runWires();
+
+    if (!raf) raf = window.requestAnimationFrame(frame);
+  }
+
+  /* The mark's current offset, read off its own transform so a move that
+     interrupts another one starts from where the thing actually is. */
+  function read(el) {
+    var t = el.style.transform;
+    var m = /translate\(([-0-9.]+)px,\s*([-0-9.]+)px\)/.exec(t || '');
+    if (m) return { x: parseFloat(m[1]), y: parseFloat(m[2]) };
+    return onCircle([].indexOf.call(seats, el), heldAngle);
+  }
+
+  function frame() {
+    var t = now(), live = 0;
+    for (var i = 0; i < moves.length; i++) {
+      var m = moves[i];
+      if (t < m.start) { live++; continue; }
+      var p = Math.min(1, (t - m.start) / m.ms);
+      var x, y;
+
+      if (m.kick && p < KICK) {
+        /* Out along the tangent and back, once. */
+        var u = Math.sin((p / KICK) * Math.PI) * m.kick;
+        x = m.x0 + m.tan.x * u;
+        y = m.y0 + m.tan.y * u;
+      } else {
+        var q = m.kick ? (p - KICK) / (1 - KICK) : p;
+        var e = m.back ? easeOutBack(q) : easeOut(q);
+        var inv = 1 - e;
+        x = inv * inv * m.x0 + 2 * inv * e * m.cx + e * e * m.x1;
+        y = inv * inv * m.y0 + 2 * inv * e * m.cy + e * e * m.y1;
+      }
+
+      put(m.el, x, y);
+      if (p < 1) live++;
+    }
+    if (live) { raf = window.requestAnimationFrame(frame); return; }
+    raf = 0;
+    moves = [];
+    /* Back on the circle and standing still: hand the wheel over. */
+    if (!atShelf) thaw();
+  }
+
+  /* ---- the switch --------------------------------------------------------
+
+     Pointer only, and only where a pointer can hover. On a touch screen there
+     is no away, so the card would sort itself once and stay sorted, which is
+     the wrong half of the idea.  */
+  var canHover = !window.matchMedia || matchMedia('(hover: hover)').matches;
+
+  function toShelves() {
+    if (atShelf || !open) return;
+    atShelf = true;
+    freeze();
+    card.classList.add('is-sorted');
+    plan(true);
+  }
+
+  function toRing() {
+    if (!atShelf) return;
+    atShelf = false;
+    card.classList.remove('is-sorted');
+    plan(false);
+  }
+
+  if (canHover) {
+    card.addEventListener('pointerenter', toShelves);
+    card.addEventListener('pointerleave', toRing);
+  }
+
+  /* A window that changes size while the shelves are up has moved the lines
+     out from under the marks. Re-place them where they now belong, without a
+     performance: this is a correction, not an entrance. */
+  function replace() {
+    if (!atShelf) return;
+    var targets = shelfTargets();
+    for (var i = 0; i < seats.length; i++) {
+      var name = nameOf[i];
+      var d = (name && targets[name]) ? targets[name] : onCircle(i, heldAngle);
+      put(seats[i], d.x, d.y);
+    }
   }
 
   var coreAt = 0, coreTimer = null;
 
   function coreTick() {
-    /* Nothing to read while the card is counting or the ring is down. The
-       clock keeps its place rather than resetting, so the phrase that comes
-       back is the next one rather than the first one again. */
-    if (!open) { coreTimer = setTimeout(coreTick, CORE_HOLD); return; }
+    /* Nothing to read while the card is counting, the ring is down, or the
+       shelves are up — the phrases are the shelf labels then, all three at
+       once, and a fourth copy of one of them turning over in the middle is
+       the card arguing with itself. The clock keeps its place rather than
+       resetting, so the phrase that comes back is the next one. */
+    if (!open || atShelf) { coreTimer = setTimeout(coreTick, CORE_HOLD); return; }
     coreWord.classList.add('is-out');
-    /* The wires leave with the phrase they belong to. They are the same
-       statement — one half of it in type and the other half pointing at the
-       marks — so a set of lines that outlived its own words would be pointing
-       at the wrong thing for four hundred milliseconds. */
-    wireG.classList.add('is-out');
     setTimeout(function () {
       coreAt = (coreAt + 1) % CORE.length;
       coreWord.textContent = CORE[coreAt].t;
@@ -36808,15 +36996,9 @@ window.PF = window.PF || {};
          crossfade between three unrelated ones. */
       coreWord.classList.add('is-under');
       coreWord.classList.remove('is-out');
-      /* One frame with the new word parked below before it is let go. */
       window.requestAnimationFrame(function () {
         window.requestAnimationFrame(function () {
           coreWord.classList.remove('is-under');
-          /* The phrase's box is a different width now, and the wires start at
-             its edge — so they are rebuilt against the new one rather than the
-             one that has just left. */
-          setWires(coreAt);
-          flashWires();
         });
       });
       coreTimer = setTimeout(coreTick, CORE_HOLD);
@@ -36835,9 +37017,9 @@ window.PF = window.PF || {};
     if (!w) return;
     card.style.setProperty('--tools-square', Math.round(w) + 'px');
     card.style.setProperty('--tools-r', Math.round(w * 0.33) + 'px');
-    /* The wires are drawn in the orbit's own pixels, so every number they use
-       came out of a box that has just changed size. */
-    measureWires();
+    /* If the shelves are up, the lines have just moved out from under the
+       marks sitting on them. */
+    replace();
   }
 
   measure();
@@ -36869,14 +37051,12 @@ window.PF = window.PF || {};
     /* Nothing is going past while the ring is up; nothing turns while the rail
        is. One animation at a time, always. */
     rail.toggleAttribute('data-paused', open);
-    /* And nothing is traced while there is nothing to trace: the wires follow
-       the ring, so their frame loop lives and dies with it. */
-    if (open) { measureWires(); runWires(); }
+    /* A card that closes while its shelves are up has to put the marks back,
+       or it reopens sorted with nothing to have sorted them. */
+    if (!open && atShelf) { atShelf = false; card.classList.remove('is-sorted'); thaw(); }
   };
 
   set(true);
-  setWires(0);
-  flashWires();
   }
 
   /* ---- one discipline counts instead ------------------------------------
