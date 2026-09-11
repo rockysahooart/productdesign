@@ -8729,24 +8729,23 @@ em,
   color: var(--ink-muted);
 }
 
+/* THE SHELF IS NOT DRAWN ANY MORE.
+
+   It was a hairline under each row, drawn left to right as the marks landed.
+   Three rules across a card whose only other content is ten logos and three
+   labels turned out to be two too many horizontal lines: the label already
+   groups its row, and the rule was decorating a relationship the spacing had
+   already made.
+
+   The element stays. It is what the layout measures to place the marks —
+   it is pinned to the bottom of each shelf and its box is the row's baseline
+   — so it still has a job; it just has no paint. */
 .tools__shelf-line {
   position: absolute;
   inset-inline: 0;
   inset-block-end: 0;
   height: 1px;
-  background: var(--border);
-  /* It draws rather than appears — left to right, the way a shelf is put up.
-     Two hundred milliseconds apart down the card so three lines read as three
-     decisions. */
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform 420ms cubic-bezier(0.22, 0.68, 0.24, 1);
 }
-
-.hero__tools.is-sorted .tools__shelf-line { transform: scaleX(1); }
-.hero__tools.is-sorted .tools__shelf:nth-child(1) .tools__shelf-line { transition-delay: 90ms; }
-.hero__tools.is-sorted .tools__shelf:nth-child(2) .tools__shelf-line { transition-delay: 170ms; }
-.hero__tools.is-sorted .tools__shelf:nth-child(3) .tools__shelf-line { transition-delay: 230ms; }
 
 /* The phrase in the middle steps aside for them: the same three words are the
    shelf labels now, and one of them turning over in the centre while all
@@ -8762,7 +8761,6 @@ em,
 .tools__seat { transition: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .tools__shelf-line { transition: none; transform: scaleX(1); }
   .tools__shelves { transition: none; }
 }
 
@@ -18147,6 +18145,577 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 }
 #audit .au-seq__p em { font-style: normal; color: var(--ink); font-size: 14px; line-height: 1; }
 #audit .au-seq__w { margin: 0; line-height: 1.5; color: var(--ink-secondary); }
+
+/* ==========================================================================
+   THE BEFORE / AFTER PROTOTYPE
+
+   A provider signs into this to work a queue. So it is drawn as an internal
+   clinical tool: an application bar, four workflow tabs, a work queue with
+   persistent headers, compact rows, row-level controls. Not a dashboard, no
+   tiles, no hero, no illustration.
+
+   TWO GENERATIONS OF ONE PRODUCT. The before mode is an internal tool that
+   accumulated its patterns over years: smaller type, a full cell grid, square
+   controls, a conventional blue link, three different action treatments in
+   four rows. The after mode is the same tool with the audited system applied:
+   the same navigation, the same records, the same density, and the newer
+   typography, hairlines, semantic statuses and action hierarchy. Both are
+   utilitarian. Neither is a parody of the other.
+
+   Everything below the prototype is untouched by this block: it is scoped to
+   .ap, it defines its own type and colour, and it uses none of the case
+   study's own component classes.
+   ========================================================================== */
+
+#audit .ap {
+  /* The wide column, which is the one the case study's own artifacts use.
+     The after queue carries seven columns; at the reading measure the Next
+     step column — the one the task needs — falls off the end. */
+  grid-column: wide;
+
+  --ap-line: #D3D8DE;
+  --ap-line-2: #E4E8ED;
+  --ap-head: #EDF0F3;
+  --ap-paper: #FFFFFF;
+  --ap-ink: #1C2430;
+  --ap-ink-2: #5A6674;
+  --ap-link: #1B5FA8;
+
+  margin-block-end: clamp(36px, 3.6vw, 56px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+/* --- the instruction and the control -------------------------------------- */
+
+#audit .ap__bar {
+  display: grid;
+  gap: 5px;
+  padding: 14px 16px;
+  border-block-end: 1px solid var(--border);
+}
+#audit .ap__t { margin: 0; font-weight: 640; color: var(--ink); }
+#audit .ap__s { margin: 0; color: var(--ink-secondary); }
+
+/* --- the application ------------------------------------------------------ */
+
+/* Its own surface and its own ink, because it is a screenshot of a product
+   rather than a part of this page. It does not follow the portfolio's theme:
+   a clinical tool is white in both. */
+#audit .ap__app {
+  position: relative;
+  /* The cursor is placed in percentages of this box, so the direction of a
+     movement is the same at every width. */
+  container-type: size;
+  background: var(--ap-paper);
+  color: var(--ap-ink);
+  font-family: var(--font-sans);
+  /* A fixed frame, so the timeline does not change the height of the page as
+     it plays: a player that resizes while it runs is a player nobody can
+     scrub. */
+  /* Tall enough for the tallest frame in the run — the updated system's
+     detail panel — so nothing is ever clipped and the module never changes
+     height while it plays. */
+  height: 412px;
+  overflow: hidden;
+}
+
+#audit .ap__chrome {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 14px;
+  border-block-end: 1px solid var(--ap-line);
+  background: var(--ap-head);
+}
+#audit .ap__app-n {
+  margin: 0;
+  padding-block: 9px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  color: var(--ap-ink);
+  white-space: nowrap;
+}
+#audit .ap__nav { list-style: none; display: flex; margin: 0; padding: 0; gap: 0; }
+#audit .ap__nav li { margin: 0; }
+#audit .ap__nav button {
+  padding: 9px 12px;
+  border: 0;
+  border-block-end: 2px solid transparent;
+  background: none;
+  color: var(--ap-ink-2);
+  font: inherit;
+  font-size: 12.5px;
+  cursor: default;
+}
+#audit .ap__nav button[aria-current] {
+  color: var(--ap-ink);
+  font-weight: 600;
+  border-block-end-color: var(--ap-link);
+}
+#audit .ap__user {
+  margin: 0 0 0 auto;
+  font-size: 12px;
+  color: var(--ap-ink-2);
+  white-space: nowrap;
+}
+
+#audit .ap__stage { height: calc(100% - 34px); overflow: hidden; }
+/* The one transition in the piece: the cut between the two systems. */
+#audit .ap__stage.is-cut { animation: ap-cut 460ms ease both; }
+@keyframes ap-cut { from { opacity: 0; } to { opacity: 1; } }
+
+#audit .ap__qh {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-block-end: 1px solid var(--ap-line);
+}
+#audit .ap__qt { margin: 0; font-size: 12.5px; font-weight: 700; }
+#audit .ap__qn { margin: 0; font-size: 12px; color: var(--ap-ink-2); }
+
+#audit .ap__scroll { overflow-x: auto; scrollbar-width: thin; }
+
+/* --- the queue ------------------------------------------------------------ */
+
+#audit .ap__tbl {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+#audit .ap__tbl th {
+  padding: 7px 12px;
+  border-block-end: 1px solid var(--ap-line);
+  background: var(--ap-head);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ap-ink-2);
+  text-align: start;
+  white-space: nowrap;
+}
+#audit .ap__tbl td {
+  padding: 8px 12px;
+  border-block-end: 1px solid var(--ap-line-2);
+  vertical-align: middle;
+  color: var(--ap-ink);
+}
+
+/* --- status ---------------------------------------------------------------- */
+
+#audit .ap__st {
+  display: inline-block;
+  font-weight: 600;
+  white-space: nowrap;
+}
+#audit .ap__st[data-t="flat"]     { color: var(--ap-ink-2); }
+#audit .ap__st[data-t="provider"] { color: #9A5B06; }
+#audit .ap__st[data-t="review"]   { color: #5B4AD4; }
+#audit .ap__st[data-t="error"]    { color: #A8322A; }
+#audit .ap__st[data-t="lab"]      { color: #1F5F8B; }
+
+/* --- actions --------------------------------------------------------------- */
+
+#audit .ap__a {
+  display: inline-block;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+#audit button.ap__a { cursor: pointer; }
+#audit .ap__a[aria-disabled="true"] { color: var(--ap-ink-2); }
+
+/* ==========================================================================
+   BEFORE — the tool as audited
+
+   Small type, a full cell grid, square controls, one conventional blue link,
+   and four rows that each solve "how does the user act on this" a different
+   way. The problems are the documented ones. Nothing here is broken on
+   purpose.
+   ========================================================================== */
+
+#audit .ap[data-mode="before"] .ap__tbl { font-size: 12px; }
+#audit .ap[data-mode="before"] .ap__tbl th,
+#audit .ap[data-mode="before"] .ap__tbl td {
+  padding: 6px 10px;
+  /* The full grid a table of this generation would have drawn. */
+  border: 1px solid var(--ap-line-2);
+}
+#audit .ap[data-mode="before"] .ap__tbl th { border-color: var(--ap-line); }
+
+/* A status with no badge: this generation coloured the word and stopped. */
+#audit .ap[data-mode="before"] .ap__st { font-size: 12px; }
+
+#audit .ap[data-mode="before"] .ap__a[data-k="ghost"] {
+  padding: 3px 9px;
+  border: 1px solid #A9B2BC;
+  border-radius: 2px;
+  background: linear-gradient(var(--ap-paper), #F1F3F6);
+  color: var(--ap-ink);
+  font-weight: 400;
+}
+#audit .ap[data-mode="before"] .ap__a[data-k="link"] {
+  color: var(--ap-link);
+  font-weight: 400;
+  text-decoration: underline;
+}
+#audit .ap[data-mode="before"] .ap__a[data-k="menu"] {
+  padding: 2px 8px;
+  border: 1px solid #A9B2BC;
+  border-radius: 2px;
+  background: var(--ap-paper);
+  color: var(--ap-ink-2);
+  letter-spacing: 0.08em;
+}
+
+/* ==========================================================================
+   AFTER — the same tool with the audited system applied
+
+   Same navigation, same records, same density. What changes is what the
+   audit changed: the status becomes a badge with a label that names an
+   owner, the row carries Required action, Owner and Due, and the next step
+   is a ranked control.
+   ========================================================================== */
+
+#audit .ap[data-mode="after"] .ap__tbl {
+  /* Seven columns, and the last one is the control the task presses. */
+  min-width: 780px;
+}
+#audit .ap[data-mode="after"] .ap__tbl th,
+#audit .ap[data-mode="after"] .ap__tbl td {
+  border-inline: 0;
+  border-block-start: 0;
+  padding-inline: 10px;
+}
+#audit .ap[data-mode="after"] .ap__st {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+}
+#audit .ap[data-mode="after"] .ap__st[data-t="provider"] { background: #FBF0DE; }
+#audit .ap[data-mode="after"] .ap__st[data-t="review"]   { background: #EDEAFC; }
+#audit .ap[data-mode="after"] .ap__st[data-t="error"]    { background: #FAE6E4; }
+#audit .ap[data-mode="after"] .ap__st[data-t="lab"]      { background: #E3EFF7; }
+
+#audit .ap[data-mode="after"] .ap__a[data-k="provider"],
+#audit .ap[data-mode="after"] .ap__a[data-k="review"],
+#audit .ap[data-mode="after"] .ap__a[data-k="recovery"],
+#audit .ap[data-mode="after"] .ap__a[data-k="complete"],
+#audit .ap[data-mode="after"] .ap__a[data-k="info"],
+#audit .ap[data-mode="after"] .ap__a[data-k="ghost"] {
+  padding: 4px 11px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: #FFF;
+}
+#audit .ap[data-mode="after"] .ap__a[data-k="provider"] { background: #1B5FA8; }
+#audit .ap[data-mode="after"] .ap__a[data-k="review"]   { background: #5B3D90; }
+#audit .ap[data-mode="after"] .ap__a[data-k="recovery"] { background: #B91C1C; }
+#audit .ap[data-mode="after"] .ap__a[data-k="complete"] { background: #1A7A45; }
+#audit .ap[data-mode="after"] .ap__a[data-k="info"],
+#audit .ap[data-mode="after"] .ap__a[data-k="ghost"] {
+  background: var(--ap-paper);
+  border-color: #A9B2BC;
+  color: var(--ap-ink);
+}
+
+/* --- the overflow menu, before only ---------------------------------------- */
+
+#audit .ap__menu {
+  margin: -1px 14px 14px auto;
+  max-width: 176px;
+  border: 1px solid #A9B2BC;
+  background: var(--ap-paper);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+#audit .ap__menu ul { list-style: none; margin: 0; padding: 0; }
+#audit .ap__menu li { margin: 0; }
+#audit .ap__mi {
+  display: block;
+  width: 100%;
+  padding: 6px 11px;
+  border: 0;
+  background: none;
+  color: var(--ap-ink);
+  font: inherit;
+  font-size: 12px;
+  text-align: start;
+  cursor: pointer;
+}
+#audit .ap__mi:hover { background: #E8EDF2; }
+
+/* --- the detail panel ------------------------------------------------------- */
+
+#audit .ap__panel { display: grid; }
+#audit .ap__p-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 14px;
+  border-block-end: 1px solid var(--ap-line);
+  background: var(--ap-head);
+}
+#audit .ap__p-t { margin: 0; font-size: 12.5px; font-weight: 700; }
+#audit .ap__x {
+  border: 0; background: none; color: var(--ap-ink-2);
+  font: inherit; font-size: 16px; line-height: 1; padding: 0 4px; cursor: pointer;
+}
+
+#audit .ap__p-b { display: grid; gap: 8px; padding: 14px; }
+#audit .ap__p-s { margin: 0; }
+#audit .ap__p-c { margin: 0; font-size: 13px; font-weight: 700; color: #A8322A; }
+#audit .ap__p-m { margin: 0; font-size: 12.5px; color: var(--ap-ink-2); }
+#audit .ap__p-l {
+  margin: 6px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ap-ink-2);
+}
+
+#audit .ap__fs { display: grid; border: 1px solid var(--ap-line-2); }
+#audit .ap__f {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 7px 11px;
+  font-size: 12.5px;
+}
+#audit .ap__f + .ap__f { border-block-start: 1px solid var(--ap-line-2); }
+#audit .ap__f span { color: var(--ap-ink-2); }
+#audit .ap__f b { font-weight: 600; }
+
+/* BEFORE: the empty field is not marked. Finding it is the task. */
+#audit .ap[data-mode="before"] .ap__f[data-empty] { cursor: pointer; }
+#audit .ap[data-mode="before"] .ap__f[data-empty] b { color: var(--ap-ink-2); font-weight: 400; }
+#audit .ap[data-mode="before"] .ap__f[data-empty]:hover { background: #F2F5F8; }
+
+/* AFTER: the same field, marked. */
+#audit .ap__f[data-need] { background: #FDF0F0; }
+#audit .ap__f[data-need] span { color: #A8322A; }
+#audit .ap__f[data-need] i {
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+#audit .ap__p-f {
+  display: flex;
+  gap: 10px;
+  padding: 11px 14px;
+  border-block-start: 1px solid var(--ap-line);
+  background: #F7F9FB;
+}
+
+/* --- resolved ---------------------------------------------------------------- */
+
+/* The confirmation the product would show above the queue it returns you to. */
+#audit .ap__note {
+  margin: 0;
+  padding: 8px 14px;
+  border-block-end: 1px solid var(--ap-line);
+  background: #E6F8EE;
+  color: #1A7A45;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+#audit .ap__foot {
+  margin: 0;
+  padding: 10px 16px;
+  border-block-start: 1px solid var(--border);
+  min-height: 1.2em;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+/* Focus is visible on everything that takes it — one of the audit's own
+   accessibility rules, so the prototype had better keep it. */
+#audit .ap button:focus-visible,
+#audit .ap [role="button"]:focus-visible {
+  outline: 2px solid var(--ap-link);
+  outline-offset: 1px;
+}
+
+@media (max-width: 559px) {
+  #audit .ap__chrome { gap: 10px; padding-inline: 10px; }
+  #audit .ap__user { display: none; }
+  #audit .ap__nav button { padding-inline: 8px; }
+}
+
+/* --------------------------------------------------------------------------
+   THE CURSOR, THE PHASE MARK, AND THE PLAYER
+
+   The cursor is a pointer, not a dot with a glow. It moves on a transform,
+   the press is a ring that fades out of the click, and nothing else in the
+   frame animates unless the workflow moved it.
+   -------------------------------------------------------------------------- */
+
+#audit .ap__cur {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: 12px;
+  height: 18px;
+  pointer-events: none;
+  z-index: 4;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+}
+#audit .ap__cur svg { width: 100%; height: 100%; display: block; }
+#audit .ap__cur path { fill: #14181D; stroke: #FFF; stroke-width: 1.1; }
+
+/* The press: a ring at the tip, at its widest on the frame of the click. */
+#audit .ap__cur::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -6px;
+  inset-inline-start: -6px;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #14181D;
+  border-radius: 50%;
+  opacity: calc(var(--ap-press, 0) * 0.7);
+  transform: scale(calc(0.5 + (1 - var(--ap-press, 0)) * 0.9));
+}
+
+/* Which system is on screen. It sits in the corner of the application rather
+   than over the middle of it, and it is a label rather than a caption. */
+#audit .ap__phase {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-end: 12px;
+  z-index: 5;
+  padding: 2px 9px;
+  border-radius: 3px;
+  background: rgba(20, 24, 29, 0.86);
+  color: #FFF;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#audit .ap__player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-block-start: 1px solid var(--border);
+}
+
+#audit .ap__pp {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+#audit .ap__pp-i { width: 13px; height: 13px; fill: currentColor; }
+#audit .ap__pp-pause { display: none; }
+#audit .ap[data-playing="1"] .ap__pp-play { display: none; }
+#audit .ap[data-playing="1"] .ap__pp-pause { display: block; }
+
+/* A range input, because it drags, it takes the keyboard, and it announces
+   itself — three things a div with a pointer handler would have had to be
+   taught one at a time. */
+#audit .ap__seek {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 18px;
+  margin: 0;
+  background: none;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+}
+#audit .ap__seek::-webkit-slider-runnable-track {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border-strong);
+}
+#audit .ap__seek::-moz-range-track {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border-strong);
+}
+#audit .ap__seek::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 11px;
+  height: 11px;
+  margin-top: -4px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ink);
+}
+#audit .ap__seek::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--ink);
+}
+#audit .ap__seek:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+#audit .ap__time {
+  flex: none;
+  margin: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-muted);
+}
+
+/* --------------------------------------------------------------------------
+   THE ROW UNDER THE CURSOR
+
+   Hover and selection are what carry the search in the legacy half: the
+   cursor moves down the status column and each row answers. Both are the
+   states the product already had.
+   -------------------------------------------------------------------------- */
+
+#audit .ap__tbl tr[data-hov] td { background: #F1F5F9; }
+#audit .ap__tbl tr[data-sel] td { background: #E6EEF6; }
+#audit .ap[data-mode="before"] .ap__tbl tr[data-sel] td { background: #E8EDF2; }
+
+#audit .ap__a[data-hot] { filter: brightness(0.95); }
+#audit .ap[data-mode="before"] .ap__a[data-hot][data-k="menu"] { border-color: #6D7885; }
+#audit .ap__mi[data-hot] { background: #E8EDF2; }
+
+/* Nothing in the frame is a control: it is a recording. */
+#audit .ap__app .ap__a,
+#audit .ap__app .ap__mi,
+#audit .ap__app .ap__x { cursor: default; user-select: none; }
+#audit .ap__nav button { pointer-events: none; }
+
+/* The updated system's panel is at its tallest in the middle of the range,
+   where the required-action line wraps but the column is still wide. */
+@media (max-width: 899px) {
+  #audit .ap__app { height: 440px; }
+}
+@media (max-width: 559px) {
+  #audit .ap__app { height: 436px; }
+  #audit .ap__player { padding-inline: 12px; }
+  #audit .ap__bar { padding-inline: 14px; }
+}
 
 
 /* ===== css/06-responsive.css ===== */
@@ -28733,6 +29302,47 @@ em,
       </div>
     </div>
 
+    
+    <section class="ap" data-audit-proto data-mode="before" aria-labelledby="ap-t">
+      <div class="ap__bar">
+        <p class="ap__t" id="ap-t">One task, before and after the system changes</p>
+        <p class="ap__s">The same submission issue, worked through the legacy system and
+          then the updated one.</p>
+      </div>
+
+      <div class="ap__app">
+        <div class="ap__chrome">
+          <p class="ap__app-n">Provider Portal</p>
+          <ul class="ap__nav">
+            <li><button type="button" tabindex="-1" aria-current="page">Orders</button></li>
+            <li><button type="button" tabindex="-1">Specimens</button></li>
+            <li><button type="button" tabindex="-1">Results</button></li>
+            <li><button type="button" tabindex="-1">Tasks</button></li>
+          </ul>
+          <p class="ap__user">A. Smith</p>
+        </div>
+        <div class="ap__stage" data-ap-stage aria-hidden="true"></div>
+        <span class="ap__cur" data-ap-cursor aria-hidden="true">
+          <svg viewBox="0 0 12 18" focusable="false"><path d="M1 1l9.2 7.3-4.1.5 2.4 5-2.1.9-2.3-5-3.1 2.7z"/></svg>
+        </span>
+        <span class="ap__phase" data-ap-phase aria-hidden="true">Before</span>
+      </div>
+
+      <div class="ap__player">
+        <button class="ap__pp" type="button" data-ap-play aria-label="Play">
+          <svg class="ap__pp-i" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+            <path class="ap__pp-play" d="M4 2.6l9 5.4-9 5.4z"/>
+            <path class="ap__pp-pause" d="M4 3h3v10H4zM9 3h3v10H9z"/>
+          </svg>
+        </button>
+        <input class="ap__seek" type="range" min="0" max="1000" value="0" step="1"
+               data-ap-seek aria-label="Timeline">
+        <p class="ap__time"><span data-ap-now>0:00</span> / <span data-ap-dur>0:18</span></p>
+      </div>
+
+      <p class="visually-hidden" data-ap-sr aria-live="polite"></p>
+    </section>
+
     <header class="ar-mast cs-mast">
       <p class="ar-kicker">Case study</p>
       <h1 class="ar-title" id="au-title">Design System Audit</h1>
@@ -28756,6 +29366,7 @@ em,
           <li><span class="au-b" data-t="done">Complete</span><em aria-hidden="true">&rarr;</em><span class="au-b" data-t="done">Results delivered</span></li>
         </ul>
       </figure>
+
     </header>
 
 <div class="cs-wrap">
@@ -36874,6 +37485,426 @@ window.PF = window.PF || {};
   PF.initAudit = boot;
 
 })(window.PF);
+
+
+/* ===== js/audit-proto.js ===== */
+/* ==========================================================================
+   audit-proto.js — the animated demonstration above the audit case study
+
+   Eighteen seconds, one story: a provider resolves a submission issue. The
+   first half is the system as audited, the second half is the same system
+   with the audited changes applied. Same record, same missing field, same
+   fix, same navigation, same density.
+
+   WHAT IS DEMONSTRATED, and every item is documented in the case study below:
+
+     legacy    Status reads "Failed" and the row does not say what is
+               required. Four rows carry four different action treatments.
+               The recovery sits inside an overflow menu with three items
+               that are not it. The detail panel repeats the generic
+               submission message and the empty field is not marked.
+
+     updated   Status reads "Submission error". The row carries Required
+               action, Owner and Due. Resolve issue is a control in the row.
+               The panel names the missing field and each action label says
+               what it does.
+
+   EVERY FRAME IS COMPUTED FROM THE CLOCK. There is no queue of timeouts and
+   no animation that has to run to completion. stateAt(t) is a pure function
+   of time, so dragging the scrubber to 7.4s produces exactly the frame that
+   would have been on screen at 7.4s of playback — which is what makes the
+   timeline inspectable rather than decorative.
+
+   The DOM is rebuilt only when the discrete state changes — mode, view, the
+   row under the cursor, whether the field is filled. The cursor itself moves
+   every frame on a transform, which costs nothing.
+
+   SELF-CONTAINED. It reads and writes nothing outside its own section.
+   ========================================================================== */
+
+(function () {
+  'use strict';
+
+  var root = document.querySelector('[data-audit-proto]');
+  if (!root) return;
+
+  var stage = root.querySelector('[data-ap-stage]');
+  var cursor = root.querySelector('[data-ap-cursor]');
+  var phaseEl = root.querySelector('[data-ap-phase]');
+  var playBtn = root.querySelector('[data-ap-play]');
+  var seek = root.querySelector('[data-ap-seek]');
+  var nowEl = root.querySelector('[data-ap-now]');
+  var durEl = root.querySelector('[data-ap-dur]');
+  var srEl = root.querySelector('[data-ap-sr]');
+  if (!stage || !seek) return;
+
+  /* ----------------------------------------------------------------------
+     THE RECORDS. One row, two labellings.
+     ---------------------------------------------------------------------- */
+
+  var ROWS = [
+    { id: 'ORD-458732', who: 'John Doe', test: 'Signatera', upd: '2h ago', due: 'Today 11:00 AM',
+      before: { s: 'Pending', t: 'flat', a: 'Submit Order', k: 'ghost' },
+      after:  { s: 'Awaiting provider action', t: 'provider',
+                req: 'Confirm order details', a: 'Review order', k: 'provider' } },
+
+    { id: 'ORD-458733', who: 'Robert Brown', test: 'Signatera', upd: '4h ago', due: 'Today 2:00 PM',
+      before: { s: 'Review', t: 'provider', a: 'Open', k: 'link' },
+      after:  { s: 'Needs clinical review', t: 'review',
+                req: 'Review and sign off on result', a: 'Review result', k: 'review' } },
+
+    { id: 'ORD-458734', who: 'Robert Brown', test: 'Signatera', upd: '30m ago', due: 'Today 4:00 PM', issue: true,
+      before: { s: 'Failed', t: 'error', a: null, k: 'menu' },
+      after:  { s: 'Submission error', t: 'error',
+                req: 'Add specimen source to complete submission',
+                a: 'Resolve issue', k: 'recovery' } },
+
+    { id: 'SPEC-884522', who: 'Jane Smith', test: 'Blood specimen', upd: '1h ago', due: 'Updated 1h ago',
+      before: { s: 'In Progress', t: 'lab', a: 'Details', k: 'ghost' },
+      after:  { s: 'Lab review in progress', t: 'lab',
+                req: 'Track specimen progress', a: 'View details', k: 'info' } }
+  ];
+
+  var OWNER = { 'ORD-458732': 'A. Smith', 'ORD-458733': 'A. Smith',
+                'ORD-458734': 'A. Smith', 'SPEC-884522': 'Lab' };
+
+  var MENU = ['View details', 'Edit order', 'Resolve', 'Cancel order'];
+
+  /* ----------------------------------------------------------------------
+     THE TIMELINE
+
+     Times in seconds. Cursor positions are percentages of the application
+     window, so the direction of a movement survives every width.
+
+     The pauses are the point. A cursor that never stops reads as a machine
+     playing back a script; the holds at 2.2, 4.4, 6.6, 11.2 and 14.4 are
+     where a person would be reading, and they are longer than the moves
+     around them.
+     ---------------------------------------------------------------------- */
+
+  var KEY = [
+    /* --- the system as audited ------------------------------------------ */
+    { t: 0.0,  m: 'before', v: 'list',  x: 14, y: 90 },
+    { t: 1.0,  m: 'before', v: 'list',  x: 60, y: 32, hov: 0 },
+    { t: 2.2,  m: 'before', v: 'list',  x: 60, y: 32, hov: 0 },         /* reading */
+    { t: 2.9,  m: 'before', v: 'list',  x: 60, y: 40, hov: 1 },
+    { t: 3.7,  m: 'before', v: 'list',  x: 60, y: 48, hov: 2 },
+    { t: 4.4,  m: 'before', v: 'list',  x: 60, y: 48, hov: 2, sel: 2 }, /* reading */
+    { t: 5.4,  m: 'before', v: 'list',  x: 83, y: 48, hov: 2, sel: 2 },
+    { t: 6.0,  m: 'before', v: 'list',  x: 83, y: 48, hov: 2, sel: 2, press: 1 },
+    { t: 6.2,  m: 'before', v: 'menu',  x: 83, y: 48, sel: 2 },
+    { t: 6.7,  m: 'before', v: 'menu',  x: 83, y: 48, sel: 2 },         /* reading */
+    { t: 7.4,  m: 'before', v: 'menu',  x: 88, y: 65, sel: 2, mi: 0 },
+    { t: 7.9,  m: 'before', v: 'menu',  x: 88, y: 72, sel: 2, mi: 1 },
+    { t: 8.5,  m: 'before', v: 'menu',  x: 88, y: 80, sel: 2, mi: 2 },
+    { t: 9.0,  m: 'before', v: 'menu',  x: 88, y: 80, sel: 2, mi: 2, press: 1 },
+    { t: 9.2,  m: 'before', v: 'panel', x: 88, y: 80 },
+    { t: 10.1, m: 'before', v: 'panel', x: 50, y: 74 },                 /* reading */
+
+    /* --- the same task, updated system ---------------------------------- */
+    { t: 10.7, m: 'after',  v: 'list',  x: 50, y: 74, cut: 1 },
+    { t: 11.9, m: 'after',  v: 'list',  x: 45, y: 61, hov: 2, sel: 2 }, /* reading */
+    { t: 12.7, m: 'after',  v: 'list',  x: 93, y: 61, hov: 2, sel: 2 },
+    { t: 13.2, m: 'after',  v: 'list',  x: 93, y: 61, hov: 2, sel: 2, press: 1 },
+    { t: 13.4, m: 'after',  v: 'panel', x: 93, y: 61 },
+    { t: 14.5, m: 'after',  v: 'panel', x: 50, y: 81 },                 /* reading */
+    { t: 15.2, m: 'after',  v: 'panel', x: 10, y: 94 },
+    { t: 15.6, m: 'after',  v: 'panel', x: 10, y: 94, press: 1 },
+    { t: 15.8, m: 'after',  v: 'panel', x: 10, y: 94, fill: 1 },
+    { t: 16.6, m: 'after',  v: 'panel', x: 13, y: 94, fill: 1 },
+    { t: 17.0, m: 'after',  v: 'panel', x: 13, y: 94, fill: 1, press: 1 },
+    { t: 17.2, m: 'after',  v: 'done',  x: 13, y: 94 },
+    { t: 18.0, m: 'after',  v: 'done',  x: 13, y: 94 }
+  ];
+
+  var DUR = KEY[KEY.length - 1].t;
+
+  /* ----------------------------------------------------------------------
+     STATE AT A TIME
+     ---------------------------------------------------------------------- */
+
+  function ease(p) { return p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; }
+
+  function stateAt(t) {
+    if (t <= 0) t = 0;
+    if (t >= DUR) t = DUR;
+
+    var i = 0;
+    while (i < KEY.length - 1 && KEY[i + 1].t <= t) i++;
+    var a = KEY[i], b = KEY[Math.min(i + 1, KEY.length - 1)];
+
+    /* The discrete state is the frame that has started. */
+    var st = {
+      mode: a.m, view: a.v,
+      hov: a.hov === undefined ? -1 : a.hov,
+      sel: a.sel === undefined ? -1 : a.sel,
+      mi: a.mi === undefined ? -1 : a.mi,
+      fill: !!a.fill,
+      cut: !!a.cut,
+      x: a.x, y: a.y, press: 0
+    };
+
+    /* Once the field is filled it stays filled for the rest of the run. */
+    for (var k = 0; k <= i; k++) if (KEY[k].fill) st.fill = true;
+
+    if (b !== a && b.t > a.t) {
+      var p = ease((t - a.t) / (b.t - a.t));
+      st.x = a.x + (b.x - a.x) * p;
+      st.y = a.y + (b.y - a.y) * p;
+    }
+
+    /* A press is a short pulse at the keyframe that carries it. */
+    for (k = 0; k < KEY.length; k++) {
+      if (KEY[k].press && t >= KEY[k].t && t < KEY[k].t + 0.26) {
+        st.press = 1 - (t - KEY[k].t) / 0.26;
+      }
+    }
+    return st;
+  }
+
+  /* ----------------------------------------------------------------------
+     RENDER
+     ---------------------------------------------------------------------- */
+
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function badge(s, t) { return '<span class="ap__st" data-t="' + t + '">' + esc(s) + '</span>'; }
+  function actn(label, kind, hot) {
+    return '<span class="ap__a" data-k="' + kind + '"' + (hot ? ' data-hot' : '') + '>' + esc(label) + '</span>';
+  }
+
+  function table(st) {
+    /* The end of the run puts the record back in the queue, resolved. A
+       confirmation on an empty screen is a message about the system; the
+       queue with the row changed is the result of the work. */
+    var head = st.mode === 'after'
+      ? '<tr><th>Order</th><th>Patient</th><th>Status</th><th>Required action</th><th>Owner</th><th>Due</th><th>Next step</th></tr>'
+      : '<tr><th>Order</th><th>Patient</th><th>Test</th><th>Status</th><th>Updated</th><th>Action</th></tr>';
+
+    var body = '';
+    for (var i = 0; i < ROWS.length; i++) {
+      var r = ROWS[i], m = r[st.mode], cells;
+      var hot = st.hov === i;
+      if (st.resolved && r.issue) {
+        m = { s: 'Awaiting provider action', t: 'provider',
+              req: 'Confirm order details', a: 'Review order', k: 'provider' };
+      }
+
+      if (st.mode === 'after') {
+        cells = '<td>' + esc(r.id) + '</td><td>' + esc(r.who) + '</td>' +
+                '<td>' + badge(m.s, m.t) + '</td>' +
+                '<td>' + esc(m.req) + '</td>' +
+                '<td>' + esc(OWNER[r.id]) + '</td>' +
+                '<td>' + esc(r.due) + '</td>' +
+                '<td>' + actn(m.a, m.k, hot && r.issue) + '</td>';
+      } else {
+        cells = '<td>' + esc(r.id) + '</td><td>' + esc(r.who) + '</td>' +
+                '<td>' + esc(r.test) + '</td>' +
+                '<td>' + badge(m.s, m.t) + '</td>' +
+                '<td>' + esc(r.upd) + '</td>' +
+                '<td>' + (r.issue
+                  ? '<span class="ap__a" data-k="menu"' + (hot ? ' data-hot' : '') + '>&hellip;</span>'
+                  : actn(m.a, m.k, 0)) + '</td>';
+      }
+
+      body += '<tr' + (r.issue ? ' data-issue' : '') +
+              (st.sel === i ? ' data-sel' : '') +
+              (hot ? ' data-hov' : '') + '>' + cells + '</tr>';
+    }
+
+    return '<div class="ap__qh"><p class="ap__qt">Work queue</p><p class="ap__qn">4 items</p></div>' +
+           '<div class="ap__scroll"><table class="ap__tbl"><thead>' + head +
+           '</thead><tbody>' + body + '</tbody></table></div>';
+  }
+
+  function menu(st) {
+    var items = '';
+    for (var i = 0; i < MENU.length; i++) {
+      items += '<li><span class="ap__mi"' + (st.mi === i ? ' data-hot' : '') + '>' +
+               esc(MENU[i]) + '</span></li>';
+    }
+    return '<div class="ap__menu"><ul>' + items + '</ul></div>';
+  }
+
+  function panel(st) {
+    var f = [
+      ['Patient', 'Robert Brown'],
+      ['Test', 'Signatera'],
+      ['Insurance', 'Verified'],
+      ['Specimen source', st.fill ? 'Whole blood' : null]
+    ];
+    var rows = '';
+    for (var i = 0; i < f.length; i++) {
+      var empty = !f[i][1];
+      rows += '<div class="ap__f"' + (empty ? ' data-empty' : '') +
+              (empty && st.mode === 'after' ? ' data-need' : '') + '>' +
+              '<span>' + esc(f[i][0]) + (empty && st.mode === 'after' ? ' <i>Required</i>' : '') + '</span>' +
+              '<b>' + (f[i][1] ? esc(f[i][1]) : '&mdash;') + '</b></div>';
+    }
+
+    var head, action;
+    if (st.mode === 'after') {
+      head = '<p class="ap__p-s">' + badge('Submission error', 'error') + '</p>' +
+             '<p class="ap__p-c">Missing specimen source</p>' +
+             '<p class="ap__p-m">Add specimen source to complete submission.</p>';
+      action = st.fill
+        ? actn('Complete submission', 'complete', 1)
+        : actn('Add specimen source', 'recovery', 1);
+    } else {
+      head = '<p class="ap__p-s">' + badge('Failed', 'error') + '</p>' +
+             '<p class="ap__p-m">Submission failed. Please check order details.</p>';
+      action = actn('Save', 'ghost', 0);
+    }
+
+    return '<div class="ap__panel">' +
+             '<div class="ap__p-h"><p class="ap__p-t">Order ORD-458734</p>' +
+               '<span class="ap__x">&times;</span></div>' +
+             '<div class="ap__p-b">' + head +
+               '<p class="ap__p-l">Order details</p>' +
+               '<div class="ap__fs">' + rows + '</div></div>' +
+             '<div class="ap__p-f">' + action + '</div>' +
+           '</div>';
+  }
+
+  function done(st) {
+    return '<p class="ap__note">ORD-458734 submitted. Specimen source added.</p>' +
+           table({ mode: 'after', view: 'list', hov: -1, sel: 2, resolved: true });
+  }
+
+  var lastKey = '';
+
+  function paint(st) {
+    var key = st.mode + '|' + st.view + '|' + st.hov + '|' + st.sel + '|' + st.mi + '|' + (st.fill ? 1 : 0);
+    if (key !== lastKey) {
+      lastKey = key;
+      var html;
+      if (st.view === 'done') html = done(st);
+      else if (st.view === 'panel') html = panel(st);
+      else html = table(st) + (st.view === 'menu' ? menu(st) : '');
+      stage.innerHTML = html;
+      root.setAttribute('data-mode', st.mode);
+      if (phaseEl) phaseEl.textContent = st.mode === 'after' ? 'After' : 'Before';
+      if (st.cut) { stage.classList.remove('is-cut'); void stage.offsetWidth; stage.classList.add('is-cut'); }
+    }
+    if (cursor) {
+      cursor.style.transform = 'translate(' + st.x.toFixed(2) + 'cqw,' + st.y.toFixed(2) + 'cqh)';
+      cursor.style.setProperty('--ap-press', st.press.toFixed(3));
+    }
+  }
+
+  /* ----------------------------------------------------------------------
+     THE PLAYER
+     ---------------------------------------------------------------------- */
+
+  var t = 0, playing = false, raf = 0, last = 0, scrubbing = false;
+
+  function clock() {
+    return (window.performance && performance.now) ? performance.now() : Date.now();
+  }
+  function fmt(s) {
+    s = Math.max(0, Math.round(s));
+    return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+  }
+
+  function sync() {
+    paint(stateAt(t));
+    if (!scrubbing) seek.value = String(Math.round((t / DUR) * 1000));
+    if (nowEl) nowEl.textContent = fmt(t);
+    root.setAttribute('data-playing', playing ? '1' : '0');
+    root.setAttribute('data-ended', t >= DUR ? '1' : '0');
+    if (playBtn) playBtn.setAttribute('aria-label', playing ? 'Pause' : (t >= DUR ? 'Replay' : 'Play'));
+  }
+
+  function frame() {
+    var n = clock();
+    t += (n - last) / 1000;
+    last = n;
+    if (t >= DUR) { t = DUR; playing = false; sync(); raf = 0; return; }
+    sync();
+    raf = window.requestAnimationFrame(frame);
+  }
+
+  function play() {
+    if (playing) return;
+    if (t >= DUR) t = 0;
+    playing = true;
+    last = clock();
+    if (!raf) raf = window.requestAnimationFrame(frame);
+    sync();
+  }
+  function pause() {
+    playing = false;
+    if (raf) { window.cancelAnimationFrame(raf); raf = 0; }
+    sync();
+  }
+
+  if (playBtn) {
+    playBtn.addEventListener('click', function () { playing ? pause() : play(); });
+  }
+
+  seek.addEventListener('input', function () {
+    scrubbing = true;
+    t = (parseInt(seek.value, 10) / 1000) * DUR;
+    if (playing) pause(); else sync();
+  });
+  seek.addEventListener('change', function () { scrubbing = false; });
+  ['pointerup', 'blur'].forEach(function (e) {
+    seek.addEventListener(e, function () { scrubbing = false; });
+  });
+
+  if (durEl) durEl.textContent = fmt(DUR);
+
+  /* It plays when it is on screen and stops when it is not. A demonstration
+     running behind the reader is work nobody asked for. */
+  var seen = false;
+
+  function inView() {
+    var r = root.getBoundingClientRect();
+    if (!r.height) return false;                 /* the route is not on screen */
+    var top = Math.max(r.top, 0), bot = Math.min(r.bottom, window.innerHeight);
+    return (bot - top) / r.height > 0.45;
+  }
+
+  function maybeStart() {
+    if (seen || playing || reduce()) return;
+    if (!inView()) return;
+    seen = true;
+    play();
+  }
+
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) {
+      if (es[0].isIntersecting) maybeStart();
+      else if (playing) pause();
+    }, { threshold: 0.45 }).observe(root);
+  }
+
+  /* THE OBSERVER IS NOT ENOUGH ON ITS OWN. This case study is a hidden
+     <main> until the router shows it, and a module inside a hidden ancestor
+     reports no intersection at all — so on a deep link to #/audit the first
+     record can be the only record, and it says nothing is on screen. These
+     are the second and third asks: once the document has finished, and once
+     the route has had a frame to settle. */
+  window.addEventListener('load', maybeStart);
+  window.addEventListener('hashchange', function () { setTimeout(maybeStart, 120); });
+  setTimeout(maybeStart, 400);
+
+  function reduce() {
+    return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  /* Somebody who has asked for less motion gets the first frame and a play
+     button, which is what a video would do. */
+  if (srEl) {
+    srEl.textContent = 'An eighteen second animation: one submission issue resolved in the ' +
+      'legacy provider portal and then in the updated one. The steps are described in the ' +
+      'sections below.';
+  }
+
+  sync();
+
+})();
 
 
 /* ===== js/projects.js ===== */
