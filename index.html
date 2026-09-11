@@ -5909,6 +5909,14 @@ em,
   color: var(--statement-em);
 }
 
+/* The other kind of emphasis in the thread: weight. One run uses it — the
+   half of the claim that is about people — and it keeps the line's face. */
+.msg__text b {
+  font-family: inherit;
+  font-weight: 700;
+  font-style: normal;
+}
+
 /* THE WORDS THAT ARRIVE OUT OF NOISE.
 
    A marked group is the word plus whatever punctuation it carries: it hides,
@@ -5930,9 +5938,19 @@ em,
 }
 .msg__text .sc.is-noise { transform: scale(1.17); }
 
+/* A RUN THAT IS NOT THE PERFORMANCE STILL HAS A BEAT.
+
+   Most of this sentence is not the machine's half, so most of it does not
+   come out of noise — it comes up out of nothing, one run at a time, on the
+   same clock. Opacity alone: the word is already boxed at the width and
+   height it will keep, so there is nothing here for the line to react to. */
+.msg__text .sc--plain.is-lit { animation: sc-lit 520ms cubic-bezier(.2, .7, .3, 1) both; }
+@keyframes sc-lit { from { opacity: 0; } to { opacity: 1; } }
+
 @media (prefers-reduced-motion: reduce) {
   .msg__text .sc { transition: none; }
   .msg__text .sc.is-noise { transform: none; }
+  .msg__text .sc--plain.is-lit { animation: none; }
 }
 
 /* --------------------------------------------------------------------------
@@ -6001,9 +6019,14 @@ em,
 }
 
 /* indigo → cobalt → violet */
+/* The two words the claim is actually made of. The drift used to be slow
+   enough that you had to stare at it to notice the colour was moving at all,
+   which is the worst of both — a paint that costs a layer and reads as flat.
+   At this speed it is visibly alive inside the letterforms while the sentence
+   is still being written. */
 .kw--craft {
   --kw-a: #3A34B8; --kw-b: #1F5AD1; --kw-c: #6D3BD6;
-  --kw-angle: 92deg; --kw-span: 240%; --kw-dur: 12s;
+  --kw-angle: 92deg; --kw-span: 240%; --kw-dur: 4.6s;
 }
 
 /* burgundy → plum → deep violet: the darkest, densest, slowest of the five */
@@ -6033,13 +6056,18 @@ em,
   --kw-angle: 97deg; --kw-span: 280%; --kw-dur: 11s;
 }
 
-/* THE NAME. It gets the whole palette rather than one corner of it — indigo
-   through plum to the saffron the greeting is set in — and it moves slower
-   than anything else in the thread, because it is a signature and not a
-   point being made. */
+/* THE NAME — A SUNSET.
+
+   It used to be the whole palette at its darkest: indigo through plum to a
+   burnt saffron, drifting so slowly it read as one muddy colour. A name is
+   the one word on the page allowed to be warm, so it is a sunset now —
+   violet at the top of the sky, rose through the middle, amber at the
+   horizon — and the ramp is wide enough and quick enough that the warm end
+   actually travels through the letters instead of sitting at one edge of
+   them. Every stop still clears 3:1 on the bubble in both themes. */
 .kw--name {
-  --kw-a: #2F2A6B; --kw-b: #5B2E6E; --kw-c: #8A4B2A;
-  --kw-angle: 100deg; --kw-span: 220%; --kw-dur: 16s;
+  --kw-a: #7A2A8F; --kw-b: #C03A5E; --kw-c: #D9631F;
+  --kw-angle: 96deg; --kw-span: 300%; --kw-dur: 6.5s;
 }
 
 /* Dark: the same five ramps lifted off a #303030 bubble. The order of value
@@ -6051,7 +6079,7 @@ em,
 [data-theme="dark"] .kw--simple   { --kw-a: #9FD9B4; --kw-b: #7FE3C4; --kw-c: #6FDAD6; }
 [data-theme="dark"] .kw--faster   { --kw-a: #FF8A7A; --kw-b: #FF7455; --kw-c: #FF8FB4; }
 [data-theme="dark"] .kw--clearer  { --kw-a: #7FC0EE; --kw-b: #6FD3E6; --kw-c: #6FDCCF; }
-[data-theme="dark"] .kw--name     { --kw-a: #A9A6FF; --kw-b: #C9A0E8; --kw-c: #E6A878; }
+[data-theme="dark"] .kw--name     { --kw-a: #C08CFF; --kw-b: #FF7FA3; --kw-c: #FFA65C; }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .kw--namaskar { --kw-a: #F7A64B; --kw-b: #FFC163; --kw-c: #F2CE72; }
@@ -6060,7 +6088,7 @@ em,
   :root:not([data-theme="light"]) .kw--simple   { --kw-a: #9FD9B4; --kw-b: #7FE3C4; --kw-c: #6FDAD6; }
   :root:not([data-theme="light"]) .kw--faster   { --kw-a: #FF8A7A; --kw-b: #FF7455; --kw-c: #FF8FB4; }
   :root:not([data-theme="light"]) .kw--clearer  { --kw-a: #7FC0EE; --kw-b: #6FD3E6; --kw-c: #6FDCCF; }
-  :root:not([data-theme="light"]) .kw--name     { --kw-a: #A9A6FF; --kw-b: #C9A0E8; --kw-c: #E6A878; }
+  :root:not([data-theme="light"]) .kw--name     { --kw-a: #C08CFF; --kw-b: #FF7FA3; --kw-c: #FFA65C; }
 }
 
 /* Reduced motion keeps the colour and drops the movement: the fill parks at
@@ -18190,10 +18218,24 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
 /* --- the instruction and the control -------------------------------------- */
 
+/* THREE BOXES, NOT ONE.
+
+   The module holds three different kinds of thing — a caption written for
+   this page, an application that belongs to somebody else's product, and a
+   control that belongs to neither — and until now all three ran to the same
+   outer edge, so they read as three bands of one surface. The spacing below
+   is the only thing that separates them: the caption and the player are
+   padded in from the card, and the application sits inside both with room
+   around it and a hairline of its own.
+
+   The application's own box is not resized by any of this. Its height is the
+   measured tallest frame and the cursor is placed in percentages of it, so
+   the inset is margin around that box rather than padding inside it. */
+
 #audit .ap__bar {
   display: grid;
   gap: 5px;
-  padding: 14px 16px;
+  padding: 16px 26px;
   border-block-end: 1px solid var(--border);
 }
 #audit .ap__t { margin: 0; font-weight: 640; color: var(--ink); }
@@ -18218,7 +18260,16 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   /* Tall enough for the tallest frame in the run — the updated system's
      detail panel — so nothing is ever clipped and the module never changes
      height while it plays. */
-  height: 412px;
+  /* 414 rather than 412: the hairline added below is inside the box, and
+     the stage underneath must keep the height it was measured at. */
+  height: 418px;
+  /* Set in from the card on all four sides, so the application reads as
+     something embedded in the page rather than another section of it. */
+  margin: 18px 26px;
+  /* A hairline and a small radius, which is all the containment needs: the
+     clinical system inside keeps its own square, dense character. */
+  border: 1px solid var(--ap-line);
+  border-radius: 6px;
   overflow: hidden;
 }
 
@@ -18226,7 +18277,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   display: flex;
   align-items: center;
   gap: 18px;
-  padding: 0 14px;
+  padding: 0 16px;
   border-block-end: 1px solid var(--ap-line);
   background: var(--ap-head);
 }
@@ -18273,7 +18324,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 11px 16px;
   border-block-end: 1px solid var(--ap-line);
 }
 #audit .ap__qt { margin: 0; font-size: 12.5px; font-weight: 700; }
@@ -18307,6 +18358,15 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   vertical-align: middle;
   color: var(--ap-ink);
 }
+
+/* The two columns that touch the stage's own edge get a little more room
+   against it. The density is between the columns, not at the ends of the
+   row, so this costs the queue nothing and stops the first word and the
+   last action from sitting on the boundary. */
+#audit .ap__tbl th:first-child,
+#audit .ap__tbl td:first-child { padding-inline-start: 16px; }
+#audit .ap__tbl th:last-child,
+#audit .ap__tbl td:last-child  { padding-inline-end: 16px; }
 
 /* --- status ---------------------------------------------------------------- */
 
@@ -18551,12 +18611,6 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   outline-offset: 1px;
 }
 
-@media (max-width: 559px) {
-  #audit .ap__chrome { gap: 10px; padding-inline: 10px; }
-  #audit .ap__user { display: none; }
-  #audit .ap__nav button { padding-inline: 8px; }
-}
-
 /* --------------------------------------------------------------------------
    THE CURSOR, THE PHASE MARK, AND THE PLAYER
 
@@ -18609,11 +18663,217 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   text-transform: uppercase;
 }
 
+/* --------------------------------------------------------------------------
+   THE CHAPTER CARDS
+
+   Two moments in the run are not the workflow: the frame it opens on and the
+   frame the updated system cuts in on. At each the timeline holds, the
+   application goes soft behind a veil, and one word arrives over it.
+
+   They are part of the timeline rather than a transition played on top of it,
+   which is the only reason scrubbing into one lands on the card rather than
+   sliding past it. js/audit-proto.js maps playback time to authored time with
+   the card windows inserted, and writes the level here as --ap-card: 0 → 1 →
+   0 across each window. Everything below reads that one number, so the card,
+   the blur, the veil and the corner label all move together and nothing needs
+   a second clock.
+
+   Restraint is the point: blur, type, opacity, timing. No gradient, no slide,
+   no flash. The word is large because it has to be read at a glance by
+   somebody scrolling, not because it is decorative.
+   -------------------------------------------------------------------------- */
+
+#audit .ap { --ap-card: 0; }
+
+#audit .ap__card {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding-inline: 6%;
+
+  /* The blur belongs to what is behind the card, not to the card, so the
+     word stays sharp over a soft application. It is sampled through the
+     card's own box, which is the whole frame — so the chrome, the table and
+     the cursor all go soft at once and no seam appears between them. */
+  -webkit-backdrop-filter: blur(calc(var(--ap-card) * 9px));
+  backdrop-filter: blur(calc(var(--ap-card) * 9px));
+
+  /* A flat veil, only enough to carry the contrast of the word. Where
+     backdrop-filter is not supported this is the whole effect, and it still
+     reads. */
+  background: rgba(255, 255, 255, calc(var(--ap-card) * 0.62));
+
+  opacity: var(--ap-card);
+  pointer-events: none;
+  will-change: opacity;
+}
+
+/* Nothing to composite while the card is down: at rest it is out of the
+   frame entirely, so the backdrop filter costs nothing for the 18 seconds
+   that are actually the workflow. */
+#audit .ap[data-card="0"] .ap__card { visibility: hidden; }
+
+#audit .ap__card span {
+  /* Sized against the application, not the viewport, so the word fills the
+     frame the same way at every width the module is drawn at. */
+  font-size: clamp(34px, 16cqw, 92px);
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  color: #11161C;
+  text-align: center;
+}
+
+/* The corner label and the word say the same thing; only one of them should
+   be on screen. */
+#audit .ap__phase { opacity: calc(1 - var(--ap-card)); }
+
+@media (prefers-reduced-motion: reduce) {
+  #audit .ap__card {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(255, 255, 255, calc(var(--ap-card) * 0.92));
+  }
+}
+
+/* --------------------------------------------------------------------------
+   THE FLOW UNDERNEATH
+
+   A second reading of the same eighteen seconds. The application above is
+   the product's; this is the designer's — the site's type, the site's ink,
+   the site's hairlines, at the size a path gets drawn at in a working file.
+   That is the whole of the visual argument: one square, one line, one arrow,
+   one label, and no ornament anywhere, because the thing being shown is the
+   number of steps rather than the diagram.
+
+   IT IS ONE DRAWING AND A CAMERA. Both paths are authored in a fixed
+   coordinate space of 1160 × 120 and never reflow: a node is at the x it is
+   at, at every width and in every shot. What changes is the transform on the
+   map — centre and scale — which is why a step can be established in the
+   whole path and then read close up without a single node having moved. The
+   camera is written by js/audit-proto.js from the same clock as the portal.
+   -------------------------------------------------------------------------- */
+
+#audit .ap__flow {
+  padding: 22px 26px 8px;
+}
+
+/* The window the camera looks through. Fixed height, because a diagram that
+   changes the height of the module as it zooms is a diagram nobody can
+   scrub. */
+#audit .ap__view {
+  position: relative;
+  height: 132px;
+  overflow: hidden;
+}
+
+#audit .ap__map {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: 1160px;
+  height: 120px;
+  transform-origin: 0 0;
+  /* The camera is repainted every frame while the clock runs, so the motion
+     is the interpolation rather than a transition. The transition only picks
+     up the jump a keyboard scrub makes. */
+  will-change: transform;
+}
+
+#audit .ap__fl {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 360ms linear;
+}
+#audit .ap[data-mode="before"] .ap__fl[data-flow="before"],
+#audit .ap[data-mode="after"]  .ap__fl[data-flow="after"] { opacity: 1; }
+
+/* --- the node ------------------------------------------------------------- */
+
+#audit .ap__fl-n {
+  position: absolute;
+  inset-block-start: 35px;
+  inset-inline-start: calc(var(--x) * 1px);
+  display: grid;
+  place-items: center;
+  width: 150px;
+  height: 50px;
+  padding-inline: 9px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface);
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.25;
+  text-align: center;
+  text-wrap: balance;
+  /* Three states, one property each. The step that is happening is the only
+     one set in the page's own ink. */
+  transition: color 260ms linear, border-color 260ms linear, opacity 260ms linear;
+}
+
+#audit .ap__fl-n[data-s="next"] { opacity: 0.45; }
+#audit .ap__fl-n[data-s="done"] {
+  opacity: 0.8;
+  border-color: var(--border-strong);
+  color: var(--ink-secondary);
+}
+#audit .ap__fl-n[data-s="now"] {
+  opacity: 1;
+  border-color: var(--ink);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* --- the link ------------------------------------------------------------- */
+
+/* A rule and an arrowhead, drawn in the node's own ink so the path darkens
+   behind the reader as the steps are taken. */
+#audit .ap__fl-l {
+  position: absolute;
+  inset-block-start: 60px;
+  inset-inline-start: calc(var(--x) * 1px);
+  width: 44px;
+  height: 0;
+  border-block-start: 1px solid currentColor;
+  color: var(--border);
+  transition: color 260ms linear, opacity 260ms linear;
+  opacity: 0.6;
+}
+#audit .ap__fl-l[data-s="done"] { color: var(--border-strong); opacity: 1; }
+#audit .ap__fl-l::after {
+  content: "";
+  position: absolute;
+  inset-block-start: -3.5px;
+  inset-inline-end: -1px;
+  width: 0;
+  height: 0;
+  border-block: 3.5px solid transparent;
+  border-inline-start: 6px solid currentColor;
+  border-inline-end: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #audit .ap__map,
+  #audit .ap__fl,
+  #audit .ap__fl-n,
+  #audit .ap__fl-l { transition: none; }
+}
+
 #audit .ap__player {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
+  /* Inset a little less than the caption: the play control is a circle, and
+     a round shape set to the same measure as a line of text reads as though
+     it has been pushed in too far. */
+  padding: 13px 24px;
   border-block-start: 1px solid var(--border);
 }
 
@@ -18706,15 +18966,30 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 #audit .ap__app .ap__x { cursor: default; user-select: none; }
 #audit .ap__nav button { pointer-events: none; }
 
-/* The updated system's panel is at its tallest in the middle of the range,
-   where the required-action line wraps but the column is still wide. */
+/* --------------------------------------------------------------------------
+   DESKTOP ONLY, AND GONE RATHER THAN SHRUNK
+
+   This module is two seven-column clinical queues, a cursor placed in
+   percentages of a 412px frame, and a camera that has to hold a node at a
+   readable size. A tablet can be given a smaller version of all three, and
+   the smaller version is worse than nothing: the queue loses the column the
+   task is about, the close shots stop being close, and a reader on a phone
+   is handed a video of a desktop product they cannot read.
+
+   So below the site's own tablet breakpoint it is removed from the layout
+   entirely — not scaled, not stacked, not replaced with a still. `display:
+   none` takes the section out of flow and out of the accessibility tree in
+   one go, so the case study simply begins at its title, and the player,
+   the flow, the timeline and the caption go with it.
+
+   Nothing has to be told about this. The player only starts when it is on
+   screen, and a display:none section has no box to be on screen with; the
+   camera measures its own window and returns early when there is none. The
+   eighteen seconds are untouched — they are the same eighteen seconds, on
+   the screens that can hold them.
+   -------------------------------------------------------------------------- */
 @media (max-width: 899px) {
-  #audit .ap__app { height: 440px; }
-}
-@media (max-width: 559px) {
-  #audit .ap__app { height: 436px; }
-  #audit .ap__player { padding-inline: 12px; }
-  #audit .ap__bar { padding-inline: 14px; }
+  #audit .ap { display: none; }
 }
 
 
@@ -20414,7 +20689,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
               <span class="msg" data-msg data-cluster data-scramble data-shuffle data-dwell="700">
                 <span class="msg__from" aria-hidden="true">SS</span>
                 <span class="msg__bubble msg__bubble--reacted"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;ve
-                  <span class="sc">designed</span> products in an <span class="sc sc--enc"><span class="kw kw--craft">AI-saturated</span></span> <span class="sc"><span class="kw kw--craft">world</span>.</span></span><span class="msg__reactions"><button type="button" class="rx" data-rx="fire" aria-label="React with fire"><span class="rx__e" aria-hidden="true">🔥</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="clap" aria-label="React with applause"><span class="rx__e" aria-hidden="true">👏</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hundred" aria-label="React with hundred"><span class="rx__e" aria-hidden="true">💯</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hands" aria-label="React with raised hands"><span class="rx__e" aria-hidden="true">🙌</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="rocket" aria-label="React with rocket"><span class="rx__e" aria-hidden="true">🚀</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="heart" aria-label="React with heart"><span class="rx__e" aria-hidden="true">❤️</span><span class="rx__n" aria-hidden="true"></span></button></span></span>
+                  <span class="sc sc--plain">designed</span> <span class="sc sc--plain"><b class="kw kw--craft">human-centered</b></span> products in an <span class="sc sc--enc"><span class="kw kw--craft">AI-saturated</span></span> <span class="sc sc--plain"><span class="kw kw--craft">world</span>.</span></span><span class="msg__reactions"><button type="button" class="rx" data-rx="fire" aria-label="React with fire"><span class="rx__e" aria-hidden="true">🔥</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="clap" aria-label="React with applause"><span class="rx__e" aria-hidden="true">👏</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hundred" aria-label="React with hundred"><span class="rx__e" aria-hidden="true">💯</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hands" aria-label="React with raised hands"><span class="rx__e" aria-hidden="true">🙌</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="rocket" aria-label="React with rocket"><span class="rx__e" aria-hidden="true">🚀</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="heart" aria-label="React with heart"><span class="rx__e" aria-hidden="true">❤️</span><span class="rx__n" aria-hidden="true"></span></button></span></span>
               </span>
               </span>
             </h1>
@@ -29326,6 +29601,41 @@ em,
           <svg viewBox="0 0 12 18" focusable="false"><path d="M1 1l9.2 7.3-4.1.5 2.4 5-2.1.9-2.3-5-3.1 2.7z"/></svg>
         </span>
         <span class="ap__phase" data-ap-phase aria-hidden="true">Before</span>
+
+        
+        <p class="ap__card" data-ap-card aria-hidden="true"><span data-ap-card-t>Before</span></p>
+      </div>
+
+      
+      <div class="ap__flow" data-ap-flow aria-hidden="true">
+        <div class="ap__view" data-ap-view>
+          <div class="ap__map" data-ap-map>
+          <div class="ap__fl" data-flow="before">
+            <span class="ap__fl-n" data-s="next" style="--x:20">Work queue</span>
+            <span class="ap__fl-l" data-s="next" style="--x:170"></span>
+            <span class="ap__fl-n" data-s="next" style="--x:214">Failed</span>
+            <span class="ap__fl-l" data-s="next" style="--x:364"></span>
+            <span class="ap__fl-n" data-s="next" style="--x:408">Interpret status</span>
+            <span class="ap__fl-l" data-s="next" style="--x:558"></span>
+            <span class="ap__fl-n" data-s="next" style="--x:602">Find •••</span>
+            <span class="ap__fl-l" data-s="next" style="--x:752"></span>
+            <span class="ap__fl-n" data-s="next" style="--x:796">Open recovery action</span>
+            <span class="ap__fl-l" data-s="next" style="--x:946"></span>
+            <span class="ap__fl-n" data-s="next" style="--x:990">Resolve</span>
+          </div>
+          <div class="ap__fl" data-flow="after">
+            <span class="ap__fl-n" data-s="next" style="--x:117">Work queue</span>
+            <span class="ap__fl-l" data-s="next" style="--x:267"></span>
+            <span class="ap__fl-n" data-s="next" style="--x:311">Submission error</span>
+            <span class="ap__fl-l" data-s="next" style="--x:461"></span>
+            <span class="ap__fl-n" data-s="next" style="--x:505">Required action</span>
+            <span class="ap__fl-l" data-s="next" style="--x:655"></span>
+            <span class="ap__fl-n" data-s="next" style="--x:699">Resolve issue</span>
+            <span class="ap__fl-l" data-s="next" style="--x:849"></span>
+            <span class="ap__fl-n" data-s="next" style="--x:893">Resolved</span>
+          </div>
+        </div>
+        </div>
       </div>
 
       <div class="ap__player">
@@ -29337,7 +29647,7 @@ em,
         </button>
         <input class="ap__seek" type="range" min="0" max="1000" value="0" step="1"
                data-ap-seek aria-label="Timeline">
-        <p class="ap__time"><span data-ap-now>0:00</span> / <span data-ap-dur>0:18</span></p>
+        <p class="ap__time"><span data-ap-now>0:00</span> / <span data-ap-dur>0:22</span></p>
       </div>
 
       <p class="visually-hidden" data-ap-sr aria-live="polite"></p>
@@ -34898,8 +35208,16 @@ window.PF = window.PF || {};
          its turn is the verb and the two words the sentence is actually for.
          Only the spaces between the groups stay, because a space is what holds
          the line's shape while the words are still out. */
+      /* ONE WORD COMES OUT OF NOISE. THE REST COME UP OUT OF NOTHING.
+         The sentence now names what the work is for as well as what it was
+         made in, and only one of those two halves is the machine's: the human
+         half arrives the way a person would write it — a word at a time,
+         fading up — and "AI-saturated" is the only run that is decrypted.
+         Both carry the keyword mask, because both are the claim. */
       [{ t: 'I’ve ' },
-       { t: 'designed', sc: true },
+       { t: 'designed', sc: true, plain: true },
+       { t: ' ' },
+       { t: 'human-centered', k: 'craft', b: true, sc: true, plain: true },
        { t: ' products in an ' },
        /* The machine's half of the sentence does not come out of noise, it
           comes out of ciphertext — digits, in the one face that has always
@@ -34907,7 +35225,7 @@ window.PF = window.PF || {};
           effect and the meaning are the same thing. */
        { t: 'AI-saturated', k: 'craft', sc: true, enc: true },
        { t: ' ' },
-       { t: 'world', k: 'craft', sc: true, post: '.' }]
+       { t: 'world', k: 'craft', sc: true, plain: true, post: '.' }]
     ],
     illustration: [
       [{ t: 'I draw as much as I design.' }],
@@ -34967,7 +35285,11 @@ window.PF = window.PF || {};
       var t = esc(r.t || '');   /* an icon run carries no text */
       var piece;
       /* The name is both: emphasised, and carrying a gradient of its own. */
-      if (r.em) piece = '<em class="' + (r.k ? 'kw kw--' + r.k : '') + '">' + t + '</em>';
+      /* And one run is set in weight rather than in value: the half of the
+         claim that is about people. It carries its own gradient the same way
+         the name does; only the weight is different. */
+      if (r.b) piece = '<b class="' + (r.k ? 'kw kw--' + r.k : '') + '">' + t + '</b>';
+      else if (r.em) piece = '<em class="' + (r.k ? 'kw kw--' + r.k : '') + '">' + t + '</em>';
       else if (r.k) piece = '<span class="kw kw--' + r.k + '">' + t + '</span>';
       /* An icon run is a pixel symbol from the sprite, not a character. It
          carries its meaning as a label because there is no longer an emoji
@@ -35992,7 +36314,10 @@ window.PF = window.PF || {};
           var bare = el.classList.contains('sc--plain');
           timers.push(setTimeout(function () {
             el.style.visibility = '';
-            if (bare) return;
+            /* A plain run still has a moment: it comes up out of nothing
+               rather than switching on. Opacity only — the box was measured
+               and held above, so nothing on the line moves while it does. */
+            if (bare) { el.classList.add('is-lit'); return; }
             /* The scale is the scramble being SEEN — a word comes apart a size
                up and settles back down into the line as it resolves, so what
                is happening reads from across the room rather than only if you
@@ -37617,7 +37942,159 @@ window.PF = window.PF || {};
     { t: 18.0, m: 'after',  v: 'done',  x: 13, y: 94 }
   ];
 
-  var DUR = KEY[KEY.length - 1].t;
+  var AUTH = KEY[KEY.length - 1].t;     /* the authored length, without cards */
+
+  /* ----------------------------------------------------------------------
+     THE CHAPTER CARDS
+
+     Two of them, one at the head of each half. They are part of the
+     timeline rather than an overlay on top of it: the workflow underneath
+     holds on its first frame while the card is up, and playback time maps
+     onto authored time with the card's length inserted. Which means a
+     scrubber dropped anywhere inside a card window lands on the card, and
+     the frame behind it is the frame that half begins on.
+
+     The shape is a fade in, a hold, and a longer fade out — the hold is
+     what makes it readable at a glance and the slow exit is what keeps it
+     from cutting.
+     ---------------------------------------------------------------------- */
+
+  var CARD_L = 1.9;
+  var CARD_IN = 0.16, CARD_OUT = 0.62;   /* as fractions of CARD_L */
+  var CARDS = [
+    { src: 0.0,  label: 'Before' },
+    { src: 10.7, label: 'After' }        /* the frame the updated system cuts in on */
+  ];
+
+  var DUR = AUTH + CARDS.length * CARD_L;
+
+  /* Playback time in, authored time out — plus the card that is up, if any. */
+  function mapTime(t) {
+    var acc = 0;
+    for (var i = 0; i < CARDS.length; i++) {
+      var start = CARDS[i].src + acc;
+      if (t < start) return { a: t - acc, card: null, p: 0 };
+      if (t < start + CARD_L) {
+        return { a: CARDS[i].src, card: CARDS[i], p: (t - start) / CARD_L };
+      }
+      acc += CARD_L;
+    }
+    return { a: t - acc, card: null, p: 0 };
+  }
+
+  /* 0 at both ends, 1 across the hold. */
+  function cardLevel(p) {
+    if (p < CARD_IN) return p / CARD_IN;
+    if (p < CARD_OUT) return 1;
+    return 1 - (p - CARD_OUT) / (1 - CARD_OUT);
+  }
+
+  /* ----------------------------------------------------------------------
+     THE FLOW UNDERNEATH, AND THE CAMERA THAT READS IT
+
+     The diagram below the application is the same run told as a path. It
+     has no clock: both of the tables below are in AUTHORED time, the same
+     time stateAt() is given, so the two layers cannot drift and a scrubber
+     dropped anywhere moves them together. During a chapter card authored
+     time is frozen, which is what makes the diagram sit on its establishing
+     shot while BEFORE or AFTER is up.
+
+     `at` is the moment each step becomes the step being taken — every one of
+     them is a frame in KEY above, not a round number: 2.9 is the cursor
+     reaching the failed row, 5.4 is it leaving the status column for the
+     action, 6.2 is the menu opening, 9.2 is the panel.
+
+     `shots` is the camera. cx is where in the 1160-wide drawing it is
+     pointed and span is how much of that drawing is in frame, so the scale
+     is worked out from the width the module happens to be — the apparent
+     size of a node in a close shot is the same on a phone as on a desktop.
+     Each phase is established wide, read close, and then pulled back before
+     the camera travels, because a cut from one close shot to the next is
+     where a reader loses the path.
+     ---------------------------------------------------------------------- */
+
+  var FLOW = {
+    before: {
+      x0: 20, x1: 1140,
+      at: [0.0, 2.9, 4.4, 5.4, 6.2, 9.2],
+      shots: [
+        { t: 0.0,  cx: 580,  span: 1160, est: 1, ph: 0 },   /* the whole path */
+        { t: 2.9,  cx: 580,  span: 1160, est: 1, ph: 1 },   /* held until the step it travels to is live */
+        { t: 3.5,  cx: 386,  span: 560 },    /* Failed → Interpret status */
+        { t: 5.0,  cx: 386,  span: 560 },
+        { t: 5.4,  cx: 580,  span: 900 },    /* back, then travel */
+        { t: 6.2,  cx: 774,  span: 560 },    /* Find ••• → Open recovery action */
+        { t: 8.9,  cx: 774,  span: 560 },
+        { t: 9.2,  cx: 920,  span: 900 },
+        { t: 9.9,  cx: 1030, span: 520 },    /* Resolve */
+        { t: 10.7, cx: 1030, span: 520 }
+      ]
+    },
+    after: {
+      x0: 117, x1: 1043,
+      at: [10.7, 11.9, 12.7, 13.4, 17.2],
+      shots: [
+        { t: 10.7, cx: 580,  span: 1160, est: 1, ph: 0 },
+        { t: 11.9, cx: 580,  span: 1160, est: 1, ph: 1 },
+        { t: 12.4, cx: 483,  span: 560 },    /* Submission error → Required action */
+        { t: 13.1, cx: 483,  span: 560 },
+        { t: 13.4, cx: 640,  span: 900 },
+        { t: 14.2, cx: 871,  span: 560 },    /* Resolve issue → Resolved */
+        { t: 18.0, cx: 871,  span: 560 }
+      ]
+    }
+  };
+
+  /* The authored vertical centre of the drawing. */
+  var FLOW_MID = 60;
+
+  /* A NARROW SCREEN IS DRIVEN AS THOUGH IT WERE THIS WIDE.
+
+     Span is authored in the drawing's own units, so a close shot on a phone
+     would otherwise be scaled down with the module and arrive at seven-pixel
+     labels — the opposite of what a close shot is for. The scale is worked
+     out from the wider of the real width and this one, which keeps a node the
+     same apparent size on a phone as on a desktop and simply shows less of
+     the path at once. */
+  var K_REF = 560;
+
+  /* Two shots and the ease between them. Smoothstep rather than a spring: the
+     camera arrives and stops, and nothing overshoots.
+
+     The establishing shots are the one place the camera is not told where to
+     point. Where the whole path fits they sit on its centre, which is what
+     every screen wide enough does; where it does not — a phone, at the scale
+     that keeps the labels readable — they drift from the start of the path to
+     the end of it across the same window, so the overview is walked rather
+     than lost. `ph` is where in that drift each end of the hold sits, and on
+     a wide screen it has no effect at all. */
+  function camera(f, t, w) {
+    var shots = f.shots, last = shots.length - 1, a, b, p;
+
+    if (t <= shots[0].t) { a = b = shots[0]; p = 0; }
+    else if (t >= shots[last].t) { a = b = shots[last]; p = 0; }
+    else {
+      var i = 1;
+      while (i < last && shots[i].t < t) i++;
+      a = shots[i - 1]; b = shots[i];
+      p = (b.t > a.t) ? (t - a.t) / (b.t - a.t) : 1;
+      p = p * p * (3 - 2 * p);
+    }
+
+    var span = a.span + (b.span - a.span) * p;
+    var k = Math.max(w, K_REF) / span;
+    var half = (w / k) / 2;
+
+    function cxOf(s) {
+      if (!s.est) return s.cx;
+      var lo = f.x0 + half, hi = f.x1 - half;
+      if (hi <= lo) return s.cx;            /* it all fits: stay on the centre */
+      return lo + (hi - lo) * (s.ph || 0);
+    }
+
+    var ca = cxOf(a), cb = cxOf(b);
+    return { cx: ca + (cb - ca) * p, k: k };
+  }
 
   /* ----------------------------------------------------------------------
      STATE AT A TIME
@@ -37627,7 +38104,7 @@ window.PF = window.PF || {};
 
   function stateAt(t) {
     if (t <= 0) t = 0;
-    if (t >= DUR) t = DUR;
+    if (t >= AUTH) t = AUTH;
 
     var i = 0;
     while (i < KEY.length - 1 && KEY[i + 1].t <= t) i++;
@@ -37793,6 +38270,80 @@ window.PF = window.PF || {};
     }
   }
 
+  var cardEl = root.querySelector('[data-ap-card]');
+  var cardTx = root.querySelector('[data-ap-card-t]');
+
+  function paintCard(card, p) {
+    var lvl = card ? cardLevel(p) : 0;
+    if (card && cardTx && cardTx.textContent !== card.label) cardTx.textContent = card.label;
+    root.style.setProperty('--ap-card', lvl.toFixed(3));
+    root.setAttribute('data-card', lvl > 0.01 ? '1' : '0');
+    if (cardEl) cardEl.setAttribute('aria-hidden', 'true');
+  }
+
+  /* ----------------------------------------------------------------------
+     PAINTING THE FLOW
+
+     Two things at a time: which step the reader is on, and where the camera
+     is pointed. Both come out of the same authored time the application was
+     painted from, so there is nothing to keep in step — there is only one
+     value, read twice.
+     ---------------------------------------------------------------------- */
+
+  var viewEl = root.querySelector('[data-ap-view]');
+  var mapEl = root.querySelector('[data-ap-map]');
+  var SETS = {};
+
+  if (mapEl) {
+    var flEls = mapEl.querySelectorAll('.ap__fl');
+    for (var fi = 0; fi < flEls.length; fi++) {
+      SETS[flEls[fi].getAttribute('data-flow')] = {
+        nodes: flEls[fi].querySelectorAll('.ap__fl-n'),
+        links: flEls[fi].querySelectorAll('.ap__fl-l')
+      };
+    }
+  }
+
+  /* Measured rather than assumed, because the scale is worked out from it.
+     Re-measured on resize; nothing else in the module cares about width. */
+  var viewW = 0, viewH = 0;
+  function measureView() {
+    if (!viewEl) return;
+    var b = viewEl.getBoundingClientRect();
+    viewW = b.width; viewH = b.height;
+  }
+
+  function setState(el, s) {
+    if (el.getAttribute('data-s') !== s) el.setAttribute('data-s', s);
+  }
+
+  function paintFlow(a, mode) {
+    var f = FLOW[mode], set = SETS[mode];
+    if (!f || !set || !mapEl) return;
+
+    /* Taken, being taken, still to come. A step is "now" from the frame it
+       starts on until the frame the next one starts on, which is the same
+       rule the application's own frames follow. */
+    for (var i = 0; i < set.nodes.length; i++) {
+      var s = 'next';
+      if (a >= f.at[i]) s = (i + 1 < f.at.length && a >= f.at[i + 1]) ? 'done' : 'now';
+      setState(set.nodes[i], s);
+    }
+    for (var j = 0; j < set.links.length; j++) {
+      setState(set.links[j], a >= f.at[j + 1] ? 'done' : 'next');
+    }
+
+    if (!viewW) measureView();
+    if (!viewW) return;
+
+    var cam = camera(f, a, viewW);
+    var k = cam.k;
+    var tx = viewW / 2 - cam.cx * k;
+    var ty = viewH / 2 - FLOW_MID * k;
+    mapEl.style.transform =
+      'translate(' + tx.toFixed(2) + 'px,' + ty.toFixed(2) + 'px) scale(' + k.toFixed(4) + ')';
+  }
+
   /* ----------------------------------------------------------------------
      THE PLAYER
      ---------------------------------------------------------------------- */
@@ -37808,7 +38359,11 @@ window.PF = window.PF || {};
   }
 
   function sync() {
-    paint(stateAt(t));
+    var m = mapTime(t);
+    var st = stateAt(m.a);
+    paint(st);
+    paintCard(m.card, m.p);
+    paintFlow(m.a, st.mode);
     if (!scrubbing) seek.value = String(Math.round((t / DUR) * 1000));
     if (nowEl) nowEl.textContent = fmt(t);
     root.setAttribute('data-playing', playing ? '1' : '0');
@@ -37902,6 +38457,24 @@ window.PF = window.PF || {};
       'sections below.';
   }
 
+  /* The camera's scale is worked out from the width of the window it looks
+     through, so a resized window is a re-measure and a repaint of the frame
+     that is already up — not a reset, and not a jump. */
+  var reflow = 0;
+  function onResize() {
+    if (reflow) return;
+    reflow = window.requestAnimationFrame(function () {
+      reflow = 0;
+      measureView();
+      sync();
+    });
+  }
+  window.addEventListener('resize', onResize);
+  if ('ResizeObserver' in window && viewEl) new ResizeObserver(onResize).observe(viewEl);
+  window.addEventListener('hashchange', function () { setTimeout(onResize, 140); });
+  window.addEventListener('load', onResize);
+
+  measureView();
   sync();
 
 })();
