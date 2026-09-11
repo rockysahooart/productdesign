@@ -5436,16 +5436,21 @@ em,
 /* THE MESSAGE IS PLACED, NOT SWITCHED ON.
 
    The bubble is already on screen carrying the dots, so this is the moment it
-   becomes the message. It comes up from 20px below at 86%, throws past its
-   resting place by 5px and three and a half percent, dips a pixel and a half
-   under, and stops. The travel is what gives it weight: a thing with mass
-   arrives from somewhere and takes a moment to settle, where a thing without
-   mass simply appears.
+   becomes the message, and it becomes it the way a soft thing dropped a short
+   distance becomes still: it falls in from 28px below at 84%, accelerating
+   rather than gliding, hits at 105% and 3px above its place, drops back
+   through it, comes up once more by a fraction, and rests.
 
-   IT IS A SPRING WITH ONE AND A HALF SWINGS IN IT. Over, under, still — and
-   then nothing, which is what keeps it from reading as rubber. 520ms, which
-   is long enough to watch and short enough that the next message is not
-   waiting on it.
+   THE FIRST THIRD IS THE FALL AND THE REST IS THE LANDING. Impact is at 28%
+   of 640ms — under a fifth of a second — and the remaining 460ms is the
+   settle, which is the part that reads as mass. One clearly visible bounce,
+   one much smaller one after it, and then nothing: a spring that stops is
+   weight, a spring that keeps going is rubber.
+
+   EACH SEGMENT CARRIES ITS OWN CURVE. The fall is written as an ease-in so
+   the bubble gathers speed into the surface; everything after it decelerates
+   out of the impact. A single ease-in-out across the whole thing would make
+   the same keyframes read as a float.
 
    THE FADE STARTS AT 0.4 RATHER THAN 0. The bubble is the same element that
    was holding the dots a frame ago, so taking it to nothing would blink it
@@ -5453,15 +5458,35 @@ em,
    into a bubble that was already there, which is what is actually
    happening. */
 @keyframes msg-pop {
-  0%   { opacity: 0.1; transform: translateY(20px)  scale(0.86); }
-  46%  { opacity: 1;   transform: translateY(-5px)  scale(1.035); }
-  72%  { opacity: 1;   transform: translateY(1.5px) scale(0.993); }
-  100% { opacity: 1;   transform: translateY(0)     scale(1); }
+  0% {
+    opacity: 0;
+    transform: translateY(28px) scale(0.84);
+    animation-timing-function: cubic-bezier(0.34, 0, 0.58, 0.3);   /* the fall */
+  }
+  28% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.05);
+    animation-timing-function: cubic-bezier(0.36, 0, 0.28, 1);     /* off the impact */
+  }
+  47% {
+    transform: translateY(2.5px) scale(0.981);
+    animation-timing-function: cubic-bezier(0.36, 0, 0.28, 1);
+  }
+  66% {
+    transform: translateY(-1px) scale(1.007);
+    animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1);
+  }
+  84% {
+    transform: translateY(0.35px) scale(0.998);
+    animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1);
+  }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .msg[data-state="live"] > .msg__bubble {
   transform-origin: left top;   /* the corner the tail points from */
-  animation: msg-pop 520ms cubic-bezier(0.18, 0.74, 0.28, 1) both;
+  /* linear on the shorthand on purpose: the curves are per segment, above. */
+  animation: msg-pop 640ms linear both;
   will-change: transform, opacity;
 }
 
@@ -5473,20 +5498,40 @@ em,
    one breath. Two bubbles popping together read as one gesture happening
    twice; this one comes up out of the card instead, over rather longer than
    the pop takes, and the greeting keeps the gesture to itself. */
-   It lands with the same weight as the rest of them, because every message in
-   the thread should — but slower and a shade softer over its longer fade, so
-   the two arriving together read as one gesture rather than as the same pop
-   fired twice. */
+   It lands the same way as every other message, because the entrance should be
+   the thread's and not one message's. What it keeps is its own slightly longer
+   duration, and the fact that it holds the animation into `settled` — that
+   rule is what paints this one message when the thread is drawn finished
+   rather than played. */
 @keyframes msg-fade {
-  0%   { opacity: 0; transform: translateY(16px) scale(0.92); }
-  48%  { opacity: 1; transform: translateY(-4px) scale(1.024); }
-  74%  { opacity: 1; transform: translateY(1px)  scale(0.996); }
-  100% { opacity: 1; transform: translateY(0)    scale(1); }
+  0% {
+    opacity: 0;
+    transform: translateY(28px) scale(0.84);
+    animation-timing-function: cubic-bezier(0.34, 0, 0.58, 0.3);
+  }
+  28% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.05);
+    animation-timing-function: cubic-bezier(0.36, 0, 0.28, 1);
+  }
+  47% {
+    transform: translateY(2.5px) scale(0.981);
+    animation-timing-function: cubic-bezier(0.36, 0, 0.28, 1);
+  }
+  66% {
+    transform: translateY(-1px) scale(1.007);
+    animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1);
+  }
+  84% {
+    transform: translateY(0.35px) scale(0.998);
+    animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1);
+  }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .msg[data-together][data-state="live"] > .msg__bubble,
 .msg[data-together][data-state="settled"] > .msg__bubble {
-  animation: msg-fade 620ms cubic-bezier(0.33, 0.9, 0.4, 1) both;
+  animation: msg-fade 700ms linear both;
 }
 
 /* Dropped the moment it has landed, so nothing holds a compositor layer for a
@@ -38431,9 +38476,10 @@ window.PF = window.PF || {};
 
    Five messages arrive in order, and four of them are on screen at a time.
    Each one shows three dots in its place for a beat, then the finished message
-   replaces them. Nothing types. The message arrives with weight — up from
-   twenty pixels below, past its place, a shade under, still — and the box it
-   lands in never changes size, so the page under it cannot feel any of it.
+   replaces them. Nothing types. The message is dropped in rather than faded
+   in — it falls from 28px below, lands hard enough to compress, settles twice
+   and stops — and the box it lands in never changes size, so the page under it
+   cannot feel any of it.
 
    THE WINDOW. Once four messages are up, the next one does not extend the
    stack — the oldest slides out of the top and the remaining two move up to
@@ -38639,7 +38685,14 @@ window.PF = window.PF || {};
      loading, and a gap that is a beat rather than a pause. */
   var DOTS_FAST = 360;
   var OPEN_GAP = 440;
-  var POP_MS = 520;     /* the bubble's arrival, matched to the CSS */
+  /* THE ARRIVAL GOT LONGER AND THE CADENCE DID NOT.
+
+     The entrance runs 640ms now, so `settled` waits that out rather than
+     cutting the landing off part-way. The beat after it gives the 120ms back,
+     which keeps every message arriving on exactly the frame it used to: 640 +
+     780 is the same 1420ms per message as 520 + 900 was, so nothing the page
+     hangs off the thread — see js/reveal.js — shifts by so much as a frame. */
+  var POP_MS = 640;     /* the bubble's arrival, matched to the CSS */
   /* THE PAUSE IS THE MESSAGE'S OWN LENGTH. A one-line greeting and a
      two-hundred-character sentence about six industries are not the same
      thing to read, and giving them the same pause means one of them is always
@@ -38650,7 +38703,7 @@ window.PF = window.PF || {};
 
      The ceiling matters as much as the rate: past about five seconds a pause
      stops reading as a pause and starts reading as a thread that has stopped. */
-  var GAP_MS = 900;         /* the beat every message gets */
+  var GAP_MS = 780;         /* the beat every message gets */
   var READ_MS = 24;         /* per character of it */
   var GAP_MAX = 4600;       /* however long it is, it moves on */
   /* After the last message has settled — or, when that message is still
