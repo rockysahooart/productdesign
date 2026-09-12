@@ -22514,6 +22514,27 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   --amber-bg: #FCF3E7;
   --red: #C0392B;
 
+  /* ONE VERTICAL SCALE FOR THE WHOLE RECONSTRUCTION.
+
+     The screen had been built with improvised margins, which is why a label
+     could sit 4px under the sentence it introduced while two unrelated groups
+     were 12px apart, and why the gap between a subsection label and its own
+     chips came out larger than the gap separating two subsections. These five
+     steps are the only vertical numbers used below.
+
+       inline   within one row
+       lab      a label and the thing it introduces
+       intra    two parts of the same idea
+       group    one field group to the next
+       pad      inside a card
+
+     The rule the screen is read by: lab < intra < group, always. */
+  --s-inline: 7px;
+  --s-lab: 4px;
+  --s-intra: 8px;
+  --s-group: 12px;
+  --s-pad: 10px;
+
   /* It follows the introduction rather than crowding it: the reader meets
      the title, the standfirst and the role, and then the window. */
   margin: clamp(26px, 3.4vw, 44px) 0 var(--cs-group, 28px);
@@ -22760,7 +22781,8 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .ofw-doc__f { display: flex; align-items: center; justify-content: flex-end; gap: 13px; padding-inline-end: 11px; }
 .ofw-doc__f svg { width: 12px; height: 12px; opacity: 0.55; }
 
-.ofw-pane { padding: 12px 12px 0; overflow: hidden; }
+.ofw-pane { padding: 12px 12px var(--s-pad); overflow: hidden; }
+.ofw-pane > .ofw-card:last-of-type { margin-block-end: 0; }
 
 .ofw-pane__h { display: flex; align-items: baseline; justify-content: space-between; margin: 2px 2px 10px; }
 .ofw-pane__h h3 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.015em; }
@@ -22769,8 +22791,8 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 /* --- a section card ------------------------------------------------------- */
 
 .ofw-card {
-  margin-block-end: 11px;
-  padding: 13px 15px 15px;
+  margin-block-end: var(--s-intra);
+  padding: var(--s-pad) 15px var(--s-pad);
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--card);
@@ -22792,17 +22814,26 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .ofw-b1 { grid-column: 1; grid-row: 1; }
 .ofw-b2 { grid-column: 2; grid-row: 1; }
 .ofw-bev { grid-column: 3; grid-row: 1 / span 3; }
-.ofw-b3 { grid-column: 1 / span 2; grid-row: 2; margin-block-start: 12px; }
-.ofw-b4 { grid-column: 1 / span 2; grid-row: 3; margin-block-start: 12px; }
+.ofw-b3 { grid-column: 1 / span 2; grid-row: 2; margin-block-start: var(--s-group); }
+.ofw-b4 { grid-column: 1 / span 2; grid-row: 3; margin-block-start: var(--s-group); }
 
 .ofw-lab {
   margin: 0 0 7px;
   font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
   color: var(--ink-3);
 }
-.ofw-fl { margin: 0 0 6px; font-size: 12.5px; font-weight: 600; }
+.ofw-fl { margin: 0; font-size: 12.5px; font-weight: 600; }
 .ofw-fl .ofw-req { color: var(--red); }
-.ofw-grp + .ofw-grp { margin-block-start: 12px; }
+/* EVERY GROUP CARRIES ITS OWN TOP GAP rather than relying on the group
+   before it. Written as a sibling rule it collapsed to nothing wherever the
+   feedback panel sits between two groups, which is exactly where Prefix and
+   Reason code met — 0px apart while everything else was 12. */
+.ofw-grp { margin-block-start: var(--s-group); }
+.ofw-grp:first-child { margin-block-start: 0; }
+.ofw-fl { margin-block-end: var(--s-lab); }
+.ofw-row { row-gap: var(--s-inline); }
+/* Inline affordances sit on the row's centre line, not on its text baseline. */
+.ofw-row { align-items: center; }
 
 /* --- chips ---------------------------------------------------------------- */
 
@@ -22812,7 +22843,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   background: #fff; font-size: 12px;
 }
 
-.ofw-row { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.ofw-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-inline); }
 
 .ofw-tag {
   display: inline-flex; align-items: center; gap: 6px;
@@ -22841,17 +22872,17 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 }
 
 .ofw-pill {
-  padding: 5px 10px; border-radius: 999px; background: var(--chip-fill);
-  font-size: 11px; white-space: nowrap; color: var(--ink-2);
+  padding: 4px 9px; border-radius: 999px; background: var(--chip-fill);
+  font-size: 10.5px; white-space: nowrap; color: var(--ink-2);
 }
 .ofw-pill--o { background: #fff; border: 1px solid var(--line-2); }
 
 /* --- evidence ------------------------------------------------------------- */
 
-.ofw-ev__k { margin: 0 0 4px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
-.ofw-ev__s { margin: 0 0 9px; font-size: 10.5px; color: var(--ink-3); }
+.ofw-ev__k { margin: 0 0 var(--s-lab); font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+.ofw-ev__s { margin: 0 0 var(--s-intra); font-size: 10.5px; color: var(--ink-3); }
 .ofw-ev {
-  padding: 12px 13px; border: 1px solid var(--line); border-radius: 7px; background: #fff;
+  padding: var(--s-pad) 13px; border: 1px solid var(--line); border-radius: 7px; background: #fff;
 }
 .ofw-ev__t { font-size: 11.5px; font-weight: 700; white-space: nowrap; }
 .ofw-ev__t svg { width: 12px; height: 12px; opacity: .8; }
@@ -22864,13 +22895,32 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 }
 .ofw-conf::before { content: ""; width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
 .ofw-conf--med { background: var(--amber-bg); color: var(--amber); }
-.ofw-ev p { margin: 4px 0 0; font-size: 11.5px; line-height: 1.5; color: var(--ink-2); }
-.ofw-ev__l { margin: 11px 0 5px; font-size: 8.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-3); }
-.ofw-kw { display: flex; flex-wrap: wrap; gap: 5px; }
+/* THIS RULE WAS THE PROBLEM. `.ofw-ev p` is (0,1,1) and every label inside
+   the card is a p with one class, so it beat `.ofw-ev__l` on specificity and
+   gave the subsection labels the description's 4px margin. The description is
+   named now, and the labels keep their own. */
+.ofw-ev__d {
+  margin: var(--s-lab) 0 0;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+/* A second evidence entry inside the same card is a new group. */
+.ofw-ev__row + .ofw-ev__row,
+.ofw-ev__d + .ofw-ev__row { margin-block-start: var(--s-group); }
+/* KEYWORDS and EXTRACTED QUOTES are new information, so the space above them
+   is the group step and the space under them is the label step: the label is
+   closer to its own chips than to the block it follows. */
+.ofw-ev__l {
+  margin: var(--s-group) 0 var(--s-lab);
+  font-size: 8.5px; font-weight: 700; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.ofw-kw { display: flex; flex-wrap: wrap; gap: 5px; row-gap: var(--s-lab); }
 .ofw-kw span { padding: 3px 8px; border: 1px solid var(--line); border-radius: 3px; font-size: 10.5px; color: var(--ink-2); }
 .ofw-q { display: flex; flex-wrap: wrap; gap: 6px; }
 .ofw-q span { padding: 3px 7px; border-radius: 3px; background: var(--quote); font-size: 10.5px; color: #6B5A18; }
-.ofw-ev + .ofw-ev { margin-block-start: 9px; }
+.ofw-ev + .ofw-ev { margin-block-start: var(--s-intra); }
 .ofw-ev__row { display: flex; align-items: center; gap: 6px; }
 /* While the group is being explained, the control that opens the menu is
    not offered again — same as the file. */
@@ -33212,9 +33262,9 @@ body{display:grid;place-items:center;min-height:100vh}
                       <p class="ofw-ev__s">AI-identified evidence. Your validation trains the model.</p>
                       <div class="ofw-ev">
             <div class="ofw-ev__row"><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg><span class="ofw-ev__t">DN</span><span class="ofw-conf">High confidence</span></div>
-            <p>Prefix DN was identified from the denial notice language at the top of the document.</p>
-            <div class="ofw-ev__row" style="margin-top:11px"><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg><span class="ofw-ev__t">197 &mdash; Missing Authorization</span><span class="ofw-conf">High confidence</span></div>
-            <p>Claim denied due to absence of prior authorization on file.</p>
+            <p class="ofw-ev__d">Prefix DN was identified from the denial notice language at the top of the document.</p>
+            <div class="ofw-ev__row"><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg><span class="ofw-ev__t">197 &mdash; Missing Authorization</span><span class="ofw-conf">High confidence</span></div>
+            <p class="ofw-ev__d">Claim denied due to absence of prior authorization on file.</p>
             <p class="ofw-ev__l">Keywords</p>
             <div class="ofw-kw"><span>prior authorization</span><span>not authorized</span><span>denied</span></div>
             <p class="ofw-ev__l">Extracted quotes</p>
@@ -33245,7 +33295,7 @@ body{display:grid;place-items:center;min-height:100vh}
                       <p class="ofw-ev__s">AI-identified evidence. Your validation trains the model.</p>
                       <div class="ofw-ev">
             <div class="ofw-ev__row"><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg><span class="ofw-ev__t">ATFL30</span><span class="ofw-conf ofw-conf--med">Medium confidence</span></div>
-            <p>opti identified the claim was submitted past the deadline. This tag supports appeal routing.</p>
+            <p class="ofw-ev__d">opti identified the claim was submitted past the deadline. This tag supports appeal routing.</p>
             <p class="ofw-ev__l">Keywords</p>
             <div class="ofw-kw"><span>timely filing</span><span>submission deadline</span><span>appeal</span></div>
             <p class="ofw-ev__l">Extracted quotes</p>
