@@ -22467,6 +22467,585 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .pv__embed .pv__frame { transition: none; }
 }
 
+
+/* ==========================================================================
+   24 — THE OPTIFLOW WALKTHROUGH
+
+   The tagging screen from the project, rebuilt in markup so it can be
+   animated, and three sequences over it: the reviewer adds a tag the model
+   missed, removes one it got wrong, or keeps one it got right.
+
+   IT IS AN ANIMATION, NOT A PROTOTYPE. Nothing inside the screen responds to
+   a pointer — pointer-events are off across the whole reconstruction. The
+   only control is the segmented switch in the frame header, which belongs to
+   this page rather than to the product, and it chooses which sequence plays.
+
+   THE SCREEN IS BUILT AT ONE SIZE AND SCALED. Everything below is laid out in
+   the 1360×876 space the reference screens are proportioned in, and the frame
+   scales that whole layer to whatever width it is given. So the interface
+   keeps its density on a phone instead of reflowing into a mobile layout that
+   was never designed, and the cursor's coordinates stay in the same space as
+   the controls it is travelling between.
+
+   Colours, type sizes and spacing are sampled from the exported frames:
+   #3F6970 is the validate/checkbox teal, #DAE8EC the AI chip, #FCFCFD the
+   cards on an #F4F6F8 ground, #E8E8E9 the card hairline, #FFF8E1 the quote
+   highlight, #1A1C1E the snackbar.
+   ========================================================================== */
+
+.ofw {
+  --w: 1360;
+  --h: 918;
+  --ink: #1A1C1E;
+  --ink-2: #5B6670;
+  --ink-3: #8A949C;
+  --line: #E8E8E9;
+  --line-2: #D8DDE0;
+  --card: #FCFCFD;
+  --ground: #F4F6F8;
+  --teal: #3F6970;
+  --teal-dim: #B4C4C7;
+  --ai: #DAE8EC;
+  --chip-fill: #E8EDEE;
+  --quote: #FFF8E1;
+  --green: #1F8A57;
+  --green-bg: #E9F5EE;
+  --amber: #B8720A;
+  --amber-bg: #FCF3E7;
+  --red: #C0392B;
+
+  /* It follows the introduction rather than crowding it: the reader meets
+     the title, the standfirst and the role, and then the window. */
+  margin: clamp(26px, 3.4vw, 44px) 0 var(--cs-group, 28px);
+  container-type: inline-size;
+}
+
+/* --- the frame header: this page's control, not the product's ------------- */
+
+.ofw__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin: 0 0 10px;
+  padding: 0;
+}
+
+.ofw__bar > .ofw__label {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.ofw__seg {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.ofw__seg > button {
+  appearance: none;
+  margin: 0;
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.2;
+  color: var(--ink-secondary);
+  cursor: pointer;
+}
+
+.ofw__seg > button:hover { color: var(--ink); }
+.ofw__seg > button[aria-selected="true"] {
+  background: var(--ink);
+  color: var(--canvas);
+  font-weight: 600;
+}
+.ofw__seg > button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+/* --- the frame ------------------------------------------------------------ */
+
+.ofw__stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--w) / var(--h);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--ground);
+}
+
+.ofw__screen {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: calc(var(--w) * 1px);
+  height: calc(var(--h) * 1px);
+  transform-origin: 0 0;
+  /* Not a prototype. */
+  pointer-events: none;
+  user-select: none;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--ground);
+  -webkit-font-smoothing: antialiased;
+}
+
+.ofw__cap {
+  margin: 10px 0 0;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+/* --- the cursor ----------------------------------------------------------- */
+
+/* A Figma prototype cursor: a translucent dark disc, no arrow. It compresses
+   on a click rather than flashing, which is what a finger on a trackpad looks
+   like from the outside. */
+.ofw__cursor {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border-radius: 50%;
+  background: rgba(48, 52, 56, 0.5);
+  opacity: 0;
+  transform: translate3d(0, 0, 0) scale(1);
+  transition: opacity 260ms linear;
+  z-index: 40;
+}
+
+.ofw[data-run="1"] .ofw__cursor { opacity: 1; }
+.ofw__cursor.is-click { transform: translate3d(var(--cx), var(--cy), 0) scale(0.72); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ofw__cursor { display: none; }
+}
+
+/* ==========================================================================
+   THE SCREEN
+   ========================================================================== */
+
+/* THE SCREEN DOES NOT INHERIT THE ESSAY IT IS SITTING IN.
+
+   This is a reconstruction of a product, dropped into a case study whose own
+   stylesheet has opinions about every p, dl and span inside .case. The reset
+   below is written entirely in :where(), so it carries no specificity at all
+   and every rule after it wins without needing !important or a longer
+   selector. */
+:where(.ofw__screen) :where(p, h1, h2, h3, h4, dl, dt, dd, ul, ol, li,
+                            b, i, em, strong, span, small, label, figure) {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  color: inherit;
+  list-style: none;
+  background: none;
+  max-width: none;
+}
+.ofw__screen *, .ofw__screen *::before, .ofw__screen *::after { box-sizing: border-box; }
+
+.ofw-app {
+  display: grid;
+  grid-template-rows: 34px 44px 46px minmax(0, 1fr) 52px;
+  height: 100%;
+}
+
+/* --- product bar ---------------------------------------------------------- */
+
+.ofw-brand {
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  border-block-end: 1px solid var(--line);
+  background: #fff;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+.ofw-brand b { font-weight: 700; }
+.ofw-bot { width: 13px; height: 13px; margin-inline-start: 7px; opacity: 0.8; }
+
+/* --- doc bar + stepper ---------------------------------------------------- */
+
+.ofw-docbar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 0 18px;
+  border-block-end: 1px solid var(--line);
+  background: #fff;
+}
+.ofw-docid { display: flex; align-items: center; gap: 9px; font-size: 11.5px; color: var(--ink); }
+.ofw-docid .ofw-back { font-size: 13px; color: var(--ink-2); }
+.ofw-audit {
+  justify-self: end;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.ofw-steps { display: flex; align-items: flex-start; gap: 0; }
+.ofw-step { display: grid; justify-items: center; gap: 2px; width: 104px; }
+.ofw-step i {
+  display: grid; place-items: center;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #1E7A4B; color: #fff; font-size: 9px; font-style: normal; font-weight: 700;
+}
+.ofw-step--now i { background: var(--ink); }
+.ofw-step--todo i { background: transparent; border: 1px solid var(--line-2); color: var(--ink-3); }
+.ofw-step span {
+  font-size: 8.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-3);
+}
+.ofw-step--now span { color: var(--ink); }
+.ofw-rule { width: 26px; height: 1px; margin-block-start: 8px; background: var(--line-2); }
+
+/* --- validated meta row --------------------------------------------------- */
+
+.ofw-meta {
+  display: flex; align-items: center; gap: 0;
+  padding: 0 18px;
+  border-block-end: 1px solid var(--line);
+  background: #fff;
+}
+.ofw-meta > div { padding-inline-end: 26px; }
+.ofw-meta > div + div { padding-inline-start: 26px; border-inline-start: 1px solid var(--line); }
+.ofw-meta dt {
+  font-size: 8.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--ink-3);
+}
+.ofw-meta dd { margin: 1px 0 0; font-size: 13px; }
+
+/* --- body: document | tagging --------------------------------------------- */
+
+.ofw-body { display: grid; grid-template-columns: 300px minmax(0, 1fr); min-height: 0; overflow: hidden; }
+
+.ofw-doc {
+  display: grid; grid-template-rows: 34px 1fr 30px;
+  margin: 12px 0 12px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--card);
+  overflow: hidden;
+}
+.ofw-doc__h {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 11px; border-block-end: 1px solid var(--line); font-size: 11.5px;
+}
+.ofw-doc__h .ofw-pg { display: flex; align-items: center; gap: 5px; color: var(--ink-3); font-size: 10.5px; }
+.ofw-doc__h .ofw-pg b {
+  display: grid; place-items: center; min-width: 18px; height: 17px; padding: 0 4px;
+  border: 1px solid var(--line-2); border-radius: 3px; background: #fff;
+  color: var(--ink); font-weight: 500;
+}
+.ofw-doc__p { margin: 9px; border-radius: 3px; background: #E9EAEB; display: grid; place-items: center; }
+.ofw-doc__p p { margin: 6px 0 0; font-size: 10.5px; color: #9AA0A5; }
+.ofw-doc__f { display: flex; align-items: center; justify-content: flex-end; gap: 13px; padding-inline-end: 11px; }
+.ofw-doc__f svg { width: 12px; height: 12px; opacity: 0.55; }
+
+.ofw-pane { padding: 12px 12px 0; overflow: hidden; }
+
+.ofw-pane__h { display: flex; align-items: baseline; justify-content: space-between; margin: 2px 2px 10px; }
+.ofw-pane__h h3 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.015em; }
+.ofw-pane__h p { margin: 0; font-size: 10.5px; color: var(--ink-3); }
+
+/* --- a section card ------------------------------------------------------- */
+
+.ofw-card {
+  margin-block-end: 11px;
+  padding: 13px 15px 15px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+}
+.ofw-card__k {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--teal);
+}
+.ofw-card__s { margin: 2px 0 12px; font-size: 11px; color: var(--ink-2); }
+.ofw-card__b { display: grid; grid-template-columns: 186px minmax(0, 1fr) 322px; gap: 0 18px; }
+/* Section A's fields sit in a narrow column, which is why a tag the reviewer
+   adds lands on its own line under the two the model put there. */
+.ofw-card__b:not(.ofw-card__b--b) .ofw-grp > .ofw-row { max-width: 300px; }
+
+/* Section B is two columns of tag groups with the two requirement lists
+   running full width underneath them, and the evidence beside all of it. */
+.ofw-card__b--b { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 322px; }
+.ofw-b1 { grid-column: 1; grid-row: 1; }
+.ofw-b2 { grid-column: 2; grid-row: 1; }
+.ofw-bev { grid-column: 3; grid-row: 1 / span 3; }
+.ofw-b3 { grid-column: 1 / span 2; grid-row: 2; margin-block-start: 12px; }
+.ofw-b4 { grid-column: 1 / span 2; grid-row: 3; margin-block-start: 12px; }
+
+.ofw-lab {
+  margin: 0 0 7px;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ink-3);
+}
+.ofw-fl { margin: 0 0 6px; font-size: 12.5px; font-weight: 600; }
+.ofw-fl .ofw-req { color: var(--red); }
+.ofw-grp + .ofw-grp { margin-block-start: 12px; }
+
+/* --- chips ---------------------------------------------------------------- */
+
+.ofw-cls { display: grid; justify-items: start; gap: 5px; }
+.ofw-cls span {
+  padding: 4px 10px; border: 1px solid var(--line-2); border-radius: 4px;
+  background: #fff; font-size: 12px;
+}
+
+.ofw-row { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+
+.ofw-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  max-width: 178px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--ai);
+  font-size: 12px;
+  color: var(--teal);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.ofw-tag > .ofw-t { overflow: hidden; text-overflow: clip; }
+.ofw-tag svg { flex: none; width: 12px; height: 12px; opacity: 0.85; }
+.ofw-tag .ofw-x { flex: none; font-size: 12px; opacity: 0.75; }
+
+/* The reviewer's own tag: no model glyph on it, because the model did not
+   put it there. That difference is the point of the whole screen. */
+.ofw-tag--mine { background: #fff; border: 1px solid var(--line-2); color: var(--ink); }
+
+.ofw-add {
+  display: grid; place-items: center;
+  width: 22px; height: 22px;
+  border: 1px solid var(--line-2); border-radius: 50%;
+  background: #fff; color: var(--ink-2); font-size: 13px; line-height: 1;
+}
+
+.ofw-pill {
+  padding: 5px 10px; border-radius: 999px; background: var(--chip-fill);
+  font-size: 11px; white-space: nowrap; color: var(--ink-2);
+}
+.ofw-pill--o { background: #fff; border: 1px solid var(--line-2); }
+
+/* --- evidence ------------------------------------------------------------- */
+
+.ofw-ev__k { margin: 0 0 4px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+.ofw-ev__s { margin: 0 0 9px; font-size: 10.5px; color: var(--ink-3); }
+.ofw-ev {
+  padding: 12px 13px; border: 1px solid var(--line); border-radius: 7px; background: #fff;
+}
+.ofw-ev__t { font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+.ofw-ev__t svg { width: 12px; height: 12px; opacity: .8; }
+.ofw-conf {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 7px; border-radius: 999px;
+  background: var(--green-bg); color: var(--green);
+  font-size: 7.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  white-space: nowrap;
+}
+.ofw-conf::before { content: ""; width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+.ofw-conf--med { background: var(--amber-bg); color: var(--amber); }
+.ofw-ev p { margin: 4px 0 0; font-size: 11.5px; line-height: 1.5; color: var(--ink-2); }
+.ofw-ev__l { margin: 11px 0 5px; font-size: 8.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-3); }
+.ofw-kw { display: flex; flex-wrap: wrap; gap: 5px; }
+.ofw-kw span { padding: 3px 8px; border: 1px solid var(--line); border-radius: 3px; font-size: 10.5px; color: var(--ink-2); }
+.ofw-q { display: flex; flex-wrap: wrap; gap: 6px; }
+.ofw-q span { padding: 3px 7px; border-radius: 3px; background: var(--quote); font-size: 10.5px; color: #6B5A18; }
+.ofw-ev + .ofw-ev { margin-block-start: 9px; }
+.ofw-ev__row { display: flex; align-items: center; gap: 6px; }
+/* While the group is being explained, the control that opens the menu is
+   not offered again — same as the file. */
+.ofw[data-fb="1"] .ofw-grp .ofw-add[data-t="plus-prefix"] { visibility: hidden; }
+
+/* --- the tag menu --------------------------------------------------------- */
+
+.ofw-menu {
+  position: absolute;
+  width: 214px;
+  padding: 8px 8px 0;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(16, 24, 32, 0.14);
+  opacity: 0;
+  transform: translateY(-4px) scale(0.985);
+  transform-origin: 50% 0;
+  transition: opacity 150ms linear, transform 180ms cubic-bezier(.2,.8,.3,1);
+  z-index: 25;
+}
+.ofw[data-menu="1"] .ofw-menu { opacity: 1; transform: none; }
+
+.ofw-menu__s {
+  display: flex; align-items: center; gap: 6px;
+  height: 27px; padding: 0 9px;
+  border: 1px solid var(--line-2); border-radius: 4px;
+  font-size: 11.5px; color: var(--ink-3);
+}
+.ofw-menu__s svg { width: 11px; height: 11px; opacity: .6; }
+.ofw-menu__l { margin: 8px 0 0; padding: 0 0 44px; }
+.ofw-menu__o {
+  padding: 7px 9px; border-block-start: 1px solid var(--line);
+}
+.ofw-menu__o:first-child { border-block-start: 0; }
+.ofw-menu__o b { display: block; font-size: 11.5px; font-weight: 700; }
+.ofw-menu__o span { font-size: 10.5px; color: var(--ink-2); }
+.ofw-menu__o.is-hl { background: #F2F5F6; }
+
+/* --- the feedback group --------------------------------------------------- */
+
+/* It opens inside the group it belongs to and pushes what is under it down,
+   which is what it does in the file: the screen does not change, one part of
+   it grows. */
+.ofw-fb {
+  overflow: hidden;
+  max-height: 0;
+  margin: 0;
+  opacity: 0;
+  transition: max-height 420ms cubic-bezier(.2,.8,.3,1), opacity 240ms linear,
+              margin 420ms cubic-bezier(.2,.8,.3,1);
+}
+.ofw[data-fb="1"] .ofw-fb { max-height: 400px; opacity: 1; margin: 12px 0 14px; }
+
+.ofw-fb__c {
+  position: relative;
+  padding: 14px 16px 15px 18px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fff;
+}
+.ofw-fb__c::before {
+  content: ""; position: absolute; inset-block: 14px auto; inset-inline-start: 0;
+  width: 3px; height: 34px; border-radius: 0 2px 2px 0; background: #77949A;
+}
+.ofw[data-mode="remove"] .ofw-fb__c::before { background: #C0857E; }
+
+.ofw-fb__t { margin: 0; font-size: 13px; font-weight: 700; }
+.ofw-fb__w { display: flex; align-items: center; gap: 7px; margin: 3px 0 0; font-size: 11.5px; color: var(--ink-2); }
+.ofw-fb__w b { padding: 3px 8px; border-radius: 999px; background: #F0F3F4; font-size: 11px; font-weight: 500; color: var(--teal); }
+.ofw[data-mode="remove"] .ofw-fb__w b { background: #FBF0EF; color: #9B5A52; text-decoration: line-through; }
+.ofw-fb__q { margin: 11px 0 1px; font-size: 12.5px; font-weight: 600; }
+.ofw-fb__h { margin: 0 0 8px; font-size: 11px; color: var(--ink-3); }
+
+.ofw-ck { display: grid; gap: 7px; }
+.ofw-ck > label { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--ink); }
+.ofw-ck i {
+  display: grid; place-items: center; flex: none;
+  width: 15px; height: 15px; border: 1px solid var(--line-2); border-radius: 3px; background: #fff;
+}
+.ofw-ck i svg { width: 9px; height: 9px; opacity: 0; }
+.ofw-ck > label.is-on i { background: var(--teal); border-color: var(--teal); }
+.ofw-ck > label.is-on i svg { opacity: 1; }
+
+.ofw-fb__o { margin-block-start: 12px; padding-block-start: 11px; border-block-start: 1px solid var(--line); }
+.ofw-fb__o p { margin: 0 0 6px; font-size: 12px; font-weight: 600; }
+.ofw-fb__o div {
+  height: 30px; padding: 0 11px; display: flex; align-items: center;
+  border: 1px solid var(--line-2); border-radius: 5px; font-size: 11.5px; color: var(--ink-3);
+}
+
+/* --- removal treatment ---------------------------------------------------- */
+
+/* Restrained and local: the tag being taken out says so while it leaves, and
+   nothing else on the screen changes colour. */
+.ofw-tag.is-going {
+  background: #FBF0EF; color: #9B5A52;
+  text-decoration: line-through;
+  transition: background 200ms linear, color 200ms linear;
+}
+.ofw-tag.is-gone {
+  max-width: 0; padding-inline: 0; margin-inline-end: -7px; opacity: 0;
+  transition: max-width 320ms cubic-bezier(.4,0,.2,1), opacity 220ms linear,
+              padding 320ms cubic-bezier(.4,0,.2,1), margin 320ms cubic-bezier(.4,0,.2,1);
+}
+.ofw-tag--new {
+  animation: ofw-tag-in 300ms cubic-bezier(.2,.8,.3,1) both;
+}
+@keyframes ofw-tag-in {
+  from { opacity: 0; transform: translateY(4px) scale(.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* --- snackbar ------------------------------------------------------------- */
+
+.ofw-snack {
+  position: absolute;
+  inset-inline: 0; inset-block-end: 66px;
+  margin-inline: auto;
+  width: max-content;
+  display: flex; align-items: center; gap: 26px;
+  padding: 11px 16px 11px 14px;
+  border-radius: 7px;
+  background: #1A1C1E;
+  color: #fff;
+  font-size: 12.5px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 220ms linear, transform 260ms cubic-bezier(.2,.8,.3,1);
+  z-index: 30;
+}
+.ofw[data-snack="1"] .ofw-snack { opacity: 1; transform: none; }
+.ofw-snack__i { display: flex; align-items: center; gap: 9px; }
+.ofw-snack svg { width: 13px; height: 13px; }
+.ofw-snack b { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #81B2B5; }
+
+/* --- bottom bar ----------------------------------------------------------- */
+
+.ofw-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 18px;
+  border-block-start: 1px solid var(--line);
+  background: #fff;
+}
+.ofw-foot__l { display: flex; align-items: center; gap: 7px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.ofw-foot__r { display: flex; align-items: center; gap: 11px; }
+.ofw-rev {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 15px; border: 1px solid var(--line-2); border-radius: 5px; background: #fff;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2);
+}
+.ofw-ico { width: 15px; height: 15px; opacity: .5; }
+.ofw-val {
+  padding: 11px 26px; border-radius: 6px;
+  background: var(--teal-dim); color: #fff;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  transition: background 220ms linear;
+}
+.ofw[data-valid="1"] .ofw-val { background: var(--teal); }
+.ofw-val.is-press { animation: ofw-press 260ms cubic-bezier(.3,0,.3,1) both; }
+@keyframes ofw-press { 50% { transform: scale(.975); } }
+
+/* --------------------------------------------------------------------------
+   NARROW
+
+   The screen does not become a phone layout — there was never one. It is the
+   same reconstruction, scaled down, which is also how somebody would look at
+   the real file on a phone.
+   -------------------------------------------------------------------------- */
+
+@container (max-width: 620px) {
+  .ofw__bar { gap: 8px 10px; }
+  .ofw__seg > button { padding: 5px 10px; font-size: 11.5px; }
+}
+
 </style>
 </head>
 
@@ -32537,6 +33116,191 @@ body{display:grid;place-items:center;min-height:100vh}
         <div class="ar-meta__row"><dt>Phase</dt><dd>Design delivered and handed to engineering</dd></div>
       </dl>
     </header>
+
+    <!-- ======================================================================
+         THE WALKTHROUGH
+
+         The tagging screen rebuilt in markup so the three decisions a reviewer
+         can make about an AI suggestion can be watched rather than described.
+         Nothing in the screen is interactive; the only control is the switch
+         above it, which belongs to this page. Styles in the 24 block,
+         behaviour in js at the foot of the document.
+         ====================================================================== -->
+    <figure class="ofw ar-wide" data-ofw data-mode="add" data-run="0"
+            data-menu="0" data-fb="0" data-snack="0" data-valid="0">
+      <figcaption class="ofw__bar">
+        <span class="ofw__label">Review decision</span>
+        <div class="ofw__seg" role="tablist" aria-label="Which review decision to watch">
+          <button type="button" role="tab" data-mode="add" aria-selected="true">Add a tag</button>
+          <button type="button" role="tab" data-mode="remove" aria-selected="false">Remove a tag</button>
+          <button type="button" role="tab" data-mode="keep" aria-selected="false">Keep a tag</button>
+        </div>
+      </figcaption>
+
+      <div class="ofw__stage" aria-hidden="true">
+        <div class="ofw__screen" data-screen>
+          <div class="ofw-app">
+          
+            <div class="ofw-brand"><span>opti<b>STREAM</b></span><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg></div>
+          
+            <div class="ofw-docbar">
+              <p class="ofw-docid"><span class="ofw-back">&larr;</span>DOC-4EBPU5QJA6 / CNS-4EBPU7I7ON</p>
+              <div class="ofw-steps"><div class="ofw-step"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" style="width:9px;height:9px"><path d="M20 6L9 17l-5-5"/></svg></i><span>CLUSTERING</span></div><span class="ofw-rule"></span><div class="ofw-step"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" style="width:9px;height:9px"><path d="M20 6L9 17l-5-5"/></svg></i><span>PAYOR</span></div><span class="ofw-rule"></span><div class="ofw-step"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" style="width:9px;height:9px"><path d="M20 6L9 17l-5-5"/></svg></i><span>CLASSIFICATION</span></div><span class="ofw-rule"></span><div class="ofw-step"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" style="width:9px;height:9px"><path d="M20 6L9 17l-5-5"/></svg></i><span>DATA EXTRACTION</span></div><span class="ofw-rule"></span><div class="ofw-step ofw-step--now"><i>5</i><span>TAGGING</span></div><span class="ofw-rule"></span><div class="ofw-step ofw-step--todo"><i>6</i><span>MATCHING</span></div></div>
+              <p class="ofw-audit"><svg class="ofw-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Audit trail</p>
+            </div>
+          
+            <dl class="ofw-meta">
+              <div><dt>Date received</dt><dd>02 Jan 2025</dd></div>
+              <div><dt>Validated payor</dt><dd>Blue Cross Blue Shield</dd></div>
+              <div><dt>Validated classification</dt><dd>&#9432; Claim (Denied: Medical Necessity)</dd></div>
+            </dl>
+          
+            <div class="ofw-body">
+          
+              <div class="ofw-doc">
+                <div class="ofw-doc__h"><span>&#128441; Scanned Document</span>
+                  <span class="ofw-pg">Page <b>1</b> / 3</span></div>
+                <div class="ofw-doc__p"><div style="text-align:center"><svg viewBox="0 0 24 24" fill="none" stroke="#9AA0A5" stroke-width="1.6" style="width:22px;height:22px"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg><p>Document preview</p></div></div>
+                <div class="ofw-doc__f"><svg class="ofw-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/><path d="M8 11h6"/></svg><svg class="ofw-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/><path d="M8 11h6M11 8v6"/></svg><svg class="ofw-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="M8 12l4 4 4-4"/><path d="M5 20h14"/></svg></div>
+              </div>
+          
+              <div class="ofw-pane">
+                <div class="ofw-pane__h"><h3>Tagging</h3><p>Step 5 of 6 &middot; All sections required</p></div>
+          
+                <div class="ofw-card">
+                  <p class="ofw-card__k">Section A &middot; Claim adjustment &amp; remark codes</p>
+                  <p class="ofw-card__s">Adjustment and Remittance Remarks provided by the payer.</p>
+                  <div class="ofw-card__b">
+          
+                    <div>
+                      <p class="ofw-lab">Classification</p>
+                      <div class="ofw-cls"><span>Claim</span><span>Denied</span><span>Medical Necessity</span></div>
+                    </div>
+          
+                    <div>
+                      <div class="ofw-grp">
+                        <p class="ofw-fl">Prefix</p>
+                        <div class="ofw-row"><span class="ofw-tag"><span class="ofw-t">DN</span><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg><span class="ofw-x">&times;</span></span><span class="ofw-tag"><span class="ofw-t">CO</span><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg><span class="ofw-x">&times;</span></span><span data-slot="pr"></span><span class="ofw-add" data-t="plus-prefix">+</span></div>
+                      </div>
+          
+                      <div class="ofw-fb" data-fb-host>
+                        <div class="ofw-fb__c">
+                          <p class="ofw-fb__t">You made changes to this group</p>
+                          <p class="ofw-fb__w"><span data-fbverb>Added:</span><b data-fbtag>PR &mdash; Patient Responsibility</b></p>
+                          <p class="ofw-fb__q" data-fbq>Why did you make this change?</p>
+                          <p class="ofw-fb__h">Your feedback trains the model. Select all that apply.</p>
+                          <div data-ckwrap><div class="ofw-ck"><label data-ck="a0"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></i>The AI missed a required code for this scenario</label><label data-ck="a1"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></i>This code is commonly paired with existing codes</label><label data-ck="a2"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></i>Payer-specific requirements necessitate this code</label><label data-ck="a3"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></i>Clinical documentation supports this additional code</label><label data-ck="a4"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></i>This code is required for correct routing</label></div></div>
+                          <div class="ofw-fb__o" data-other>
+                            <p>Other reason</p><div>Tell us what we missed&hellip;</div>
+                          </div>
+                        </div>
+                      </div>
+          
+                      <div class="ofw-grp">
+                        <p class="ofw-fl">Reason code (CARC)<span class="ofw-req">*</span></p>
+                        <div class="ofw-row"><span class="ofw-tag" data-t="carc-197"><span class="ofw-t">197 &mdash; Authorization Mis</span><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg><span class="ofw-x">&times;</span></span><span class="ofw-add">+</span></div>
+                      </div>
+          
+                      <div class="ofw-grp">
+                        <p class="ofw-fl">Additional Details (RARC)</p>
+                        <div class="ofw-row"><span class="ofw-tag"><span class="ofw-t">M62 &mdash; Missing Auth Co</span><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg><span class="ofw-x">&times;</span></span><span class="ofw-add">+</span></div>
+                      </div>
+                    </div>
+          
+                    <div>
+                      <p class="ofw-ev__k">Evidence</p>
+                      <p class="ofw-ev__s">AI-identified evidence. Your validation trains the model.</p>
+                      <div class="ofw-ev">
+            <div class="ofw-ev__row"><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg><span class="ofw-ev__t">DN</span><span class="ofw-conf">High confidence</span></div>
+            <p>Prefix DN was identified from the denial notice language at the top of the document.</p>
+            <div class="ofw-ev__row" style="margin-top:11px"><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg><span class="ofw-ev__t">197 &mdash; Missing Authorization</span><span class="ofw-conf">High confidence</span></div>
+            <p>Claim denied due to absence of prior authorization on file.</p>
+            <p class="ofw-ev__l">Keywords</p>
+            <div class="ofw-kw"><span>prior authorization</span><span>not authorized</span><span>denied</span></div>
+            <p class="ofw-ev__l">Extracted quotes</p>
+            <div class="ofw-q"><span>&rdquo; not having prior authorization</span><span>&rdquo; denied</span></div>
+          </div>
+                    </div>
+                  </div>
+                </div>
+          
+                <div class="ofw-card">
+                  <p class="ofw-card__k"><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg> Section B &middot; Appeal routing tags</p>
+                  <p class="ofw-card__s">Select options relevant to the document to improve routing and downstream workflows.</p>
+                  <div class="ofw-card__b ofw-card__b--b">
+                    <div class="ofw-b1">
+                      <div class="ofw-grp"><p class="ofw-fl">Prefix</p>
+                        <div class="ofw-row"><span class="ofw-tag"><span class="ofw-t">Appeal</span><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg><span class="ofw-x">&times;</span></span><span class="ofw-add">+</span></div></div>
+                      <div class="ofw-grp"><p class="ofw-fl">Timeframe</p>
+                        <div class="ofw-row"><span class="ofw-tag"><span class="ofw-t">30 days</span><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg><span class="ofw-x">&times;</span></span><span class="ofw-add">+</span></div></div>
+                    </div>
+                    <div class="ofw-b2">
+                      <div class="ofw-grp"><p class="ofw-fl">Action</p>
+                        <div class="ofw-row"><span class="ofw-tag"><span class="ofw-t">Timely Filing</span><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg><span class="ofw-x">&times;</span></span><span class="ofw-add">+</span></div></div>
+                      <div class="ofw-grp"><p class="ofw-fl">Request Level</p>
+                        <div class="ofw-row"><span class="ofw-tag"><span class="ofw-t">First Request</span><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg><span class="ofw-x">&times;</span></span><span class="ofw-add">+</span></div></div>
+                    </div>
+                    <div class="ofw-bev">
+                      <p class="ofw-ev__k">Evidence</p>
+                      <p class="ofw-ev__s">AI-identified evidence. Your validation trains the model.</p>
+                      <div class="ofw-ev">
+            <div class="ofw-ev__row"><svg class="ofw-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 8V4"/><circle cx="9" cy="14" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg><span class="ofw-ev__t">ATFL30</span><span class="ofw-conf ofw-conf--med">Medium confidence</span></div>
+            <p>opti identified the claim was submitted past the deadline. This tag supports appeal routing.</p>
+            <p class="ofw-ev__l">Keywords</p>
+            <div class="ofw-kw"><span>timely filing</span><span>submission deadline</span><span>appeal</span></div>
+            <p class="ofw-ev__l">Extracted quotes</p>
+            <div class="ofw-q"><span>&rdquo; submitted past the deadline</span></div>
+          </div>
+                    </div>
+                    <div class="ofw-b3">
+                      <div class="ofw-grp"><p class="ofw-fl">Letter Requirement(s)</p>
+                        <div class="ofw-row"><span class="ofw-pill">Bar Code</span><span class="ofw-pill">Cover Letter</span><span class="ofw-pill">New Claim Form</span></div></div>
+                    </div>
+                    <div class="ofw-b4">
+                      <div class="ofw-grp"><p class="ofw-fl">Submission Requirement(s)</p>
+                        <div class="ofw-row"><span class="ofw-pill ofw-pill--o">Fax</span><span class="ofw-pill ofw-pill--o">Insurance Commissioner Address</span><span class="ofw-pill ofw-pill--o">Appeal Address</span><span class="ofw-pill ofw-pill--o">Email</span><span class="ofw-pill ofw-pill--o">Portal</span><span class="ofw-pill ofw-pill--o">Phone Call</span><span class="ofw-pill ofw-pill--o">Did Not Call Provider Services First</span></div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          
+            <div class="ofw-foot">
+              <p class="ofw-foot__l">&lsaquo; Go to clustering</p>
+              <div class="ofw-foot__r">
+                <span class="ofw-rev"><svg class="ofw-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a8 8 0 118 8"/><path d="M4 4v7h7"/></svg> Revert to original</span>
+                <svg class="ofw-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a8 8 0 118 8"/><path d="M4 4v7h7"/></svg><svg class="ofw-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 10-8 8"/><path d="M20 4v7h-7"/></svg>
+                <span class="ofw-val" data-t="validate">Validate</span>
+              </div>
+            </div>
+          
+            <div class="ofw-menu" data-menu-el>
+              <div class="ofw-menu__s"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg> Search tags&hellip;</div>
+              <div class="ofw-menu__l">
+                <div class="ofw-menu__o" data-t="opt-pr"><b>PR</b><span>Patient Responsibility</span></div>
+                <div class="ofw-menu__o" data-t="opt-oa"><b>OA</b><span>Other Adjustment</span></div>
+                <div class="ofw-menu__o" data-t="opt-pi"><b>PI</b><span>Payer Initiated Reduction</span></div>
+              </div>
+            </div>
+          
+            <div class="ofw-snack">
+              <span class="ofw-snack__i">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#81B2B5" stroke-width="2.2"
+                     stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/>
+                  <path d="M8.5 12.3l2.4 2.4 4.6-4.9"/></svg>
+                <span data-snacktext>Added: PR &mdash; Patient Responsibility</span>
+              </span>
+              <b>Undo</b>
+            </div>
+          </div>
+          <span class="ofw__cursor" data-cursor></span>
+        </div>
+      </div>
+
+      <p class="ofw__cap" data-ofwcap>The reviewer adds a code the model missed, says why, and validates.</p>
+      <template data-ck-remove><div class="ofw-ck"><label data-ck="r0"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></i>The AI suggested an incorrect code</label><label data-ck="r1"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></i>A more specific code applies to this case</label><label data-ck="r2"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></i>The evidence quoted doesn&rsquo;t support this code</label><label data-ck="r3"><i><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></i>Other reason</label></div></template>
+    </figure>
+
 
 <div class="cs-wrap">
 <section class="acc acc--static" data-open="1">
@@ -45154,6 +45918,325 @@ window.PF = window.PF || {};
       torch.style.transform = beam.style.transform = '';
   });
 })();
+
+</script>
+<script>
+/* ==========================================================================
+   ofw.js — the OptiFlow walkthrough
+
+   One reconstructed screen, three sequences over it, and a cursor.
+
+   THE SEQUENCES ARE LISTS OF BEATS, NOT ANIMATIONS. Each beat names a control
+   to travel to, how long to sit on it before pressing, and what the press
+   changes. Nothing here tweens the interface: the beat sets an attribute or a
+   class and the stylesheet does the rest, which is why the screen behaves like
+   a screen — a menu opens, a group grows, a tag lands — instead of like a
+   slideshow of six pictures.
+
+   THE CURSOR TRAVELS IN THE SCREEN'S OWN COORDINATES. The screen is laid out
+   at 1360×876 and scaled to fit the frame, and the cursor lives inside that
+   scaled layer, so a control's centre is read straight off its box and no
+   measurement has to be converted. Travel time is proportional to distance,
+   with a floor and a ceiling, so a short hop is quick and a long one across
+   the screen still reads as one movement rather than a jump.
+
+   Nothing runs until the frame is on screen, and nothing runs at all under
+   reduced motion — there the screen is simply shown in its starting state.
+   ========================================================================== */
+
+window.PF = window.PF || {};
+
+(function (PF) {
+  'use strict';
+
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  function build(root) {
+    if (root.hasAttribute('data-ofw-ready')) return;
+    root.setAttribute('data-ofw-ready', '1');
+
+    var screen = root.querySelector('[data-screen]');
+    var stage = root.querySelector('.ofw__stage');
+    var cursor = root.querySelector('[data-cursor]');
+    var caption = root.querySelector('[data-ofwcap]');
+    var seg = root.querySelectorAll('.ofw__seg button');
+    var W = 1360, H = 876;
+
+    /* ---- fit ------------------------------------------------------------ */
+
+    function fit() {
+      var w = stage.clientWidth;
+      if (!w) return;
+      screen.style.transform = 'scale(' + (w / W).toFixed(5) + ')';
+    }
+    if (window.ResizeObserver) new ResizeObserver(fit).observe(stage);
+    fit();
+
+    /* ---- the cursor ----------------------------------------------------- */
+
+    var at = { x: 250, y: 690 };
+    var timers = [];
+    var raf = 0;
+
+    function clear() {
+      for (var i = 0; i < timers.length; i++) clearTimeout(timers[i]);
+      timers = [];
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+    }
+
+    function place(x, y) {
+      at.x = x; at.y = y;
+      cursor.style.setProperty('--cx', x.toFixed(1) + 'px');
+      cursor.style.setProperty('--cy', y.toFixed(1) + 'px');
+      cursor.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
+    }
+    place(at.x, at.y);
+
+    /* Where a control is, in the screen's own pixels. The screen is scaled, so
+       both boxes are divided by the same scale and the ratio is exact. */
+    function centre(sel) {
+      var el = typeof sel === 'string' ? screen.querySelector(sel) : sel;
+      if (!el) return null;
+      var b = el.getBoundingClientRect(), s = screen.getBoundingClientRect();
+      var k = (s.width / W) || 1;
+      return { x: (b.left - s.left) / k + (b.width / k) / 2,
+               y: (b.top - s.top) / k + (b.height / k) / 2 };
+    }
+
+    /* Someone demonstrating a prototype does not move in a straight line at a
+       constant rate. This eases out of rest and into the target, and bends the
+       path very slightly so the travel reads as a hand rather than a tween. */
+    function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+
+    function moveTo(p, done) {
+      var x0 = at.x, y0 = at.y, dx = p.x - x0, dy = p.y - y0;
+      var dist = Math.sqrt(dx * dx + dy * dy);
+      var ms = Math.max(260, Math.min(820, 230 + dist * 1.05));
+      var bend = Math.min(26, dist * 0.06) * (dx >= 0 ? 1 : -1);
+      var t0 = performance.now();
+      (function step(now) {
+        var t = Math.min(1, (now - t0) / ms), e = ease(t);
+        var arc = Math.sin(Math.PI * t) * bend;
+        place(x0 + dx * e, y0 + dy * e - arc * 0.35);
+        if (t < 1) raf = requestAnimationFrame(step);
+        else { raf = 0; done && done(); }
+      })(t0);
+    }
+
+    function press(done) {
+      cursor.classList.add('is-click');
+      timers.push(setTimeout(function () {
+        cursor.classList.remove('is-click');
+        done && done();
+      }, 170));
+    }
+
+    /* ---- the screen's state --------------------------------------------- */
+
+    var slot = screen.querySelector('[data-slot="pr"]');
+    var carc = screen.querySelector('[data-t="carc-197"]');
+    var ckwrap = screen.querySelector('[data-ckwrap]');
+    var other = screen.querySelector('[data-other]');
+    var addCk = ckwrap.innerHTML;
+    var remCk = root.querySelector('[data-ck-remove]').innerHTML;
+    var menu = screen.querySelector('[data-menu-el]');
+    var val = screen.querySelector('[data-t="validate"]');
+
+    var CAPTION = {
+      add: 'The reviewer adds a code the model missed, says why, and validates.',
+      remove: 'The reviewer takes out a code the model got wrong, says why, and validates.',
+      keep: 'The reviewer reads the evidence behind the model’s suggestion, agrees, and validates.'
+    };
+
+    function reset(mode) {
+      clear();
+      root.setAttribute('data-mode', mode);
+      root.setAttribute('data-menu', '0');
+      root.setAttribute('data-fb', '0');
+      root.setAttribute('data-snack', '0');
+      root.setAttribute('data-valid', mode === 'keep' ? '1' : '0');
+      slot.innerHTML = '';
+      carc.className = 'ofw-tag';
+      carc.style.display = '';
+      ckwrap.innerHTML = mode === 'remove' ? remCk : addCk;
+      other.style.display = mode === 'remove' ? 'none' : '';
+      screen.querySelector('[data-fbverb]').textContent = mode === 'remove' ? 'Removed:' : 'Added:';
+      screen.querySelector('[data-fbtag]').innerHTML =
+        mode === 'remove' ? '197 — Authorization Missing' : 'PR — Patient Responsibility';
+      screen.querySelector('[data-fbq]').textContent =
+        mode === 'remove' ? 'Why did you remove this tag?' : 'Why did you make this change?';
+      screen.querySelector('[data-snacktext]').innerHTML =
+        mode === 'remove' ? 'Removed: 197 — Authorization Missing'
+                          : 'Added: PR — Patient Responsibility';
+      val.classList.remove('is-press');
+      [].forEach.call(screen.querySelectorAll('.ofw-menu__o'), function (o) {
+        o.classList.remove('is-hl');
+      });
+      if (caption) caption.textContent = CAPTION[mode];
+      place(250, 690);
+    }
+
+    /* The menu hangs off the control that opened it, measured rather than
+       positioned by hand, so it stays put at any scale. */
+    function openMenu() {
+      var p = centre('[data-t="plus-prefix"]');
+      menu.style.left = (p.x - 18) + 'px';
+      menu.style.top = (p.y + 16) + 'px';
+      root.setAttribute('data-menu', '1');
+    }
+
+    /* ---- the beats ------------------------------------------------------ */
+
+    function run(steps, i) {
+      if (i >= steps.length) {
+        timers.push(setTimeout(function () { play(root.getAttribute('data-mode')); }, 2200));
+        return;
+      }
+      var s = steps[i];
+      var go = function () {
+        timers.push(setTimeout(function () {
+          if (s.click) {
+            press(function () {
+              s.act && s.act();
+              timers.push(setTimeout(function () { run(steps, i + 1); }, s.after || 700));
+            });
+          } else {
+            s.act && s.act();
+            timers.push(setTimeout(function () { run(steps, i + 1); }, s.after || 700));
+          }
+        }, s.hold || 320));
+      };
+      if (s.to) {
+        var p = centre(s.to);
+        if (!p) { run(steps, i + 1); return; }
+        moveTo(p, go);
+      } else go();
+    }
+
+    function seq(mode) {
+      if (mode === 'add') return [
+        { to: '[data-t="plus-prefix"]', hold: 520, click: 1, act: openMenu, after: 620 },
+        { to: '[data-t="opt-pr"]', hold: 300,
+          act: function () { screen.querySelector('[data-t="opt-pr"]').classList.add('is-hl'); },
+          after: 420 },
+        { to: '[data-t="opt-pr"]', hold: 120, click: 1, after: 520, act: function () {
+            screen.querySelector('[data-t="opt-pr"]').classList.remove('is-hl');
+            root.setAttribute('data-menu', '0');
+            slot.innerHTML = '<span class="ofw-tag ofw-tag--mine ofw-tag--new" data-t="pr">' +
+              '<span class="ofw-t">PR — Patient Responsibility</span>' +
+              '<span class="ofw-x">×</span></span>';
+          } },
+        { hold: 260, after: 1500, act: function () {
+            root.setAttribute('data-fb', '1');
+            root.setAttribute('data-snack', '1');
+            timers.push(setTimeout(function () { root.setAttribute('data-snack', '0'); }, 2600));
+          } },
+        { to: '[data-ck="a0"]', hold: 560, click: 1, after: 1400, act: function () {
+            screen.querySelector('[data-ck="a0"]').classList.add('is-on');
+            root.setAttribute('data-valid', '1');
+          } },
+        { to: '[data-t="validate"]', hold: 480, click: 1, after: 1200, act: function () {
+            val.classList.add('is-press');
+            timers.push(setTimeout(function () {
+              root.setAttribute('data-fb', '0');
+              slot.innerHTML = '<span class="ofw-tag" data-t="pr"><span class="ofw-t">' +
+                'PR — Patient Responsibility</span>' + BOT + '<span class="ofw-x">×</span></span>';
+            }, 420));
+          } }
+      ];
+
+      if (mode === 'remove') return [
+        { to: '[data-t="carc-197"] .ofw-x', hold: 620, click: 1, after: 520, act: function () {
+            carc.classList.add('is-going');
+          } },
+        { hold: 240, after: 900, act: function () {
+            carc.classList.add('is-gone');
+            timers.push(setTimeout(function () { carc.style.display = 'none'; }, 340));
+            root.setAttribute('data-fb', '1');
+            root.setAttribute('data-snack', '1');
+            timers.push(setTimeout(function () { root.setAttribute('data-snack', '0'); }, 3000));
+          } },
+        { to: '[data-ck="r0"]', hold: 620, click: 1, after: 1400, act: function () {
+            screen.querySelector('[data-ck="r0"]').classList.add('is-on');
+            root.setAttribute('data-valid', '1');
+          } },
+        { to: '[data-t="validate"]', hold: 480, click: 1, after: 1200, act: function () {
+            val.classList.add('is-press');
+            timers.push(setTimeout(function () { root.setAttribute('data-fb', '0'); }, 420));
+          } }
+      ];
+
+      /* Keep: there is no correction, so there is no panel. The interaction is
+         reading the evidence and agreeing with it. */
+      return [
+        { to: '[data-t="carc-197"]', hold: 900, after: 700 },
+        { to: '.ofw-ev .ofw-ev__row:nth-of-type(1)', hold: 300, after: 600 },
+        { to: '.ofw-ev .ofw-q span:first-child', hold: 1700, after: 900 },
+        { to: '[data-t="validate"]', hold: 520, click: 1, after: 1600, act: function () {
+            val.classList.add('is-press');
+          } }
+      ];
+    }
+
+    var BOT = '';
+    (function () {
+      var b = screen.querySelector('.ofw-tag .ofw-bot');
+      if (b) BOT = b.outerHTML;
+    })();
+
+    function play(mode) {
+      reset(mode);
+      root.setAttribute('data-run', '1');
+      timers.push(setTimeout(function () { run(seq(mode), 0); }, 700));
+    }
+
+    /* ---- the switch ------------------------------------------------------ */
+
+    for (var i = 0; i < seg.length; i++) {
+      (function (btn) {
+        btn.addEventListener('click', function () {
+          for (var k = 0; k < seg.length; k++) seg[k].setAttribute('aria-selected', 'false');
+          btn.setAttribute('aria-selected', 'true');
+          if (still()) { reset(btn.getAttribute('data-mode')); return; }
+          play(btn.getAttribute('data-mode'));
+        });
+      })(seg[i]);
+    }
+
+    function still() { return reduced.matches; }
+
+    /* ---- only while it is on screen -------------------------------------- */
+
+    reset('add');
+    if (still()) return;
+
+    if (window.IntersectionObserver) {
+      var seen = false;
+      new IntersectionObserver(function (es) {
+        for (var j = 0; j < es.length; j++) {
+          if (es[j].isIntersecting && !seen) { seen = true; play('add'); }
+          else if (!es[j].isIntersecting && seen) { seen = false; clear(); root.setAttribute('data-run', '0'); }
+        }
+      }, { threshold: 0.35 }).observe(root);
+    } else play('add');
+  }
+
+  function init(scope) {
+    scope = scope || document;
+    var all = scope.querySelectorAll('[data-ofw]');
+    for (var i = 0; i < all.length; i++) build(all[i]);
+  }
+
+  var prev = PF.initRoutes;
+  if (typeof prev === 'function') {
+    PF.initRoutes = function (s) { prev(s); init(s); };
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { init(document); });
+  } else init(document);
+
+})(window.PF);
 
 </script>
 </body>
