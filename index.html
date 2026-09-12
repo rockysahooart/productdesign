@@ -20387,6 +20387,30 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
 
 /* ===== css/20-handwriting.css ===== */
+/* --------------------------------------------------------------------------
+   THE IMAGES SIT ON THE PAGE RATHER THAN IN A FRAME
+
+   Every photograph, crop and diagram in this study carried a 1px rule and a
+   4px radius, which drew a box around the picture and made the page a wall
+   the pictures were hung on. The pictures already have their own edges —
+   the kit against its ground, the sheet against the lid — so the rule was
+   describing a boundary twice.
+
+   THE BORDER IS THE ONLY THING THAT GOES. Dimensions, ratios, crops, radius,
+   the surface behind a letterboxed photo, spacing, captions and the
+   responsive behaviour are all untouched, and nothing that is not an image
+   loses an edge: the flow chips, the configuration tabs and the subteam
+   board keep theirs, because those are components and their borders are
+   doing structural work.
+
+   Scoped from #specimen so the other three studies keep their figure
+   treatment, and written at (1,1,1) so it beats the .case rules above. */
+#specimen .sk-hero img,
+#specimen .sk-fig img,
+#specimen .sk-ba img,
+#specimen .sk-ba__c img,
+#specimen .sk-crop img { border: 0; }
+
 /* ==========================================================================
    20 — THE HANDWRITTEN WORD
 
