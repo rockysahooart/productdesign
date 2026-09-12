@@ -20999,6 +20999,148 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 }
 
 
+/* ===== css/23-stories.css ===== */
+/* ==========================================================================
+   23 — THE WRITTEN ARTIFACTS
+
+   One section per case study, at the foot of it, holding what I handed to
+   product and engineering rather than what I showed them. It is the last
+   accordion on every page and it is closed: the narrative is the study, and
+   this is the paperwork under it.
+
+   IT IS DELIBERATELY PLAIN. No card, no ticket chrome, no imitation of a Jira
+   board — there is a real board in the Specimen Kit study and a real build
+   spec in the audit, and a drawn copy of either would be a worse version of
+   something already on the page. What is here is a definition list with a
+   rule down its left edge, in the same hairline, the same small sans and the
+   same tokens as everything around it.
+
+   THE LABEL TELLS THE TRUTH ABOUT PROVENANCE. Two of these studies have
+   artifacts I actually wrote — the subteam's Jira tickets, the Provider Action
+   Queue build spec — and they are quoted from the project. Two do not, and
+   their sections say so in a note at the top and are titled as
+   reconstructions rather than as things I wrote at the time. The difference
+   is the whole point of showing them.
+
+   THREE-CLASS SELECTORS ARE LOAD-BEARING. 14-case-type.css ends with an :is()
+   catch-all at (0,2,2) reaching every span, li, dt and dd inside a case study,
+   and a child combinator adds no specificity. Every rule here is written from
+   .case, plus two more classes, or it loses.
+   ========================================================================== */
+
+.case .us { display: grid; gap: 18px; margin: 0; }
+
+/* --- provenance, when it needs saying ------------------------------------- */
+
+.case .us__note {
+  margin: 0 0 2px;
+  padding: 11px 13px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+/* --- one story ------------------------------------------------------------ */
+
+.case .us__item {
+  margin: 0;
+  padding: 0 0 0 16px;
+  border-inline-start: 2px solid var(--border);
+}
+
+.case .us__item > .us__h {
+  margin: 0 0 3px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 640;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+}
+
+/* Where the story came from: the ticket, the spec, the board column. Small,
+   and set apart from the story itself, because it is a citation. */
+.case .us__item > .us__src {
+  margin: 0 0 12px;
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--ink-muted);
+}
+
+.case .us__item > .us__src > .us__tag {
+  font-weight: 600;
+  color: var(--ink-secondary);
+}
+
+/* --- the fields ----------------------------------------------------------- */
+
+.case .us__f { margin: 0; display: grid; gap: 10px; }
+
+.case .us__f > div { display: grid; gap: 3px; }
+
+.case .us__f dt {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.case .us__f dd {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-secondary);
+  max-width: 68ch;
+}
+
+.case .us__f dd > .us__l {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 5px;
+}
+
+/* A check that is drawn rather than typed, so it cannot be read out as a
+   character and cannot pick up the catch-all's face. */
+.case .us__f .us__l > li {
+  position: relative;
+  margin: 0;
+  padding-inline-start: 17px;
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-secondary);
+}
+
+.case .us__f .us__l > li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 1px;
+  inset-block-start: 0.62em;
+  width: 7px;
+  height: 1px;
+  background: var(--ink-muted);
+}
+
+@media (min-width: 760px) {
+  .case .us__f > div {
+    grid-template-columns: 140px minmax(0, 1fr);
+    align-items: baseline;
+    gap: 0 18px;
+  }
+  .case .us__f dt { padding-block-start: 0.28em; }
+}
+
+
 /* ===== css/06-responsive.css ===== */
 /* ==========================================================================
    06 — RESPONSIVE RULES
@@ -31462,6 +31604,11 @@ body{display:grid;place-items:center;min-height:100vh}
       </div>
     </figure>
 
+    <p class="ar-p">I drew that boundary before anything else. During the appointment Carry
+      does nothing at all &mdash; the fifteen minutes belong to the conversation, not to a
+      phone &mdash; which meant the whole product had to work from what a patient does on
+      either side of it.</p>
+
     
     <h3 class="ar-h3">Proto personas</h3>
 
@@ -31819,7 +31966,7 @@ body{display:grid;place-items:center;min-height:100vh}
   <div class="acc__b" data-acc-b>
     <div class="ar-note"><p>No interview study. I had the team&rsquo;s premises and the feedback they held.</p></div>
 
-    <p class="ar-p">Three things got decided before I drew a screen, and they set the shape of everything after. Patients in the pilot kept rewriting their questions, so editing had to happen in place and be undoable rather than living on its own screen. I ruled out generated answers &mdash; a patient cannot check a summary against what was actually said in the room. And recording moved out of Carry altogether, to keep the consent complexity out of the product; Carry takes a file that already exists on the phone.</p>
+    <p class="ar-p">I settled three things before I drew a screen, and they set the shape of everything after. Patients in the pilot kept rewriting their questions, so I made editing happen in the row itself and made it undoable, rather than sending it to its own screen. I ruled out generated answers &mdash; a patient cannot check a summary against what was actually said in the room. And I moved recording out of Carry altogether to keep the consent complexity out of the product, which left Carry taking a file that already exists on the phone.</p>
 
     <figure class="ar-fig ar-wide">
       <div class="ar-fig__frame ar-fig__frame--bare"><svg class="md md--phases" viewBox="0 0 960 340" width="960" height="340" role="img"
@@ -32000,7 +32147,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <div class="cs-move"><p class="cs-move__l">What I did</p>
       <p>I made suggestions opt-in with an undo, moved editing into the row instead of a separate screen, and gave the row a minimum height instead of a fixed one so a long question stops being clipped.</p></div>
     <div class="cs-move"><p class="cs-move__l">What changed</p>
-      <p>The list reads as the patient&rsquo;s own.</p></div>
+      <p>A patient can tell their own questions from the ones Carry offered them.</p></div>
 <section class="ar-demo ar-wide cu" data-cu="prepare">
   <h3 class="demo__h">Patients build their own list of questions.</h3>
   <p class="demo__p">Add a suggested question, then undo it.</p>
@@ -32062,7 +32209,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <div class="cs-move"><p class="cs-move__l">What I saw</p>
       <p>The obvious next move was to let the model answer the questions. A patient cannot check a summary, and a wrong one could send someone into three months of surveillance.</p></div>
     <div class="cs-move"><p class="cs-move__l">What I did</p>
-      <p>The answer is a quotation, badged and editable, with a route to the moment it came from. Where nothing was said clearly enough to quote, the question stays visibly unanswered.</p></div>
+      <p>I made the answer a quotation &mdash; badged, editable, and carrying a route back to the moment it came from. Where nothing was said clearly enough to quote, I left the question visibly unanswered instead of filling it.</p></div>
     <div class="cs-move"><p class="cs-move__l">What changed</p>
       <p>It cost the product its most demo-able feature. I would still make the same call.</p></div>
 <section class="ar-demo ar-wide cu" data-cu="match">
@@ -32111,7 +32258,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <div class="cs-move"><p class="cs-move__l">What I did</p>
       <p>Each failure is a state of the real component and answers the same three things in the same order: what happened, what was kept, what to do next. I checked every recovery path with engineering before drawing the state.</p></div>
     <div class="cs-move"><p class="cs-move__l">What changed</p>
-      <p>Engineering could estimate the flow.</p></div>
+      <p>Engineering could estimate the flow, because there was nothing left in it to guess at.</p></div>
 <section class="ar-demo ar-wide cu" data-cu="lab">
   <h3 class="demo__h">It still makes sense when things go wrong.</h3>
   <p class="demo__p">Change a condition.</p>
@@ -32154,7 +32301,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <p class="acc__lede ar-p">By the third flow I was redrawing the same row and getting it wrong a different way each time.</p>
 
     <h3 class="ar-h3">Colour</h3>
-    <p class="ar-p">One interactive colour, one ink ramp, one divider. The teal has two values because it carries white type on light and near-black on dark.</p>
+    <p class="ar-p">I cut it to one interactive colour, one ink ramp and one divider. The teal has two values because it carries white type on light and near-black on dark.</p>
     <div class="ar-swatches">
       <span class="ar-swatch"><i style="background:#3F6970"></i>#3F6970 &middot; primary</span>
       <span class="ar-swatch"><i style="background:#E8F4F8"></i>#E8F4F8 &middot; tinted surface</span>
@@ -32230,6 +32377,69 @@ body{display:grid;place-items:center;min-height:100vh}
     <p class="ar-p">Deciding early what Carry would not do. That it does not record, does not deliver results and does not let a model write anything removed most of the hard problems before they became design problems.</p>
 
     <div class="ar-end"><p>The design system, flows and seeded content are the project&rsquo;s own. The prototypes are rebuilt here from that documentation, so they behave rather than being screenshots.</p></div>
+  </div>
+</section>
+
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">Stories, Reconstructed</span>
+    <span class="ar-h2">The flows written back as requirements</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <div class="us">
+      <p class="us__note">I did not keep user stories from Carry, so these are not artifacts
+        I handed anyone at the time &mdash; I have written them back now from the flows,
+        states and constraints the project documents, and labelled the section accordingly.
+        Everything they describe is in the prototypes above.</p>
+
+      <article class="us__item">
+        <h3 class="us__h">Uploading a recording after the appointment</h3>
+        <p class="us__src"><span class="us__tag">Reconstructed from</span> the documented
+          upload flow and the failure states in Design Priorities.</p>
+        <dl class="us__f">
+          <div><dt>Story</dt><dd>A patient finishes a visit with a recording already on their
+            phone, and wants Carry to turn it into something they can read against the
+            questions they went in with.</dd></div>
+          <div><dt>Acceptance criteria</dt><dd><ul class="us__l">
+            <li>Carry asks for file access in its own words before the picker opens, and says
+              that only audio files will be shown and that it never sees photos or
+              documents.</li>
+            <li>The picker lists audio files only.</li>
+            <li>Upload, transcription and matching each have a visible state of their
+              own.</li>
+            <li>A matched answer is a quotation with a route back to the moment in the
+              recording it came from.</li>
+          </ul></dd></div>
+          <div><dt>Edge cases</dt><dd><ul class="us__l">
+            <li>Any of the three steps can fail. Each failure says what happened, what was
+              kept and what to do next, in that order.</li>
+            <li>Where nothing in the recording answers a question clearly enough to quote,
+              the question stays visibly unanswered rather than being filled.</li>
+          </ul></dd></div>
+          <div><dt>Who it supported</dt><dd>Engineering, who I walked every recovery path
+            through with before drawing the states.</dd></div>
+        </dl>
+      </article>
+
+      <article class="us__item">
+        <h3 class="us__h">Changing a question before the visit</h3>
+        <p class="us__src"><span class="us__tag">Reconstructed from</span> the documented
+          editing flow and the prepare screen.</p>
+        <dl class="us__f">
+          <div><dt>Story</dt><dd>A patient writes a question, thinks better of the wording,
+            and rewrites it &mdash; often more than once, which is the behaviour the pilot
+            kept showing.</dd></div>
+          <div><dt>Acceptance criteria</dt><dd><ul class="us__l">
+            <li>Editing happens in the row, not on a separate screen.</li>
+            <li>Adding a suggested question is undoable from the moment it lands.</li>
+            <li>The row has a minimum height rather than a fixed one, so a long question is
+              never clipped.</li>
+          </ul></dd></div>
+          <div><dt>Who it supported</dt><dd>The two other designers, who built screens from
+            the row once it was in the component set.</dd></div>
+        </dl>
+      </article>
+    </div>
   </div>
 </section>
 </div>
@@ -32402,7 +32612,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <div class="cs-move"><p class="cs-move__l">What I saw</p>
       <p>The document, the suggested tag and the confidence figure sat in three places. Timing a reviewer against it made the cost obvious.</p></div>
     <div class="cs-move"><p class="cs-move__l">What I did</p>
-      <p>One place, fixed order: what the model proposed, how sure it is, what it read to get there, then the action.</p></div>
+      <p>I put all three in one place in a fixed order: what the model proposed, how sure it is, what it read to get there, then the action.</p></div>
     <div class="cs-move"><p class="cs-move__l">What changed</p>
       <p>A reviewer reads all three in one place.</p></div>
 
@@ -32410,9 +32620,9 @@ body{display:grid;place-items:center;min-height:100vh}
     <div class="cs-move"><p class="cs-move__l">What I saw</p>
       <p>A reviewer who stops checking is worse than no model at all, and a fast Accept button makes that easy to fall into.</p></div>
     <div class="cs-move"><p class="cs-move__l">What I did</p>
-      <p>The evidence sits where a reviewer has to pass it to accept, and disagreeing carries the same weight as agreeing.</p></div>
+      <p>I put the evidence where a reviewer has to pass it to accept, and gave disagreeing the same weight in the interface as agreeing.</p></div>
     <div class="cs-move"><p class="cs-move__l">What changed</p>
-      <p>The feedback loop only produces anything if people are willing to use it.</p></div>
+      <p>Correcting costs a reviewer about what accepting costs, so the loop gets the corrections it was built for.</p></div>
 
     <h3 class="ar-h3">Performance</h3>
     <div class="cs-move"><p class="cs-move__l">What I saw</p>
@@ -32438,6 +32648,60 @@ body{display:grid;place-items:center;min-height:100vh}
     <p class="ar-p">Asking engineering what the system can consume before designing what the person does.</p>
 
     <div class="ar-end"><p>Structure, terminology, examples, tags, confidence levels and justification reasons are the project&rsquo;s own. The diagrams and prototypes are rebuilt here.</p></div>
+  </div>
+</section>
+
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">Stories, Reconstructed</span>
+    <span class="ar-h2">The tagging stage written back as requirements</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <div class="us">
+      <p class="us__note">I did not keep user stories from OptiFlow. These are written back
+        now from the interaction, the states and the constraint engineering gave me, so the
+        section is a reconstruction rather than an artifact from the project.</p>
+
+      <article class="us__item">
+        <h3 class="us__h">Correcting a suggested tag</h3>
+        <p class="us__src"><span class="us__tag">Reconstructed from</span> the required-reason
+          interaction and the constraint on what the feedback loop can consume.</p>
+        <dl class="us__f">
+          <div><dt>Story</dt><dd>A billing reviewer disagrees with a tag the model proposed,
+            and needs to correct it in a way the model can eventually learn from rather than
+            in a way that only fixes this document.</dd></div>
+          <div><dt>Acceptance criteria</dt><dd><ul class="us__l">
+            <li>A correction cannot be validated without a reason.</li>
+            <li>The reason comes from a short fixed list, not a free-text field, so the
+              output is categorised the moment it is given.</li>
+            <li>Correcting takes the same standing in the interface as accepting.</li>
+          </ul></dd></div>
+          <div><dt>Edge cases</dt><dd><ul class="us__l">
+            <li>Low confidence, no suggestion at all, and outright disagreement each have
+              their own state.</li>
+          </ul></dd></div>
+          <div><dt>Who it supported</dt><dd>Engineering, who could only consume categorised
+            feedback &mdash; that constraint is why the reason list is fixed. Operations,
+            who signed off the time a required reason costs at volume.</dd></div>
+        </dl>
+      </article>
+
+      <article class="us__item">
+        <h3 class="us__h">Seeing how sure the model is, and why</h3>
+        <p class="us__src"><span class="us__tag">Reconstructed from</span> the confidence and
+          evidence work in Design Priorities.</p>
+        <dl class="us__f">
+          <div><dt>Story</dt><dd>A reviewer needs to tell a confident suggestion from a guess
+            before deciding anything, which the confidence figure on its own never told
+            them.</dd></div>
+          <div><dt>Acceptance criteria</dt><dd><ul class="us__l">
+            <li>What the model proposed, how sure it is, and what it read to get there sit in
+              one place, in that order, with the action last.</li>
+            <li>The evidence sits where a reviewer passes it on the way to accepting.</li>
+          </ul></dd></div>
+        </dl>
+      </article>
+    </div>
   </div>
 </section>
 </div>
@@ -32755,7 +33019,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <p class="acc__lede ar-p">I looked at three parts of a work-queue row: the status at the front, the action at the end, and what the row says when something fails.</p>
 
     <h3 class="ar-h3">Finding the required action in a row</h3>
-    <p class="ar-p">The same action was a button in one row, a link in another and a menu item in a third, which left the provider working out which row mattered most.</p>
+    <p class="ar-p">I found the same action rendered as a button in one row, a link in another and a menu item in a third, which left the provider working out which row mattered most. So I ranked them: one required action per row, in the same column every time, with everything else demoted behind it.</p>
 
     
     <div class="au-ba">
@@ -32911,7 +33175,7 @@ body{display:grid;place-items:center;min-height:100vh}
       </table>
     </div>
 
-    <p class="ar-p">Action tokens, measured the same way: provider action <code>6.24:1</code>, clinical review <code>7.54:1</code>, recovery <code>4.51:1</code>, completion <code>5.11:1</code>, informational outline <code>17.85:1</code>. The border token is marked decoration only &mdash; the one value never allowed to carry a label.</p>
+    <p class="ar-p">I measured the action tokens the same way: provider action <code>6.24:1</code>, clinical review <code>7.54:1</code>, recovery <code>4.51:1</code>, completion <code>5.11:1</code>, informational outline <code>17.85:1</code>. I marked the border token decoration only &mdash; the one value never allowed to carry a label, so no status can arrive as colour alone.</p>
 
     <ol class="au-rules">
       <li><b>Status is never colour alone.</b> Always paired with visible text, and with an icon on warning and error states.</li>
@@ -33041,6 +33305,71 @@ body{display:grid;place-items:center;min-height:100vh}
     <p class="ar-p">Audit the workflow, not just the library. A component set can be completely consistent and still leave a provider unsure whose move it is.</p>
 
     <div class="ar-end"><p>Contrast ratios, token names, status copy, the build spec and the workflow examples are the audit&rsquo;s own. The tables, badges and actions are rebuilt here as live components.</p></div>
+  </div>
+</section>
+
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">User Stories I Wrote</span>
+    <span class="ar-h2">What I handed product and engineering</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <div class="us">
+      <article class="us__item">
+        <h3 class="us__h">The Provider Action Queue row</h3>
+        <p class="us__src"><span class="us__tag">From</span> the build spec in Handoff &amp;
+          Reflection, written by me and quoted here.</p>
+        <dl class="us__f">
+          <div><dt>Purpose, as written</dt><dd>Shows urgent provider work in a scan-friendly
+            row with status, required action, owner, due date and next step.</dd></div>
+          <div><dt>Acceptance criteria</dt><dd><ul class="us__l">
+            <li>The row includes all required fields.</li>
+            <li>The status uses approved design system copy.</li>
+            <li>The next step action appears in the far-right column, and its label describes
+              the task.</li>
+            <li>Error states explain what happened and how to recover.</li>
+            <li>Keyboard focus is visible, and meaning stays clear without colour.</li>
+            <li>The pattern works across orders, results, specimens and tasks.</li>
+          </ul></dd></div>
+          <div><dt>Edge cases</dt><dd>Nine states specified rather than three: default, hover,
+            focus, selected, loading, empty, error, disabled and overdue.</dd></div>
+          <div><dt>Who it supported</dt><dd>Product took the behaviour and the acceptance
+            criteria; engineering took the states and the approved labels. It was written to
+            be built from without a screen to interpret.</dd></div>
+        </dl>
+      </article>
+
+      <article class="us__item">
+        <h3 class="us__h">Status copy</h3>
+        <p class="us__src"><span class="us__tag">From</span> the system rule I wrote in What
+          the Audit Found.</p>
+        <dl class="us__f">
+          <div><dt>Rule, as written</dt><dd>Status copy must clarify ownership, workflow state,
+            and whether the provider needs to act.</dd></div>
+          <div><dt>Acceptance criteria</dt><dd>Only the approved labels are used: awaiting
+            provider action, needs clinical review, submission error, lab review in progress,
+            results delivered, missing information.</dd></div>
+          <div><dt>Who it supported</dt><dd>Engineering, who had been choosing labels per
+            workflow because none had been approved.</dd></div>
+        </dl>
+      </article>
+
+      <article class="us__item">
+        <h3 class="us__h">Error states</h3>
+        <p class="us__src"><span class="us__tag">From</span> the system rule I wrote against
+          the submission-failure finding.</p>
+        <dl class="us__f">
+          <div><dt>Rule, as written</dt><dd>Every error carries four things: the error type,
+            the specific cause, the recovery instruction, and an action-specific next
+            step.</dd></div>
+          <div><dt>Acceptance criteria</dt><dd>A failed submission names the missing field and
+            gives the provider a button that says what pressing it does.</dd></div>
+          <div><dt>Who it supported</dt><dd>Providers first, since a failed submission stops a
+            clinical test &mdash; and engineering, who had no definition of a complete error
+            state before this one.</dd></div>
+        </dl>
+      </article>
+    </div>
   </div>
 </section>
 </div>
@@ -33197,10 +33526,10 @@ body{display:grid;place-items:center;min-height:100vh}
     <span class="ar-h2">Put the instructions on the lid</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="ar-p">The box was already in production, so the sheet stayed exactly where it
-      was and what changed was the order of things on it. The table holds one block
-      specification instead of three, the slide counts sit beside the test they belong to,
-      and the rejection criteria get a row of their own.</p>
+    <p class="ar-p">I kept the sheet where it was &mdash; the box was already in production
+      and nobody was re-tooling it for us &mdash; and changed the order of things on it. The
+      table holds one block specification instead of three, the slide counts sit beside the
+      test they belong to, and the rejection criteria get a row of their own.</p>
 
     <figure class="sk-fig">
       <div class="sk-ba">
@@ -33221,9 +33550,10 @@ body{display:grid;place-items:center;min-height:100vh}
     </figure>
 
     <h3 class="ar-h3">One block specification instead of three</h3>
-    <p class="ar-p">The block requirement is the same for every test on the sheet. It is now a
-      single cell across all three rows, which leaves the slide count as the only thing that
-      changes down the table.</p>
+    <p class="ar-p">The block requirement is the same for every test on the sheet, so I made
+      it one cell spanning all three rows. That leaves the slide count as the only thing
+      that changes down the table, which is the number a clinician came to the table
+      for.</p>
 
     <div class="sk-crops">
       <figure class="sk-crop">
@@ -33242,7 +33572,8 @@ body{display:grid;place-items:center;min-height:100vh}
 
     <h3 class="ar-h3">The rejection criteria get a row</h3>
     <p class="ar-p">The specimen types that cannot be tested were a run-in list under the
-      table. They are now a labelled row of six, each one named under its own mark.</p>
+      table, which is after the point they would have helped. I pulled them out into a
+      labelled row of six, each one named under its own mark.</p>
 
     <div class="sk-crops sk-crops--wide">
       <figure class="sk-crop">
@@ -33457,6 +33788,78 @@ body{display:grid;place-items:center;min-height:100vh}
       architecture, the insert specification and the subteam board are the project&rsquo;s
       own, taken from its file. The company name and mark are blurred in the artwork itself
       wherever they appear.</p></div>
+  </div>
+</section>
+
+<section class="acc" data-open="0">
+  <div data-acc-h>
+    <span class="acc__n">User Stories I Wrote</span>
+    <span class="ar-h2">The tickets I wrote for the subteam</span>
+  </div>
+  <div class="acc__b" data-acc-b>
+    <div class="us">
+      <p class="us__note">I wrote the subteam&rsquo;s tickets in Jira and kept the statuses
+        current for the two weeks. These are those tickets, from the board in Collaboration
+        above. They carry no acceptance criteria because none were written &mdash; what the
+        project documents is what each one produced.</p>
+
+      <article class="us__item">
+        <h3 class="us__h">Audit current lid</h3>
+        <p class="us__src"><span class="us__tag">Jira &middot; To do</span></p>
+        <dl class="us__f">
+          <div><dt>Why I wrote it</dt><dd>Nobody had written down what the printed sheet was
+            actually asking a clinician to decide, so there was nothing to design
+            against.</dd></div>
+          <div><dt>What it produced</dt><dd>The five findings the study opens with, including
+            the one that mattered most: the rejection criteria were the costliest thing to
+            get wrong and the least visible thing on the sheet.</dd></div>
+        </dl>
+      </article>
+
+      <article class="us__item">
+        <h3 class="us__h">Map specimen journey</h3>
+        <p class="us__src"><span class="us__tag">Jira &middot; To do</span></p>
+        <dl class="us__f">
+          <div><dt>Why I wrote it</dt><dd>The kit is used across four steps and I needed to
+            know which of them each finding belonged to before proposing anything.</dd></div>
+          <div><dt>What it produced</dt><dd>Prepare, pack, transit, lab &mdash; and the
+            placement of the findings in it: four of them sit in prepare, and the fifth sits
+            in pack and shows up in transit.</dd></div>
+        </dl>
+      </article>
+
+      <article class="us__item">
+        <h3 class="us__h">Redesign instruction lid + propose in-box storage</h3>
+        <p class="us__src"><span class="us__tag">Jira &middot; In progress &middot; my
+          ticket</span> &mdash; the one piece of the engagement I owned end to end.</p>
+        <dl class="us__f">
+          <div><dt>Why I wrote it</dt><dd>The two changes are the same problem in two
+            materials: what the clinician reads first, and where the specimen goes. Splitting
+            them would have put the foam and the sheet on separate panels of a box that folds
+            as one piece.</dd></div>
+          <div><dt>What it produced</dt><dd>The reordered sheet &mdash; one block
+            specification instead of three, slide counts beside their test, rejection
+            criteria in a labelled row &mdash; and the specification for a one-piece die-cut
+            polyethylene insert with a cavity for a slide holder and a cavity for a block
+            container, sized to the standard 8 &times; 8 &times; 2.5 in mailer already in
+            use.</dd></div>
+          <div><dt>Who it supported</dt><dd>The senior designer who owned direction, who took
+            it into the subteam&rsquo;s review.</dd></div>
+        </dl>
+      </article>
+
+      <article class="us__item">
+        <h3 class="us__h">Synthesize onsite research &middot; Present findings</h3>
+        <p class="us__src"><span class="us__tag">Jira &middot; Done</span></p>
+        <dl class="us__f">
+          <div><dt>Why I wrote it</dt><dd>The onsite research existed as observations across
+            the subteam and had not been pulled into anything anyone could act on.</dd></div>
+          <div><dt>What it produced</dt><dd>The synthesis I presented to the subteam on one of
+            the six syncs, which is where the lid and the storage proposal were agreed as the
+            work to do.</dd></div>
+        </dl>
+      </article>
+    </div>
   </div>
 </section>
 </div>
