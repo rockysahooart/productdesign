@@ -1,0 +1,25 @@
+# ---------------------------------------------------------------------------
+# Git maintenance artifacts.
+#
+# These are not project files. They are git's own temporary objects and lock
+# files, which a stale-lock cleanup once moved into _to_delete/ and which
+# `git add -A` then committed by the hundred. Ignoring them is what stops the
+# cycle: without these lines the artifacts return on the next `add -A`.
+# ---------------------------------------------------------------------------
+_to_delete/
+tmp_obj_*
+
+# Lock files. Safe for this repo, which has no package manager. If a
+# dependency lockfile is ever added here (yarn.lock, Cargo.lock, composer.lock)
+# it will need an explicit "!" exception below, or it will be silently skipped.
+*.lock
+
+# ---------------------------------------------------------------------------
+# OS and editor noise
+# ---------------------------------------------------------------------------
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+.vscode/
