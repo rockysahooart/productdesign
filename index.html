@@ -28955,6 +28955,185 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 @media (min-width: 720px) {
   .rxpick, .rxpick__veil { display: none; }
 }
+
+
+/* --------------------------------------------------------------------------
+   THE LINKEDIN ACTION — PHONE ONLY
+
+   On a phone the contact block is a labelled list, and the LinkedIn row has
+   been a label with nothing under it: its anchor resolves through PF.LINKS,
+   that slot is empty, and wire.js removes the control rather than leave a
+   link that goes nowhere. This is the row's action, written on the element.
+
+   It takes the treatment "Book a call" already has three rows above it — the
+   same --link-go blue, the same .link-out underline-and-lift on press, the
+   same external mark from [data-external] — so the two read as one pair of
+   contact actions rather than as a link and a button.
+
+   Hidden everywhere else, twice: once for the base layout and once inside the
+   960 block, where `.hero-card .hero-tile--profile .hero__contact a.link-out`
+   is more specific than any plain hide and would otherwise put it back.
+   -------------------------------------------------------------------------- */
+.hero__contact a.link-out.hero__linkedin { display: none; }
+
+@media (min-width: 960px) {
+  .hero-card .hero-tile--profile .hero__contact a.link-out.hero__linkedin {
+    display: none;
+  }
+}
+
+@media (max-width: 719px) {
+  .hero__contact a.link-out.hero__linkedin {
+    display: inline-flex;
+    color: var(--link-go);
+  }
+  /* The hover and focus rules for this block resolve colour to full ink; the
+     action keeps its blue through both, exactly as the booking link does. */
+  .hero__contact a.link-out.hero__linkedin:hover,
+  .hero__contact a.link-out.hero__linkedin:focus-visible {
+    color: var(--link-go);
+  }
+}
+
+
+/* ==========================================================================
+   THREE CARDS AT THE FOOT OF THE PHONE — AND NOT A GRAM OF CLAY
+   ==========================================================================
+
+   Worked With, Tools and Contact were three bands inside one box, told apart
+   by a hairline across the top of each. They are three cards now: same flat
+   surface the hero card itself uses — near-white fill, one hairline border,
+   the same 16px radius — and nothing else. No inflated edge, no dish, no
+   directional light, no inset shading, no clay gradient, no cast. On this
+   page the claymorphic treatment belongs to the message bubbles and to
+   nothing else, and these are deliberately the other thing.
+
+   Separation is the gap between them and the border around each, which is
+   the quietest pair of devices available and the one already in use.
+   -------------------------------------------------------------------------- */
+@media (max-width: 719px) {
+
+  .page[data-view="home"] .hero-card .hero__clients,
+  .page[data-view="home"] .hero-card .hero__tools,
+  .page[data-view="home"] .hero-card .hero__contact {
+    /* THE SURFACE, STATED ONCE. Every one of these is the hero card's own
+       recipe, so the four boxes on the screen are demonstrably one material
+       rather than four that happen to look alike. */
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: none;
+    /* Room on all four sides, so nothing is ever against an edge. */
+    padding: 22px 20px 24px;
+    /* The interval between the cards. Bigger than the padding inside them, so
+       the eye groups by proximity the way it is supposed to: what is inside a
+       card is closer together than the cards are to each other. */
+    margin-top: 18px;
+    margin-inline: 0;
+  }
+
+  /* The hairline across the top was the old separator and it would now be a
+     second edge on a box that already has one. */
+  .page[data-view="home"] .hero-card .hero__clients,
+  .page[data-view="home"] .hero-card .hero__tools,
+  .page[data-view="home"] .hero-card .hero__contact {
+    border-top-color: var(--border);
+    border-top-width: 1px;
+  }
+
+  /* ---- WORKED WITH ------------------------------------------------------ */
+  .page[data-view="home"] .hero-card .hero__clients .clients__label {
+    margin-bottom: 14px;
+  }
+
+  /* THE LOGOS RUN TO THE EDGE, AND THE EDGE IS NOW A BORDER.
+
+     The strip scrolls, so it is always cut somewhere — that is what a marquee
+     is. Against nothing it read as motion; against a hairline it reads as a
+     logo chopped in half. The track keeps the card's padding as bleed and
+     fades into it at both ends, so what happens at the border is a logo
+     leaving rather than a logo being clipped by it. Pure presentation: the
+     order, the logos and the scroll are untouched. */
+  .page[data-view="home"] .hero-card .hero__clients .clients__marquee {
+    margin-inline: -20px;
+    padding-inline: 20px;
+    -webkit-mask-image: linear-gradient(to right,
+      rgba(0,0,0,0) 0, rgba(0,0,0,1) 22px,
+      rgba(0,0,0,1) calc(100% - 22px), rgba(0,0,0,0) 100%);
+            mask-image: linear-gradient(to right,
+      rgba(0,0,0,0) 0, rgba(0,0,0,1) 22px,
+      rgba(0,0,0,1) calc(100% - 22px), rgba(0,0,0,0) 100%);
+  }
+
+  /* ---- TOOLS ------------------------------------------------------------ */
+
+  /* THE WHEEL IS IN A BOX NOW, AND THAT IS A REVERSAL.
+
+     There is a rule further up that deliberately strips this tile back to
+     nothing on a phone — "the tools wheel stands on the page, not in a box" —
+     written at two classes on the element so it beats the tile defaults. It
+     is answered here, at the same weight and with the theme twins it carries,
+     because the brief changed: Tools is one of three cards now and a wheel on
+     bare ground beside two bordered boxes reads as an omission rather than as
+     a decision. Same flat surface as its neighbours, and still no clay. */
+  .page[data-view="home"] .hero-card .hero__tools.hero-tile--tools,
+  [data-theme="dark"] .page[data-view="home"] .hero-card .hero__tools.hero-tile--tools,
+  :root:not([data-theme="light"]) .page[data-view="home"] .hero-card .hero__tools.hero-tile--tools {
+    background-color: var(--surface-raised);
+    background-image: none;
+    border-color: var(--border);
+    box-shadow: none;
+  }
+
+  /* THE TITLE IS THE HUB.
+
+     The ten logos sit on a ring of radius 97 with eighty pixels of clear air
+     inside it — measured, not assumed — so the section's own name goes where
+     the wheel has been pointing at nothing. The label comes out of the flow
+     and is centred on the same box the ring is centred on, which is the tile
+     itself: both resolve their position against it, so they cannot drift
+     apart at any width.
+
+     `pointer-events: none` because it is a heading in the middle of a stage,
+     and nothing about it should intercept a tap meant for what is orbiting
+     it. The stage keeps its transparent ground: no disc, no plate, no fill
+     behind the type. */
+  .page[data-view="home"] .hero-card .hero__tools { position: relative; }
+
+  .page[data-view="home"] .hero-card .hero__tools .tools__label {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  /* ---- CONTACT ---------------------------------------------------------- */
+
+  /* THE ADDRESS HAS TO FIT THE CARD IT IS IN NOW.
+
+     The contact block's size was set against the full width of the hero card;
+     inside a card of its own it has forty pixels less to work with, and at
+     14px the address broke after "gmail.co" and put a lone "m" on the next
+     line. A wrapped email is not a smaller email, it is a mistake. Sized to
+     the box it is actually in, and told not to break: it is one string and it
+     is the one thing on the card somebody may need to read character by
+     character. */
+  .page[data-view="home"] .hero-card .hero__contact a[href^="mailto:"] {
+    font-size: 13px;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  /* The block carried the separator and the space that went with it; both
+     belong to the card now. */
+  .page[data-view="home"] .hero-card .hero__contact {
+    padding-top: 22px;
+    row-gap: 18px;
+  }
+}
 </style>
 </head>
 
@@ -29318,6 +29497,15 @@ button.cu-q:hover { background: var(--cu-teal-8); }
                 <span class="hero__field">
                   <span class="hero__lbl">LinkedIn</span>
                   <a class="link-out" data-link="linkedin">LinkedIn <span class="cta__arrow" aria-hidden="true">&#8599;</span></a>
+                  <!-- The phone's own action under that label. Written here
+                       rather than through PF.LINKS because that slot feeds
+                       every [data-link="linkedin"] on the page, and the one in
+                       the footer is deliberately still unpublished. Same
+                       attributes as "Book a call" above: data-external draws
+                       the mark, the stylesheet gives it the same blue. -->
+                  <a class="link-out hero__linkedin"
+                     href="https://www.linkedin.com/in/sarthakrockysahoo/"
+                     target="_blank" rel="noopener noreferrer" data-external="1">View profile</a>
                 </span>
               </address>
             </div>
@@ -35809,10 +35997,10 @@ body{display:grid;place-items:center;min-height:100vh}
                 </article>
               <article class="pv__slide" data-project="pnc" data-rank="7" data-pv-slide data-mode="design"
                        role="tabpanel" aria-label="PNC Bank" hidden>
-                <a class="pv__open" href="https://rockysahoo.design/project/pnc" target="_blank" rel="noopener noreferrer"><span class="visually-hidden">Consolidating banking workflows for internal teams across complex systems</span></a>
+                <a class="pv__open" href="https://rockysahoo.design/project/pnc" target="_blank" rel="noopener noreferrer"><span class="visually-hidden">Transforming fragmented securities-based lending into one origination experience.</span></a>
                   <div class="pv__head">
-                  <h3 class="pv__title">Consolidating banking workflows for internal teams across complex systems</h3>
-                  <p class="pv__sub">I brought a 12-step process across five internal systems into one guided nine-step experience. <a class="pv__go" href="https://rockysahoo.design/project/pnc" target="_blank" rel="noopener noreferrer">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
+                  <h3 class="pv__title">Transforming fragmented securities-based lending into one origination experience.</h3>
+                  <p class="pv__sub">I transformed a fragmented legacy lending process into one guided experience where relationship bankers evaluate securities and collateral in real time, add co-borrowers, submit loan requests, and track underwriting decisions. <a class="pv__go" href="https://rockysahoo.design/project/pnc" target="_blank" rel="noopener noreferrer">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
                 </div>
                 <div class="pv__vis"><div class="pv__embed pv__embed--pnc">
                     <iframe class="pv__frame" srcdoc="&lt;!DOCTYPE html&gt;
@@ -37899,9 +38087,9 @@ body{display:grid;place-items:center;min-height:100vh}
 
             <div class="card__copy">
               <p class="card__eyebrow">PNC Bank</p>
-              <h3 class="t-card card__title">Consolidating banking workflows for internal teams across complex systems</h3>
+              <h3 class="t-card card__title">Transforming fragmented securities-based lending into one origination experience.</h3>
               <p class="card__desc">
-                I brought a 12-step process across five internal systems into one guided nine-step experience.
+                I transformed a fragmented legacy lending process into one guided experience where relationship bankers evaluate securities and collateral in real time, add co-borrowers, submit loan requests, and track underwriting decisions.
               </p>
               <p class="card__status">Shipped</p>
               <span class="cta cta--fill" aria-hidden="true">
