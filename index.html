@@ -6792,7 +6792,12 @@ a.hero__role { text-decoration: none; }
      the list is the last full screen of the sequence rather than a footnote
      under it. */
   padding: clamp(16px, 1.6vw, 26px) 2px;
-  border-top: 1px solid var(--border);
+  /* NO RULES BETWEEN PROJECTS. A hairline under every title turns a list of
+     things you can choose into a table of contents, and nine of them stacked
+     is the loudest thing in a view that is otherwise one column of quiet
+     type. Nothing replaces them — no border, no shadow, no pill, no ground —
+     and nothing else about the row changes: the spacing, the density and the
+     wrapping are exactly what they were. */
   color: var(--ink-secondary);
   text-decoration: none;
   opacity: 0;
@@ -6801,8 +6806,6 @@ a.hero__role { text-decoration: none; }
               transform 380ms cubic-bezier(0.2, 0.75, 0.25, 1),
               color 140ms linear;
 }
-
-.plist__row:last-child { border-bottom: 1px solid var(--border); }
 
 .plist__row.is-in { opacity: 1; transform: none; }
 
@@ -7345,6 +7348,27 @@ a.hero__role { text-decoration: none; }
    that was hidden — it only stops taking something away.
    -------------------------------------------------------------------------- */
 .hero__thread.is-windowed.is-open { overflow: visible; }
+
+/* AND A BOX WITH NOTHING TO RETIRE NEVER NEEDED TO CLIP AT ALL.
+
+   The window exists so a message can leave through the top. On a phone —
+   and anywhere the sequence is shorter than the window — nothing leaves:
+   `whole()` is true, every row is on screen at once and the box is the sum of
+   what it holds. The clip is doing no work there, and the one thing it can
+   still do is damage: if the reservation comes out three pixels short because
+   the box was measured before the display face arrived, those three pixels
+   are taken off the bottom of the last bubble or its reaction chips, and they
+   stay off until the page is reloaded with the font in cache.
+
+   That is the first-load bug, and this is the honest fix for it: not more
+   height, not a safety margin — the removal of a clip that had no reason to
+   be there. The height is still measured and still reserves the space; it
+   just cannot cut anything off if the measurement is a hair under. */
+.hero__thread.is-windowed.is-whole {
+  overflow: visible;
+  -webkit-mask-image: none;
+          mask-image: none;
+}
 
 /* A row nobody can see is a row nobody can click through, either. With the
    box open, a retired row sits over whatever is above the thread. */
@@ -28733,6 +28757,204 @@ button.cu-q:hover { background: var(--cu-teal-8); }
     visibility: visible;
   }
 }
+
+
+/* ==========================================================================
+   REACTING TO THE MESSAGE — PHONE ONLY
+   ==========================================================================
+
+   On a pointer the reaction row is a picture of a conversation: three chips
+   somebody else left, and a click that toggles one is a small easter egg. On
+   a phone it is a thing you can actually do, because a phone is where
+   reacting to a message is a gesture you already have. Everything in this
+   block is inside one max-width query and nothing outside it is touched, so
+   desktop and ultrawide keep the row exactly as it was drawn.
+   -------------------------------------------------------------------------- */
+@media (max-width: 719px) {
+
+  /* A TARGET YOU CAN HIT WITH A THUMB.
+
+     The chip stays the size it is drawn — 32px, which is the composition —
+     and grows a transparent margin of touch around it instead, so the tap
+     area comes to 44px without a single pixel of the picture changing. The
+     row's own gap absorbs it: 9px of gap either side of a 6px overhang still
+     leaves the chips from touching. */
+  /* A ROW YOU CAN ADD TO HAS TO GROW THE OTHER WAY.
+
+     The tray hangs off the bubble's bottom corner and is anchored by its
+     BOTTOM edge, with `wrap-reverse` — so a second line of chips grows
+     upwards, over the last line of the message. That is why the stylesheet
+     caps the phone at four chips and hides the rest: a fifth sat on top of
+     what somebody was reading.
+
+     With a control that adds chips, four is not a cap, it is a wall. So the
+     row is re-anchored by its TOP — which is the same place it already sits,
+     `bottom - tuck`, stated from the other side, so a single line does not
+     move by a pixel — and wraps forwards. Extra chips now go DOWN, into the
+     air under the conversation, which is where the thread reserves room
+     anyway. The cap comes off with it, and only while the row is live:
+     without script it is still the four-chip picture it was.
+
+     The reservation follows: every change dispatches pf:rx-changed and the
+     thread measures again, so the box under the last bubble grows by however
+     much the second line needed. */
+  .msg__reactions.rx-live {
+    bottom: auto;
+    top: calc(100% - var(--rx-tuck));
+    flex-wrap: wrap;
+  }
+  .msg__reactions.rx-live .rx:nth-child(n + 5) { display: inline-flex; }
+
+  .hero__thread .msg__reactions .rx {
+    position: relative;
+    /* NEVER SHRINK. The row is a wrapping flex line, and a flex item's default
+       is to give up width before it wraps — measured, adding two chips took
+       the last two down to 0x0 rather than moving them onto a second line.
+       A chip is the size of what it holds or it is not a chip. */
+    flex: 0 0 auto;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hero__thread .msg__reactions .rx::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    top: 50%;
+    height: 44px;
+    transform: translateY(-50%);
+    /* Out to the middle of the row's gap on each side, so neighbouring
+       targets meet and never overlap. */
+    margin-inline: -4.5px;
+  }
+
+  /* SELECTED IS A RING, NOT A COLOUR.
+
+     The count going to full ink is the desktop treatment and it stays, but on
+     its own it is one value of grey against another — no use to anybody
+     reading in sunlight, and no use at all to somebody who cannot separate
+     the two. A ring is a change of shape: the chip gains an edge it did not
+     have, drawn in the ink colour, inside its own radius so the row's rhythm
+     does not move. The count goes bold with it, which is a third channel. */
+  .hero__thread .msg__reactions .rx.is-on {
+    box-shadow:
+      0 1px 2px var(--rx-cast-near, rgba(0, 0, 0, 0.10)),
+      0 6px 14px -4px var(--rx-cast-far, rgba(0, 0, 0, 0.16)),
+      inset 0 0 0 2px var(--ink);
+  }
+  .hero__thread .msg__reactions .rx.is-on .rx__n { font-weight: 700; }
+
+  .hero__thread .msg__reactions .rx:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* THE FOURTH CONTROL. Same material, same height, same cast — it is one of
+     the row, not a button parked beside it. A circle, because it has no count
+     and never will. */
+  .rx--add { padding: 0; width: var(--rx-h, 32px); }
+  .rx--add .rx__plus {
+    font-family: var(--font-sans);
+    font-size: 19px;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--ink-secondary);
+    /* The glyph sits a hair high in its own box at this weight. */
+    transform: translateY(-0.5px);
+  }
+
+  /* ---- the picker ------------------------------------------------------ */
+
+  /* THE PAGE GOES QUIET BEHIND IT. Dimmed and blurred rather than covered:
+     the message you are reacting to stays visible and stays legible, which is
+     the whole point of reacting in place instead of opening a sheet. */
+  .rxpick__veil {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    background: rgba(28, 24, 18, 0.30);
+    -webkit-backdrop-filter: blur(7px) saturate(0.9);
+            backdrop-filter: blur(7px) saturate(0.9);
+    opacity: 0;
+    transition: opacity 170ms var(--ease, ease);
+  }
+  .rxpick__veil.is-in { opacity: 1; }
+
+  /* Anchored to the row it belongs to, placed in script, and clamped to the
+     viewport there — so it can never hang off an edge on a narrow screen. */
+  .rxpick {
+    position: fixed;
+    z-index: 1401;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 6px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--rx-fill, #FFFFFF);
+    box-shadow:
+      0 2px 6px rgba(0, 0, 0, 0.12),
+      0 14px 34px -10px rgba(0, 0, 0, 0.30);
+    opacity: 0;
+    transform: scale(0.88);
+    transform-origin: bottom right;
+    transition: opacity 160ms var(--ease, ease),
+                transform 190ms cubic-bezier(0.2, 0.9, 0.3, 1.25);
+  }
+  .rxpick.is-in { opacity: 1; transform: none; }
+
+  [data-theme="dark"] .rxpick { background: var(--surface-raised); }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .rxpick { background: var(--surface-raised); }
+  }
+
+  /* 48px square, which is a thumb with room around it, and the emoji drawn at
+     the size it is read at rather than the size the row uses. */
+  .rxpick__btn {
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 130ms var(--ease, ease), background-color 130ms linear;
+  }
+  .rxpick__btn:active { transform: scale(0.9); }
+  .rxpick__btn:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: -3px;
+  }
+  /* Already on the message: stated on the control that would add it again, so
+     the picker is a view of the state and not just a menu. */
+  .rxpick__btn[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--ink) 11%, transparent);
+  }
+
+  /* NOTHING MOVES IF NOTHING SHOULD. The picker still arrives and still
+     leaves — it simply does it without travelling, because a thing that
+     appears where it is going to be is not motion. */
+  @media (prefers-reduced-motion: reduce) {
+    .rxpick, .rxpick__veil { transition: opacity 1ms linear; }
+    .rxpick { transform: none; }
+    .rxpick__btn:active { transform: none; }
+  }
+}
+
+/* The picker is built on the phone only, but a window dragged wide while it
+   is open must not leave it on screen. */
+@media (min-width: 720px) {
+  .rxpick, .rxpick__veil { display: none; }
+}
 </style>
 </head>
 
@@ -47049,6 +47271,42 @@ window.PF = window.PF || {};
   var WORD_HOLD = 1700;      /* each word stands, and is read, before the next */
   var WORD_SCRAMBLE = 620;   /* and the change between them is quick */
 
+  /* THE INSETS THE BOX PARKS ITS STACK AT — DECLARED HERE, AND HERE FOR A
+     REASON.
+
+     These four were written next to place(), nine hundred lines down, which
+     put them AFTER the call that first needs them. `var` hoists the name and
+     not the value, so on the very first reserve() they were each `undefined`,
+     `boxH` came out NaN, and `thread.style.height = 'NaNpx'` was rejected by
+     the parser without a word — leaving the box at its auto height with no
+     reservation in it at all.
+
+     That is invisible on a desktop, where the box is tall enough that nothing
+     notices. On a phone the reaction tray is absolutely positioned and hangs
+     below the last bubble, outside the auto height — so the clip took the
+     chips off, and the only thing that ever put them back was the re-measure
+     on document.fonts.ready, by which time these had finally been assigned.
+     A first load that missed that second pass stayed broken until a refresh,
+     which is exactly the bug that was reported.
+
+     They are design constants with no dependencies, so the fix is to state
+     them before anything can read them. */
+  /* Even air above and below. Twice what the box used to hold: at this width
+     the thread is the first screen rather than one panel of it, and the room
+     around it is what makes it read as the whole of what there is to read
+     before you scroll. */
+  var FLAT_PAD = 60;
+  /* Almost nothing underneath, because what follows the box is the invitation
+     rather than the edge of the composition — and the reaction tray's own
+     overhang is already reserved under the last bubble. The distance the eye
+     actually reads between the chips and the invitation is that overhang plus
+     this plus the invitation's own margin. */
+  var FLAT_TAIL = 6;
+
+  var STILL_PAD = 26;
+  var STILL_TAIL = 14;   /* and under it, where the invitation sits */
+
+
   /* NOTHING IN THE OPENING IS HELD. The introduction used to be — a name, a
      title and a city is three facts in one line — but it arrives on the
      greeting's own frame now, and a pair that lands together and then waits
@@ -47647,6 +47905,9 @@ window.PF = window.PF || {};
          composition as everybody else's. */
       thread.style.height = Math.ceil(boxH) + 'px';
       thread.classList.add('is-windowed');
+      /* Re-evaluated on every reserve rather than set once: a window dragged
+         across 720 changes the answer, and so does a rotation. */
+      thread.classList.toggle('is-whole', whole());
 
       /* AND ON A PHONE, IN THE MIDDLE OF THE SCREEN. The box is the size of
          what it holds — two messages, their reactions and the invitation —
@@ -47778,48 +48039,155 @@ window.PF = window.PF || {};
 
     reserve();
 
-    /* MEASURE AGAIN WHEN THE TYPE ARRIVES. The first pass runs against
-       whatever face is available at that instant, which on a cold visit is the
-       fallback — and a fallback's metrics are not the real ones, so the box
-       ends up reserved for a stack that is not the stack anybody will see. The
-       messages are set in a webfont; the box is measured from them; so the
+    /* MEASURE AGAIN WHEN THE TYPE ARRIVES — AND MAKE SURE IT HAS.
+
+       The first pass runs against whatever face is available at that instant,
+       which on a cold visit is the fallback, and a fallback's metrics are not
+       the real ones: the box ends up reserved for a stack nobody will see.
+       The messages are set in a webfont, the box is measured from them, so the
        measurement waits for the font it is measuring.
 
-       It is idempotent: rows are reset, re-read and re-pinned every time, and
-       the track is put back where the retired rows left it. */
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(function () {
-        reserve();
-        if (track) {
-          track.style.transition = 'none';
-          /* If the opening is still the only thing on screen, it is still the
-             thing that has to be centred — and it was centred against the old
-             measurement. */
-          place(true);
-          void track.offsetWidth;
-          track.style.transition = '';
+       `document.fonts.ready` alone is not that wait. It settles when the loads
+       that have ALREADY STARTED finish, and a face is only requested when
+       something is laid out in it — so on Safari in particular it can resolve
+       a frame before the face this thread is set in has been asked for at all.
+       The display face is therefore requested BY NAME first, at the size and
+       weight the bubbles actually compute to, and only then is `ready`
+       awaited. After both, one frame is skipped so the browser has laid out in
+       the real face, and the measurement is taken fresh on the next.
+
+       Timed out rather than trusted: if a face never resolves, a conversation
+       measured against the fallback is a great deal better than one that never
+       measures again. */
+    function displayFaces() {
+      var out = [], seen = {}, i, el, cs;
+      for (i = 0; i < count; i++) {
+        el = rows[i].querySelector('.msg__text') || rows[i];
+        cs = window.getComputedStyle(el);
+        var spec = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize +
+                   ' ' + cs.fontFamily;
+        if (!seen[spec]) { seen[spec] = 1; out.push(spec); }
+      }
+      return out;
+    }
+
+    function fontsSettled() {
+      if (!(document.fonts && document.fonts.ready)) return Promise.resolve();
+      var waits = [];
+      if (document.fonts.load) {
+        var specs = displayFaces();
+        for (var i = 0; i < specs.length; i++) {
+          /* A face that cannot be parsed or fetched must not take the thread
+             down with it. */
+          try { waits.push(document.fonts.load(specs[i])); } catch (e) {}
         }
-      });
+      }
+      waits.push(document.fonts.ready);
+      return Promise.all(waits)['catch'](function () {});
+    }
+
+    /* One re-measurement, and the track put back where the retired rows left
+       it. NAMED `remeasureNow` AND NOT `settle`: there is already a settle()
+       in this scope — the sequence's ending, which parks the phase on 'hold'
+       and stops the clock — and a second function declaration of that name
+       here would not collide loudly, it would simply be overwritten by the
+       later one. Measured: the font pass was calling the ending handler and
+       halting the conversation three frames after it began. Idempotent by construction: reserve() resets every row, re-reads it
+       and re-pins it, so calling this twice costs a layout and changes
+       nothing. It never touches the sequence — no restart, no re-arm, no
+       second timer — which is what lets a rotation be handled by measuring
+       again rather than by starting over. */
+    function remeasureNow() {
+      reserve();
+      if (track) {
+        track.style.transition = 'none';
+        /* If the opening is still the only thing on screen, it is still the
+           thing that has to be centred — and it was centred against the old
+           measurement. */
+        place(true);
+        void track.offsetWidth;
+        track.style.transition = '';
+      }
+    }
+
+    var fontPass = false;
+    function afterFonts() {
+      if (fontPass) return;
+      fontPass = true;
+
+      var ran = false;
+      function once() { if (ran) return; ran = true; remeasureNow(); }
+
+      /* Two frames: the first is the one the new metrics land in, the second
+         is the one it is safe to read them in. */
+      if (window.requestAnimationFrame) {
+        requestAnimationFrame(function () { requestAnimationFrame(once); });
+      }
+      /* AND A TIMER BEHIND THEM, BECAUSE A FRAME IS NOT PROMISED.
+         requestAnimationFrame does not fire in a tab that is not being
+         painted, and a link opened into a background tab — which is most of
+         how anything gets opened on a phone — would sit there with the
+         fallback's measurement until somebody switched to it. The timer is
+         the floor under that: whichever arrives first measures, the other
+         finds the work already done. */
+      setTimeout(once, 250);
+    }
+    fontsSettled().then(afterFonts);
+    /* And if a face never resolves at all, measure anyway: a conversation
+       measured against the fallback beats one that never measures again. */
+    setTimeout(afterFonts, 3000);
+
+    /* AND WHAT COUNTS AS THE VIEWPORT CHANGING.
+
+       Safari shows and hides its URL bar as you scroll. That fires `resize`
+       with the height moving sixty to ninety pixels and the width untouched —
+       and since the phone box is centred against `innerHeight`, re-measuring
+       on it would walk the conversation up and down the screen while somebody
+       is reading it. So on a phone only a width change is a new layout: a
+       rotation, a zoom, a foldable opening. Everywhere else a height change is
+       still real, because the box takes the rest of its column and the column
+       is as tall as the window.
+
+       `orientationchange` is listened for separately and always acts: a few
+       versions of iOS fire it before the metrics it implies have landed, so
+       the width test can still be reading the old screen when it arrives. */
+    var lastW = window.innerWidth, lastH = window.innerHeight;
+    function viewportMoved() {
+      var w = window.innerWidth, h = window.innerHeight;
+      var real = (w !== lastW) || (!phone() && h !== lastH);
+      lastW = w; lastH = h;
+      return real;
     }
 
     var rt;
-    window.addEventListener('resize', function () {
+    function remeasure(force) {
+      if (!force && !viewportMoved()) return;
       clearTimeout(rt);
-      rt = setTimeout(function () {
-        reserve();
+      rt = setTimeout(remeasureNow, 150);
+    }
 
-        /* The track is measured in pixels, so a resize invalidates it. Put it
-           back where it belongs for however many rows have retired. */
-        if (track) {
-          track.style.transition = 'none';
-          place(true);
-          /* Read, so the suppressed transition is committed before the real
-             one is put back — one read, on a debounced resize. */
-          void track.offsetWidth;
-          track.style.transition = '';
-        }
-      }, 150);
+    window.addEventListener('resize', function () { remeasure(false); });
+    window.addEventListener('orientationchange', function () {
+      /* Measured after the rotation has actually happened, not when it was
+         announced. */
+      lastW = 0;
+      setTimeout(function () { remeasure(true); }, 120);
     });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', function () {
+        remeasure(false);
+      });
+    }
+    /* Late images and stylesheets move the column the box sits in. One pass
+       when the page is done, and no more. */
+    window.addEventListener('load', function () { remeasure(true); }, { once: true });
+
+    /* AND WHEN THE ROW ITSELF CHANGES SHAPE. Adding a reaction can wrap the
+       tray onto a second line, which changes the overhang the box reserves
+       under the last bubble. The module that does it says so rather than
+       guessing, and this measures — the same idempotent pass a rotation
+       takes, with no effect on the sequence. */
+    document.addEventListener('pf:rx-changed', function () { remeasure(true); });
 
     thread.classList.add('is-playing');
 
@@ -48333,20 +48701,10 @@ window.PF = window.PF || {};
      of everything in it, and a stack parked at one inset from the first frame
      to the last. */
   function whole() { return count < VISIBLE || phone(); }
-  /* Even air above and below. Twice what the box used to hold: at this width
-     the thread is the first screen rather than one panel of it, and the room
-     around it is what makes it read as the whole of what there is to read
-     before you scroll. */
-  var FLAT_PAD = 60;
-  /* Almost nothing underneath, because what follows the box is the invitation
-     rather than the edge of the composition — and the reaction tray's own
-     overhang is already reserved under the last bubble. The distance the eye
-     actually reads between the chips and the invitation is that overhang plus
-     this plus the invitation's own margin. */
-  var FLAT_TAIL = 6;
-
-  var STILL_PAD = 26;
-  var STILL_TAIL = 14;   /* and under it, where the invitation sits */
+  /* The four insets this used to declare are stated at the top of this file
+     now — reserve() runs long before execution reaches this line, and a `var`
+     read before its assignment is `undefined`. See THE INSETS THE BOX PARKS
+     ITS STACK AT. */
 
     var offsetY = 0;
     var cancelScramble = null;
@@ -49118,6 +49476,16 @@ window.PF = window.PF || {};
       (function (chip) {
         chip.setAttribute('aria-pressed', 'false');
         chip.addEventListener('click', function () {
+          /* THE PHONE HAS ITS OWN ANSWER FOR THIS CHIP. Below 720 the row is
+             a control rather than a picture of one — counts go up from the
+             base the sequence left rather than to a bare 1, a fourth chip
+             opens a picker, and chips that were added can be taken away. All
+             of that lives in the reactions module at the foot of this file;
+             this handler is the pointer behaviour and it stays exactly what
+             it was. Guarded here rather than by not binding, because the
+             breakpoint can be crossed by dragging a window. */
+          if (window.matchMedia &&
+              window.matchMedia('(max-width: 719px)').matches) return;
           var on = !chip.classList.contains('is-on');
           chip.classList.toggle('is-on', on);
           chip.setAttribute('aria-pressed', on ? 'true' : 'false');
@@ -54847,6 +55215,433 @@ window.PF = window.PF || {};
     release(box);
   }, true);                              /* capture: `toggle` does not bubble */
 })();
+
+  /* ==========================================================================
+     REACTING TO THE MESSAGE — PHONE ONLY
+     ==========================================================================
+
+     The three chips under the last bubble are somebody else's reactions. On a
+     phone they become yours as well: tap one and it goes up by one and shows
+     as selected; tap it again and it goes back to exactly the number the
+     sequence left it on. A fourth control opens a small picker for the two
+     that are not on the message yet.
+
+     WHAT THE BASE IS. Every chip carries the count the animation finished on
+     — 4, 2, 1 — and that is the floor. Toggling a chip that was already there
+     never removes it, because removing somebody else's reaction is not what
+     the gesture means; it only takes your own back off. A chip YOU added has
+     a base of zero, so taking yours off leaves nothing and the chip goes.
+
+     Nothing here persists. It is a local interaction on a portfolio, not an
+     account, and a reload is a fresh conversation by design — the thread
+     itself opens on Hello every time.
+     -------------------------------------------------------------------------- */
+  (function () {
+    var thread = document.querySelector('.hero__thread');
+    if (!thread) return;
+    var row = thread.querySelector('.msg__reactions');
+    if (!row) return;
+
+    var narrow = window.matchMedia
+      ? window.matchMedia('(max-width: 719px)') : null;
+    function phoneRx() { return !!(narrow && narrow.matches); }
+
+    var still = !!(window.matchMedia &&
+                   window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+    /* The five the picker offers. Two of them — the exclamation and the
+       starry face — are not on the message, so choosing one builds a chip. */
+    var PICK = [
+      { key: 'hundred', e: '\u{1F4AF}', label: 'hundred points' },
+      { key: 'bang',    e: '❗',    label: 'exclamation' },
+      { key: 'fire',    e: '\u{1F525}', label: 'fire' },
+      { key: 'clap',    e: '\u{1F44F}', label: 'applause' },
+      { key: 'star',    e: '\u{1F929}', label: 'star-struck' }
+    ];
+
+    function chipFor(key) {
+      return row.querySelector('.rx[data-rx="' + key + '"]');
+    }
+    function countEl(chip) { return chip.querySelector('.rx__n'); }
+    function countOf(chip) {
+      var n = countEl(chip);
+      var v = parseInt(n && n.textContent, 10);
+      return isNaN(v) ? 0 : v;
+    }
+
+    /* The floor for this chip, recorded the first time anybody touches it so
+       it is whatever the sequence actually finished on rather than a number
+       copied out of the animation table. A chip the picker built declares a
+       base of 0 when it is made. */
+    function baseOf(chip) {
+      if (!chip.hasAttribute('data-rx-base')) {
+        chip.setAttribute('data-rx-base', String(countOf(chip)));
+      }
+      return parseInt(chip.getAttribute('data-rx-base'), 10) || 0;
+    }
+
+    function paint(chip, n, on) {
+      var c = countEl(chip);
+      if (c) c.textContent = n > 0 ? String(n) : '';
+      chip.classList.toggle('is-on', on);
+      chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+      var name = chip.getAttribute('data-rx-name') || 'this';
+      chip.setAttribute('aria-label',
+        (on ? 'Remove your ' : 'Add a ') + name + ' reaction' +
+        (n > 0 ? ', ' + n + ' total' : ''));
+    }
+
+    function changed() {
+      /* The tray can wrap onto a second line, and the box under the last
+         bubble reserves the overhang. Tell the thread rather than hope. */
+      document.dispatchEvent(new CustomEvent('pf:rx-changed'));
+      syncPicker();
+    }
+
+    function bump(chip) {
+      if (still) return;
+      chip.classList.remove('is-tapped');
+      void chip.offsetWidth;          /* one read, on a tap */
+      chip.classList.add('is-tapped');
+    }
+
+    /* ---- adding and removing ------------------------------------------- */
+
+    /* What the picker has built, kept so a replay of the conversation can put
+       it back rather than silently dropping it. */
+    var picked = {};
+    /* Declared here and not beside normalise(): toggle() below reads them, and
+       a `var` read before its assignment is `undefined` — which is precisely
+       the bug that cost this file a first-load measurement. */
+    var mine = {};
+    var bases = {};
+
+    function build(key, emoji, label, quiet) {
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'rx is-in';
+      chip.setAttribute('data-rx', key);
+      chip.setAttribute('data-rx-name', label);
+      /* Built by the picker, so there is nothing of anybody else's in it: its
+         floor is zero, and taking yours off leaves nothing to show. */
+      chip.setAttribute('data-rx-base', '0');
+      chip.innerHTML = '<span class="rx__e" aria-hidden="true"></span>' +
+                       '<span class="rx__n" aria-hidden="true"></span>';
+      chip.querySelector('.rx__e').textContent = emoji;
+      /* Before the plus, always — the control that adds things stays at the
+         end of what it has added. */
+      row.insertBefore(chip, addBtn);
+      paint(chip, 1, true);
+      if (!quiet) bump(chip);
+      return chip;
+    }
+
+    function toggle(chip) {
+      var k = chip.getAttribute('data-rx');
+      var base = baseOf(chip);
+      var on = !chip.classList.contains('is-on');
+      /* A chip nobody else reacted with is yours alone: taking it back leaves
+         a count of nothing, and a chip showing nothing is not a chip. One
+         somebody else left goes back to their number and stays. */
+      if (!on && base === 0) { delete mine[k]; remove(chip); return; }
+      mine[k] = on;
+      paint(chip, base + (on ? 1 : 0), on);
+      bump(chip);
+      changed();
+    }
+
+    function add(key, emoji, label) {
+      var chip = chipFor(key);
+      if (chip) {
+        /* Already on the message: this is the same gesture as tapping it. */
+        if (!chip.classList.contains('is-on')) toggle(chip);
+        else bump(chip);
+        return;
+      }
+      picked[key] = { e: emoji, label: label };
+      mine[key] = true;
+      build(key, emoji, label);
+      changed();
+    }
+
+    function remove(chip) {
+      chip.parentNode.removeChild(chip);
+      changed();
+    }
+
+    /* ---- the picker ------------------------------------------------------ */
+
+    var veil = null, pick = null, openFrom = null;
+
+    function buildPicker() {
+      if (pick) return;
+      veil = document.createElement('div');
+      veil.className = 'rxpick__veil';
+
+      pick = document.createElement('div');
+      pick.className = 'rxpick';
+      pick.setAttribute('role', 'group');
+      pick.setAttribute('aria-label', 'Choose a reaction');
+
+      for (var i = 0; i < PICK.length; i++) {
+        (function (item) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'rxpick__btn';
+          b.setAttribute('data-pick', item.key);
+          b.setAttribute('aria-label', 'React with ' + item.label);
+          b.textContent = item.e;
+          b.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            add(item.key, item.e, item.label);
+            close();
+          });
+          pick.appendChild(b);
+        })(PICK[i]);
+      }
+
+      veil.addEventListener('click', function () { close(); });
+      /* Both start out of the way. A veil left in the tree at full size
+         swallows every tap on the page, which is the bug this line exists to
+         not have. */
+      veil.style.display = 'none';
+      pick.style.display = 'none';
+      document.body.appendChild(veil);
+      document.body.appendChild(pick);
+    }
+
+    /* Which of the five are already on the message. Read from the row rather
+       than from a list kept beside it, so it cannot drift. */
+    function syncPicker() {
+      if (!pick) return;
+      for (var i = 0; i < PICK.length; i++) {
+        var c = chipFor(PICK[i].key);
+        var b = pick.querySelector('[data-pick="' + PICK[i].key + '"]');
+        if (b) b.setAttribute('aria-pressed',
+                 c && c.classList.contains('is-on') ? 'true' : 'false');
+      }
+    }
+
+    /* PLACED AGAINST THE ROW, AND THEN AGAINST THE SCREEN. It wants to sit
+       just above the reactions and share their right edge — which is where
+       the thumb that opened it already is. Whatever that comes out as is then
+       clamped into the viewport with a margin, so on the narrowest screen it
+       slides along the bottom edge rather than hanging off it. */
+    function placePicker() {
+      var a = (openFrom || row).getBoundingClientRect();
+      var w = pick.offsetWidth, h = pick.offsetHeight;
+      var M = 10;
+      var left = a.right - w;
+      var top = a.top - h - 10;
+      /* No room above — under it instead, which on a short screen is where
+         the message is not. */
+      if (top < M) top = Math.min(a.bottom + 10, window.innerHeight - h - M);
+      left = Math.max(M, Math.min(left, window.innerWidth - w - M));
+      top = Math.max(M, top);
+      pick.style.left = Math.round(left) + 'px';
+      pick.style.top = Math.round(top) + 'px';
+      /* It grows out of the control that opened it. */
+      pick.style.transformOrigin =
+        (Math.round(a.right - left)) + 'px ' + (h + 8) + 'px';
+    }
+
+    var isOpen = false;
+    function open(from) {
+      if (isOpen || !phoneRx()) return;
+      buildPicker();
+      openFrom = from || null;
+      isOpen = true;
+      syncPicker();
+      pick.style.visibility = 'hidden';
+      pick.style.display = 'flex';
+      veil.style.display = 'block';
+      placePicker();
+      pick.style.visibility = '';
+      if (addBtn) addBtn.setAttribute('aria-expanded', 'true');
+      requestAnimationFrame(function () {
+        veil.classList.add('is-in');
+        pick.classList.add('is-in');
+      });
+      document.addEventListener('keydown', onKey, true);
+      window.addEventListener('scroll', close, { passive: true });
+      window.addEventListener('resize', close);
+      var first = pick.querySelector('.rxpick__btn');
+      if (first) first.focus({ preventScroll: true });
+    }
+
+    function close() {
+      if (!isOpen) return;
+      isOpen = false;
+      veil.classList.remove('is-in');
+      pick.classList.remove('is-in');
+      if (addBtn) {
+        addBtn.setAttribute('aria-expanded', 'false');
+        addBtn.focus({ preventScroll: true });
+      }
+      document.removeEventListener('keydown', onKey, true);
+      window.removeEventListener('scroll', close);
+      window.removeEventListener('resize', close);
+      /* Left in the tree with its transition run out rather than removed on a
+         timer that a second open would race. */
+      setTimeout(function () {
+        if (isOpen || !pick) return;
+        pick.style.display = 'none';
+        veil.style.display = 'none';
+      }, still ? 0 : 200);
+    }
+
+    function onKey(ev) {
+      if (ev.key === 'Escape' || ev.key === 'Esc') { ev.stopPropagation(); close(); }
+    }
+
+    /* ---- the fourth control --------------------------------------------- */
+
+    var addBtn = null;
+    function buildAdd() {
+      if (addBtn) return;
+      addBtn = document.createElement('button');
+      addBtn.type = 'button';
+      addBtn.className = 'rx rx--add is-in';
+      addBtn.setAttribute('data-rx-add', '');
+      addBtn.setAttribute('aria-label', 'Add a reaction');
+      addBtn.setAttribute('aria-expanded', 'false');
+      addBtn.innerHTML = '<span class="rx__plus" aria-hidden="true">+</span>';
+      addBtn.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (isOpen) close(); else open(addBtn);
+      });
+      row.appendChild(addBtn);
+      /* Says the row is a control now: lifts the four-chip cap and turns the
+         wrap the right way up. Both are in the stylesheet, scoped to this
+         class, so nothing about the static row changes. */
+      row.classList.add('rx-live');
+      changed();
+    }
+
+    /* ABOVE 720 THE ROW IS A PICTURE AGAIN.
+
+       A window dragged out of the phone range has to leave the reactions
+       exactly as a desktop visit would have drawn them: three chips, the
+       counts the sequence landed on, and the pointer behaviour above owning
+       the click. So the fourth control goes, anything the picker built goes
+       with it, and the chips that were always there are handed back their
+       `is-on` — which is the desktop treatment, not the phone's. Choices are
+       kept in `mine`, so dragging back under 720 restores them. */
+    function dropAdd() {
+      close();
+      row.classList.remove('rx-live');
+      if (addBtn && addBtn.parentNode) addBtn.parentNode.removeChild(addBtn);
+      addBtn = null;
+      var cs = row.querySelectorAll('.rx'), i, c, k;
+      for (i = cs.length - 1; i >= 0; i--) {
+        c = cs[i];
+        k = c.getAttribute('data-rx');
+        if ((bases[k] || 0) === 0 && (k in picked)) {
+          if (c.parentNode) c.parentNode.removeChild(c);
+          continue;
+        }
+        if (k in bases) {
+          var n = c.querySelector('.rx__n');
+          if (n) n.textContent = String(bases[k]);
+          c.classList.add('is-on');
+          c.setAttribute('aria-pressed', 'true');
+          c.removeAttribute('aria-label');
+        }
+      }
+    }
+
+    /* ---- wiring ---------------------------------------------------------- */
+
+    /* Delegated, so the chips the picker builds are live without being wired
+       one at a time — and so a chip the thread's own animation replaces does
+       not take its handler with it. Bound once, and does nothing at all above
+       720 where the pointer behaviour above owns the click. */
+    row.addEventListener('click', function (ev) {
+      if (!phoneRx()) return;
+      var t = ev.target;
+      if (!t || !t.closest) return;
+      if (t.closest('[data-rx-add]')) return;      /* its own handler */
+      var chip = t.closest('.rx');
+      if (!chip || !row.contains(chip)) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      toggle(chip);
+    });
+
+    /* The row is built and its counts are set by the thread's own sequence.
+       The fourth control is added once that has happened, so it never appears
+       before the reactions it belongs beside — and it is taken away again if
+       the window is dragged past the breakpoint. */
+    /* WHOSE REACTIONS THESE ARE.
+
+       The sequence lands the row with every chip marked `is-on` — on a
+       pointer that is right, because there it is a picture of a message
+       somebody has already reacted to. On a phone the chips are controls, and
+       a control that starts pressed means the first tap TAKES A REACTION OFF:
+       measured, 🔥 4 went to 🔥 4-unselected on the first tap and only
+       reached 5 on the second. So on a phone the row is normalised — the
+       counts the sequence finished on are kept and the selection is cleared,
+       because none of it is yours yet.
+
+       `mine` is what is. It survives the normalise, which matters because the
+       conversation loops: every replay re-lands the row and resets the chips,
+       and anything you had chosen has to come back with it rather than being
+       quietly dropped on the next cycle. */
+    function normalise() {
+      var cs = row.querySelectorAll('.rx'), i, c, k;
+      for (i = 0; i < cs.length; i++) {
+        c = cs[i];
+        if (c.hasAttribute('data-rx-add')) { c.classList.add('is-in'); continue; }
+        k = c.getAttribute('data-rx');
+        /* Recorded once and kept: the replay clears the counts before it sets
+           them again, and reading a base out of that window would record a
+           floor of nothing. */
+        if (!(k in bases)) {
+          var seen = countOf(c);
+          if (!seen && !c.hasAttribute('data-rx-base')) continue;
+          bases[k] = c.hasAttribute('data-rx-base')
+            ? (parseInt(c.getAttribute('data-rx-base'), 10) || 0) : seen;
+        }
+        c.setAttribute('data-rx-base', String(bases[k]));
+        c.classList.add('is-in');
+        paint(c, bases[k] + (mine[k] ? 1 : 0), !!mine[k]);
+      }
+      /* And anything you added that a replay removed from the row. */
+      for (k in mine) {
+        if (!mine[k] || chipFor(k) || !(k in picked)) continue;
+        build(k, picked[k].e, picked[k].label, true);
+      }
+    }
+
+    function sync() {
+      if (phoneRx()) {
+        if (thread.getAttribute('data-reactions') === 'on') {
+          buildAdd();
+          normalise();
+          syncPicker();
+        }
+      } else {
+        dropAdd();
+      }
+    }
+
+    if (narrow) {
+      if (narrow.addEventListener) narrow.addEventListener('change', sync);
+      else if (narrow.addListener) narrow.addListener(sync);
+    }
+
+    /* `data-reactions` is set on the thread the moment the row lands, by both
+       the played and the reduced-motion paths, so one observer covers both
+       without either having to know this exists. */
+    if (window.MutationObserver) {
+      new MutationObserver(sync).observe(thread,
+        { attributes: true, attributeFilter: ['data-reactions'] });
+    }
+    sync();
+  })();
+
 </script>
 </body>
 </html>
