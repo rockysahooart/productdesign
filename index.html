@@ -29432,6 +29432,183 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   max-width: none;
   text-wrap: balance;
 }
+
+/* ==========================================================================
+   TERMS USED IN THIS PROJECT
+
+   A plain list near the top of each case study, so a reader who does not work
+   in revenue cycle or oncology testing can follow the rest of it. It is not a
+   component: no card, no border, no fill, no radius, no shadow. A heading, a
+   definition list, and the space around them.
+
+   THE SELECTOR IS LOAD-BEARING, for the same reason the story beats are: the
+   case-study type sheet ends with an :is() catch-all at (0,2,2) that reaches
+   every paragraph, dt and dd inside a case study.
+   ========================================================================== */
+:is(#carry, #optiflow, #audit, #specimen) .gloss {
+  margin: clamp(48px, 6vw, 72px) 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+:is(#carry, #optiflow, #audit, #specimen) .gloss__h {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin: 0 0 20px;
+}
+:is(#carry, #optiflow, #audit, #specimen) .gloss__l {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  max-width: 62ch;
+}
+:is(#carry, #optiflow, #audit, #specimen) .gloss__l > div {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+:is(#carry, #optiflow, #audit, #specimen) .gloss__l dt {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--ink);
+  margin: 0;
+}
+:is(#carry, #optiflow, #audit, #specimen) .gloss__l dd {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--ink-muted);
+  margin: 0;
+  padding: 0;
+}
+
+/* ==========================================================================
+   FIVE-PHASE WAYFINDING
+
+   A layer over the case studies, not a structure inside them. The five phases
+   are marked with an attribute on sections that already existed; nothing is
+   wrapped, moved or re-parented, and the rail itself is built by script and
+   appended to the case study's own <main>, so a hidden route hides its own
+   nav and a failure to run leaves the case study exactly as it was.
+
+   The rail is fixed, never in flow, so it cannot take a pixel of width from
+   the 960px content column. It only appears once the outer margin is wide
+   enough to hold it without reaching the content; below that the compact
+   control takes over.
+
+   Scoped by id for the same reason as the story beats: the case-study type
+   sheet ends with an :is() catch-all at (0,2,2).
+   ========================================================================== */
+:is(#carry, #optiflow, #audit, #specimen) [data-phase] { scroll-margin-top: 96px; }
+
+:is(#carry, #optiflow, #audit, #specimen) .pnav {
+  position: fixed;
+  z-index: 40;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+}
+
+/* --- compact control: tablet and phone ------------------------------------ */
+:is(#carry, #optiflow, #audit, #specimen) .pnav {
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+  transform: translateX(-50%);
+}
+:is(#carry, #optiflow, #audit, #specimen) .pnav__b {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-raised);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.10);
+  -webkit-tap-highlight-color: transparent;
+}
+:is(#carry, #optiflow, #audit, #specimen) .pnav__l {
+  display: none;
+  list-style: none;
+  margin: 0 0 10px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface-raised);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+}
+:is(#carry, #optiflow, #audit, #specimen) .pnav[data-open="1"] .pnav__l { display: grid; gap: 2px; }
+:is(#carry, #optiflow, #audit, #specimen) .pnav__l li { margin: 0; padding: 0; }
+:is(#carry, #optiflow, #audit, #specimen) .pnav__a {
+  display: grid;
+  grid-template-columns: 2.2em 1fr;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+:is(#carry, #optiflow, #audit, #specimen) .pnav__a[aria-current="true"] { color: var(--ink); background: var(--surface-sunken); }
+:is(#carry, #optiflow, #audit, #specimen) .pnav__n { font-variant-numeric: tabular-nums; opacity: 0.7; }
+
+/* --- the rail: only once the margin can hold it --------------------------- */
+@media (min-width: 1200px) {
+  :is(#carry, #optiflow, #audit, #specimen) .pnav {
+    left: max(20px, calc((100vw - 960px) / 2 - 188px));
+    bottom: auto;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  :is(#carry, #optiflow, #audit, #specimen) .pnav__b { display: none; }
+  :is(#carry, #optiflow, #audit, #specimen) .pnav__l {
+    display: grid;
+    gap: 4px;
+    width: 168px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+  :is(#carry, #optiflow, #audit, #specimen) .pnav__a {
+    min-height: 34px;
+    padding: 0 8px 0 0;
+    border-radius: 0;
+    border-left: 1px solid var(--border);
+    padding-left: 12px;
+  }
+  :is(#carry, #optiflow, #audit, #specimen) .pnav__a[aria-current="true"] {
+    background: none;
+    border-left-color: var(--ink);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(#carry, #optiflow, #audit, #specimen) .pnav__a { transition: none; }
+}
 </style>
 </head>
 
@@ -39441,7 +39618,7 @@ body{display:grid;place-items:center;min-height:100vh}
       </div>
     </header>
 <div class="cs-wrap">
-<section class="acc acc--static" data-open="1">
+<section id="ph-carry-01" data-phase="01" class="acc acc--static" data-open="1">
   <div data-acc-h>
     <span class="acc__n">What I was given</span>
     <span class="ar-h2">Turning workshop direction into a testable MVP</span>
@@ -39474,8 +39651,22 @@ body{display:grid;place-items:center;min-height:100vh}
     </ul>
   </div>
 </section>
+<section class="gloss" aria-labelledby="gloss-carry">
+  <h2 class="gloss__h" id="gloss-carry">Terms used in this project</h2>
+  <dl class="gloss__l">
+    <div><dt>PatientX</dt><dd>The patient experience this client already shipped. It owned sign-in, appointments and navigation, and Carry had to fit inside it without changing any of it.</dd></div>
+    <div><dt>Carry</dt><dd>The mobile-only system I designed: it connects the questions a patient writes before an appointment with what they need to remember afterward.</dd></div>
+    <div><dt>Preparation checklist</dt><dd>The logistics list a patient works through before a visit. In V3 it sat above the questions; testing moved it below them.</dd></div>
+    <div><dt>Suggested questions</dt><dd>Prompts Carry offers a patient who is less sure what to ask. Adding one is undoable from the moment it lands.</dd></div>
+    <div><dt>Transcription</dt><dd>Turning the recording a patient uploaded into text. It is one of the three steps that can fail, and it fails separately from the upload.</dd></div>
+    <div><dt>Matching</dt><dd>The step that ties a question the patient wrote to the moment in the recording that answers it.</dd></div>
+    <div><dt>Matched answer</dt><dd>What matching produces: a quotation from the recording, badged, with a route back to the moment it came from. Where nothing is quotable, the question stays visibly unanswered.</dd></div>
+    <div><dt>Maze</dt><dd>The unmoderated testing tool run in parallel with the onsite sessions during the workshop week.</dd></div>
+    <div><dt>Playground</dt><dd>The environment where the first build of the MVP started after the workshop.</dd></div>
+  </dl>
+</section>
 <p class="cs-beat">I mapped what PatientX already owned so Carry could sit inside it unchanged.</p>
-<section class="acc" data-open="0">
+<section id="ph-carry-02" data-phase="02" class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Where it sits in PatientX</span>
     <span class="ar-h2">Placing Carry inside the existing PatientX experience</span>
@@ -39882,7 +40073,7 @@ body{display:grid;place-items:center;min-height:100vh}
   </div>
 </section>
 <p class="cs-beat">I turned stakeholder direction into a journey the team could challenge.</p>
-<section class="acc" data-open="0">
+<section id="ph-carry-03" data-phase="03" class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">V1 &middot; Week 1</span>
     <span class="ar-h2">Mapping the first workable flow</span>
@@ -39967,7 +40158,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 <p class="cs-beat">I ruled out recording in a scope conversation that moved consent out of Carry.</p>
-<section class="acc" data-open="0">
+<section id="ph-carry-04" data-phase="04" class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">V2 &middot; Week 2</span>
     <span class="ar-h2">Specifying the behaviour V1 had left open</span>
@@ -40270,7 +40461,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <div class="cs-move"><p class="cs-move__l">Both rounds were pilot testing</p></div>
   </div>
 </section>
-<p class="cs-beat">I moved the checklist below the questions after patients scrolled past it.</p>
+<p class="cs-beat">I moved the preparation checklist below the questions after testing.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">After the workshop</span>
@@ -40355,7 +40546,7 @@ body{display:grid;place-items:center;min-height:100vh}
   </div>
 </section>
 
-<p class="cs-beat">I kept quotations over generated answers, which a patient cannot check.</p>
+<p class="cs-beat">I kept matched answers as quotations, not summaries a patient cannot check.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">The shared reference</span>
@@ -40426,7 +40617,7 @@ body{display:grid;place-items:center;min-height:100vh}
   </div>
 </section>
 <p class="cs-beat">I handed the flows, states and component set to a first build in Playground.</p>
-<section class="acc" data-open="0">
+<section id="ph-carry-05" data-phase="05" class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Handoff, and where it stopped</span>
     <span class="ar-h2">What I handed off, and where it stopped</span>
@@ -40777,7 +40968,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
 <!-- ============================ PART 1 ================================== -->
-<section class="pt">
+<section id="ph-optiflow-01" data-phase="01" class="pt">
   <div class="pt__h">
     <p class="pt__n">Part 1 &middot; Who were the users?</p>
     <h2 class="ar-h2">Mapping three roles onto the tagging step</h2>
@@ -40907,14 +41098,28 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
 <!-- ============================ PART 2 ================================== -->
-<p class="cs-beat">I followed one document through all six steps to find where a reviewer sits.</p>
-<section class="pt">
+<section class="gloss" aria-labelledby="gloss-optiflow">
+  <h2 class="gloss__h" id="gloss-optiflow">Terms used in this project</h2>
+  <dl class="gloss__l">
+    <div><dt>Billing correspondence</dt><dd>The scanned documents that arrive from payors and move through the pipeline. Every one of them passes through tagging.</dd></div>
+    <div><dt>Payor</dt><dd>The insurer responsible for a claim.</dd></div>
+    <div><dt>Denial</dt><dd>A payor's refusal to pay a claim. Most of the correspondence in this queue concerns one.</dd></div>
+    <div><dt>Tagging</dt><dd>Step five of six in the pipeline, where a reviewer checks the billing tags the model proposed. This is the step I designed.</dd></div>
+    <div><dt>CARC</dt><dd>Claim Adjustment Reason Code. The standard code saying why a payor adjusted or denied a claim.</dd></div>
+    <div><dt>RARC</dt><dd>Remittance Advice Remark Code. The supplementary code that adds detail to a CARC.</dd></div>
+    <div><dt>Validate</dt><dd>The reviewer action that accepts the tags on a document and moves it to the next step.</dd></div>
+    <div><dt>Confidence</dt><dd>The model's own score on a suggested tag. It does not arrive for every tag, which is why an unscored tag needed a state of its own.</dd></div>
+    <div><dt>Structured feedback</dt><dd>A correction recorded as a category rather than free text, so engineering can read it when revising prompts, tag definitions and thresholds.</dd></div>
+  </dl>
+</section>
+<p class="cs-beat">I followed one piece of billing correspondence through to tagging.</p>
+<section id="ph-optiflow-02" data-phase="02" class="pt">
   <div class="pt__h">
     <p class="pt__n">Part 2 &middot; What did the system look like?</p>
     <h2 class="ar-h2">Mapping the pipeline, and where a person sits inside it</h2>
   </div>
   <div class="pt__b">
-    <p class="ar-p">I followed one document end to end. Billing correspondence arrives as scanned documents and moves through the pipeline below. The model proposes at every stage and a reviewer validates. My work sat at the tagging step.</p>
+    <p class="ar-p">I followed one document end to end. Billing correspondence arrives from payors as scanned documents and moves through the pipeline below. The model proposes at every stage and a reviewer validates. My work sat at the tagging step.</p>
 
     <!-- THE PIPELINE, FLAT.
 
@@ -41058,15 +41263,15 @@ body{display:grid;place-items:center;min-height:100vh}
 </svg>
 </figure>
 
-    <p class="ar-p">The channel returning along the bottom is what this case study is about. A correction retrains nothing on its own. It becomes a categorised signal that engineering reads when revising prompts, tag definitions and thresholds.</p>
+    <p class="ar-p">The feedback channel returning along the bottom is what this case study is about. A correction retrains nothing on its own. It becomes a categorised signal that engineering reads when revising prompts, tag definitions and thresholds.</p>
     <p class="ar-p">The system measured 99.5% accuracy at ingest and 99% at extraction. Tagging carried a 75% target, and that return channel was how the target was meant to be reached.</p>
   </div>
 </section>
 
 
 <!-- ============================ PART 3 ================================== -->
-<p class="cs-beat">I proposed a free-text reason, and engineering showed nothing could read it.</p>
-<section class="pt">
+<p class="cs-beat">I proposed a free-text reason; engineering could not read it downstream.</p>
+<section id="ph-optiflow-03" data-phase="03" class="pt">
   <div class="pt__h">
     <p class="pt__n">Part 3 &middot; What did I do?</p>
     <h2 class="ar-h2">Designing the screen where a reviewer disagrees with the model</h2>
@@ -41118,8 +41323,8 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
 <!-- ============================ PART 4 ================================== -->
-<p class="cs-beat">I took each proposal back to the team, and every one came back smaller.</p>
-<section class="pt">
+<p class="cs-beat">I took each tagging proposal back, and every one came back smaller.</p>
+<section id="ph-optiflow-04" data-phase="04" class="pt">
   <div class="pt__h">
     <p class="pt__n">Part 4 &middot; What did my process look like?</p>
     <h2 class="ar-h2">Documenting how a ticket moved, and what sent it back</h2>
@@ -41215,7 +41420,7 @@ body{display:grid;place-items:center;min-height:100vh}
           could not score.</p></div>
     </article>
 
-    <h3 class="ar-h3">The cycle the work fed</h3>
+    <h3 id="ph-optiflow-05" data-phase="05" class="ar-h3">The cycle the work fed</h3>
     <ol class="lp">
       <li>Reviewer decision</li>
       <li>Structured feedback</li>
@@ -41504,7 +41709,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <div class="cs-wrap">
 
 
-<section class="acc acc--static" data-open="1">
+<section id="ph-audit-01" data-phase="01" class="acc acc--static" data-open="1">
   <div data-acc-h>
     <span class="acc__n">What the audit was</span>
     <span class="ar-h2">What the audit found that the library check did not</span>
@@ -41526,8 +41731,21 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
+<section class="gloss" aria-labelledby="gloss-audit">
+  <h2 class="gloss__h" id="gloss-audit">Terms used in this project</h2>
+  <dl class="gloss__l">
+    <div><dt>Provider portal</dt><dd>The clinical application where oncology providers place orders, track specimens, read results and clear outstanding work.</dd></div>
+    <div><dt>The four workflows</dt><dd>Orders, Specimens, Results and Provider Tasks. These are what I audited, one at a time.</dd></div>
+    <div><dt>MRD panel</dt><dd>Minimal residual disease testing. It is the assay named on the orders and results running through these workflows.</dd></div>
+    <div><dt>Requisition</dt><dd>The paperwork that travels with a specimen. Missing requisition details are one of the things that stalls a case.</dd></div>
+    <div><dt>Status token</dt><dd>The coloured label naming a workflow state. I rewrote these so each one names an owner and whether the provider has to act.</dd></div>
+    <div><dt>Provider Action Queue</dt><dd>The single row pattern I defined to replace the four workflow-specific rows: priority, patient and workflow, status, required action, owner, due, next step.</dd></div>
+    <div><dt>Build spec</dt><dd>The handover format I wrote instead of a static screen: states, approved copy, accessibility rules and acceptance criteria.</dd></div>
+    <div><dt>Acceptance criteria</dt><dd>The conditions a build has to satisfy before the row counts as done.</dd></div>
+  </dl>
+</section>
 <p class="cs-beat">I found the library passed its check while providers still could not act.</p>
-<section class="acc" data-open="0">
+<section id="ph-audit-02" data-phase="02" class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Why I audited workflows</span>
     <span class="ar-h2">Auditing the workflows instead of the component library</span>
@@ -41805,8 +42023,8 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
-<p class="cs-beat">I gave every row one required action in the same column, every time.</p>
-<section class="acc" data-open="0">
+<p class="cs-beat">I gave every Provider Action Queue row one required action.</p>
+<section id="ph-audit-03" data-phase="03" class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">How I standardized the system</span>
     <span class="ar-h2">Defining one row pattern and rules for colour</span>
@@ -41873,8 +42091,8 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
-<p class="cs-beat">I rewrote statuses to name an owner, and measured every colour pairing.</p>
-<section class="acc" data-open="0">
+<p class="cs-beat">I rewrote the status tokens to name an owner and measured the contrast.</p>
+<section id="ph-audit-04" data-phase="04" class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Implementation and handoff</span>
     <span class="ar-h2">Moving into implementation with a build spec</span>
@@ -42032,7 +42250,7 @@ body{display:grid;place-items:center;min-height:100vh}
      reflection used to sit at the foot of Handoff, where it read as a note
      about the spec; it is the note about the work. -->
 <p class="cs-beat">I delivered documentation rather than a release, with the check unbuilt.</p>
-<section class="acc" data-open="0">
+<section id="ph-audit-05" data-phase="05" class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Outcome and reflection</span>
     <span class="ar-h2">What I delivered, and the check I left unbuilt</span>
@@ -42145,7 +42363,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <div class="cs-wrap">
 
 
-<section class="acc acc--static" data-open="1">
+<section id="ph-specimen-01" data-phase="01" class="acc acc--static" data-open="1">
   <div data-acc-h>
     <span class="acc__n">The two changes</span>
     <span class="ar-h2">Auditing the lid, and specifying the two changes that came out of it</span>
@@ -42167,14 +42385,29 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
-<p class="cs-beat">I audited the printed lid against the decisions it asked a clinician to make.</p>
-<section class="acc" data-open="0">
+<section class="gloss" aria-labelledby="gloss-specimen">
+  <h2 class="gloss__h" id="gloss-specimen">Terms used in this project</h2>
+  <dl class="gloss__l">
+    <div><dt>Specimen kit</dt><dd>The box a clinician uses to prepare and ship tissue to the lab.</dd></div>
+    <div><dt>Instruction lid</dt><dd>The printed sheet inside the lid. It carried the whole preparation specification, including the rejection criteria.</dd></div>
+    <div><dt>Tissue block</dt><dd>A preserved tissue sample in its container. It is one of the two things the kit ships.</dd></div>
+    <div><dt>Slide holder</dt><dd>A rigid carrier for up to 25 prepared slides. It is the other thing the kit ships.</dd></div>
+    <div><dt>Pack-out</dt><dd>Preparing and packing the specimen for shipment, the step where the lid is read.</dd></div>
+    <div><dt>Rejection criteria</dt><dd>The conditions under which the lab refuses a specimen on arrival. This was the costliest thing to get wrong and sat lowest on the sheet.</dd></div>
+    <div><dt>Assay</dt><dd>The test run on the specimen once it reaches the lab. A rejection writes off its whole value, not part of it.</dd></div>
+    <div><dt>Re-collection</dt><dd>Going back to the patient for another specimen after a rejection.</dd></div>
+    <div><dt>Die-cut foam insert</dt><dd>The one-piece polyethylene insert I specified, cut with a cavity shaped to each container.</dd></div>
+    <div><dt>Panel A and Panel B</dt><dd>The inner lid and the base of the folded box. The instructions print on A and the foam sits on B.</dd></div>
+  </dl>
+</section>
+<p class="cs-beat">I audited the instruction lid against the pack-out decisions it asked for.</p>
+<section id="ph-specimen-02" data-phase="02" class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">The kit as it shipped</span>
     <span class="ar-h2">The starting condition: a sheet in the lid, nothing holding the specimen</span>
   </div>
   <div class="acc__b" data-acc-b>
-    <p class="ar-p">A clinician prepares tissue to a specification, packs it and ships it to a lab. Opening the kit, I found that specification on a single sheet in the lid, and the base below it empty.</p>
+    <p class="ar-p">A clinician prepares tissue to a specification, packs it out and ships it to the lab. Opening the kit, I found that specification on a single sheet in the lid, and the base below it empty.</p>
 
     <figure class="sk-fig">
       <img src="assets/6d12f2d2348d.webp"
@@ -42239,7 +42472,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
 <p class="cs-beat">I kept what I observed in the kit separate from what I concluded from it.</p>
-<section class="acc" data-open="0">
+<section id="ph-specimen-03" data-phase="03" class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Design decision 01</span>
     <span class="ar-h2">Reordering the sheet in the lid</span>
@@ -42304,7 +42537,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
-<p class="cs-beat">I reordered the sheet rather than re-tool the box already in manufacture.</p>
+<p class="cs-beat">I reordered the instruction lid rather than re-tool a box already in manufacture.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Design decision 02</span>
@@ -42356,8 +42589,8 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
-<p class="cs-beat">I found the tissue container travelling loose in an empty base.</p>
-<section class="acc" data-open="0">
+<p class="cs-beat">I found the tissue block container travelling loose in an empty kit base.</p>
+<section id="ph-specimen-04" data-phase="04" class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Production</span>
     <span class="ar-h2">Fitting both changes to a box already in manufacture</span>
@@ -42382,7 +42615,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
-<p class="cs-beat">I fitted both changes onto panels the existing box already folded.</p>
+<p class="cs-beat">I fitted both changes onto Panel A and Panel B of the existing box.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">The subteam</span>
@@ -42478,7 +42711,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
 <p class="cs-beat">I wrote the subteam&rsquo;s tickets and kept their statuses current.</p>
-<section class="acc" data-open="0">
+<section id="ph-specimen-05" data-phase="05" class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Reflection</span>
     <span class="ar-h2">What both changes had in common</span>
@@ -42647,5 +42880,113 @@ body{display:grid;place-items:center;min-height:100vh}
 
 <script src="assets/app-1.js"></script>
 <script src="assets/app-2.js"></script>
+
+<script>
+  /* FIVE-PHASE WAYFINDING, AS AN ENHANCEMENT.
+
+     Every marker is an attribute on a section that was already there. This
+     builds the rail, appends it to the case study's own <main> so a hidden
+     route hides it too, and keeps the active phase in step with the scroll
+     through an observer. It never scrolls the page itself, never snaps and
+     never touches anything inside a chapter. If it throws, the case study is
+     exactly what it was without it. */
+  (function () {
+    'use strict';
+    var NAMES = { '01': 'Context', '02': 'Discovery', '03': 'Direction', '04': 'Iteration', '05': 'Outcome' };
+
+    function build(main) {
+      var marks = [].slice.call(main.querySelectorAll('[data-phase]'));
+      if (marks.length < 2 || !window.IntersectionObserver) return;
+
+      var nav = document.createElement('nav');
+      nav.className = 'pnav';
+      nav.setAttribute('aria-label', 'Phases of this project');
+      nav.setAttribute('data-open', '0');
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pnav__b';
+      btn.setAttribute('aria-expanded', 'false');
+      var cap = document.createElement('span');
+      btn.appendChild(cap);
+
+      var list = document.createElement('ol');
+      list.className = 'pnav__l';
+
+      var items = [];
+      marks.forEach(function (el) {
+        var p = el.getAttribute('data-phase');
+        if (!NAMES[p]) return;
+        var li = document.createElement('li');
+        var a = document.createElement('a');
+        a.className = 'pnav__a';
+        a.href = '#' + el.id;
+        a.innerHTML = '<span class="pnav__n">' + p + '</span><span class="pnav__t">' + NAMES[p] + '</span>';
+        li.appendChild(a);
+        list.appendChild(li);
+        items.push({ el: el, a: a, n: p, t: NAMES[p] });
+      });
+      if (items.length < 2) return;
+
+      nav.appendChild(list);
+      nav.appendChild(btn);
+      main.appendChild(nav);
+
+      btn.addEventListener('click', function () {
+        var on = nav.getAttribute('data-open') === '1';
+        nav.setAttribute('data-open', on ? '0' : '1');
+        btn.setAttribute('aria-expanded', on ? 'false' : 'true');
+      });
+      list.addEventListener('click', function () {
+        nav.setAttribute('data-open', '0');
+        btn.setAttribute('aria-expanded', 'false');
+      });
+
+      var at = -1;
+      function paint() {
+        var cur = 0;
+        for (var i = 0; i < items.length; i++) {
+          if (items[i].el.getBoundingClientRect().top <= 160) cur = i;
+        }
+        /* The last phase can begin inside the final screenful, and then its
+           marker never reaches the trip line however far the reader scrolls.
+           Reaching the bottom of the page means being in the last phase. */
+        var doc = document.documentElement;
+        if (window.innerHeight + window.pageYOffset >= doc.scrollHeight - 4) cur = items.length - 1;
+        if (cur === at) return;
+        at = cur;
+        for (var k = 0; k < items.length; k++) {
+          items[k].a.setAttribute('aria-current', k === cur ? 'true' : 'false');
+        }
+        cap.textContent = items[cur].n + ' / 05 \u00b7 ' + items[cur].t;
+      }
+
+      var io = new IntersectionObserver(paint, { rootMargin: '-150px 0px -60% 0px', threshold: [0, 1] });
+      items.forEach(function (it) { io.observe(it.el); });
+
+      /* The observer drives this, but a marker can cross the band between two
+         frames on a jump or an anchor click and never report a change, which
+         leaves the rail showing a phase the reader has already left. A passive
+         read on scroll, throttled to a frame, closes that gap. It only reads
+         geometry: nothing here scrolls, snaps or intercepts the page. */
+      var queued = false;
+      window.addEventListener('scroll', function () {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(function () { queued = false; paint(); });
+      }, { passive: true });
+      window.addEventListener('hashchange', paint);
+      paint();
+    }
+
+    function init() {
+      [].slice.call(document.querySelectorAll('main.case')).forEach(function (m) {
+        try { build(m); } catch (e) {}
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+  }());
+</script>
 </body>
 </html>
