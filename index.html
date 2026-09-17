@@ -29620,10 +29620,161 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 @media (prefers-reduced-motion: reduce) {
   :is(#carry, #optiflow, #audit, #specimen) .pnav__a { transition: none; }
 }
+
+/* ==========================================================================
+   THE LOADER
+
+   A prologue, not a splash screen: the same warm clay, the same upper-left
+   light, the same near-white shells the thread is built from, so the first
+   thing on screen already belongs to the page behind it.
+
+   It is written into the document rather than injected, so it paints with the
+   first frame and cannot flash the wrong theme: the inline theme script in the
+   head has already set data-theme by the time this parses.
+
+   One SVG, four paths. The form is one material throughout: a circle that
+   breathes, deforms, resolves to a rounded square, stretches, then divides.
+   The three shells that join it start life as exact copies of the first at
+   zero opacity, so nothing ever appears out of nowhere.
+   ========================================================================== */
+.ld {
+  --ld-bg:    #F4F4F2;
+  --ld-face:  #FDFCFA;
+  --ld-hi:    #FFFFFF;
+  --ld-lo:    #E6E4DF;
+  --ld-sh:    rgba(38, 34, 28, 0.14);
+  --ld-track: rgba(38, 34, 28, 0.13);
+  --ld-fill:  #262626;
+  --ld-ink:   #262626;
+
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  background: var(--ld-bg);
+  opacity: 1;
+  transition: opacity 460ms cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+:root[data-theme="dark"] .ld {
+  --ld-bg:    #232326;
+  --ld-face:  #3A3A3E;
+  --ld-hi:    #4A4A50;
+  --ld-lo:    #2A2A2D;
+  --ld-sh:    rgba(0, 0, 0, 0.40);
+  --ld-track: rgba(237, 237, 237, 0.16);
+  --ld-fill:  #EDEDED;
+  --ld-ink:   #EDEDED;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .ld {
+    --ld-bg:    #232326;
+    --ld-face:  #3A3A3E;
+    --ld-hi:    #4A4A50;
+    --ld-lo:    #2A2A2D;
+    --ld-sh:    rgba(0, 0, 0, 0.40);
+    --ld-track: rgba(237, 237, 237, 0.16);
+    --ld-fill:  #EDEDED;
+    --ld-ink:   #EDEDED;
+  }
+}
+.ld.is-out { opacity: 0; pointer-events: none; }
+
+.ld__c {
+  display: grid;
+  justify-items: center;
+  gap: clamp(28px, 4.4vh, 52px);
+  padding-inline: 20px;
+  width: min(560px, 100%);
+}
+.ld__svg {
+  display: block;
+  width: clamp(150px, 26vh, 236px);
+  height: clamp(150px, 26vh, 236px);
+  overflow: visible;
+}
+.ld__svg .ld-hi { stop-color: var(--ld-hi); }
+.ld__svg .ld-mid { stop-color: var(--ld-face); }
+.ld__svg .ld-lo { stop-color: var(--ld-lo); }
+.ld__svg feDropShadow { flood-color: var(--ld-sh); }
+
+/* The message is the storytelling scale, resolved from the same tokens the
+   dividers and the case-study title use. --fs-disp-k is pinned to 1 so the
+   landing page's own display multiplier cannot make a second scale of it. */
+.ld__msg {
+  --fs-disp-k: 1;
+  margin: 0;
+  min-height: 1.2em;
+  font-family: var(--font-heading);
+  font-variation-settings: var(--wonk-on);
+  font-weight: 600;
+  font-size: calc(var(--cs-t1, clamp(30px, 7.4vw, 44px)) * var(--fs-disp-k));
+  line-height: calc(var(--cs-lh1, 1.08) / var(--fs-disp-k));
+  letter-spacing: -0.010em;
+  color: var(--ld-ink);
+  text-align: center;
+}
+.ld__msg span {
+  display: inline-block;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 260ms ease, transform 260ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ld__msg span.is-fade { opacity: 0; transform: translateY(7px); }
+
+.ld__bar {
+  width: min(224px, 62vw);
+  height: 2px;
+  border-radius: 999px;
+  background: var(--ld-track);
+  overflow: hidden;
+}
+.ld__fill {
+  display: block;
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ld-fill);
+  transition: width 220ms cubic-bezier(0.33, 0, 0.2, 1);
+}
+
+html.ld-lock, html.ld-lock body { overflow: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ld__msg span { transition: opacity 200ms ease; transform: none; }
+  .ld__msg span.is-fade { transform: none; }
+}
 </style>
 </head>
 
 <body>
+
+<div class="ld" id="pf-loader" role="status" aria-live="polite" aria-label="Loading">
+  <div class="ld__c">
+    <svg class="ld__svg" viewBox="0 0 320 320" aria-hidden="true" focusable="false">
+      <defs>
+        <radialGradient id="ld-face" cx="33%" cy="26%" r="84%">
+          <stop class="ld-hi"  offset="0%"></stop>
+          <stop class="ld-mid" offset="56%"></stop>
+          <stop class="ld-lo"  offset="100%"></stop>
+        </radialGradient>
+        <filter id="ld-soft" x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow dx="5" dy="11" stdDeviation="11"></feDropShadow>
+        </filter>
+      </defs>
+      <g filter="url(#ld-soft)">
+        <path data-ld-p="0" fill="url(#ld-face)"></path>
+        <path data-ld-p="1" fill="url(#ld-face)"></path>
+        <path data-ld-p="2" fill="url(#ld-face)"></path>
+        <path data-ld-p="3" fill="url(#ld-face)"></path>
+      </g>
+    </svg>
+    <p class="ld__msg"><span data-ld-msg>Loading&#8230;</span></p>
+    <div class="ld__bar"><span class="ld__fill" data-ld-fill></span></div>
+  </div>
+</div>
+
 
 
 <div class="pf-wash"  aria-hidden="true"></div>
@@ -39629,7 +39780,7 @@ body{display:grid;place-items:center;min-height:100vh}
       </div>
     </header>
 <div class="cs-wrap">
-<section id="ph-carry-01" data-phase="01" class="acc acc--static" data-open="1">
+<section id="ph-carry-01" data-phase="01" data-phase-anchor="01" class="acc acc--static" data-open="1">
   <div data-acc-h>
     <span class="acc__n">What I was given</span>
     <span class="ar-h2">Turning workshop direction into a testable MVP</span>
@@ -39676,8 +39827,8 @@ body{display:grid;place-items:center;min-height:100vh}
     <div><dt>Playground</dt><dd>The environment where the first build of the MVP started after the workshop.</dd></div>
   </dl>
 </section>
-<p class="cs-beat">I mapped what PatientX already owned so Carry could sit inside it unchanged.</p>
-<section id="ph-carry-02" data-phase="02" class="acc" data-open="0">
+<p id="ph-carry-02" data-phase="02" data-phase-anchor="02" class="cs-beat">I mapped what PatientX already owned so Carry could sit inside it unchanged.</p>
+<section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Where it sits in PatientX</span>
     <span class="ar-h2">Placing Carry inside the existing PatientX experience</span>
@@ -40083,8 +40234,8 @@ body{display:grid;place-items:center;min-height:100vh}
 
   </div>
 </section>
-<p class="cs-beat">I turned stakeholder direction into a journey the team could challenge.</p>
-<section id="ph-carry-03" data-phase="03" class="acc" data-open="0">
+<p id="ph-carry-03" data-phase="03" data-phase-anchor="03" class="cs-beat">I turned stakeholder direction into a journey the team could challenge.</p>
+<section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">V1 &middot; Week 1</span>
     <span class="ar-h2">Mapping the first workable flow</span>
@@ -40168,8 +40319,8 @@ body{display:grid;place-items:center;min-height:100vh}
   </div>
 </section>
 
-<p class="cs-beat">I ruled out recording in a scope conversation that moved consent out of Carry.</p>
-<section id="ph-carry-04" data-phase="04" class="acc" data-open="0">
+<p id="ph-carry-04" data-phase="04" data-phase-anchor="04" class="cs-beat">I ruled out recording in a scope conversation that moved consent out of Carry.</p>
+<section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">V2 &middot; Week 2</span>
     <span class="ar-h2">Specifying the behaviour V1 had left open</span>
@@ -40627,8 +40778,8 @@ body{display:grid;place-items:center;min-height:100vh}
     <div class="cs-move"><p class="cs-move__l">Two other designers built screens from it without asking me what a row was for</p></div>
   </div>
 </section>
-<p class="cs-beat">I handed the flows, states and component set to a first build in Playground.</p>
-<section id="ph-carry-05" data-phase="05" class="acc" data-open="0">
+<p id="ph-carry-05" data-phase="05" data-phase-anchor="05" class="cs-beat">I handed the flows, states and component set to a first build in Playground.</p>
+<section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Handoff, and where it stopped</span>
     <span class="ar-h2">What I handed off, and where it stopped</span>
@@ -40979,7 +41130,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
 <!-- ============================ PART 1 ================================== -->
-<section id="ph-optiflow-01" data-phase="01" class="pt">
+<section id="ph-optiflow-01" data-phase="01" data-phase-anchor="01" class="pt">
   <div class="pt__h">
     <p class="pt__n">Part 1 &middot; Who were the users?</p>
     <h2 class="ar-h2">Mapping three roles onto the tagging step</h2>
@@ -41123,8 +41274,8 @@ body{display:grid;place-items:center;min-height:100vh}
     <div><dt>Structured feedback</dt><dd>A correction recorded as a category rather than free text, so engineering can read it when revising prompts, tag definitions and thresholds.</dd></div>
   </dl>
 </section>
-<p class="cs-beat">I followed one piece of billing correspondence through to tagging.</p>
-<section id="ph-optiflow-02" data-phase="02" class="pt">
+<p id="ph-optiflow-02" data-phase="02" data-phase-anchor="02" class="cs-beat">I followed one piece of billing correspondence through to tagging.</p>
+<section class="pt">
   <div class="pt__h">
     <p class="pt__n">Part 2 &middot; What did the system look like?</p>
     <h2 class="ar-h2">Mapping the pipeline, and where a person sits inside it</h2>
@@ -41281,8 +41432,8 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
 <!-- ============================ PART 3 ================================== -->
-<p class="cs-beat">I proposed a free-text reason; engineering could not read it downstream.</p>
-<section id="ph-optiflow-03" data-phase="03" class="pt">
+<p id="ph-optiflow-03" data-phase="03" data-phase-anchor="03" class="cs-beat">I proposed a free-text reason; engineering could not read it downstream.</p>
+<section class="pt">
   <div class="pt__h">
     <p class="pt__n">Part 3 &middot; What did I do?</p>
     <h2 class="ar-h2">Designing the screen where a reviewer disagrees with the model</h2>
@@ -41334,8 +41485,8 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
 <!-- ============================ PART 4 ================================== -->
-<p class="cs-beat">I took each tagging proposal back, and every one came back smaller.</p>
-<section id="ph-optiflow-04" data-phase="04" class="pt">
+<p id="ph-optiflow-04" data-phase="04" data-phase-anchor="04" class="cs-beat">I took each tagging proposal back, and every one came back smaller.</p>
+<section class="pt">
   <div class="pt__h">
     <p class="pt__n">Part 4 &middot; What did my process look like?</p>
     <h2 class="ar-h2">Documenting how a ticket moved, and what sent it back</h2>
@@ -41431,7 +41582,7 @@ body{display:grid;place-items:center;min-height:100vh}
           could not score.</p></div>
     </article>
 
-    <h3 id="ph-optiflow-05" data-phase="05" class="ar-h3">The cycle the work fed</h3>
+    <h3 id="ph-optiflow-05" data-phase="05" data-phase-anchor="05" class="ar-h3">The cycle the work fed</h3>
     <ol class="lp">
       <li>Reviewer decision</li>
       <li>Structured feedback</li>
@@ -41720,7 +41871,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <div class="cs-wrap">
 
 
-<section id="ph-audit-01" data-phase="01" class="acc acc--static" data-open="1">
+<section id="ph-audit-01" data-phase="01" data-phase-anchor="01" class="acc acc--static" data-open="1">
   <div data-acc-h>
     <span class="acc__n">What the audit was</span>
     <span class="ar-h2">What the audit found that the library check did not</span>
@@ -41755,8 +41906,8 @@ body{display:grid;place-items:center;min-height:100vh}
     <div><dt>Acceptance criteria</dt><dd>The conditions a build has to satisfy before the row counts as done.</dd></div>
   </dl>
 </section>
-<p class="cs-beat">I found the library passed its check while providers still could not act.</p>
-<section id="ph-audit-02" data-phase="02" class="acc" data-open="0">
+<p id="ph-audit-02" data-phase="02" data-phase-anchor="02" class="cs-beat">I found the library passed its check while providers still could not act.</p>
+<section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Why I audited workflows</span>
     <span class="ar-h2">Auditing the workflows instead of the component library</span>
@@ -42034,8 +42185,8 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
-<p class="cs-beat">I gave every Provider Action Queue row one required action.</p>
-<section id="ph-audit-03" data-phase="03" class="acc" data-open="0">
+<p id="ph-audit-03" data-phase="03" data-phase-anchor="03" class="cs-beat">I gave every Provider Action Queue row one required action.</p>
+<section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">How I standardized the system</span>
     <span class="ar-h2">Defining one row pattern and rules for colour</span>
@@ -42102,8 +42253,8 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
-<p class="cs-beat">I rewrote the status tokens to name an owner and measured the contrast.</p>
-<section id="ph-audit-04" data-phase="04" class="acc" data-open="0">
+<p id="ph-audit-04" data-phase="04" data-phase-anchor="04" class="cs-beat">I rewrote the status tokens to name an owner and measured the contrast.</p>
+<section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Implementation and handoff</span>
     <span class="ar-h2">Moving into implementation with a build spec</span>
@@ -42260,8 +42411,8 @@ body{display:grid;place-items:center;min-height:100vh}
 <!-- The case study ends on what it produced and what it did not. The
      reflection used to sit at the foot of Handoff, where it read as a note
      about the spec; it is the note about the work. -->
-<p class="cs-beat">I delivered documentation rather than a release, with the check unbuilt.</p>
-<section id="ph-audit-05" data-phase="05" class="acc" data-open="0">
+<p id="ph-audit-05" data-phase="05" data-phase-anchor="05" class="cs-beat">I delivered documentation rather than a release, with the check unbuilt.</p>
+<section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Outcome and reflection</span>
     <span class="ar-h2">What I delivered, and the check I left unbuilt</span>
@@ -42374,7 +42525,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <div class="cs-wrap">
 
 
-<section id="ph-specimen-01" data-phase="01" class="acc acc--static" data-open="1">
+<section id="ph-specimen-01" data-phase="01" data-phase-anchor="01" class="acc acc--static" data-open="1">
   <div data-acc-h>
     <span class="acc__n">The two changes</span>
     <span class="ar-h2">Auditing the lid, and specifying the two changes that came out of it</span>
@@ -42411,8 +42562,8 @@ body{display:grid;place-items:center;min-height:100vh}
     <div><dt>Panel A and Panel B</dt><dd>The inner lid and the base of the folded box. The instructions print on A and the foam sits on B.</dd></div>
   </dl>
 </section>
-<p class="cs-beat">I audited the instruction lid against the pack-out decisions it asked for.</p>
-<section id="ph-specimen-02" data-phase="02" class="acc" data-open="0">
+<p id="ph-specimen-02" data-phase="02" data-phase-anchor="02" class="cs-beat">I audited the instruction lid against the pack-out decisions it asked for.</p>
+<section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">The kit as it shipped</span>
     <span class="ar-h2">The starting condition: a sheet in the lid, nothing holding the specimen</span>
@@ -42482,8 +42633,8 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
-<p class="cs-beat">I kept what I observed in the kit separate from what I concluded from it.</p>
-<section id="ph-specimen-03" data-phase="03" class="acc" data-open="0">
+<p id="ph-specimen-03" data-phase="03" data-phase-anchor="03" class="cs-beat">I kept what I observed in the kit separate from what I concluded from it.</p>
+<section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Design decision 01</span>
     <span class="ar-h2">Reordering the sheet in the lid</span>
@@ -42600,8 +42751,8 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
-<p class="cs-beat">I found the tissue block container travelling loose in an empty kit base.</p>
-<section id="ph-specimen-04" data-phase="04" class="acc" data-open="0">
+<p id="ph-specimen-04" data-phase="04" data-phase-anchor="04" class="cs-beat">I found the tissue block container travelling loose in an empty kit base.</p>
+<section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Production</span>
     <span class="ar-h2">Fitting both changes to a box already in manufacture</span>
@@ -42721,8 +42872,8 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
-<p class="cs-beat">I wrote the subteam&rsquo;s tickets and kept their statuses current.</p>
-<section id="ph-specimen-05" data-phase="05" class="acc" data-open="0">
+<p id="ph-specimen-05" data-phase="05" data-phase-anchor="05" class="cs-beat">I wrote the subteam&rsquo;s tickets and kept their statuses current.</p>
+<section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Reflection</span>
     <span class="ar-h2">What both changes had in common</span>
@@ -42889,8 +43040,186 @@ body{display:grid;place-items:center;min-height:100vh}
 
 <template id="tpl-hw"><svg class="hw" viewBox="0 0 2007 329" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="hw-g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="4817" y2="0"><stop offset="0" stop-color="var(--kw-a)"/><stop offset=".28" stop-color="var(--kw-b)"/><stop offset=".5" stop-color="var(--kw-c)"/><stop offset=".72" stop-color="var(--kw-b)"/><stop offset="1" stop-color="var(--kw-a)"/></linearGradient><mask id="hw-ink"><image href="assets/18f020fbf820.png" x="0" y="0" width="2007" height="329"/></mask><mask id="hw-pen"><g class="hw__pen" fill="none" stroke="#fff" stroke-width="25.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 311 L15 312M21 307 L20 314" style="--l:13.2;--at:0ms;--ms:24ms"/><path d="M15 307 L21 307 L48 279 L56 277 L103 237 L176 182" style="--l:206.3;--at:1ms;--ms:24ms"/><path d="M48 279 L45 277 L47 267 L99 198 L152 134" style="--l:183.3;--at:21ms;--ms:24ms"/><path d="M158 280 L151 280" style="--l:7.0;--at:39ms;--ms:24ms"/><path d="M227 156 L223 172 L175 235 L162 261 L155 265" style="--l:132.8;--at:40ms;--ms:24ms"/><path d="M152 134 L241 38 L258 19" style="--l:156.4;--at:52ms;--ms:24ms"/><path d="M161 263 L158 282 L164 283 L173 280 L239 232 L242 229 L243 223 L250 217" style="--l:136.0;--at:68ms;--ms:24ms"/><path d="M176 182 L205 163 L218 157 L227 156 L230 146" style="--l:68.5;--at:81ms;--ms:24ms"/><path d="M228 154 L233 153" style="--l:5.1;--at:87ms;--ms:24ms"/><path d="M242 228 L249 228 L270 209 L273 204 L267 203" style="--l:47.2;--at:88ms;--ms:24ms"/><path d="M282 202 L280 214 L274 225 L259 250 L253 254" style="--l:61.1;--at:92ms;--ms:24ms"/><path d="M258 19 L260 14M258 18 L261 18" style="--l:8.4;--at:98ms;--ms:24ms"/><path d="M258 252 L259 265 L269 262 L319 229 L325 227 L333 228 L336 226 L342 217 L359 200" style="--l:136.2;--at:99ms;--ms:24ms"/><path d="M273 204 L275 205 L282 202 L298 185 L299 180" style="--l:38.3;--at:112ms;--ms:24ms"/><path d="M325 227 L324 220" style="--l:7.1;--at:116ms;--ms:24ms"/><path d="M332 228 L329 240 L323 251 L323 256 L327 260 L333 260 L344 255 L405 212 L415 211 L409 233 L416 233 L458 203" style="--l:219.7;--at:117ms;--ms:24ms"/><path d="M359 200 L358 197 L361 192M359 200 L364 198" style="--l:14.4;--at:138ms;--ms:24ms"/><path d="M411 234 L383 263" style="--l:40.3;--at:139ms;--ms:24ms"/><path d="M414 210 L433 189 L445 179" style="--l:43.9;--at:143ms;--ms:24ms"/><path d="M474 199 L471 223 L461 235 L454 236" style="--l:46.9;--at:147ms;--ms:24ms"/><path d="M458 203 L474 199 L488 188" style="--l:34.3;--at:152ms;--ms:24ms"/><path d="M471 223 L487 219 L525 193 L544 187" style="--l:82.5;--at:155ms;--ms:24ms"/><path d="M484 190 L483 187 L487 180M528 230 L520 233M528 225 L522 225M539 191 L540 189M540 189 L540 186" style="--l:31.0;--at:163ms;--ms:24ms"/><path d="M539 188 L537 204 L528 220 L528 230 L533 237 L547 235 L561 230 L565 227 L567 221 L571 219 L578 228 L594 241 L604 238 L616 229 L633 226 L647 211" style="--l:193.1;--at:166ms;--ms:24ms"/><path d="M566 261 L562 266 L558 266M578 228 L564 228" style="--l:24.4;--at:185ms;--ms:24ms"/><path d="M593 241 L590 250 L585 254 L577 259 L566 261 L567 250 L576 241 L582 231" style="--l:71.9;--at:187ms;--ms:24ms"/><path d="M651 195 L649 193 L634 195 L616 203 L595 217 L588 224 L584 232" style="--l:81.7;--at:194ms;--ms:24ms"/><path d="M636 243 L633 248" style="--l:5.8;--at:202ms;--ms:24ms"/><path d="M633 226 L633 241 L637 243 L658 237 L673 228 L679 220" style="--l:68.8;--at:203ms;--ms:24ms"/><path d="M647 211 L650 196 L660 191 L667 191 L673 185 L673 182" style="--l:45.0;--at:209ms;--ms:24ms"/><path d="M679 223 L686 222 L705 209 L721 206 L723 203" style="--l:50.0;--at:214ms;--ms:24ms"/><path d="M721 206 L718 229 L693 251" style="--l:56.5;--at:218ms;--ms:24ms"/><path d="M723 205 L729 202" style="--l:6.7;--at:224ms;--ms:24ms"/><path d="M718 229 L733 226 L780 198 L788 194 L797 193 L800 186" style="--l:95.6;--at:225ms;--ms:24ms"/><path d="M799 191 L801 195 L798 207 L780 234 L773 252 L772 267 L775 272 L783 278 L802 281 L853 270" style="--l:170.9;--at:234ms;--ms:24ms"/><path d="M801 194 L805 192" style="--l:4.5;--at:250ms;--ms:24ms"/><path d="M861 234 L887 228 L937 228" style="--l:76.7;--at:251ms;--ms:24ms"/><path d="M933 229 L928 234" style="--l:7.1;--at:258ms;--ms:24ms"/><path d="M1075 203 L1082 195 L1085 179 L1079 174 L1061 176 L1047 182 L1025 196 L988 232 L978 249 L976 256 L977 265 L981 269 L990 272 L1018 270 L1055 254 L1071 251 L1089 232 L1094 216 L1113 197 L1134 182 L1141 181 L1151 187 L1155 184" style="--l:401.0;--at:259ms;--ms:39ms"/><path d="M1071 250 L1071 269 L1076 274 L1089 276 L1106 272 L1148 252 L1179 234" style="--l:139.1;--at:298ms;--ms:24ms"/><path d="M1081 196 L1082 198 L1091 198 L1103 193" style="--l:24.2;--at:311ms;--ms:24ms"/><path d="M1152 187 L1150 192 L1140 202 L1111 224 L1100 230 L1089 232" style="--l:79.6;--at:313ms;--ms:24ms"/><path d="M1141 181 L1145 175 L1152 176M1154 186 L1159 186" style="--l:19.3;--at:321ms;--ms:24ms"/><path d="M1215 217 L1211 241 L1187 268 L1165 285 L1162 285" style="--l:91.3;--at:323ms;--ms:24ms"/><path d="M1190 228 L1188 231 L1181 232" style="--l:10.7;--at:332ms;--ms:24ms"/><path d="M1179 234 L1183 227 L1189 225 L1190 222 L1198 222 L1202 219 L1215 217 L1232 199 L1237 197" style="--l:73.8;--at:333ms;--ms:24ms"/><path d="M1196 256 L1193 252 L1185 256M1197 222 L1194 227 L1190 228 L1189 225" style="--l:27.1;--at:340ms;--ms:24ms"/><path d="M1211 241 L1227 237 L1273 206 L1288 204 L1294 201" style="--l:93.8;--at:343ms;--ms:24ms"/><path d="M1232 199 L1234 193M1263 256 L1258 254 L1254 261M1263 277 L1255 277M1258 254 L1259 249" style="--l:32.9;--at:352ms;--ms:24ms"/><path d="M1287 204 L1284 219 L1271 239 L1265 241" style="--l:45.5;--at:355ms;--ms:24ms"/><path d="M1269 240 L1269 247 L1259 265 L1259 273 L1264 277 L1276 273 L1309 251 L1319 242 L1321 235 L1341 217 L1349 217 L1347 225 L1339 236 L1333 233" style="--l:178.5;--at:359ms;--ms:24ms"/><path d="M1286 205 L1285 202 L1288 197M1336 241 L1333 237 L1329 237 L1325 241 L1319 242" style="--l:29.7;--at:376ms;--ms:24ms"/><path d="M1376 131 L1371 134 L1354 136 L1344 140 L1332 140" style="--l:45.7;--at:379ms;--ms:24ms"/><path d="M1338 236 L1330 256 L1330 266 L1335 271 L1350 271 L1384 253 L1395 251 L1398 242 L1408 232 L1412 218 L1447 183" style="--l:190.9;--at:384ms;--ms:24ms"/><path d="M1347 139 L1354 147 L1376 153" style="--l:33.4;--at:402ms;--ms:24ms"/><path d="M1349 217 L1423 143 L1426 133 L1429 130 L1463 111" style="--l:158.3;--at:405ms;--ms:24ms"/><path d="M1409 124 L1408 127 L1387 129 L1379 133 L1376 132 L1377 127" style="--l:41.5;--at:421ms;--ms:24ms"/><path d="M1383 132 L1386 135 L1394 135 L1396 129M1397 259 L1401 256M1396 132 L1406 132 L1408 127" style="--l:39.0;--at:425ms;--ms:24ms"/><path d="M1395 250 L1395 257 L1401 269 L1412 270 L1435 260 L1485 225 L1530 185" style="--l:177.8;--at:428ms;--ms:24ms"/><path d="M1408 131 L1414 131 L1419 126M1428 131 L1422 126 L1409 125 L1409 123" style="--l:35.9;--at:446ms;--ms:24ms"/><path d="M1448 206 L1448 211 L1443 215 L1437 216 L1421 229 L1408 232" style="--l:51.4;--at:449ms;--ms:24ms"/><path d="M1437 216 L1438 212" style="--l:4.1;--at:454ms;--ms:24ms"/><path d="M1447 183 L1457 178 L1467 179 L1469 182 L1463 194 L1451 206 L1445 206" style="--l:61.2;--at:454ms;--ms:24ms"/><path d="M1460 178 L1461 175" style="--l:3.2;--at:460ms;--ms:24ms"/><path d="M1465 111 L1467 102 L1473 94 L1494 76 L1527 42" style="--l:94.3;--at:461ms;--ms:24ms"/><path d="M1463 111 L1468 114 L1483 114 L1519 107 L1539 106 L1556 101 L1610 98" style="--l:149.3;--at:470ms;--ms:24ms"/><path d="M1506 275 L1502 271" style="--l:5.7;--at:484ms;--ms:24ms"/><path d="M1510 264 L1509 272 L1506 275 L1507 279 L1518 279 L1529 276 L1533 270 L1526 264" style="--l:55.3;--at:485ms;--ms:24ms"/><path d="M1531 184 L1545 189 L1548 192 L1548 201 L1542 213 L1542 217 L1534 226 L1513 262 L1511 264 L1509 263" style="--l:104.3;--at:490ms;--ms:24ms"/><path d="M1530 185 L1534 178" style="--l:8.1;--at:500ms;--ms:24ms"/><path d="M1533 270 L1551 270 L1563 265 L1569 268 L1584 267 L1590 264 L1599 266 L1603 265 L1606 258 L1613 252" style="--l:89.6;--at:501ms;--ms:24ms"/><path d="M1548 104 L1554 109M1563 101 L1562 106 L1558 108" style="--l:17.4;--at:510ms;--ms:24ms"/><path d="M1587 252 L1570 257 L1566 265" style="--l:26.7;--at:511ms;--ms:24ms"/><path d="M1591 99 L1589 103" style="--l:4.5;--at:514ms;--ms:24ms"/><path d="M1590 264 L1586 252 L1606 237 L1609 226 L1616 219 L1658 190 L1672 187 L1676 179" style="--l:133.3;--at:514ms;--ms:24ms"/><path d="M1622 101 L1618 107 L1609 111M1610 98 L1625 100" style="--l:32.2;--at:527ms;--ms:24ms"/><path d="M1603 264 L1605 268 L1618 267 L1651 259 L1709 230" style="--l:116.3;--at:530ms;--ms:24ms"/><path d="M1612 255 L1625 252" style="--l:13.3;--at:542ms;--ms:24ms"/><path d="M1672 189 L1669 200 L1643 221 L1620 235 L1606 237" style="--l:85.9;--at:543ms;--ms:24ms"/><path d="M1638 263 L1637 267M1673 189 L1672 187M1672 186 L1673 189 L1682 186M1711 253 L1706 255" style="--l:24.4;--at:551ms;--ms:24ms"/><path d="M1798 204 L1792 210 L1791 214 L1775 227 L1744 248 L1722 260 L1712 260 L1711 250 L1719 242 L1723 228" style="--l:141.7;--at:553ms;--ms:24ms"/><path d="M1709 230 L1724 228 L1750 209 L1778 197 L1790 198 L1798 204 L1807 203 L1812 208" style="--l:116.0;--at:567ms;--ms:24ms"/><path d="M1806 176 L1786 185 L1779 197" style="--l:35.8;--at:578ms;--ms:24ms"/><path d="M1800 204 L1804 209 L1804 219 L1792 244 L1790 253 L1791 268 L1797 278 L1807 286 L1822 292 L1826 292 L1830 289" style="--l:118.0;--at:582ms;--ms:24ms"/><path d="M1812 195 L1809 194 L1810 179 L1806 177 L1807 175M1812 208 L1818 208" style="--l:30.9;--at:593ms;--ms:24ms"/><path d="M1807 203 L1812 195 L1820 194 L1857 160 L1890 126 L1894 114 L1924 85" style="--l:169.5;--at:596ms;--ms:24ms"/><path d="M1825 293 L1834 296 L1852 296 L1893 288 L1920 280" style="--l:97.4;--at:613ms;--ms:24ms"/><path d="M1957 64 L1953 76 L1931 98 L1903 123 L1890 126" style="--l:94.6;--at:622ms;--ms:24ms"/><path d="M1924 85 L1943 68 L1957 64 L1987 34 L1991 33" style="--l:86.6;--at:631ms;--ms:24ms"/><path d="M1987 34 L1987 29" style="--l:5.0;--at:640ms;--ms:24ms"/></g></mask></defs><g mask="url(#hw-pen)"><g mask="url(#hw-ink)"><rect class="hw__paint" x="0" y="0" width="4817" height="329" fill="url(#hw-g)"/></g></g></svg></template>
 
-<script src="assets/app-1.js"></script>
-<script src="assets/app-2.js"></script>
+<script>
+  /* ==========================================================================
+     THE LOADER, AND THE HANDOFF
+
+     The form is one material. Four paths are drawn from the same superellipse,
+     |x/a|^n + |y/b|^n = 1, sampled at a fixed 72 points so every shape has the
+     same vertices in the same order and the morph between any two is a plain
+     interpolation rather than a swap. A circle is n=2; a rounded square is a
+     larger n; the liquid stage is the circle with a slow low-frequency wave
+     added to the radius. Nothing appears or disappears: the three shells that
+     join the first begin as exact copies of it at zero opacity and lerp out to
+     their own places.
+
+     THE HERO IS NOT DUPLICATED, IT IS DEFERRED. app-1.js starts the thread from
+     a DOMContentLoaded handler, so leaving it in the document would run the
+     conversation behind an opaque overlay and the reader would arrive halfway
+     through it. The two scripts are attached at the handoff instead: by then
+     readyState is 'complete', their own boot runs immediately, and the thread
+     opens on "Hello Team :)" exactly once, in view.
+
+     The bar is not a timer. It tracks the sequence up to 92% and only closes
+     the last 8% once the fonts have loaded and the window's load event has
+     fired. A fast connection still gets the whole readable sequence; a slow one
+     keeps the form breathing rather than freezing.
+     ====================================================================== */
+  (function () {
+    'use strict';
+    var root = document.getElementById('pf-loader');
+    if (!root) return;
+
+    var SRC = ['assets/app-1.js', 'assets/app-2.js'];
+    var MIN = 2200;
+    var N = 72;
+    var MSG = ['Loading…', 'Accessing experience…', 'Cleaning up my desk…'];
+
+    var still = !!(window.matchMedia &&
+                   window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    var paths = [].slice.call(root.querySelectorAll('[data-ld-p]'));
+    var msgEl = root.querySelector('[data-ld-msg]');
+    var fill = root.querySelector('[data-ld-fill]');
+    var done = false;
+
+    document.documentElement.classList.add('ld-lock');
+
+    /* ---- geometry -------------------------------------------------------- */
+
+    function shape(cx, cy, a, b, n, amp, k, ph) {
+      var d = '', i, t, c, s, x, y, r;
+      for (i = 0; i < N; i++) {
+        t = (i / N) * Math.PI * 2;
+        c = Math.cos(t); s = Math.sin(t);
+        x = Math.pow(Math.abs(c), 2 / n) * (c < 0 ? -1 : 1) * a;
+        y = Math.pow(Math.abs(s), 2 / n) * (s < 0 ? -1 : 1) * b;
+        r = amp ? 1 + amp * Math.sin(k * t + ph) : 1;
+        d += (i ? 'L' : 'M') + (cx + x * r).toFixed(2) + ' ' + (cy + y * r).toFixed(2);
+      }
+      return d + 'Z';
+    }
+
+    function lerp(u, v, m) { return u + (v - u) * m; }
+    function ease(x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
+
+    /* cx, cy, a, b, n, amp, k, opacity */
+    var C = 160;
+    var KEYS = [
+      { at: 0,    s: [[C, C, 62, 62, 2.0, 0.000, 3], [C, C, 62, 62, 2.0, 0, 3], [C, C, 62, 62, 2.0, 0, 3], [C, C, 62, 62, 2.0, 0, 3]], o: [1, 0, 0, 0] },
+      { at: 380,  s: [[C, C, 64, 64, 2.1, 0.075, 3], [C, C, 64, 64, 2.1, 0, 3], [C, C, 64, 64, 2.1, 0, 3], [C, C, 64, 64, 2.1, 0, 3]], o: [1, 0, 0, 0] },
+      { at: 760,  s: [[C, C, 66, 61, 2.3, 0.105, 2], [C, C, 66, 61, 2.3, 0, 2], [C, C, 66, 61, 2.3, 0, 2], [C, C, 66, 61, 2.3, 0, 2]], o: [1, 0, 0, 0] },
+      { at: 1120, s: [[C, C, 62, 62, 4.6, 0.000, 3], [C, C, 62, 62, 4.6, 0, 3], [C, C, 62, 62, 4.6, 0, 3], [C, C, 62, 62, 4.6, 0, 3]], o: [1, 0, 0, 0] },
+      { at: 1420, s: [[C, C, 96, 54, 4.8, 0.000, 3], [C, C, 96, 54, 4.8, 0, 3], [C, C, 96, 54, 4.8, 0, 3], [C, C, 96, 54, 4.8, 0, 3]], o: [1, 0, 0, 0] },
+      { at: 1760, s: [[C - 46, C - 30, 40, 26, 4.6, 0, 3], [C + 46, C - 30, 40, 26, 4.6, 0, 3], [C - 46, C + 32, 40, 26, 4.6, 0, 3], [C + 46, C + 32, 40, 26, 4.6, 0, 3]], o: [1, 1, 1, 1] },
+      { at: 2000, s: [[C - 52, C, 30, 62, 4.6, 0, 3], [C + 6, C - 34, 46, 24, 4.6, 0, 3], [C + 6, C + 20, 46, 38, 4.6, 0, 3], [C + 66, C + 20, 14, 38, 4.6, 0, 3]], o: [1, 1, 1, 1] },
+      { at: 2200, s: [[C, C - 44, 92, 16, 4.6, 0, 3], [C - 46, C + 16, 44, 40, 4.6, 0, 3], [C + 46, C + 16, 44, 40, 4.6, 0, 3], [C, C + 74, 92, 12, 4.6, 0, 3]], o: [1, 1, 1, 1] }
+    ];
+    var LAST = KEYS[KEYS.length - 1].at;
+
+    function draw(ms) {
+      var i, j, k0 = KEYS[0], k1 = KEYS[0], m = 0;
+      for (i = 0; i < KEYS.length - 1; i++) {
+        if (ms >= KEYS[i].at && ms <= KEYS[i + 1].at) {
+          k0 = KEYS[i]; k1 = KEYS[i + 1];
+          m = ease((ms - k0.at) / (k1.at - k0.at));
+          break;
+        }
+      }
+      if (ms >= LAST) { k0 = k1 = KEYS[KEYS.length - 1]; m = 1; }
+
+      /* Past the scripted sequence the settled shells keep breathing, so a slow
+         load reads as alive rather than stalled. */
+      var br = ms > LAST ? Math.sin((ms - LAST) / 900) * 0.022 : 0;
+
+      for (j = 0; j < 4; j++) {
+        var A = k0.s[j], B = k1.s[j];
+        var amp = lerp(A[5], B[5], m);
+        var ph = ms / 620;
+        paths[j].setAttribute('d', shape(
+          lerp(A[0], B[0], m), lerp(A[1], B[1], m),
+          lerp(A[2], B[2], m) * (1 + br), lerp(A[3], B[3], m) * (1 - br * 0.6),
+          lerp(A[4], B[4], m), amp, A[6], ph));
+        paths[j].setAttribute('opacity', lerp(k0.o[j], k1.o[j], m).toFixed(3));
+      }
+    }
+
+    if (still) {
+      for (var q = 0; q < 4; q++) {
+        paths[q].setAttribute('d', shape(C, C, 62, 62, 4.6, 0, 3, 0));
+        paths[q].setAttribute('opacity', q === 0 ? '1' : '0');
+      }
+    } else {
+      draw(0);
+    }
+
+    /* ---- the message ----------------------------------------------------- */
+
+    var mi = 0;
+    var swap = setInterval(function () {
+      if (done) return;
+      mi = (mi + 1) % MSG.length;
+      msgEl.classList.add('is-fade');
+      setTimeout(function () {
+        msgEl.textContent = MSG[mi];
+        msgEl.classList.remove('is-fade');
+      }, 260);
+    }, 760);
+
+    /* ---- readiness ------------------------------------------------------- */
+
+    var ready = false;
+    function markReady() { ready = true; }
+    var waits = [];
+    if (document.fonts && document.fonts.ready) waits.push(document.fonts.ready);
+    waits.push(new Promise(function (res) {
+      if (document.readyState === 'complete') res();
+      else window.addEventListener('load', res, { once: true });
+    }));
+    Promise.all(waits).then(markReady, markReady);
+    setTimeout(markReady, 8000);
+
+    /* ---- the run --------------------------------------------------------- */
+
+    var t0 = (window.performance && performance.now) ? performance.now() : Date.now();
+    function now() { return ((window.performance && performance.now) ? performance.now() : Date.now()) - t0; }
+
+    function finish() {
+      if (done) return;
+      done = true;
+      clearInterval(swap);
+      fill.style.width = '100%';
+      setTimeout(function () {
+        /* The hero is attached here, not earlier: readyState is 'complete', so
+           each script boots on arrival and the conversation opens in view. */
+        for (var i = 0; i < SRC.length; i++) {
+          var sc = document.createElement('script');
+          sc.src = SRC[i];
+          sc.async = false;
+          document.body.appendChild(sc);
+        }
+        root.classList.add('is-out');
+        document.documentElement.classList.remove('ld-lock');
+        setTimeout(function () {
+          if (root.parentNode) root.parentNode.removeChild(root);
+        }, 500);
+      }, 280);
+    }
+
+    function frame() {
+      if (done) return;
+      var ms = now();
+      if (!still) draw(ms);
+      /* The bar always travels with the sequence. Readiness does not jump it
+         forward, it only lifts the ceiling that holds it short of the end. */
+      var p = Math.min(ms / MIN, 1) * 100;
+      if (!ready) p = Math.min(p, 92);
+      fill.style.width = p.toFixed(1) + '%';
+      if (ready && ms >= MIN) { finish(); return; }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }());
+</script>
 
 <script>
   /* FIVE-PHASE WAYFINDING, AS AN ENHANCEMENT.
