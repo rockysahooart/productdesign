@@ -29390,26 +29390,38 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   }
 }
 
+
 /* ==========================================================================
    STORY BEATS
 
-   A handful of first-person statements set between sections, at the title's
-   own size, so a reader scrolling a long case study can see where they are in
-   the process without opening anything. They are punctuation, not headings:
-   three to five per case study, at the transitions that actually mattered,
-   and every one of them says something the sections around it already
-   document.
+   First-person statements set between sections, at the title's own size, so a
+   reader scrolling a long case study can see the process move without opening
+   anything. They arrive at every real transition: scope, mapping, the first
+   design, the review, testing, iteration, implementation, outcome.
+
+   THEY ARE NOT A COMPONENT. No card, no pill, no rule, no fill, no radius, no
+   shadow, no inset. A bare paragraph inside .cs-wrap inherits a grid box and
+   an inset from the case-study sheet, and every one of those is turned off
+   here: the statement is type on the page, separated by space alone.
 
    The treatment is the title's, read from the same tokens `.case .ar-title`
    resolves rather than copied as numbers, so the two cannot drift apart. The
-   statement takes the full content width it sits in, which is what keeps it
-   to one or two lines at every size; length is controlled in the sentence,
-   never by stepping the size down.
-   ========================================================================== */
-/* THE SELECTOR IS LOAD-BEARING. The case-study type sheet ends with an :is()
+   statement takes the full content width it sits in, which is what keeps it to
+   one or two lines at every size; length is controlled in the sentence, never
+   by stepping the size down.
+
+   THE SELECTOR IS LOAD-BEARING. The case-study type sheet ends with an :is()
    catch-all at (0,2,2) that reaches every paragraph inside a case study, so a
-   single class here loses and the statement renders at body size. */
+   single class here loses and the statement renders at body size.
+   ========================================================================== */
 :is(#carry, #optiflow, #audit, #specimen) .cs-beat {
+  display: block;
+  margin: clamp(56px, 7vw, 96px) 0 clamp(48px, 6vw, 80px);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
   font-family: var(--font-heading);
   font-variation-settings: var(--wonk-on);
   font-weight: 600;
@@ -29417,12 +29429,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   line-height: calc(var(--cs-lh1) / var(--fs-disp-k));
   letter-spacing: -0.010em;
   color: var(--ink);
-  /* The case-study sheet gives a bare paragraph in .cs-wrap a grid box and an
-     inset; a statement is plain text and wants neither. */
-  display: block;
-  padding: 0;
   max-width: none;
-  margin: clamp(56px, 7vw, 96px) 0 clamp(48px, 6vw, 80px);
   text-wrap: balance;
 }
 </style>
@@ -39467,6 +39474,7 @@ body{display:grid;place-items:center;min-height:100vh}
     </ul>
   </div>
 </section>
+<p class="cs-beat">I mapped what PatientX already owned.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Where it sits in PatientX</span>
@@ -39958,6 +39966,7 @@ body{display:grid;place-items:center;min-height:100vh}
   </div>
 </section>
 
+<p class="cs-beat">I ruled out recording before I designed.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">V2 &middot; Week 2</span>
@@ -40116,6 +40125,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
   </div>
 </section>
+<p class="cs-beat">I specified what failure looks like at every step.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">V3 &middot; Week 3</span>
@@ -40345,6 +40355,7 @@ body{display:grid;place-items:center;min-height:100vh}
   </div>
 </section>
 
+<p class="cs-beat">I kept the quotation and dropped the answer.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">The shared reference</span>
@@ -40432,6 +40443,7 @@ body{display:grid;place-items:center;min-height:100vh}
   </div>
 </section>
 
+<p class="cs-beat">I logged what I could not answer.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Stories, Reconstructed</span>
@@ -41793,6 +41805,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
+<p class="cs-beat">I ranked one required action per row.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">How I standardized the system</span>
@@ -41966,6 +41979,7 @@ body{display:grid;place-items:center;min-height:100vh}
   </div>
 </section>
 
+<p class="cs-beat">I wrote the row as a spec, not a screen.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">User Stories I Wrote</span>
@@ -42153,6 +42167,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
+<p class="cs-beat">I audited the lid against its decisions.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">The kit as it shipped</span>
@@ -42223,6 +42238,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
+<p class="cs-beat">I kept observation apart from conclusion.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Design decision 01</span>
@@ -42288,7 +42304,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
-<p class="cs-beat">I found the specimen travelling loose.</p>
+<p class="cs-beat">I reordered the sheet without re-tooling the box.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Design decision 02</span>
@@ -42340,6 +42356,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
+<p class="cs-beat">I found the specimen travelling loose.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Production</span>
@@ -42365,6 +42382,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
+<p class="cs-beat">I fitted both changes to a box in manufacture.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">The subteam</span>
@@ -42459,7 +42477,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
-<p class="cs-beat">I learned both were about where things go.</p>
+<p class="cs-beat">I wrote the subteam&rsquo;s tickets.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Reflection</span>
@@ -42472,6 +42490,7 @@ body{display:grid;place-items:center;min-height:100vh}
   </div>
 </section>
 
+<p class="cs-beat">I learned both were about where things go.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">User Stories I Wrote</span>
