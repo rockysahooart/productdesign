@@ -29389,6 +29389,115 @@ button.cu-q:hover { background: var(--cu-teal-8); }
     }
   }
 }
+
+/* ==========================================================================
+   CHAPTERS
+
+   A case study marked data-flow reads as one continuous scroll. Every section
+   is open, the accordion never builds a toggle, and the first-person statement
+   is the only heading a chapter gets: the small category label above it is
+   gone, because two headings competing at the top of a chapter is what made
+   the old sections read as filing rather than as narration.
+
+   The statement keeps the leading title's exact display treatment. There is no
+   second Cormorant scale in the page, which is the whole point: the same size
+   arriving again is what tells the reader a new chapter has started.
+
+   Above 1440px the chapter becomes an asymmetric grid built around the
+   artifact, not around the text. The artifact column is exactly 960px because
+   that is what every prototype, table, diagram and photograph in these case
+   studies was built to, and none of them is resized to fit a layout. The
+   narrative column takes 320px beside it and the shell widens to hold both.
+   Below that width the chapter stacks in source order and the artifact keeps
+   the full content column it has always had.
+   ========================================================================== */
+[data-flow] .acc__n,
+[data-flow] .pt__n { display: none; }
+
+[data-flow] .acc { border: 0; }
+[data-flow] .acc:first-of-type { border-top: 0; }
+[data-flow] .acc__h { padding-block: clamp(72px, 7.5vw, 116px) 0; }
+[data-flow] .pt__h { margin-block: clamp(72px, 7.5vw, 116px) 0; }
+
+[data-flow] .acc__t .ar-h2,
+[data-flow] .pt__h .ar-h2 {
+  /* The statement is the title's treatment, taken from the tokens the title
+     itself resolves rather than copied as numbers: --cs-t1 and --cs-lh1 are
+     what `.case .ar-title` uses, so the two can never drift apart. */
+  font-family: var(--font-heading);
+  font-variation-settings: var(--wonk-on);
+  font-weight: 600;
+  font-size: calc(var(--cs-t1) * var(--fs-disp-k));
+  line-height: calc(var(--cs-lh1) / var(--fs-disp-k));
+  letter-spacing: -0.010em;
+  margin: 0;
+  max-width: 20ch;
+  text-wrap: balance;
+}
+
+/* MOBILE: STATEMENT, THEN COPY, THEN THE VISUAL.
+
+   Every chapter reads in the same order on a phone: the first-person
+   statement, the process copy that prepares the reader, then the artifact it
+   is talking about. The artifacts are moved by flex order rather than by
+   rewriting the document, so nothing inside any of them is touched and the
+   desktop grid keeps the source order it needs. Captions travel inside their
+   own figure, so a caption still sits under the thing it captions. */
+@media (max-width: 719px) {
+  [data-flow] .acc__b,
+  [data-flow] .pt__b {
+    display: flex;
+    flex-direction: column;
+  }
+  [data-flow] .acc__b > *,
+  [data-flow] .pt__b > * { order: 0; }
+  [data-flow] .acc__b > [data-col="a"],
+  [data-flow] .pt__b > [data-col="a"] { order: 1; }
+}
+
+@media (min-width: 1440px) {
+  /* The chapter breaks out symmetrically from the 960px column it is centred
+     on, rather than the shell being widened: widening the shell moved it
+     inside its own centring context and pushed the page 452px wide. */
+  [data-flow] .acc,
+  [data-flow] .pt {
+    width: 1324px;
+    margin-inline: calc((100% - 1324px) / 2);
+    /* The persona deck parks its off-screen cards to the right of itself on a
+       transform. Clipping on the chapter keeps that out of the page's scroll
+       width without touching the deck or its animation. */
+    overflow-x: clip;
+  }
+
+  [data-flow] .acc,
+  [data-flow] .pt {
+    display: grid;
+    grid-template-columns: 320px 960px;
+    column-gap: 44px;
+  }
+  [data-flow] .acc__h,
+  [data-flow] .pt__h { grid-column: 1 / -1; }
+  [data-flow] .acc__t .ar-h2,
+  [data-flow] .pt__h .ar-h2 { max-width: 24ch; }
+
+  [data-flow] .acc__b,
+  [data-flow] .pt__b {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 320px 960px;
+    column-gap: 44px;
+    align-content: start;
+  }
+  [data-flow] .acc__b > *,
+  [data-flow] .pt__b > * { grid-column: 1; min-width: 0; }
+  [data-flow] .acc__b > [data-col="a"],
+  [data-flow] .pt__b > [data-col="a"] {
+    grid-column: 2;
+    width: 960px;
+    max-width: none;
+    margin-inline: 0;
+  }
+}
 </style>
 </head>
 
@@ -39397,11 +39506,11 @@ body{display:grid;place-items:center;min-height:100vh}
         <div class="cs-mastimg__row" data-hero></div>
       </div>
     </header>
-<div class="cs-wrap">
+<div class="cs-wrap" data-flow>
 <section class="acc acc--static" data-open="1">
   <div data-acc-h>
     <span class="acc__n">What I was given</span>
-    <span class="ar-h2">Turning workshop direction into a testable MVP</span>
+    <span class="ar-h2">I turned workshop direction into a testable MVP</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">I was handed a premise from a workshop and three weeks to work in. I scoped it to an MVP, took it through stakeholder review, and handed it to a first build in Playground. A leadership change above me stopped it before release.</p>
@@ -39434,13 +39543,13 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Where it sits in PatientX</span>
-    <span class="ar-h2">Placing Carry inside the existing PatientX experience</span>
+    <span class="ar-h2">I placed Carry inside the existing PatientX experience</span>
   </div>
   <div class="acc__b" data-acc-b>
     
     <p class="ar-p">Carry is a small piece of PatientX, which already owned sign-in, appointments and navigation. I mapped what was already built, and that set my first task: to find somewhere Carry could sit without changing any of it.</p>
 
-    <figure class="px" data-px-run>
+    <figure data-col="a" class="px" data-px-run>
       <figcaption class="px__c">Where Carry lives</figcaption>
 
       <div class="px__box">
@@ -39482,7 +39591,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
     <div class="ar-note"><p>Built from onsite and Maze pilot behaviour and the feedback the team held.</p></div>
 
-    <article class="pp" aria-labelledby="pp-maya-n">
+    <article data-col="a" class="pp" aria-labelledby="pp-maya-n">
 
       <div class="pp__id">
         <figure class="pp__fig">
@@ -39595,7 +39704,7 @@ body{display:grid;place-items:center;min-height:100vh}
       </figure>
     </article>
 
-    <article class="pp" aria-labelledby="pp-jordan-n">
+    <article data-col="a" class="pp" aria-labelledby="pp-jordan-n">
 
       <div class="pp__id">
         <figure class="pp__fig">
@@ -39708,7 +39817,7 @@ body{display:grid;place-items:center;min-height:100vh}
       </figure>
     </article>
 
-    <article class="pp" aria-labelledby="pp-alex-n">
+    <article data-col="a" class="pp" aria-labelledby="pp-alex-n">
 
       <div class="pp__id">
         <figure class="pp__fig">
@@ -39824,7 +39933,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <p class="ar-p">The feedback the team held rarely described forgetting one fact. It described losing the whole fifteen minutes.</p>
 
 
-    <figure class="ar-fig ar-wide">
+    <figure data-col="a" class="ar-fig ar-wide">
       <ul class="cu-hold">
         <li>What a result means</li>
         <li>What happens next</li>
@@ -39840,7 +39949,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">V1 &middot; Week 1</span>
-    <span class="ar-h2">Mapping the first workable flow</span>
+    <span class="ar-h2">I mapped the first workable patient journey</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="acc__lede ar-p">I started from stakeholder direction and turned it into a patient journey the team could argue with. There was no interview study behind it. I worked from the team&rsquo;s premises and the three weeks I had.</p>
@@ -39858,7 +39967,7 @@ body{display:grid;place-items:center;min-height:100vh}
     </ul>
     <p class="ar-p">I logged all four in Jira as open questions. Two of them were somebody else&rsquo;s to answer.</p>
 
-    <figure class="ar-fig ar-wide">
+    <figure data-col="a" class="ar-fig ar-wide">
       <div class="ar-fig__frame ar-fig__frame--bare"><svg class="md md--phases" viewBox="0 0 960 340" width="960" height="340" role="img"
      aria-label="The Carry product model across four phases: before, during, after and later. During the appointment Carry does not operate."
      xmlns="http://www.w3.org/2000/svg">
@@ -39924,7 +40033,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">V2 &middot; Week 2</span>
-    <span class="ar-h2">Specifying the behaviour V1 had left open</span>
+    <span class="ar-h2">I specified the behaviour V1 had left open</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="acc__lede ar-p">Reviewing V1, the structure held. What I could not find in it was conditional behaviour, hierarchy inside a screen, or any answer for the moments something fails.</p>
@@ -39937,7 +40046,7 @@ body{display:grid;place-items:center;min-height:100vh}
       <p>Suggestions became opt-in with an undo, editing moved into the row, and the row got a minimum height so a long question is never clipped.</p></div>
     <div class="cs-move"><p class="cs-move__l">V1 &rarr; V2</p>
       <p>The sequence on the screen did not change in week two. Logistics were still first, and that turned out to be the wrong call.</p></div>
-<section class="ar-demo ar-wide cu" data-cu="prepare">
+<section data-col="a" class="ar-demo ar-wide cu" data-cu="prepare">
   <h3 class="demo__h">Patients build their own list of questions.</h3>
   <p class="demo__p">Add a suggested question, then undo it.</p>
   <div class="cu-embed">
@@ -39950,7 +40059,7 @@ body{display:grid;place-items:center;min-height:100vh}
     </div>
   </div>
 </section>
-<section class="ar-demo ar-wide cu" data-cu="widths">
+<section data-col="a" class="ar-demo ar-wide cu" data-cu="widths">
   <div class="ar-demo__head">
     <p class="ar-demo__title">Responsiveness across different devices</p>
   </div>
@@ -40001,7 +40110,7 @@ body{display:grid;place-items:center;min-height:100vh}
       <p>The answer is a quotation, badged, with a route back to the moment it came from. Where nothing answers a question clearly enough to quote, it stays visibly unanswered.</p></div>
     <div class="cs-move"><p class="cs-move__l">What it cost</p>
       <p>It cost the feature that demoed best. I took that to product and engineering while it was still a drawing.</p></div>
-<section class="ar-demo ar-wide cu" data-cu="match">
+<section data-col="a" class="ar-demo ar-wide cu" data-cu="match">
   <h3 class="demo__h">Patients can see exactly what was said.</h3>
   <p class="demo__p">Open a transcript, or dismiss an answer.</p>
   <div class="cu-embed">
@@ -40014,7 +40123,7 @@ body{display:grid;place-items:center;min-height:100vh}
     </div>
   </div>
 </section>
-<section class="ar-demo ar-wide cu" data-cu="permit">
+<section data-col="a" class="ar-demo ar-wide cu" data-cu="permit">
   <h3 class="demo__h">Patients choose what to upload.</h3>
   <p class="demo__p">The patient supplies the recording, so declining had to be a real option.</p>
   <div class="cu-embed">
@@ -40027,7 +40136,7 @@ body{display:grid;place-items:center;min-height:100vh}
     </div>
   </div>
 </section>
-<section class="ar-demo ar-wide cu" data-cu="modes">
+<section data-col="a" class="ar-demo ar-wide cu" data-cu="modes">
   <h3 class="demo__h">One conversation, whether it’s live or saved.</h3>
   <p class="demo__p">A record you can still edit is not a record, so the controls leave when it is saved.</p>
   <div class="cu-embed">
@@ -40046,7 +40155,7 @@ body{display:grid;place-items:center;min-height:100vh}
       <p>Every one was a blank in my file.</p></div>
     <div class="cs-move"><p class="cs-move__l">How I specified them</p>
       <p>Each failure is a state of the real component, saying what happened, what was kept and what to do next. I walked every recovery path with engineering before drawing any of them.</p></div>
-    <section class="ar-demo ar-wide cu" data-cu="lab">
+    <section data-col="a" class="ar-demo ar-wide cu" data-cu="lab">
   <h3 class="demo__h">It still makes sense when things go wrong.</h3>
   <p class="demo__p">Change a condition.</p>
   <div class="cu-embed">
@@ -40082,7 +40191,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">V3 &middot; Week 3</span>
-    <span class="ar-h2">Preparing V2 for the workshop review</span>
+    <span class="ar-h2">I prepared V2 for the workshop review</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="acc__lede ar-p">I connected the same flow end to end and annotated it well enough for the team to argue with.</p>
@@ -40111,7 +40220,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">The design workshop</span>
-    <span class="ar-h2">Testing V3 with patients, onsite and in Maze</span>
+    <span class="ar-h2">I tested V3 with patients, onsite and in Maze</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="acc__lede ar-p">I ran task-based sessions with patients onsite for a week, alongside a parallel Maze study.</p>
@@ -40151,7 +40260,7 @@ body{display:grid;place-items:center;min-height:100vh}
       <li class="ts-node"><b>Retest</b></li>
     </ol>
 
-    <div class="ts-tasks">
+    <div data-col="a" class="ts-tasks">
       <p class="ts-tasks__l" id="ts-tasks-l">Tasks tested</p>
       <ol class="ts-tasks__list" aria-labelledby="ts-tasks-l">
         <li><span class="ts-tasks__id">T1</span><span>Prepare for visit</span></li>
@@ -40172,7 +40281,7 @@ body{display:grid;place-items:center;min-height:100vh}
       historical Maze exports are not available.</p>
 
 
-    <div class="ts-ver">
+    <div data-col="a" class="ts-ver">
       <p class="ts-ver__l">Order going in</p>
       <p class="ts-ver__seq">Preparation checklist &rarr; My questions &rarr; Suggested questions</p>
     </div>
@@ -40188,12 +40297,12 @@ body{display:grid;place-items:center;min-height:100vh}
       <p class="ts-turn__b">The problem was that it sat in front of the task patients had opened the screen to do.</p>
     </div>
 
-    <div class="ts-ver">
+    <div data-col="a" class="ts-ver">
       <p class="ts-ver__l">Order coming out</p>
       <p class="ts-ver__seq">My questions &rarr; Suggested questions &rarr; Preparation checklist</p>
     </div>
 
-    <section class="ar-demo ar-wide cu" data-cu="order">
+    <section data-col="a" class="ar-demo ar-wide cu" data-cu="order">
       <div class="cs-frames" data-frames></div>
       <p class="ts-cap"><span>Order going in</span><span>Order coming out</span></p>
     </section>
@@ -40208,7 +40317,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <h3 class="ar-h3">Showing where a matched answer came from</h3>
     <p class="ar-p">Watching the sessions, I saw patients land on an answer without being able to tell where it came from.</p>
 
-    <section class="ar-demo ar-wide cu" data-cu="source">
+    <section data-col="a" class="ar-demo ar-wide cu" data-cu="source">
       <div class="cs-frames" data-frames></div>
       <p class="ts-cap"><span>Before</span><span>After</span></p>
     </section>
@@ -40225,7 +40334,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">After the workshop</span>
-    <span class="ar-h2">What changed, what I kept, and what I could not settle</span>
+    <span class="ar-h2">I changed the sequence after testing, and kept what held</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="acc__lede ar-p">Not everything raised in the workshop became a change.</p>
@@ -40309,7 +40418,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">The shared reference</span>
-    <span class="ar-h2">Building the component set the other designers worked from</span>
+    <span class="ar-h2">I built the component set the other designers worked from</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="acc__lede ar-p">I documented one interactive colour, one ink ramp and one row specification, with every value measured.</p>
@@ -40328,7 +40437,7 @@ body{display:grid;place-items:center;min-height:100vh}
     </div>
 
     <h3 class="ar-h3">Spacing, radius and element heights</h3>
-    <div class="ar-table__wrap">
+    <div data-col="a" class="ar-table__wrap">
       <table class="ar-table">
         <thead><tr><th>Token</th><th>Value</th><th>Where it is used</th></tr></thead>
         <tbody>
@@ -40344,7 +40453,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
     <h3 class="ar-h3">Type</h3>
     <p class="ar-p">I measured the question row against 15/22 type. One line lands on 56 points and two lines on 80.</p>
-    <div class="ar-table__wrap">
+    <div data-col="a" class="ar-table__wrap">
       <table class="ar-table">
         <thead><tr><th>Size</th><th>Line</th><th>Where it is used</th></tr></thead>
         <tbody>
@@ -40378,7 +40487,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Handoff, and where it stopped</span>
-    <span class="ar-h2">What I handed off, and where it stopped</span>
+    <span class="ar-h2">I handed off a running build, and the project stopped above me</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">I finished the flows, the states and the component set, and a first build was running in Playground when priorities changed above me. It never shipped.</p>
@@ -40395,7 +40504,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Stories, Reconstructed</span>
-    <span class="ar-h2">Writing the flows back as requirements</span>
+    <span class="ar-h2">I wrote the flows back as requirements</span>
   </div>
   <div class="acc__b" data-acc-b>
     <div class="us">
@@ -40682,7 +40791,7 @@ body{display:grid;place-items:center;min-height:100vh}
     </figure>
 
 
-<div class="cs-wrap">
+<div class="cs-wrap" data-flow>
 
 <!-- ======================================================================
      THE TEN-SECOND READ
@@ -40728,7 +40837,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="pt">
   <div class="pt__h">
     <p class="pt__n">Part 1 &middot; Who were the users?</p>
-    <h2 class="ar-h2">Mapping three roles onto the tagging step</h2>
+    <h2 class="ar-h2">I mapped three roles onto the tagging step</h2>
   </div>
   <div class="pt__b">
     <p class="ar-p">One of the three roles worked inside the screen I designed. The other two worked with what came out of it.</p>
@@ -40737,7 +40846,7 @@ body{display:grid;place-items:center;min-height:100vh}
       composites built from responsibilities documented in the project. No names, quotes
       or figures are claimed for them.</p></div>
 
-    <div class="ape__deck" data-ape>
+    <div data-col="a" class="ape__deck" data-ape>
       <div class="ape__bar">
         <button class="ape__nav" type="button" data-ape-prev>
           <span aria-hidden="true">&larr;</span> Previous</button>
@@ -40858,7 +40967,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="pt">
   <div class="pt__h">
     <p class="pt__n">Part 2 &middot; What did the system look like?</p>
-    <h2 class="ar-h2">Mapping the pipeline, and where a person sits inside it</h2>
+    <h2 class="ar-h2">I mapped the pipeline and found where a person sits inside it</h2>
   </div>
   <div class="pt__b">
     <p class="ar-p">I followed one document end to end. Billing correspondence arrives as scanned documents and moves through the pipeline below. The model proposes at every stage and a reviewer validates. My work sat at the tagging step.</p>
@@ -40871,7 +40980,7 @@ body{display:grid;place-items:center;min-height:100vh}
          now. Structure, lanes, sequence and connectors are the project file's;
          the copy names the stages for somebody who has never seen the product.
          Styles in the 25 block. -->
-<figure class="ofd-w">
+<figure data-col="a" class="ofd-w">
 <svg class="ofd" viewBox="0 0 1280 1192" role="img" xmlns="http://www.w3.org/2000/svg" aria-labelledby="ofd-t ofd-d">
 <title id="ofd-t">The OptiFlow document pipeline</title>
 <desc id="ofd-d">Seven stages run left to right: ingest, clustering, classification, data extraction, tagging, matching and posting. Each stage produces a suggestion, the interface shows it as a step, and a reviewer validates it. Corrections are collected as structured feedback that refines prompts and tag definitions and returns to the stage that made the suggestion.</desc>
@@ -41015,7 +41124,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="pt">
   <div class="pt__h">
     <p class="pt__n">Part 3 &middot; What did I do?</p>
-    <h2 class="ar-h2">Designing the screen where a reviewer disagrees with the model</h2>
+    <h2 class="ar-h2">I designed the screen where a reviewer disagrees with the model</h2>
   </div>
   <div class="pt__b">
     <p class="ar-p"><b>I designed the human-review experience around the model&rsquo;s
@@ -41067,7 +41176,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="pt">
   <div class="pt__h">
     <p class="pt__n">Part 4 &middot; What did my process look like?</p>
-    <h2 class="ar-h2">Documenting how a ticket moved, and what sent it back</h2>
+    <h2 class="ar-h2">I documented how a ticket moved, and what sent it back</h2>
   </div>
   <div class="pt__b">
     <p class="ar-p">The process was not research, then design, then handoff. Reconstructing how a ticket moved, I found it went round this loop more than once, and an answer from engineering could send it back to the start.</p>
@@ -41446,13 +41555,13 @@ body{display:grid;place-items:center;min-height:100vh}
       <p class="wfx__one">The four clinical tasks were different, but I found the same four problems inside all of them. That is why I made the fix one shared pattern rather than four separate redesigns.</p>
     </div>
 
-<div class="cs-wrap">
+<div class="cs-wrap" data-flow>
 
 
 <section class="acc acc--static" data-open="1">
   <div data-acc-h>
     <span class="acc__n">What the audit was</span>
-    <span class="ar-h2">What the audit found that the library check did not</span>
+    <span class="ar-h2">I audited the workflows and found what the library check had missed</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">Auditing the four workflows the library is used in, I found the same required action as a button in one row, a link in another and a menu item in a third. Statuses named what the system was doing, not who had to act.</p>
@@ -41474,7 +41583,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Why I audited workflows</span>
-    <span class="ar-h2">Auditing the workflows instead of the component library</span>
+    <span class="ar-h2">I chose to audit the workflows instead of the component library</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="acc__lede ar-p">A design system audit checks components against the library. That check passed.</p>
@@ -41482,17 +41591,17 @@ body{display:grid;place-items:center;min-height:100vh}
     <p class="ar-p">None of the three roles is in the portal for long, which is what convinced me that a row has to say whose move it is.</p>
 
     
-    <section class="acc acc--sub" data-open="0">
+    <section data-col="a" class="acc acc--sub" data-open="0">
       <div data-acc-h>
         <span class="acc__n">Proto personas</span>
-        <span class="ar-h2">Mapping three provider roles onto the portal</span>
+        <span class="ar-h2">I mapped three provider roles onto the portal</span>
       </div>
       <div class="acc__b" data-acc-b>
         <p class="acc__lede ar-p">For the oncologist and the nurse the portal is a checkpoint between other work. For the testing coordinator it is the queue he works from.</p>
 
         <div class="ar-note"><p>Composites of the roles these workflows serve, not people I interviewed. No quotes or figures are claimed for them.</p></div>
 
-        <div class="ape__deck" data-ape>
+        <div data-col="a" class="ape__deck" data-ape>
           <div class="ape__bar">
             <button class="ape__nav" type="button" data-ape-prev>
               <span aria-hidden="true">&larr;</span> Previous</button>
@@ -41616,7 +41725,7 @@ body{display:grid;place-items:center;min-height:100vh}
     </ol>
 
     
-    <figure class="au-fig">
+    <figure data-col="a" class="au-fig">
       <figcaption class="au-fig__c"><b>The work queue as I found it</b>, before any of the changes below. Every row needs the provider to do something and no two of them say so the same way.</figcaption>
       <div class="ar-table__wrap">
         <table class="ar-table au-tbl">
@@ -41643,7 +41752,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">What repeated across them</span>
-    <span class="ar-h2">Ranking the actions, statuses and errors that repeated</span>
+    <span class="ar-h2">I ranked the actions, statuses and errors that repeated</span>
   </div>
   <div class="acc__b" data-acc-b>
 
@@ -41651,7 +41760,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <p class="ar-p">That left the provider working out which row mattered most. I ranked them instead: one required action per row, placed in the same column every time, with everything else demoted behind it.</p>
 
     
-    <div class="au-ba">
+    <div data-col="a" class="au-ba">
       <p class="au-ba__l"><b>Before</b> Similar actions looked different across workflows</p>
       <div class="ar-table__wrap">
         <table class="ar-table au-tbl">
@@ -41666,7 +41775,7 @@ body{display:grid;place-items:center;min-height:100vh}
       </div>
     </div>
 
-    <div class="au-ba" data-after>
+    <div data-col="a" class="au-ba" data-after>
       <p class="au-ba__l"><b>After</b> Every row exposes the next required action</p>
       <div class="ar-table__wrap">
         <table class="ar-table au-tbl">
@@ -41724,7 +41833,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <p class="ar-p">A failed submission stops a clinical test, so I treated it as the highest-cost error in the set.</p>
 
     
-    <figure class="au-fig au-fig--row">
+    <figure data-col="a" class="au-fig au-fig--row">
       <figcaption class="au-fig__c"><b>ORD-458734 &middot; Robert Brown</b> One row, before and after.</figcaption>
       <div class="au-row" data-s="before">
         <p class="au-row__l">Before</p>
@@ -41751,7 +41860,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">How I standardized the system</span>
-    <span class="ar-h2">Defining one row pattern and rules for colour</span>
+    <span class="ar-h2">I defined one row pattern and the rules for colour</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="acc__lede ar-p">Rewriting labels fixes one row at a time, which left two decisions that had to hold across all four workflows.</p>
@@ -41759,7 +41868,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <h3 class="ar-h3">The Provider Action Queue: one row for all four workflows</h3>
     <p class="ar-p">All four ask the same question in different words out of the same generic components. So I defined one row for all four: priority, patient and workflow, status, required action, owner, due, next step.</p>
 
-    <figure class="au-fig">
+    <figure data-col="a" class="au-fig">
       <figcaption class="au-fig__c"><b>Provider Action Queue</b> One row structure, carrying all four workflows.</figcaption>
       <div class="ar-table__wrap">
         <table class="ar-table au-tbl au-tbl--q">
@@ -41788,7 +41897,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <h3 class="ar-h3">No status may arrive as colour alone</h3>
     <p class="ar-p">Four of the five findings put work on colour in a table read at speed, so I measured every pairing before handing it over.</p>
 
-    <div class="ar-table__wrap">
+    <div data-col="a" class="ar-table__wrap">
       <table class="ar-table au-tbl au-tbl--tok">
         <thead><tr><th>Status token</th><th>Workflow meaning</th><th>Contrast</th><th>WCAG</th><th>Badge</th></tr></thead>
         <tbody>
@@ -41818,13 +41927,13 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Implementation and handoff</span>
-    <span class="ar-h2">Moving into implementation with a build spec</span>
+    <span class="ar-h2">I moved the approved direction into implementation as a build spec</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="acc__lede ar-p">Tracing the inconsistencies back, some of them started at handoff.</p>
 
     
-    <figure class="au-fig">
+    <figure data-col="a" class="au-fig">
       <figcaption class="au-fig__c"><b>Before</b> What a visual spec left open</figcaption>
       <div class="au-gap">
         <div><p class="au-gap__l">What design provided</p>
@@ -41896,7 +42005,7 @@ body{display:grid;place-items:center;min-height:100vh}
     </div>
 
     
-    <figure class="au-fig">
+    <figure data-col="a" class="au-fig">
       <figcaption class="au-fig__c"><b>The same request, before and after the spec</b></figcaption>
       <div class="au-prompt">
         <div class="au-prompt__c">
@@ -41923,7 +42032,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">User Stories I Wrote</span>
-    <span class="ar-h2">What I handed product and engineering</span>
+    <span class="ar-h2">I handed product and engineering the rules they build from</span>
   </div>
   <div class="acc__b" data-acc-b>
     <div class="us">
@@ -41974,7 +42083,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Outcome and reflection</span>
-    <span class="ar-h2">What I delivered, and the check I left unbuilt</span>
+    <span class="ar-h2">I delivered documentation, and left one check unbuilt</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="acc__lede ar-p">The audit ended as a build spec rather than as a shipped
@@ -42081,13 +42190,13 @@ body{display:grid;place-items:center;min-height:100vh}
       </figure>
     </header>
 
-<div class="cs-wrap">
+<div class="cs-wrap" data-flow>
 
 
 <section class="acc acc--static" data-open="1">
   <div data-acc-h>
     <span class="acc__n">The two changes</span>
-    <span class="ar-h2">Auditing the lid, and specifying the two changes that came out of it</span>
+    <span class="ar-h2">I audited the lid and specified two changes</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">I made two changes to one box. I rewrote the sheet in the lid so the preparation requirements and rejection criteria read first, and I specified a one-piece die-cut foam insert for the empty base.</p>
@@ -42109,12 +42218,12 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">The kit as it shipped</span>
-    <span class="ar-h2">The starting condition: a sheet in the lid, nothing holding the specimen</span>
+    <span class="ar-h2">I found the whole specification on one sheet, and nothing holding the specimen</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">A clinician prepares tissue to a specification, packs it and ships it to a lab. Opening the kit, I found that specification on a single sheet in the lid, and the base below it empty.</p>
 
-    <figure class="sk-fig">
+    <figure data-col="a" class="sk-fig">
       <img src="assets/6d12f2d2348d.webp"
            alt="A photograph of the kit as it shipped: the printed preparation sheet mounted in the inner lid, with the empty base below it."
            width="1100" height="1131" loading="lazy" decoding="async">
@@ -42130,7 +42239,7 @@ body{display:grid;place-items:center;min-height:100vh}
       <li><b>Specimen movement.</b> Nothing secures the block or the slide container in transit.</li>
     </ol>
 
-    <figure class="sk-fig sk-fig--flow">
+    <figure data-col="a" class="sk-fig sk-fig--flow">
       <ol class="sk-flow">
         <li><span>Prepare</span><small>Cut tissue to specification, or cut slides</small></li>
         <li><span>Pack</span><small>Put the specimen in the box</small></li>
@@ -42147,7 +42256,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Research</span>
-    <span class="ar-h2">What I observed, kept separate from what I concluded</span>
+    <span class="ar-h2">I kept what I observed separate from what I concluded</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">I worked from the kit, the sheet, and the onsite research I was synthesising. Below I keep what I observed separate from what I concluded.</p>
@@ -42178,12 +42287,12 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Design decision 01</span>
-    <span class="ar-h2">Reordering the sheet in the lid</span>
+    <span class="ar-h2">I reordered the sheet in the lid</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">Nobody was re-tooling the box, so I left the sheet where it was and changed the order of what it said.</p>
 
-    <figure class="sk-fig">
+    <figure data-col="a" class="sk-fig">
       <div class="sk-ba">
         <div class="sk-ba__c">
           <p class="sk-ba__l">Before</p>
@@ -42204,7 +42313,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <h3 class="ar-h3">The slide count was the only value that changed down the table</h3>
     <p class="ar-p">Same requirement for every test, so I collapsed it into one cell spanning three rows, which leaves the slide count as the only thing that changes.</p>
 
-    <div class="sk-crops">
+    <div data-col="a" class="sk-crops">
       <figure class="sk-crop">
         <p class="sk-crop__l">Before</p>
         <img src="assets/8caa97a68f49.webp"
@@ -42222,7 +42331,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <h3 class="ar-h3">Criteria at the foot of the page are read after the decision</h3>
     <p class="ar-p">They were a run-in list under the table. I pulled them into a labelled row of six, each named under its own mark.</p>
 
-    <div class="sk-crops sk-crops--wide">
+    <div data-col="a" class="sk-crops sk-crops--wide">
       <figure class="sk-crop">
         <p class="sk-crop__l">Before</p>
         <img src="assets/a86bb61ef26c.webp"
@@ -42243,12 +42352,12 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Design decision 02</span>
-    <span class="ar-h2">Specifying a cavity for the specimen to sit in</span>
+    <span class="ar-h2">I specified a cavity for the specimen to sit in</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">Tumour tissue is finite, and I observed the container travelling loose in an empty box.</p>
 
-    <figure class="sk-fig">
+    <figure data-col="a" class="sk-fig">
       <img src="assets/330503890df4.webp"
            alt="A diagram from the project file titled The problem: nothing holds the specimen. It lists what the box takes in transit (drops, vibration, tilt and flip) shows the container sitting loose in an empty box, and names four consequences: free movement, no shock absorption, slides cracking or shattering, and the block dislodging or the lid opening."
            width="1800" height="1626" loading="lazy" decoding="async">
@@ -42259,7 +42368,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <h3 class="ar-h3">The foam insert I specified</h3>
     <p class="ar-p">I specified one-piece die-cut polyethylene, with a large cavity for a slide holder of up to 25 slides and a small cavity for a tissue block container, sized for a standard 8 &times; 8 &times; 2.5 in mailer.</p>
 
-    <figure class="sk-fig">
+    <figure data-col="a" class="sk-fig">
       <img src="assets/2706f079ce50.webp"
            alt="The Universal Foam Insert specification sheet: a photograph of the insert, top and side views with dimensions of 7.25 by 7.25 by 0.75 inches, internal cavity dimensions, material and density, and a three-step sequence for using it."
            width="1900" height="1886" loading="lazy" decoding="async">
@@ -42269,7 +42378,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
     <h3 class="ar-h3">The four kit configurations it holds</h3>
 
-    <div class="sk-cfg">
+    <div data-col="a" class="sk-cfg">
       <div class="sk-cfg__tabs" role="radiogroup" aria-label="Specimen configuration">
         <input class="visually-hidden" type="radio" name="sk-cfg" id="sk-cfg-1" checked>
         <label for="sk-cfg-1">Slides and block</label>
@@ -42294,19 +42403,19 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Production</span>
-    <span class="ar-h2">Fitting both changes to a box already in manufacture</span>
+    <span class="ar-h2">I fitted both changes to a box already in manufacture</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">The instructions print on panel A, the inner lid. The foam sits on panel B, the base.</p>
 
-    <figure class="sk-fig">
+    <figure data-col="a" class="sk-fig">
       <img src="assets/bf4343d37f39.webp"
            alt="The folding diagram and architecture. Two dielines side by side, inside and outside. The inside names panel A as the inner lid carrying the instructions and panel B as the base where the foam piece goes, with the closing flap, locking flaps and inward-folding sides labelled. The outside names panels S, Q, W, X, Y and Z."
            width="1700" height="1160" loading="lazy" decoding="async">
       <figcaption class="ar-cap">Panel A carries the instructions and panel B carries the foam. The remaining panels are how the box closes.</figcaption>
     </figure>
 
-    <figure class="sk-fig">
+    <figure data-col="a" class="sk-fig">
       <img src="assets/65cb44096f8a.webp"
            alt="The inside dieline with artwork in place: the redesigned instruction sheet on the inner lid panel, and the foam insert drawn on the base panel with a slide holder in the large cavity, labelled Left: Tissue Slides and FFPE Tissue Block."
            width="1300" height="1791" loading="lazy" decoding="async">
@@ -42319,13 +42428,13 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">The subteam</span>
-    <span class="ar-h2">Where I sat in the subteam</span>
+    <span class="ar-h2">I worked as the support designer in a three-person subteam</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">The subteam was three people meeting three times a week for two weeks. One senior designer owned direction and one contributed design. I was the support UX designer.</p>
 
     
-    <figure class="sk-fig">
+    <figure data-col="a" class="sk-fig">
       <div class="tp">
 
         <div class="tp__head">
@@ -42413,7 +42522,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Reflection</span>
-    <span class="ar-h2">What both changes had in common</span>
+    <span class="ar-h2">I learned that both changes were about where things go</span>
   </div>
   <div class="acc__b" data-acc-b>
     <p class="ar-p">Neither change added information. I moved a block specification across three rows, raised the criteria above the fold, and cut a cavity to the shape of the container so there is one place to put it.</p>
@@ -42425,7 +42534,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">User Stories I Wrote</span>
-    <span class="ar-h2">The tickets I wrote for the subteam</span>
+    <span class="ar-h2">I wrote the subteam&rsquo;s tickets and kept the statuses current</span>
   </div>
   <div class="acc__b" data-acc-b>
     <div class="us">
