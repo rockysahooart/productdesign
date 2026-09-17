@@ -29065,8 +29065,20 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   }
 
   /* ---- WORKED WITH ------------------------------------------------------ */
+
+  /* MORE AIR, ON ONE AXIS. The card was 22 above the heading, 14 from the
+     heading to the logos and 24 under them — tight enough that the logo strip
+     read as pinned to the label rather than presented under it. The three
+     vertical intervals open up and NOTHING horizontal is touched: the padding
+     is written per-side so the 20px either side, and with it the heading's
+     x-position and every logo's x, are the values they already were. */
+  .page[data-view="home"] .hero-card .hero__clients {
+    padding-top: 38px;
+    padding-bottom: 38px;
+  }
+
   .page[data-view="home"] .hero-card .hero__clients .clients__label {
-    margin-bottom: 14px;
+    margin-bottom: 30px;
     /* CENTRED ON ONE AXIS ONLY.
 
        `text-align` moves the glyphs inside a box that already spans the card;
@@ -29164,6 +29176,105 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .page[data-view="home"] .hero-card .hero__contact {
     padding-top: 22px;
     row-gap: 18px;
+  }
+}
+
+
+/* ==========================================================================
+   PHONE: THE FOURTH CARD, AND THE RHYTHM AROUND THE WORK
+   ========================================================================== */
+@media (max-width: 719px) {
+
+  /* ---- 10 capabilities, as one of the cards ----------------------------- */
+
+  /* Same surface as Worked With, Tools and Contact — near-white fill, one
+     hairline, the same radius — and emphatically nothing else. No clay: no
+     gradient, no concavity, no inflated edge, no cast. */
+  .page[data-view="home"] .hero-card > .hero__caps {
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: none;
+    padding: 18px 20px;
+    margin: 18px 0 0;
+    /* THE CARD IS A MULTI-COLUMN GRID. Every other tile at this width carries
+       `grid-column: 1 / -1`; this one arrives by script and was auto-placed
+       into a single track, which measured 64px against its neighbours' 294.
+       `width: 100%` could not fix that — it was resolving against the narrow
+       track it had been put in. */
+    grid-column: 1 / -1;
+    width: 100%;
+    box-sizing: border-box;
+    /* Worked With 4, Tools 5, this 6, Contact 7. */
+    order: 6;
+  }
+
+  /* Contact steps back one to make room. */
+  .page[data-view="home"] .hero-card .hero__contact { order: 7; }
+
+  /* The disclosure carried the slot's own divider and the space above it;
+     inside a card both are the card's job. */
+  .page[data-view="home"] .hero-card > .hero__caps > .hero__caps__sum {
+    padding: 0;
+    margin: 0;
+  }
+  .page[data-view="home"] .hero-card > .hero__caps > .hero__skills {
+    margin-top: 12px;
+  }
+
+  /* ---- key industry projects: the four intervals ------------------------ */
+
+  /* Measured before: 55 above the heading, 21 from heading to the industry
+     line, 14 from that line to the rule, 34 from the rule to the first card.
+     The middle two were the wrong way round — the tightest interval in the
+     section sat where the biggest break is — so the section read as a heading
+     floating over a list rather than as one block.
+
+     Now: 44 / 18 / 26 / 34. The one that was already right is left alone. */
+  .page[data-view="home"] .section#work { margin-top: 44px; }
+
+  .page[data-view="home"] .section#work > .section__head {
+    /* Heading to the industry line. The head is a wrapping flex row, so this
+       is its row-gap and nothing to do with either element's own margins. */
+    row-gap: 18px;
+    /* The industry line to the rule under it. */
+    padding-bottom: 25px;
+  }
+}
+
+
+/* ==========================================================================
+   THE SUBTITLE CTA, ON A PHONE
+   ==========================================================================
+
+   Above 960 a project's action lives in the Project Browser, inline at the end
+   of the slide's subtitle. Below that the browser is gone and the bento cards
+   are the work — and those cards carried no visible action at all except the
+   governance card, which has always had its own.
+
+   So each card gets that same anchor: not a new one, a copy of the very link
+   its own slide uses, label and destination and target and rel included, taken
+   from the slide at build time rather than retyped. `View case study` stays
+   `View case study`, cryptography keeps `View experience`, and the governance
+   card is untouched — it already has `Download my guide` and that stays its
+   own interaction.
+
+   `--m` marks the copy. It is display:none from 720 up, so desktop and
+   ultrawide see exactly what they saw before: one CTA, in the browser.
+   -------------------------------------------------------------------------- */
+@media (min-width: 720px) {
+  .card__desc .pv__go--m { display: none; }
+}
+
+@media (max-width: 719px) {
+  /* Its own line under the subtitle rather than trailing the last sentence:
+     the descriptions run three and four lines on a phone, and an action that
+     begins wherever the prose happens to stop is an action you have to look
+     for. Block, so it cannot be split across a wrap either. */
+  .card__desc .pv__go--m {
+    display: block;
+    margin-top: 12px;
+    width: fit-content;
   }
 }
 </style>
@@ -37249,6 +37360,8 @@ body{display:grid;place-items:center;min-height:100vh}
               <h3 class="t-card card__title">Improving patient recall after oncology visits</h3>
               <p class="card__desc">
                 I designed a patient flow that captures questions before an appointment and connects them back to answers afterward.
+              
+                <a class="pv__go pv__go--m" href="#/carry">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a>
               </p>
               <p class="card__status card__status--wip">Development began in Playground</p>
             </div>
@@ -37428,6 +37541,8 @@ body{display:grid;place-items:center;min-height:100vh}
               <h3 class="t-card card__title">Designing AI-assisted billing review for operations teams across complex workflows</h3>
               <p class="card__desc">
                 I designed the review workflow where users validate extracted billing data, turning their corrections into higher-confidence model output.
+              
+                <a class="pv__go pv__go--m" href="#/optiflow">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a>
               </p>
               <p class="card__status">Shipped</p>
             </div>
@@ -37665,6 +37780,8 @@ body{display:grid;place-items:center;min-height:100vh}
               <h3 class="t-card card__title">Making cryptography easier to understand inside a developer library</h3>
               <p class="card__desc">
                 I designed an interactive cryptography explainer for a cross-platform library that helps developers handle binary data, showing how ECDH and AES-GCM work together before they use the encryption APIs in code.
+              
+                <a class="pv__go pv__go--m" href="https://rockysahooart.github.io/encryption-coffee-shop/" target="_blank" rel="noopener noreferrer">View experience <span class="pv__go-a" aria-hidden="true">&rarr;</span></a>
               </p>
               <p class="card__status">Shipped</p>
             </div>
@@ -38021,6 +38138,8 @@ body{display:grid;place-items:center;min-height:100vh}
               <h3 class="t-card card__title">Standardizing oncology workflows for clinical provider teams across complex systems</h3>
               <p class="card__desc">
                 I audited four provider workflows and defined shared rules for actions, statuses, and interaction patterns.
+              
+                <a class="pv__go pv__go--m" href="#/audit">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a>
               </p>
               <p class="card__status">Shipped</p>
               <span class="cta cta--fill" aria-hidden="true">
@@ -38085,6 +38204,8 @@ body{display:grid;place-items:center;min-height:100vh}
               <h3 class="t-card card__title">Redesigning an oncology specimen kit for safer shipping and handling</h3>
               <p class="card__desc">
                 I moved preparation guidance onto the kit and designed protected storage for specimens in transit.
+              
+                <a class="pv__go pv__go--m" href="#/specimen">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a>
               </p>
               <p class="card__status">Shipped</p>
               <span class="cta cta--fill" aria-hidden="true">
@@ -38122,6 +38243,8 @@ body{display:grid;place-items:center;min-height:100vh}
               <h3 class="t-card card__title">Transforming fragmented securities-based lending into one origination experience.</h3>
               <p class="card__desc">
                 I transformed a fragmented legacy lending process into one guided experience where relationship bankers evaluate securities and collateral in real time, add co-borrowers, submit loan requests, and track underwriting decisions.
+              
+                <a class="pv__go pv__go--m" href="https://rockysahoo.design/project/pnc" target="_blank" rel="noopener noreferrer">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a>
               </p>
               <p class="card__status">Shipped</p>
               <span class="cta cta--fill" aria-hidden="true">
@@ -50029,8 +50152,22 @@ window.PF = window.PF || {};
     var mq = window.matchMedia('(max-width: 959px)');
     var phone = window.matchMedia('(max-width: 719px)');
 
+    /* AND ON A PHONE IT IS A CARD, NOT A BAND.
+
+       The slot below the work is right for a tablet, where the page is still
+       a column of full-width sections. On a phone the foot of the page is
+       three cards — Worked With, Tools, Contact — and a bare disclosure
+       floating between two sections reads as something that fell out of one
+       of them. It goes into the hero card with the other three instead, and
+       the stylesheet gives it their surface and its place in the order. The
+       slot collapses on its own once it is empty: see
+       `.section--capsslot:empty`. */
+    var deck = document.querySelector('.hero-card');
+
     function place() {
-      if (mq.matches) {
+      if (phone.matches && deck) {
+        if (caps.parentNode !== deck) deck.appendChild(caps);
+      } else if (mq.matches) {
         if (slot && caps.parentNode !== slot) slot.appendChild(caps);
       } else if (caps.parentNode !== home) {
         home.insertBefore(caps, mark);
@@ -50047,7 +50184,11 @@ window.PF = window.PF || {};
 
     if (mq.addEventListener) {
       mq.addEventListener('change', function () { place(); });
-      phone.addEventListener('change', function () { caps._touched = false; sync(); });
+      /* The phone query decides WHERE it goes as well as whether it is open,
+         so crossing 720 has to re-place it and not only re-sync it. */
+      phone.addEventListener('change', function () {
+        place(); caps._touched = false; sync();
+      });
     }
   }
 
