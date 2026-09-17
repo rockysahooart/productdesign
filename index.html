@@ -29044,6 +29044,15 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   /* ---- WORKED WITH ------------------------------------------------------ */
   .page[data-view="home"] .hero-card .hero__clients .clients__label {
     margin-bottom: 14px;
+    /* CENTRED ON ONE AXIS ONLY.
+
+       `text-align` moves the glyphs inside a box that already spans the card;
+       the box itself does not move, resize or reflow, so the label's own
+       y-coordinate, the space under it and the logos below are all arithmetically
+       untouched. Anything that centred the ELEMENT — a margin, a flex or grid
+       alignment — would have had to change its box, and a changed box is a
+       changed layout. */
+    text-align: center;
   }
 
   /* THE LOGOS RUN TO THE EDGE, AND THE EDGE IS NOW A BORDER.
@@ -37197,7 +37206,7 @@ body{display:grid;place-items:center;min-height:100vh}
   <section class="section" id="work" aria-labelledby="work-title" data-reveal="3">
     <header class="section__head">
       <h2 class="t-section section__title" id="work-title"><em>key industry</em> projects</h2>
-      <p class="t-meta">Five projects &middot; healthcare, biotechnology, financial services</p>
+      <p class="t-meta">Healthcare &middot; Biotechnology &middot; Financial Services &middot; Developer Tools &middot; Education</p>
     </header>
 
     <div class="bento">
