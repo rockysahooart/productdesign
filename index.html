@@ -6,6 +6,42 @@
 <title>Sarthak Sahoo — Product Designer, Illustrator, Music Producer</title>
 <meta name="description" content="Product designer in Austin, TX, bringing clarity to complex systems across finance, biotechnology and enterprise. Also an illustrator and house music producer.">
 
+<!-- ==========================================================================
+     THE LINK, WHEN SOMEBODY ELSE POSTS IT
+
+     One canonical set. Open Graph is what LinkedIn, Facebook, iMessage, Slack
+     and Discord read; the twitter:* pair is what X needs for a large card and
+     nothing else consumes. Absolute HTTPS on every URL, because a crawler
+     fetching this from its own server has no page to resolve a relative path
+     against — a relative og:image is the single most common reason a preview
+     comes back blank.
+
+     The URL is rockysahoo.space, the custom domain pointed at this repo's
+     GitHub Pages. Two files have to exist at the repo root for these to
+     resolve: social-preview.jpg, which og:image names, and CNAME, which is
+     what tells Pages to answer on that domain at all — pushing a clone that
+     does not have it will take the domain down.
+     ========================================================================== -->
+<link rel="canonical" href="https://rockysahoo.space/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sarthak Sahoo">
+<meta property="og:title" content="Sarthak Sahoo — Product Designer">
+<meta property="og:description" content="Product designer working across healthcare, biotechnology, financial services, developer tools, and complex systems.">
+<meta property="og:url" content="https://rockysahoo.space/">
+<meta property="og:image" content="https://rockysahoo.space/social-preview.jpg">
+<meta property="og:image:secure_url" content="https://rockysahoo.space/social-preview.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Sarthak Sahoo product design portfolio introduction">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Sarthak Sahoo — Product Designer">
+<meta name="twitter:description" content="Product designer working across healthcare, biotechnology, financial services, developer tools, and complex systems.">
+<meta name="twitter:image" content="https://rockysahoo.space/social-preview.jpg">
+<meta name="twitter:image:alt" content="Sarthak Sahoo product design portfolio introduction">
+
 <meta name="theme-color" content="#E9E9E9" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
 
@@ -29239,6 +29275,18 @@ button.cu-q:hover { background: var(--cu-teal-8); }
     row-gap: 18px;
     /* The industry line to the rule under it. */
     padding-bottom: 25px;
+    /* AND IN, TO THE MARGIN THE WORK BELOW IS WRITTEN ON.
+
+       The header sat on the section's own edge at 13px while every project
+       card's copy starts at 37 — the cards carry 24px of padding and the
+       header carried none, so the largest type on the page was the one thing
+       hard against the viewport. This is that 24px, and nothing else: the
+       heading, the industry line and the rule under them are all inside the
+       head, so one inset moves the three of them together and the cards below
+       are a sibling that never hears about it.
+
+       Inline only. No block padding is touched, so nothing moves on y. */
+    padding-inline: 24px;
   }
 }
 
@@ -29275,6 +29323,57 @@ button.cu-q:hover { background: var(--cu-teal-8); }
     display: block;
     margin-top: 12px;
     width: fit-content;
+  }
+}
+
+
+/* --------------------------------------------------------------------------
+   PHONE: THE HUB LABEL YIELDS TO THE CATEGORIES
+
+   "TOOLS" sits in the middle of the wheel because the wheel has nothing in
+   its middle. The shelves do — three category labels, one of which lands
+   close to the centre — so the hub label goes when they arrive and comes back
+   when they leave. Faded rather than switched, on the same clock the shelves
+   use, and `visibility` so it cannot be read by anything while it is gone.
+
+   Nothing here touches the card's box: the label is already absolutely
+   positioned over the tile, so it costs no height in either state and the
+   card cannot move.
+   -------------------------------------------------------------------------- */
+@media (max-width: 719px) {
+  .page[data-view="home"] .hero-card .hero__tools .tools__label {
+    transition: opacity 240ms linear, visibility 0s linear 0s;
+  }
+  .page[data-view="home"] .hero-card .hero__tools.is-sorted .tools__label {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 200ms linear, visibility 0s linear 200ms;
+  }
+
+  /* THE SHELVES STOP MAKING ROOM FOR A LABEL THAT IS NOT THERE.
+
+     `.tools__shelves` is inset from the top by its own padding PLUS 2.1em,
+     and that 2.1em is a reservation for the card's label — which on a desktop
+     sits across the top of the tile. On a phone the label is in the middle of
+     the wheel and gone entirely once the shelves are up, so the reservation
+     buys nothing and spends 30px: measured, the first category began 53px
+     down a 294px card with 19px under the last one.
+
+     The 2.1em MOVES rather than disappears. Taking it off the top and adding
+     it to the bottom shifts the whole block up by exactly that much and
+     leaves the box the same height — which is what keeps the interval between
+     Design Decisions, AI Execution and Human Judgment, and every logo's
+     position over its own line, arithmetically untouched. The left inset is
+     not named here, so it does not move either. */
+  .page[data-view="home"] .hero-card .hero__tools .tools__shelves {
+    top: clamp(22px, 1.8vw, 30px);
+    bottom: calc(clamp(18px, 1.5vw, 26px) + 2.1em);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .page[data-view="home"] .hero-card .hero__tools .tools__label,
+    .page[data-view="home"] .hero-card .hero__tools.is-sorted .tools__label {
+      transition: none;
+    }
   }
 }
 </style>
@@ -47549,6 +47648,20 @@ window.PF = window.PF || {};
      loading, and a gap that is a beat rather than a pause. */
   var DOTS_FAST = 360;
   var OPEN_GAP = 440;
+  /* AND THE BEAT AFTER THE INTRODUCTION, ON A PHONE.
+
+     Every other message is left alone for a beat plus a millisecond per
+     character it holds — which for "I'm Sarthak Sahoo, a Product Designer,
+     based in Austin, TX" came out at 2608ms measured. On a desktop that is a
+     pause; on a phone, where the whole conversation is the first screen and
+     there is nothing else to look at while it runs, it is a stall. The line
+     is a name and a job title: it is read in a glance and it does not need to
+     be sat with.
+
+     Declared beside the other beats and ABOVE everything that reads it,
+     because a `var` read before its assignment is `undefined` — which is what
+     cost the first-load measurement a reservation earlier in this file. */
+  var SECOND_HOLD = 320;
   /* THE ARRIVAL GOT LONGER AND THE CADENCE DID NOT.
 
      The entrance runs 640ms now, so `settled` waits that out rather than
@@ -50031,6 +50144,11 @@ window.PF = window.PF || {};
          the other here — so the gap between them is the shortest in the
          thread, and the indicator that fills it is the quick one. */
       if (narrow.matches && i === 0) return OPEN_GAP;
+      /* The introduction, on a phone: a hold rather than a read. Only the
+         pause is short — the indicator that follows it still stands for its
+         own full dotsMs(), and the bubble still arrives the way it always
+         did. */
+      if (narrow.matches && i === 1) return SECOND_HOLD;
       var el = rows[i].querySelector('.msg__text');
       var len = el ? el.textContent.trim().length : 0;
       return Math.min(GAP_MS + len * READ_MS, GAP_MAX) + dwellOf(i);
@@ -50179,6 +50297,26 @@ window.PF = window.PF || {};
     function sync() { if (!caps._touched) caps.open = !phone.matches; }
 
     caps.addEventListener('toggle', function () { caps._touched = true; });
+
+    /* ---- and on a phone it drives the Tools card above it ----------------
+
+       The tools card has two arrangements already — the turning wheel it
+       rests in and the shelves it sorts into under a pointer — and a phone
+       could reach neither. This disclosure is the switch: open it and the
+       logos sort under Design Decisions, AI Execution and Human Judgment;
+       close it and they go back to the wheel. The tools card listens for the
+       event and owns the animation; nothing about the tools is duplicated in
+       here, and this card keeps its own list of what it lists.
+
+       Only on a phone: above 720 the sort is the hover it has always been,
+       and the disclosure goes back to being a disclosure. Leaving that width
+       re-rings the card so it is never left sorted with no way to unsort it. */
+    function driveTools() {
+      var on = phone.matches && caps.open;
+      document.dispatchEvent(new CustomEvent('pf:tools-sort', { detail: on }));
+    }
+    caps.addEventListener('toggle', driveTools);
+    if (phone.addEventListener) phone.addEventListener('change', driveTools);
     place();
     sync();
 
@@ -53597,6 +53735,23 @@ window.PF = window.PF || {};
     card.addEventListener('pointerenter', toShelves);
     card.addEventListener('pointerleave', toRing);
   }
+
+  /* AND A DOOR FOR A SCREEN WITH NO POINTER.
+
+     The sort is a hover, and the comment above says why: on a touch screen
+     there is no "away", so a card that sorted itself on tap would sort once
+     and stay that way. That reasoning holds — what it needs is a control that
+     can be tapped a second time, and on a phone there is one directly under
+     this card. The capabilities disclosure says when it wants the shelves and
+     when it wants the wheel back; nothing here knows or cares what that
+     control is, which is the point of asking through an event.
+
+     Both functions already guard their own state (`toShelves` returns unless
+     the card is open and unsorted, `toRing` unless it is sorted), so a
+     repeated or contradictory event costs a function call and nothing else. */
+  document.addEventListener('pf:tools-sort', function (ev) {
+    if (ev && ev.detail) toShelves(); else toRing();
+  });
 
   /* A window that changes size while the shelves are up has moved the lines
      out from under the marks. Re-place them where they now belong, without a
