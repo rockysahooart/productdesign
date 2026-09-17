@@ -29389,6 +29389,42 @@ button.cu-q:hover { background: var(--cu-teal-8); }
     }
   }
 }
+
+/* ==========================================================================
+   STORY BEATS
+
+   A handful of first-person statements set between sections, at the title's
+   own size, so a reader scrolling a long case study can see where they are in
+   the process without opening anything. They are punctuation, not headings:
+   three to five per case study, at the transitions that actually mattered,
+   and every one of them says something the sections around it already
+   document.
+
+   The treatment is the title's, read from the same tokens `.case .ar-title`
+   resolves rather than copied as numbers, so the two cannot drift apart. The
+   statement takes the full content width it sits in, which is what keeps it
+   to one or two lines at every size; length is controlled in the sentence,
+   never by stepping the size down.
+   ========================================================================== */
+/* THE SELECTOR IS LOAD-BEARING. The case-study type sheet ends with an :is()
+   catch-all at (0,2,2) that reaches every paragraph inside a case study, so a
+   single class here loses and the statement renders at body size. */
+:is(#carry, #optiflow, #audit, #specimen) .cs-beat {
+  font-family: var(--font-heading);
+  font-variation-settings: var(--wonk-on);
+  font-weight: 600;
+  font-size: calc(var(--cs-t1) * var(--fs-disp-k));
+  line-height: calc(var(--cs-lh1) / var(--fs-disp-k));
+  letter-spacing: -0.010em;
+  color: var(--ink);
+  /* The case-study sheet gives a bare paragraph in .cs-wrap a grid box and an
+     inset; a statement is plain text and wants neither. */
+  display: block;
+  padding: 0;
+  max-width: none;
+  margin: clamp(56px, 7vw, 96px) 0 clamp(48px, 6vw, 80px);
+  text-wrap: balance;
+}
 </style>
 </head>
 
@@ -39837,6 +39873,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
   </div>
 </section>
+<p class="cs-beat">I turned the direction into a testable flow.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">V1 &middot; Week 1</span>
@@ -40108,6 +40145,7 @@ body{display:grid;place-items:center;min-height:100vh}
   </div>
 </section>
 
+<p class="cs-beat">I put V3 in front of patients.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">The design workshop</span>
@@ -40222,6 +40260,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <div class="cs-move"><p class="cs-move__l">Both rounds were pilot testing</p></div>
   </div>
 </section>
+<p class="cs-beat">I changed the sequence after testing.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">After the workshop</span>
@@ -40375,6 +40414,7 @@ body{display:grid;place-items:center;min-height:100vh}
     <div class="cs-move"><p class="cs-move__l">Two other designers built screens from it without asking me what a row was for</p></div>
   </div>
 </section>
+<p class="cs-beat">I moved the approved direction into build.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Handoff, and where it stopped</span>
@@ -40855,6 +40895,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
 <!-- ============================ PART 2 ================================== -->
+<p class="cs-beat">I followed one document through the pipeline.</p>
 <section class="pt">
   <div class="pt__h">
     <p class="pt__n">Part 2 &middot; What did the system look like?</p>
@@ -41012,6 +41053,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
 <!-- ============================ PART 3 ================================== -->
+<p class="cs-beat">I found free text was a signal nothing read.</p>
 <section class="pt">
   <div class="pt__h">
     <p class="pt__n">Part 3 &middot; What did I do?</p>
@@ -41064,6 +41106,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
 <!-- ============================ PART 4 ================================== -->
+<p class="cs-beat">I took each idea back and it came back smaller.</p>
 <section class="pt">
   <div class="pt__h">
     <p class="pt__n">Part 4 &middot; What did my process look like?</p>
@@ -41471,6 +41514,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
+<p class="cs-beat">I found the library consistent, the flows not.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Why I audited workflows</span>
@@ -41640,6 +41684,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
+<p class="cs-beat">I worked through all four workflows.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">What repeated across them</span>
@@ -41815,6 +41860,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
+<p class="cs-beat">I turned the findings into buildable rules.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Implementation and handoff</span>
@@ -41971,6 +42017,7 @@ body{display:grid;place-items:center;min-height:100vh}
 <!-- The case study ends on what it produced and what it did not. The
      reflection used to sit at the foot of Handoff, where it read as a note
      about the spec; it is the note about the work. -->
+<p class="cs-beat">I delivered documentation, not a release.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Outcome and reflection</span>
@@ -42144,6 +42191,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
+<p class="cs-beat">I found one number changing down the table.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Research</span>
@@ -42240,6 +42288,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
+<p class="cs-beat">I found the specimen travelling loose.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Design decision 02</span>
@@ -42410,6 +42459,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </section>
 
 
+<p class="cs-beat">I learned both were about where things go.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
     <span class="acc__n">Reflection</span>
