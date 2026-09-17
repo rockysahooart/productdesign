@@ -29691,12 +29691,12 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   width: min(1500px, 92vw);
 }
 /* The largest state spans 300 of the 320 viewBox units, so the rendered form
-   reaches about 0.94 of this width: on a 1512px laptop that lands near 40% of
-   the viewport, on an ultrawide near 36%. The vh term is what stops a short
-   window from pushing the message and the bar off screen. */
+   reaches about 0.94 of this width: on a laptop and a tablet that lands near
+   half the viewport, on an ultrawide just under it. The vh term is what stops
+   a short window from pushing the message and the bar off screen. */
 .ld__svg {
   display: block;
-  width: max(260px, min(44vw, 86vh));
+  width: max(280px, min(54vw, 100vh));
   aspect-ratio: 320 / 176;
   height: auto;
   overflow: visible;
@@ -29747,6 +29747,53 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   transition: width 220ms cubic-bezier(0.33, 0, 0.2, 1);
 }
 
+
+/* --- the loader's own lighting ------------------------------------------
+   Every other message turns the lights down. This is a state on the loader
+   element, not a theme: it never writes data-theme, never touches storage,
+   and the page it dissolves into is still in whatever theme the reader
+   actually chose. The scene changes material, so the background, the clay,
+   the shadow, the type and the bar all cross over together rather than the
+   screen hard-cutting. */
+.ld,
+.ld__msg,
+.ld__bar,
+.ld__fill {
+  transition-property: opacity, background-color, color;
+  /* Short enough that each beat settles before the next line arrives: the
+     message cadence is 900ms, so a 700ms crossfade never finished. */
+  transition-duration: 460ms, 420ms, 420ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ld__svg stop { transition: stop-color 420ms cubic-bezier(0.4, 0, 0.2, 1); }
+.ld__svg feDropShadow { transition: flood-color 420ms cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* (0,4,0): the OS-preference rule above is (0,3,0) and would otherwise
+   hold a dark-OS reader in dark through the light beats. */
+:root .ld.ld[data-ld-mode="light"] {
+  --ld-bg:    #F4F4F2;
+  --ld-face:  #FDFCFA;
+  --ld-hi:    #FFFFFF;
+  --ld-lo:    #E6E4DF;
+  --ld-sh:    rgba(38, 34, 28, 0.14);
+  --ld-track: rgba(38, 34, 28, 0.13);
+  --ld-fill:  #262626;
+  --ld-ink:   #262626;
+}
+:root .ld.ld[data-ld-mode="dark"] {
+  --ld-bg:    #232326;
+  --ld-face:  #3A3A3E;
+  --ld-hi:    #4A4A50;
+  --ld-lo:    #2A2A2D;
+  --ld-sh:    rgba(0, 0, 0, 0.40);
+  --ld-track: rgba(237, 237, 237, 0.16);
+  --ld-fill:  #EDEDED;
+  --ld-ink:   #EDEDED;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ld, .ld__msg, .ld__bar, .ld__fill { transition-duration: 460ms, 360ms, 360ms; }
+}
+
 html.ld-lock, html.ld-lock body { overflow: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -29758,7 +29805,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 
 <body>
 
-<div class="ld" id="pf-loader" role="status" aria-live="polite" aria-label="Loading">
+<div class="ld" id="pf-loader" data-ld-mode="light" role="status" aria-live="polite" aria-label="Loading">
   <div class="ld__c">
     <svg class="ld__svg" viewBox="0 0 320 176" aria-hidden="true" focusable="false">
       <defs>
@@ -43079,7 +43126,7 @@ body{display:grid;place-items:center;min-height:100vh}
     if (!root) return;
 
     var SRC = ['assets/app-1.js', 'assets/app-2.js'];
-    var MIN = 8000;
+    var MIN = 5500;
     var N = 72;
     /* Six lines across the eight seconds, the last held to the handoff. They
        run off the same clock as the form rather than an interval, so the copy
@@ -43092,7 +43139,7 @@ body{display:grid;place-items:center;min-height:100vh}
       'Making the work presentable…',
       'Welcome in.'
     ];
-    var MSG_AT = [0, 1300, 2600, 3900, 5100, 6400];
+    var MSG_AT = [0, 900, 1800, 2700, 3600, 4500];
 
     var still = !!(window.matchMedia &&
                    window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -43129,14 +43176,14 @@ body{display:grid;place-items:center;min-height:100vh}
     var CY = 88;
     var KEYS = [
       { at: 0,    s: [[C, CY, 56, 56, 2.0, 0.000, 3], [C, CY, 56, 56, 2.0, 0, 3], [C, CY, 56, 56, 2.0, 0, 3], [C, CY, 56, 56, 2.0, 0, 3]], o: [1, 0, 0, 0] },
-      { at: 1200, s: [[C, CY, 60, 59, 2.0, 0.028, 3], [C, CY, 60, 59, 2.0, 0, 3], [C, CY, 60, 59, 2.0, 0, 3], [C, CY, 60, 59, 2.0, 0, 3]], o: [1, 0, 0, 0] },
-      { at: 2400, s: [[C, CY, 66, 61, 2.3, 0.105, 2], [C, CY, 66, 61, 2.3, 0, 2], [C, CY, 66, 61, 2.3, 0, 2], [C, CY, 66, 61, 2.3, 0, 2]], o: [1, 0, 0, 0] },
-      { at: 3500, s: [[C, CY, 62, 62, 4.6, 0.000, 3], [C, CY, 62, 62, 4.6, 0, 3], [C, CY, 62, 62, 4.6, 0, 3], [C, CY, 62, 62, 4.6, 0, 3]], o: [1, 0, 0, 0] },
-      { at: 4600, s: [[C, CY, 150, 62, 4.8, 0.000, 3], [C, CY, 150, 62, 4.8, 0, 3], [C, CY, 150, 62, 4.8, 0, 3], [C, CY, 150, 62, 4.8, 0, 3]], o: [1, 0, 0, 0] },
-      { at: 5700, s: [[C - 76, CY - 32, 66, 26, 4.6, 0, 3], [C + 76, CY - 32, 66, 26, 4.6, 0, 3], [C - 76, CY + 34, 66, 26, 4.6, 0, 3], [C + 76, CY + 34, 66, 26, 4.6, 0, 3]], o: [1, 1, 1, 1] },
-      { at: 6600, s: [[C - 96, CY, 46, 62, 4.6, 0, 3], [C + 10, CY - 36, 76, 24, 4.6, 0, 3], [C + 10, CY + 22, 76, 38, 4.6, 0, 3], [C + 112, CY + 22, 22, 38, 4.6, 0, 3]], o: [1, 1, 1, 1] },
-      { at: 7300, s: [[C, CY - 50, 148, 16, 4.6, 0, 3], [C - 74, CY + 18, 70, 42, 4.6, 0, 3], [C + 74, CY + 18, 70, 42, 4.6, 0, 3], [C, CY + 74, 148, 10, 4.6, 0, 3]], o: [1, 1, 1, 1] },
-      { at: 7800, s: [[C, CY - 52, 150, 14, 4.6, 0, 3], [C - 76, CY + 14, 72, 44, 4.6, 0, 3], [C + 76, CY + 14, 72, 44, 4.6, 0, 3], [C, CY + 74, 150, 10, 4.6, 0, 3]], o: [1, 1, 1, 1] }
+      { at: 800,  s: [[C, CY, 60, 59, 2.0, 0.028, 3], [C, CY, 60, 59, 2.0, 0, 3], [C, CY, 60, 59, 2.0, 0, 3], [C, CY, 60, 59, 2.0, 0, 3]], o: [1, 0, 0, 0] },
+      { at: 1600, s: [[C, CY, 66, 61, 2.3, 0.105, 2], [C, CY, 66, 61, 2.3, 0, 2], [C, CY, 66, 61, 2.3, 0, 2], [C, CY, 66, 61, 2.3, 0, 2]], o: [1, 0, 0, 0] },
+      { at: 2300, s: [[C, CY, 62, 62, 4.4, 0.000, 3], [C, CY, 62, 62, 4.4, 0, 3], [C, CY, 62, 62, 4.4, 0, 3], [C, CY, 62, 62, 4.4, 0, 3]], o: [1, 0, 0, 0] },
+      { at: 3000, s: [[C, CY, 150, 64, 4.8, 0.000, 3], [C, CY, 150, 64, 4.8, 0, 3], [C, CY, 150, 64, 4.8, 0, 3], [C, CY, 150, 64, 4.8, 0, 3]], o: [1, 0, 0, 0] },
+      { at: 3800, s: [[C - 78, CY - 34, 70, 30, 5.2, 0, 3], [C + 78, CY - 34, 70, 30, 5.2, 0, 3], [C - 78, CY + 36, 70, 30, 5.2, 0, 3], [C + 78, CY + 36, 70, 30, 5.2, 0, 3]], o: [1, 1, 1, 1] },
+      { at: 4500, s: [[C - 92, CY, 56, 64, 5.6, 0, 3], [C + 52, CY - 40, 88, 24, 5.6, 0, 3], [C + 8, CY + 28, 44, 32, 5.6, 0, 3], [C + 104, CY + 28, 44, 32, 5.6, 0, 3]], o: [1, 1, 1, 1] },
+      { at: 5000, s: [[C - 104, CY, 44, 68, 6.2, 0, 3], [C + 28, CY - 44, 102, 24, 6.2, 0, 3], [C - 4, CY + 22, 70, 44, 6.2, 0, 3], [C + 100, CY + 22, 34, 44, 6.2, 0, 3]], o: [1, 1, 1, 1] },
+      { at: 5300, s: [[C, CY - 56, 150, 22, 6.8, 0, 3], [C - 100, CY + 22, 48, 46, 6.8, 0, 3], [C, CY + 22, 44, 46, 6.8, 0, 3], [C + 100, CY + 22, 48, 46, 6.8, 0, 3]], o: [1, 1, 1, 1] }
     ];
     var LAST = KEYS[KEYS.length - 1].at;
 
@@ -43189,6 +43236,12 @@ body{display:grid;place-items:center;min-height:100vh}
       setTimeout(function () {
         msgEl.textContent = MSG[mi];
         msgEl.classList.remove('is-fade');
+        /* Every other line turns the lights down, and it turns with the line
+           rather than ahead of it. This is the loader's own material state,
+           held on the loader element: it never touches data-theme, never
+           writes to storage, and the page it hands off to is still in
+           whatever theme the reader actually chose. */
+        root.setAttribute('data-ld-mode', (mi % 2) ? 'dark' : 'light');
       }, 420);
     }
 
