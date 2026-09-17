@@ -29559,6 +29559,17 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 :is(#carry, #optiflow, #audit, #specimen) .pnav[data-open="1"] .pnav__l { display: grid; gap: 2px; }
 :is(#carry, #optiflow, #audit, #specimen) .pnav__l li { margin: 0; padding: 0; }
 :is(#carry, #optiflow, #audit, #specimen) .pnav__a {
+  /* These are buttons, so the agent styles have to go before the rail's own
+     treatment lands on them. */
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   display: grid;
   grid-template-columns: 2.2em 1fr;
   align-items: center;
@@ -42918,9 +42929,14 @@ body{display:grid;place-items:center;min-height:100vh}
         var p = el.getAttribute('data-phase');
         if (!NAMES[p]) return;
         var li = document.createElement('li');
-        var a = document.createElement('a');
+        /* A BUTTON, NOT A LINK. The case study router owns location.hash
+           (#/carry, #/optiflow). An anchor to a fragment overwrites that route
+           and the router falls back to the landing page, so these controls
+           perform an in-page action instead of pretending to be a URL. */
+        var a = document.createElement('button');
+        a.type = 'button';
         a.className = 'pnav__a';
-        a.href = '#' + el.id;
+        a.setAttribute('data-target', el.id);
         a.innerHTML = '<span class="pnav__n">' + p + '</span><span class="pnav__t">' + NAMES[p] + '</span>';
         li.appendChild(a);
         list.appendChild(li);
@@ -42937,7 +42953,27 @@ body{display:grid;place-items:center;min-height:100vh}
         nav.setAttribute('data-open', on ? '0' : '1');
         btn.setAttribute('aria-expanded', on ? 'false' : 'true');
       });
-      list.addEventListener('click', function () {
+      var still = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+
+      list.addEventListener('click', function (ev) {
+        var hit = ev.target.closest ? ev.target.closest('.pnav__a') : null;
+        if (!hit) return;
+        ev.preventDefault();
+
+        var target = main.querySelector('#' + hit.getAttribute('data-target'));
+        if (target) {
+          /* scroll-margin-top on [data-phase] is what holds the phase clear of
+             the sticky header, so scrollIntoView lands it correctly. */
+          target.scrollIntoView({
+            behavior: (still && still.matches) ? 'auto' : 'smooth',
+            block: 'start'
+          });
+          /* Keyboard users need to continue from where they landed, and
+             preventScroll keeps focusing from fighting the scroll. */
+          if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+          try { target.focus({ preventScroll: true }); } catch (e) { }
+        }
+
         nav.setAttribute('data-open', '0');
         btn.setAttribute('aria-expanded', 'false');
       });
