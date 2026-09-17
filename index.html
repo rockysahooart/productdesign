@@ -29760,13 +29760,13 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .ld__bar,
 .ld__fill {
   transition-property: opacity, background-color, color;
-  /* Short enough that each beat settles before the next line arrives: the
-     message cadence is 900ms, so a 700ms crossfade never finished. */
-  transition-duration: 460ms, 420ms, 420ms;
+  /* The room changes once rather than on every line, so the crossover can
+     take its time: 900ms reads as the lights going down, not as a cut. */
+  transition-duration: 460ms, 900ms, 900ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
-.ld__svg stop { transition: stop-color 420ms cubic-bezier(0.4, 0, 0.2, 1); }
-.ld__svg feDropShadow { transition: flood-color 420ms cubic-bezier(0.4, 0, 0.2, 1); }
+.ld__svg stop { transition: stop-color 900ms cubic-bezier(0.4, 0, 0.2, 1); }
+.ld__svg feDropShadow { transition: flood-color 900ms cubic-bezier(0.4, 0, 0.2, 1); }
 
 /* (0,4,0): the OS-preference rule above is (0,3,0) and would otherwise
    hold a dark-OS reader in dark through the light beats. */
@@ -29791,7 +29791,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   --ld-ink:   #EDEDED;
 }
 @media (prefers-reduced-motion: reduce) {
-  .ld, .ld__msg, .ld__bar, .ld__fill { transition-duration: 460ms, 360ms, 360ms; }
+  .ld, .ld__msg, .ld__bar, .ld__fill { transition-duration: 460ms, 640ms, 640ms; }
 }
 
 html.ld-lock, html.ld-lock body { overflow: hidden; }
@@ -43236,12 +43236,14 @@ body{display:grid;place-items:center;min-height:100vh}
       setTimeout(function () {
         msgEl.textContent = MSG[mi];
         msgEl.classList.remove('is-fade');
-        /* Every other line turns the lights down, and it turns with the line
-           rather than ahead of it. This is the loader's own material state,
-           held on the loader element: it never touches data-theme, never
-           writes to storage, and the page it hands off to is still in
-           whatever theme the reader actually chose. */
-        root.setAttribute('data-ld-mode', (mi % 2) ? 'dark' : 'light');
+        /* One switch, once, between the third line and the fourth: the fluid
+           states live in the bright room and the resolved interface states
+           carry on in the dark one. It turns with the line rather than ahead
+           of it. This is the loader's own material state, held on the loader
+           element: it never touches data-theme, never writes to storage, and
+           the page it hands off to is still in whatever theme the reader
+           actually chose. */
+        root.setAttribute('data-ld-mode', mi >= 3 ? 'dark' : 'light');
       }, 420);
     }
 
