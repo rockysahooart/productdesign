@@ -2,50 +2,63 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sarthak Sahoo — Product Designer, Illustrator, Music Producer</title>
-<meta name="description" content="Product designer in Austin, TX, bringing clarity to complex systems across finance, biotechnology and enterprise. Also an illustrator and house music producer.">
-
-<!-- ==========================================================================
-     THE LINK, WHEN SOMEBODY ELSE POSTS IT
-
-     One canonical set. Open Graph is what LinkedIn, Facebook, iMessage, Slack
-     and Discord read; the twitter:* pair is what X needs for a large card and
-     nothing else consumes. Absolute HTTPS on every URL, because a crawler
-     fetching this from its own server has no page to resolve a relative path
-     against — a relative og:image is the single most common reason a preview
-     comes back blank.
-
-     The URL is rockysahoo.space, the custom domain pointed at this repo's
-     GitHub Pages. Two files have to exist at the repo root for these to
-     resolve: social-preview.jpg, which og:image names, and CNAME, which is
-     what tells Pages to answer on that domain at all — pushing a clone that
-     does not have it will take the domain down.
-     ========================================================================== -->
+<!-- Social metadata first: see the note under it. -->
+<title>Sarthak Sahoo — Product Designer</title>
+<meta name="description" content="Product designer working across healthcare, biotechnology, financial services, developer tools, and complex systems.">
 <link rel="canonical" href="https://rockysahoo.space/">
 
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Sarthak Sahoo">
 <meta property="og:title" content="Sarthak Sahoo — Product Designer">
 <meta property="og:description" content="Product designer working across healthcare, biotechnology, financial services, developer tools, and complex systems.">
 <meta property="og:url" content="https://rockysahoo.space/">
-<meta property="og:image" content="https://rockysahoo.space/social-preview.jpg">
-<meta property="og:image:secure_url" content="https://rockysahoo.space/social-preview.jpg">
-<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image" content="https://rockysahoo.space/social-preview.png">
+<meta property="og:image:secure_url" content="https://rockysahoo.space/social-preview.png">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Sarthak Sahoo product design portfolio introduction">
+<meta property="og:site_name" content="Sarthak Sahoo">
 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Sarthak Sahoo — Product Designer">
 <meta name="twitter:description" content="Product designer working across healthcare, biotechnology, financial services, developer tools, and complex systems.">
-<meta name="twitter:image" content="https://rockysahoo.space/social-preview.jpg">
+<meta name="twitter:image" content="https://rockysahoo.space/social-preview.png">
 <meta name="twitter:image:alt" content="Sarthak Sahoo product design portfolio introduction">
 
+<!-- ==========================================================================
+     THE LINK, WHEN SOMEBODY ELSE POSTS IT — AND WHY IT IS THE FIRST THING HERE
+
+     This file is one 8MB document. A social crawler does not read 8MB: it
+     opens the connection, takes the first slice of the response — LinkedIn's
+     is famously small — looks for the tags and gives up. Everything below
+     this block is embedded fonts, an inline stylesheet and inline script, any
+     one of which is larger than that slice on its own. So the metadata goes
+     FIRST, before a single byte of payload, and a crawler that reads only the
+     opening of the document has already read all of it.
+
+     `<meta charset>` stays ahead of it, and only it. The spec wants the
+     encoding declared in the first 1024 bytes, and the title below contains an
+     em dash — declare the charset after that and a crawler is entitled to
+     decode it as mojibake. Twenty-two bytes is not what LinkedIn is choking
+     on.
+
+     Static HTML, in the document as served. Nothing here is written by script,
+     because a crawler does not run script — a tag injected at runtime is a tag
+     that exists for browsers and for nobody else.
+
+     One canonical set. Open Graph is what LinkedIn, Facebook, iMessage, Slack
+     and Discord read; the twitter:* tags are what X needs for a large card.
+     Absolute HTTPS on every URL, because a crawler fetching this from its own
+     server has no page to resolve a relative path against.
+
+     Two files must sit at the repo root beside index.html: social-preview.png,
+     which og:image names, and CNAME, which is what tells GitHub Pages to
+     answer on rockysahoo.space at all.
+     ========================================================================== -->
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#E9E9E9" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
-
-
 
 <script>
   (function () {
