@@ -29799,6 +29799,52 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
   .ld__m { transition: opacity 300ms ease; transform: none; filter: none; }
   .ld__m.is-on, .ld__m.is-out { transform: none; filter: none; }
 }
+
+/* ==========================================================================
+   PATIENT RIGHTS & PROTECTIONS
+
+   An early framing section in the healthcare case studies: the right first,
+   then the decision that served it, then the rule that informed the decision.
+   It sits after the glossary and before the first Discovery divider, so the
+   five-part rail counts it inside Context rather than as a sixth phase.
+
+   The statement uses the story-beat treatment exactly: plain display type on
+   the page, no card, border, fill, radius or shadow. Only the small label and
+   the closing citation line are new, and both are ordinary sans.
+   ========================================================================== */
+:is(#carry, #optiflow, #audit, #specimen) .prp {
+  margin: clamp(48px, 6vw, 76px) 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+:is(#carry, #optiflow, #audit, #specimen) .prp__k {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin: 0;
+}
+:is(#carry, #optiflow, #audit, #specimen) .prp .cs-beat {
+  margin-top: clamp(18px, 2vw, 26px);
+  margin-bottom: clamp(24px, 3vw, 34px);
+}
+:is(#carry, #optiflow, #audit, #specimen) .prp__reg {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--ink-muted);
+  max-width: 62ch;
+  margin: clamp(20px, 2.4vw, 28px) 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
 </style>
 </head>
 
@@ -39893,6 +39939,15 @@ body{display:grid;place-items:center;min-height:100vh}
     <div><dt>Playground</dt><dd>The environment where the first build of the MVP started after the workshop.</dd></div>
   </dl>
 </section>
+<section class="prp" aria-labelledby="prp-carry">
+  <p class="prp__k" id="prp-carry">Patient rights &amp; protections</p>
+  <p class="cs-beat">I designed Carry so patients could return to their own care conversations without giving up control of the experience.</p>
+  <p class="ar-p">The right in play is a patient&rsquo;s access to their own health information, and their say in how it is handled. Carry is built on material the patient supplies: they choose whether to upload a recording at all, and declining had to be a real option rather than a dead end, so the upload state is designed to be refused. Questions are editable in the row and every suggestion is undoable from the moment it lands, which keeps the record theirs to correct rather than a transcript they are handed.</p>
+  <p class="ar-p">I treated HIPAA and PHI review as a design gate before the first iteration. The patient-facing copy, what each screen exposed, and the behaviour of the upload, transcription and matching states went through that review before V1 moved into iteration, and the same questions came back on the project calls as states were added. That is where the recording question surfaced: rather than design around consent, the scope conversation moved it out of the product.</p>
+  <p class="ar-p">I ruled out generated clinical answers. A matched answer is a quotation from the recording, badged, with a route back to the moment it came from, and where nothing in the recording answers a question clearly enough to quote, the question stays visibly unanswered. That decision is a patient-protection decision before it is a product one: a patient cannot check a summary against what was said in the room, and a wrong answer about a result can send someone into months of surveillance.</p>
+  <p class="ar-p">Recording stayed outside the MVP. Consent and privacy complexity surfaced in a scope conversation with product, and the resolution was to move consent out of the product rather than design around it. The copy carries the same intent: Carry asks for file access in its own words before the picker opens and says only audio files will be shown, so the request is legible and the exposure is no wider than the task.</p>
+  <p class="prp__reg">Designed in support of patient access to their information (45 CFR &sect;164.524), requests for confidential communications and restrictions (&sect;164.522), reasonable safeguards (&sect;164.530(c)), and the minimum necessary standard (&sect;164.502(b), &sect;164.514(d)). These informed the decisions above; no interface on its own establishes compliance.</p>
+</section>
 <p id="ph-carry-02" data-phase="02" data-phase-anchor="02" class="cs-beat">I mapped what PatientX already owned so Carry could sit inside it unchanged.</p>
 <section class="acc" data-open="0">
   <div data-acc-h>
@@ -41340,6 +41395,15 @@ body{display:grid;place-items:center;min-height:100vh}
     <div><dt>Structured feedback</dt><dd>A correction recorded as a category rather than free text, so engineering can read it when revising prompts, tag definitions and thresholds.</dd></div>
   </dl>
 </section>
+<section class="prp" aria-labelledby="prp-optiflow">
+  <p class="prp__k" id="prp-optiflow">Patient rights &amp; protections</p>
+  <p class="cs-beat">I treated every correction as a decision about a patient&rsquo;s information, not just a model output.</p>
+  <p class="ar-p">Every document moving through this pipeline is a patient&rsquo;s billing correspondence, and what the model proposes about it becomes what the system believes. So the reviewer&rsquo;s decision is explicit at every step: keep, add, remove or correct a tag, then validate, which is the act that moves the document on. Nothing advances because a screen was scrolled past.</p>
+  <p class="ar-p">That review happened before the first iteration rather than after it. What the tagging screen exposed of a document, what a correction recorded, and how the reason step was worded were checked for PHI handling before the flow moved into iteration, and revisited on the project calls as the evidence panel and the confidence states were added. The constraint that corrections had to be structured came from engineering, for a different reason: free text could be stored and never read downstream.</p>
+  <p class="ar-p">A change opens a reason step inside the group that changed, recorded as a category rather than free text, because engineering established that free text could be stored and never read downstream. An empty or unscored tag gets a state of its own, so &ldquo;the model has nothing&rdquo; never reads as &ldquo;the model is certain&rdquo;, and the quoted evidence sits next to the suggestion on the route to accepting it, so agreeing also means passing the evidence. The screen labels this plainly: AI-identified evidence, and your validation trains the model.</p>
+  <p class="ar-p">The effect is that a correction arrives categorised, attributable and attached to the evidence it was made against, instead of arriving as nothing at all. That is what makes review auditable rather than decorative.</p>
+  <p class="prp__reg">Designed in support of access control (45 CFR &sect;164.312(a)(1)), audit controls (&sect;164.312(b)), integrity of information (&sect;164.312(c)), and information-access management (&sect;164.308(a)(4)). A reviewer correction inside this workflow is an operational data decision, not a patient&rsquo;s formal amendment request under &sect;164.526.</p>
+</section>
 <p id="ph-optiflow-02" data-phase="02" data-phase-anchor="02" class="cs-beat">I followed one piece of billing correspondence through to tagging.</p>
 <section class="pt">
   <div class="pt__h">
@@ -41971,6 +42035,15 @@ body{display:grid;place-items:center;min-height:100vh}
     <div><dt>Build spec</dt><dd>The handover format I wrote instead of a static screen: states, approved copy, accessibility rules and acceptance criteria.</dd></div>
     <div><dt>Acceptance criteria</dt><dd>The conditions a build has to satisfy before the row counts as done.</dd></div>
   </dl>
+</section>
+<section class="prp" aria-labelledby="prp-audit">
+  <p class="prp__k" id="prp-audit">Patient rights &amp; protections</p>
+  <p class="cs-beat">I designed provider workflows around what someone needed to act, not everything the system could expose.</p>
+  <p class="ar-p">Providers move through this portal between other work: an oncologist arrives when a result or an order needs her and leaves again. Designing for that meant deciding what a row has to carry, and what it does not. Each row states one required action in the same column every time, and the status names an owner and whether the provider has to act, so the queue answers whose move it is without opening a record to find out.</p>
+  <p class="ar-p">Deciding what a row shows is a PHI decision, so it was reviewed as one before the pattern moved into iteration. I went through the status copy, the patient and workflow context a row carries at a glance, and the error text with that lens first, and kept checking it on the project calls as the nine states were specified. The copy had passed that review before I moved it into iteration.</p>
+  <p class="ar-p">Recovery is part of the same responsibility rather than a polish pass. A failed submission stops a clinical test, so an error carries four things: what type it is, the specific cause, how to recover, and an action-specific next step. The copy is deliberate about consequence &mdash; the button says what pressing it does, and the message names the missing field instead of asking the provider to hunt for it.</p>
+  <p class="ar-p">Accessibility was treated as a system rule, not a visual preference. Four of the five findings put work on colour in a table read at speed, so I measured every status pairing before handover and marked the border token decoration only: no status may arrive as colour alone.</p>
+  <p class="prp__reg">Contrast pairings were measured against WCAG AA, which is an accessibility standard and separate from HIPAA. The row itself was designed around the minimum necessary standard (45 CFR &sect;164.502(b), &sect;164.514(d)) and information-access management (&sect;164.308(a)(4)).</p>
 </section>
 <p id="ph-audit-02" data-phase="02" data-phase-anchor="02" class="cs-beat">I found the library passed its check while providers still could not act.</p>
 <section class="acc" data-open="0">
@@ -42627,6 +42700,15 @@ body{display:grid;place-items:center;min-height:100vh}
     <div><dt>Die-cut foam insert</dt><dd>The one-piece polyethylene insert I specified, cut with a cavity shaped to each container.</dd></div>
     <div><dt>Panel A and Panel B</dt><dd>The inner lid and the base of the folded box. The instructions print on A and the foam sits on B.</dd></div>
   </dl>
+</section>
+<section class="prp" aria-labelledby="prp-specimen">
+  <p class="prp__k" id="prp-specimen">Patient rights &amp; protections</p>
+  <p class="cs-beat">I designed the kit around the fact that every specimen belonged to a patient, not a shipping process.</p>
+  <p class="ar-p">A specimen is finite. Tumour tissue cannot be re-collected casually, and a rejection on arrival writes off the whole assay, so the requirements that decide acceptance are the highest-stakes content in the box. I treated three responsibilities as separate: whether the specimen survives preparation, whether the clinician can follow the handling instructions, and whether the container is physically protected in transit.</p>
+  <p class="ar-p">A printed lid is an exposure surface like any screen, so what it could carry was reviewed before the redesign moved into iteration and again as the layout changed. That check is why the sheet stayed preparation guidance: requirements and rejection criteria, with patient information kept off it.</p>
+  <p class="ar-p">The rejection criteria had been a run-in list at the foot of the sheet, read after the decision they were meant to prevent. I pulled them into a labelled row of six, each named under its own mark, and collapsed the constant requirement into one cell so the slide count is the only value that changes down the table. The lid is preparation guidance and nothing else &mdash; it carries what a clinician must do to the specimen, not information about the patient.</p>
+  <p class="ar-p">The empty base was the other half. A container travelling loose is a container that can arrive compromised, so I specified a one-piece die-cut insert with a cavity shaped to each carrier, which gives the specimen one place to sit rather than leaving the clinician to decide.</p>
+  <p class="prp__reg">Designed in support of specimen identification, handling and rejection criteria under CLIA (42 CFR &sect;493.1242), and handling of potentially infectious material under OSHA (29 CFR &sect;1910.1030), with patient information kept off the instruction surface in line with the minimum necessary standard (45 CFR &sect;164.502(b)). The project documentation I worked from did not establish a shipping classification, so no transport standard is claimed here.</p>
 </section>
 <p id="ph-specimen-02" data-phase="02" data-phase-anchor="02" class="cs-beat">I audited the instruction lid against the pack-out decisions it asked for.</p>
 <section class="acc" data-open="0">
