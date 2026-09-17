@@ -29686,12 +29686,19 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   justify-items: center;
   gap: clamp(28px, 4.4vh, 52px);
   padding-inline: 20px;
-  width: min(560px, 100%);
+  /* The column has to clear the form, not the copy: the message carries its
+     own measure below, and the bar has always had its own width. */
+  width: min(1500px, 92vw);
 }
+/* The largest state spans 300 of the 320 viewBox units, so the rendered form
+   reaches about 0.94 of this width: on a 1512px laptop that lands near 40% of
+   the viewport, on an ultrawide near 36%. The vh term is what stops a short
+   window from pushing the message and the bar off screen. */
 .ld__svg {
   display: block;
-  width: clamp(150px, 26vh, 236px);
-  height: clamp(150px, 26vh, 236px);
+  width: max(260px, min(44vw, 86vh));
+  aspect-ratio: 320 / 176;
+  height: auto;
   overflow: visible;
 }
 .ld__svg .ld-hi { stop-color: var(--ld-hi); }
@@ -29705,6 +29712,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .ld__msg {
   --fs-disp-k: 1;
   margin: 0;
+  max-width: min(720px, 88vw);
   min-height: 1.2em;
   font-family: var(--font-heading);
   font-variation-settings: var(--wonk-on);
@@ -29719,7 +29727,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   display: inline-block;
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 260ms ease, transform 260ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 420ms ease, transform 420ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 .ld__msg span.is-fade { opacity: 0; transform: translateY(7px); }
 
@@ -29742,7 +29750,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 html.ld-lock, html.ld-lock body { overflow: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
-  .ld__msg span { transition: opacity 200ms ease; transform: none; }
+  .ld__msg span { transition: opacity 360ms ease; transform: none; }
   .ld__msg span.is-fade { transform: none; }
 }
 </style>
@@ -29752,7 +29760,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 
 <div class="ld" id="pf-loader" role="status" aria-live="polite" aria-label="Loading">
   <div class="ld__c">
-    <svg class="ld__svg" viewBox="0 0 320 320" aria-hidden="true" focusable="false">
+    <svg class="ld__svg" viewBox="0 0 320 176" aria-hidden="true" focusable="false">
       <defs>
         <radialGradient id="ld-face" cx="33%" cy="26%" r="84%">
           <stop class="ld-hi"  offset="0%"></stop>
@@ -29770,7 +29778,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
         <path data-ld-p="3" fill="url(#ld-face)"></path>
       </g>
     </svg>
-    <p class="ld__msg"><span data-ld-msg>Loading&#8230;</span></p>
+    <p class="ld__msg"><span data-ld-msg>Accessing Sarthak&#8217;s workspace&#8230;</span></p>
     <div class="ld__bar"><span class="ld__fill" data-ld-fill></span></div>
   </div>
 </div>
@@ -43071,9 +43079,20 @@ body{display:grid;place-items:center;min-height:100vh}
     if (!root) return;
 
     var SRC = ['assets/app-1.js', 'assets/app-2.js'];
-    var MIN = 2200;
+    var MIN = 8000;
     var N = 72;
-    var MSG = ['Loading…', 'Accessing experience…', 'Cleaning up my desk…'];
+    /* Six lines across the eight seconds, the last held to the handoff. They
+       run off the same clock as the form rather than an interval, so the copy
+       and the shape cannot drift apart on a slow frame. */
+    var MSG = [
+      'Accessing Sarthak’s workspace…',
+      'Loading the systems…',
+      'Pulling the projects together…',
+      'Cleaning up my desk…',
+      'Making the work presentable…',
+      'Welcome in.'
+    ];
+    var MSG_AT = [0, 1300, 2600, 3900, 5100, 6400];
 
     var still = !!(window.matchMedia &&
                    window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -43103,16 +43122,21 @@ body{display:grid;place-items:center;min-height:100vh}
     function ease(x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
 
     /* cx, cy, a, b, n, amp, k, opacity */
+    /* The box is wider than it is tall so the form can grow across the
+       viewport without a square SVG pushing the copy off a laptop screen.
+       x stays centred at 160; y centres at 88 in a 320x176 viewBox. */
     var C = 160;
+    var CY = 88;
     var KEYS = [
-      { at: 0,    s: [[C, C, 62, 62, 2.0, 0.000, 3], [C, C, 62, 62, 2.0, 0, 3], [C, C, 62, 62, 2.0, 0, 3], [C, C, 62, 62, 2.0, 0, 3]], o: [1, 0, 0, 0] },
-      { at: 380,  s: [[C, C, 64, 64, 2.1, 0.075, 3], [C, C, 64, 64, 2.1, 0, 3], [C, C, 64, 64, 2.1, 0, 3], [C, C, 64, 64, 2.1, 0, 3]], o: [1, 0, 0, 0] },
-      { at: 760,  s: [[C, C, 66, 61, 2.3, 0.105, 2], [C, C, 66, 61, 2.3, 0, 2], [C, C, 66, 61, 2.3, 0, 2], [C, C, 66, 61, 2.3, 0, 2]], o: [1, 0, 0, 0] },
-      { at: 1120, s: [[C, C, 62, 62, 4.6, 0.000, 3], [C, C, 62, 62, 4.6, 0, 3], [C, C, 62, 62, 4.6, 0, 3], [C, C, 62, 62, 4.6, 0, 3]], o: [1, 0, 0, 0] },
-      { at: 1420, s: [[C, C, 96, 54, 4.8, 0.000, 3], [C, C, 96, 54, 4.8, 0, 3], [C, C, 96, 54, 4.8, 0, 3], [C, C, 96, 54, 4.8, 0, 3]], o: [1, 0, 0, 0] },
-      { at: 1760, s: [[C - 46, C - 30, 40, 26, 4.6, 0, 3], [C + 46, C - 30, 40, 26, 4.6, 0, 3], [C - 46, C + 32, 40, 26, 4.6, 0, 3], [C + 46, C + 32, 40, 26, 4.6, 0, 3]], o: [1, 1, 1, 1] },
-      { at: 2000, s: [[C - 52, C, 30, 62, 4.6, 0, 3], [C + 6, C - 34, 46, 24, 4.6, 0, 3], [C + 6, C + 20, 46, 38, 4.6, 0, 3], [C + 66, C + 20, 14, 38, 4.6, 0, 3]], o: [1, 1, 1, 1] },
-      { at: 2200, s: [[C, C - 44, 92, 16, 4.6, 0, 3], [C - 46, C + 16, 44, 40, 4.6, 0, 3], [C + 46, C + 16, 44, 40, 4.6, 0, 3], [C, C + 74, 92, 12, 4.6, 0, 3]], o: [1, 1, 1, 1] }
+      { at: 0,    s: [[C, CY, 56, 56, 2.0, 0.000, 3], [C, CY, 56, 56, 2.0, 0, 3], [C, CY, 56, 56, 2.0, 0, 3], [C, CY, 56, 56, 2.0, 0, 3]], o: [1, 0, 0, 0] },
+      { at: 1200, s: [[C, CY, 60, 59, 2.0, 0.028, 3], [C, CY, 60, 59, 2.0, 0, 3], [C, CY, 60, 59, 2.0, 0, 3], [C, CY, 60, 59, 2.0, 0, 3]], o: [1, 0, 0, 0] },
+      { at: 2400, s: [[C, CY, 66, 61, 2.3, 0.105, 2], [C, CY, 66, 61, 2.3, 0, 2], [C, CY, 66, 61, 2.3, 0, 2], [C, CY, 66, 61, 2.3, 0, 2]], o: [1, 0, 0, 0] },
+      { at: 3500, s: [[C, CY, 62, 62, 4.6, 0.000, 3], [C, CY, 62, 62, 4.6, 0, 3], [C, CY, 62, 62, 4.6, 0, 3], [C, CY, 62, 62, 4.6, 0, 3]], o: [1, 0, 0, 0] },
+      { at: 4600, s: [[C, CY, 150, 62, 4.8, 0.000, 3], [C, CY, 150, 62, 4.8, 0, 3], [C, CY, 150, 62, 4.8, 0, 3], [C, CY, 150, 62, 4.8, 0, 3]], o: [1, 0, 0, 0] },
+      { at: 5700, s: [[C - 76, CY - 32, 66, 26, 4.6, 0, 3], [C + 76, CY - 32, 66, 26, 4.6, 0, 3], [C - 76, CY + 34, 66, 26, 4.6, 0, 3], [C + 76, CY + 34, 66, 26, 4.6, 0, 3]], o: [1, 1, 1, 1] },
+      { at: 6600, s: [[C - 96, CY, 46, 62, 4.6, 0, 3], [C + 10, CY - 36, 76, 24, 4.6, 0, 3], [C + 10, CY + 22, 76, 38, 4.6, 0, 3], [C + 112, CY + 22, 22, 38, 4.6, 0, 3]], o: [1, 1, 1, 1] },
+      { at: 7300, s: [[C, CY - 50, 148, 16, 4.6, 0, 3], [C - 74, CY + 18, 70, 42, 4.6, 0, 3], [C + 74, CY + 18, 70, 42, 4.6, 0, 3], [C, CY + 74, 148, 10, 4.6, 0, 3]], o: [1, 1, 1, 1] },
+      { at: 7800, s: [[C, CY - 52, 150, 14, 4.6, 0, 3], [C - 76, CY + 14, 72, 44, 4.6, 0, 3], [C + 76, CY + 14, 72, 44, 4.6, 0, 3], [C, CY + 74, 150, 10, 4.6, 0, 3]], o: [1, 1, 1, 1] }
     ];
     var LAST = KEYS[KEYS.length - 1].at;
 
@@ -43145,7 +43169,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
     if (still) {
       for (var q = 0; q < 4; q++) {
-        paths[q].setAttribute('d', shape(C, C, 62, 62, 4.6, 0, 3, 0));
+        paths[q].setAttribute('d', shape(C, CY, 62, 62, 4.6, 0, 3, 0));
         paths[q].setAttribute('opacity', q === 0 ? '1' : '0');
       }
     } else {
@@ -43155,15 +43179,18 @@ body{display:grid;place-items:center;min-height:100vh}
     /* ---- the message ----------------------------------------------------- */
 
     var mi = 0;
-    var swap = setInterval(function () {
-      if (done) return;
-      mi = (mi + 1) % MSG.length;
+    msgEl.textContent = MSG[0];
+    function message(ms) {
+      var want = 0, i;
+      for (i = 0; i < MSG_AT.length; i++) if (ms >= MSG_AT[i]) want = i;
+      if (want === mi || done) return;
+      mi = want;
       msgEl.classList.add('is-fade');
       setTimeout(function () {
         msgEl.textContent = MSG[mi];
         msgEl.classList.remove('is-fade');
-      }, 260);
-    }, 760);
+      }, 420);
+    }
 
     /* ---- readiness ------------------------------------------------------- */
 
@@ -43186,7 +43213,8 @@ body{display:grid;place-items:center;min-height:100vh}
     function finish() {
       if (done) return;
       done = true;
-      clearInterval(swap);
+      msgEl.classList.remove('is-fade');
+      msgEl.textContent = MSG[MSG.length - 1];
       fill.style.width = '100%';
       setTimeout(function () {
         /* The hero is attached here, not earlier: readyState is 'complete', so
@@ -43209,6 +43237,7 @@ body{display:grid;place-items:center;min-height:100vh}
       if (done) return;
       var ms = now();
       if (!still) draw(ms);
+      message(ms);
       /* The bar always travels with the sequence. Readiness does not jump it
          forward, it only lifts the ceiling that holds it short of the end. */
       var p = Math.min(ms / MIN, 1) * 100;
