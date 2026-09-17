@@ -29704,6 +29704,8 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .ld__svg .ld-hi { stop-color: var(--ld-hi); }
 .ld__svg .ld-mid { stop-color: var(--ld-face); }
 .ld__svg .ld-lo { stop-color: var(--ld-lo); }
+.ld__svg .ld-plane { stop-color: var(--ld-bg); }
+.ld__svg [data-ld-cast] { fill: var(--ld-sh); }
 .ld__svg feDropShadow { flood-color: var(--ld-sh); }
 
 /* The message is the storytelling scale, resolved from the same tokens the
@@ -29723,13 +29725,32 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   color: var(--ld-ink);
   text-align: center;
 }
-.ld__msg span {
-  display: inline-block;
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 420ms ease, transform 420ms cubic-bezier(0.4, 0, 0.2, 1);
+/* A FIXED STAGE, AND TWO LAYERS THAT CROSS.
+
+   The lines used to share one element, so each had to leave before the next
+   could arrive and the gap read as a blink. Both layers now sit in the same
+   grid cell of a stage with a fixed height: the outgoing line drifts up a few
+   pixels and softens as it goes, the incoming line is already rising and
+   sharpening underneath it, and the two overlap for the whole 320ms. Nothing
+   around them can move, because the stage reserves its height whether one
+   line is showing or two. */
+.ld__msg {
+  display: grid;
+  place-items: center;
+  height: 2.7em;
 }
-.ld__msg span.is-fade { opacity: 0; transform: translateY(7px); }
+.ld__m {
+  grid-area: 1 / 1;
+  display: block;
+  opacity: 0;
+  transform: translateY(6px);
+  filter: blur(3px);
+  transition: opacity 320ms ease,
+              transform 320ms cubic-bezier(0.4, 0, 0.2, 1),
+              filter 320ms ease;
+}
+.ld__m.is-on  { opacity: 1; transform: translateY(0); filter: blur(0); }
+.ld__m.is-out { opacity: 0; transform: translateY(-5px); filter: blur(2.5px); }
 
 .ld__bar {
   width: min(224px, 62vw);
@@ -29757,11 +29778,26 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    The progression the sequence needs is carried by the object instead, in
    shape, layout, and the depth of its own light and shadow. */
 
+/* MOBILE: THE FORM GETS THE ROOM, NOTHING ELSE MOVES.
+
+   On a phone the shared vw/vh formula left the object reading as an icon.
+   This raises the form alone: the message keeps the display size it shares
+   with the case-study title, and the bar keeps its own width and height, so
+   the hierarchy under the object is untouched. */
+@media (max-width: 719px) {
+  /* The column's own inset was the real cap: the form was being shrunk to fit
+     inside it rather than by its own rule. The column gives up its gutter and
+     the form takes the width; the message keeps its own measure and the bar
+     its own width, so neither moves. */
+  .ld__c { width: 100%; padding-inline: 10px; }
+  .ld__svg { width: min(96vw, 60vh); }
+}
+
 html.ld-lock, html.ld-lock body { overflow: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
-  .ld__msg span { transition: opacity 360ms ease; transform: none; }
-  .ld__msg span.is-fade { transform: none; }
+  .ld__m { transition: opacity 300ms ease; transform: none; filter: none; }
+  .ld__m.is-on, .ld__m.is-out { transform: none; filter: none; }
 }
 </style>
 </head>
@@ -29780,15 +29816,27 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
         <filter id="ld-soft" x="-40%" y="-40%" width="180%" height="180%">
           <feDropShadow dx="5" dy="11" stdDeviation="11"></feDropShadow>
         </filter>
+        <!-- The horizon is not a line. It is this: the page's own background
+             colour, feathered in over 30 units, laid across the lower part of
+             the frame. Where it covers the form the form is simply not there,
+             which reads as an edge the object is behind rather than as a
+             shape drawn on top of it. -->
+        <linearGradient id="ld-plane" x1="0" y1="0" x2="0" y2="1">
+          <stop class="ld-plane" offset="0%" stop-opacity="0"></stop>
+          <stop class="ld-plane" offset="42%" stop-opacity="1"></stop>
+          <stop class="ld-plane" offset="100%" stop-opacity="1"></stop>
+        </linearGradient>
       </defs>
+      <ellipse data-ld-cast cx="160" cy="132" rx="46" ry="5" opacity="0"></ellipse>
       <g filter="url(#ld-soft)">
         <path data-ld-p="0" fill="url(#ld-face)"></path>
         <path data-ld-p="1" fill="url(#ld-face)"></path>
         <path data-ld-p="2" fill="url(#ld-face)"></path>
         <path data-ld-p="3" fill="url(#ld-face)"></path>
       </g>
+      <rect data-ld-plane x="-40" y="104" width="400" height="72" fill="url(#ld-plane)" opacity="0"></rect>
     </svg>
-    <p class="ld__msg"><span data-ld-msg>Accessing Sarthak&#8217;s workspace&#8230;</span></p>
+    <p class="ld__msg"><span class="ld__m is-on" data-ld-msg>Accessing Sarthak&#8217;s workspace&#8230;</span><span class="ld__m" data-ld-msg2 aria-hidden="true"></span></p>
     <div class="ld__bar"><span class="ld__fill" data-ld-fill></span></div>
   </div>
 </div>
@@ -43102,13 +43150,19 @@ body{display:grid;place-items:center;min-height:100vh}
       'Making the work presentable…',
       'Welcome in.'
     ];
-    var MSG_AT = [0, 900, 1800, 2700, 3600, 4500];
+    /* Each line arrives on a keyframe, so the copy changes when the form
+       does rather than on a clock of its own: circle, liquid, rounded square,
+       the large block, the split, and the first resolved layout. */
+    var MSG_AT = [0, 800, 1600, 2300, 3000, 4500];
 
     var still = !!(window.matchMedia &&
                    window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     var paths = [].slice.call(root.querySelectorAll('[data-ld-p]'));
     var grad = root.querySelector('#ld-face');
     var shadow = root.querySelector('#ld-soft feDropShadow');
+    var plane = root.querySelector('[data-ld-plane]');
+    var cast = root.querySelector('[data-ld-cast]');
+    var RISE = 800;   /* the circle clears the plane over the first beat */
     var msgEl = root.querySelector('[data-ld-msg]');
     var fill = root.querySelector('[data-ld-fill]');
     var done = false;
@@ -43143,11 +43197,11 @@ body{display:grid;place-items:center;min-height:100vh}
       { at: 0,    s: [[C, CY, 56, 56, 2.0, 0.000, 3], [C, CY, 56, 56, 2.0, 0, 3], [C, CY, 56, 56, 2.0, 0, 3], [C, CY, 56, 56, 2.0, 0, 3]], o: [1, 0, 0, 0] },
       { at: 800,  s: [[C, CY, 60, 59, 2.0, 0.028, 3], [C, CY, 60, 59, 2.0, 0, 3], [C, CY, 60, 59, 2.0, 0, 3], [C, CY, 60, 59, 2.0, 0, 3]], o: [1, 0, 0, 0] },
       { at: 1600, s: [[C, CY, 66, 61, 2.3, 0.105, 2], [C, CY, 66, 61, 2.3, 0, 2], [C, CY, 66, 61, 2.3, 0, 2], [C, CY, 66, 61, 2.3, 0, 2]], o: [1, 0, 0, 0] },
-      { at: 2300, s: [[C, CY, 62, 62, 4.4, 0.000, 3], [C, CY, 62, 62, 4.4, 0, 3], [C, CY, 62, 62, 4.4, 0, 3], [C, CY, 62, 62, 4.4, 0, 3]], o: [1, 0, 0, 0] },
-      { at: 3000, s: [[C, CY, 150, 64, 4.8, 0.000, 3], [C, CY, 150, 64, 4.8, 0, 3], [C, CY, 150, 64, 4.8, 0, 3], [C, CY, 150, 64, 4.8, 0, 3]], o: [1, 0, 0, 0] },
-      { at: 3800, s: [[C - 78, CY - 34, 70, 30, 5.2, 0, 3], [C + 78, CY - 34, 70, 30, 5.2, 0, 3], [C - 78, CY + 36, 70, 30, 5.2, 0, 3], [C + 78, CY + 36, 70, 30, 5.2, 0, 3]], o: [1, 1, 1, 1] },
-      { at: 4500, s: [[C - 92, CY, 56, 64, 5.6, 0, 3], [C + 52, CY - 40, 88, 24, 5.6, 0, 3], [C + 8, CY + 28, 44, 32, 5.6, 0, 3], [C + 104, CY + 28, 44, 32, 5.6, 0, 3]], o: [1, 1, 1, 1] },
-      { at: 5000, s: [[C - 104, CY, 44, 68, 6.2, 0, 3], [C + 28, CY - 44, 102, 24, 6.2, 0, 3], [C - 4, CY + 22, 70, 44, 6.2, 0, 3], [C + 100, CY + 22, 34, 44, 6.2, 0, 3]], o: [1, 1, 1, 1] },
+      { at: 2300, s: [[C, CY, 62, 62, 4.6, 0.000, 3], [C, CY, 62, 62, 4.6, 0, 3], [C, CY, 62, 62, 4.6, 0, 3], [C, CY, 62, 62, 4.6, 0, 3]], o: [1, 0, 0, 0] },
+      { at: 3000, s: [[C, CY, 150, 64, 6.4, 0.000, 3], [C, CY, 150, 64, 6.4, 0, 3], [C, CY, 150, 64, 6.4, 0, 3], [C, CY, 150, 64, 6.4, 0, 3]], o: [1, 0, 0, 0] },
+      { at: 3800, s: [[C - 78, CY - 34, 70, 30, 6.6, 0, 3], [C + 78, CY - 34, 70, 30, 6.6, 0, 3], [C - 78, CY + 36, 70, 30, 6.6, 0, 3], [C + 78, CY + 36, 70, 30, 6.6, 0, 3]], o: [1, 1, 1, 1] },
+      { at: 4500, s: [[C - 92, CY, 56, 64, 6.6, 0, 3], [C + 52, CY - 40, 88, 24, 6.6, 0, 3], [C + 8, CY + 28, 44, 32, 6.6, 0, 3], [C + 104, CY + 28, 44, 32, 6.6, 0, 3]], o: [1, 1, 1, 1] },
+      { at: 5000, s: [[C - 104, CY, 44, 68, 6.8, 0, 3], [C + 28, CY - 44, 102, 24, 6.8, 0, 3], [C - 4, CY + 22, 70, 44, 6.8, 0, 3], [C + 100, CY + 22, 34, 44, 6.8, 0, 3]], o: [1, 1, 1, 1] },
       { at: 5300, s: [[C, CY - 56, 150, 22, 6.8, 0, 3], [C - 100, CY + 22, 48, 46, 6.8, 0, 3], [C, CY + 22, 44, 46, 6.8, 0, 3], [C + 100, CY + 22, 48, 46, 6.8, 0, 3]], o: [1, 1, 1, 1] }
     ];
     var LAST = KEYS[KEYS.length - 1].at;
@@ -43175,6 +43229,22 @@ body{display:grid;place-items:center;min-height:100vh}
          separate and gain edges. Both run one way, from open and soft to
          close and structured, so there is nothing here that can flicker or
          repeat. */
+      /* THE OPENING: RISING OUT OF AN IMPLIED PLANE.
+
+         For the first beat the form sits low and the plane covers its lower
+         third, so it reads as something behind a tabletop edge rather than a
+         circle floating in a void. A soft cast shadow sits on that plane
+         underneath it, widest and darkest while the form is closest. Both the
+         occlusion and the shadow resolve as the form lifts, on the same eased
+         curve as the rise, so the object leaves the surface rather than the
+         surface being switched off. */
+      var lift = 1 - ease(Math.min(ms / RISE, 1));
+      if (plane) plane.setAttribute('opacity', lift.toFixed(3));
+      if (cast) {
+        cast.setAttribute('opacity', (lift * 0.5).toFixed(3));
+        cast.setAttribute('rx', (34 + lift * 16).toFixed(1));
+      }
+
       var d = Math.min(ms / LAST, 1);
       if (grad) {
         grad.setAttribute('cx', (33 - d * 5).toFixed(1) + '%');
@@ -43191,7 +43261,7 @@ body{display:grid;place-items:center;min-height:100vh}
         var amp = lerp(A[5], B[5], m);
         var ph = ms / 620;
         paths[j].setAttribute('d', shape(
-          lerp(A[0], B[0], m), lerp(A[1], B[1], m),
+          lerp(A[0], B[0], m), lerp(A[1], B[1], m) + lift * 30,
           lerp(A[2], B[2], m) * (1 + br), lerp(A[3], B[3], m) * (1 - br * 0.6),
           lerp(A[4], B[4], m), amp, A[6], ph));
         paths[j].setAttribute('opacity', lerp(k0.o[j], k1.o[j], m).toFixed(3));
@@ -43199,6 +43269,8 @@ body{display:grid;place-items:center;min-height:100vh}
     }
 
     if (still) {
+      if (plane) plane.setAttribute('opacity', '0');
+      if (cast) cast.setAttribute('opacity', '0');
       for (var q = 0; q < 4; q++) {
         paths[q].setAttribute('d', shape(C, CY, 62, 62, 4.6, 0, 3, 0));
         paths[q].setAttribute('opacity', q === 0 ? '1' : '0');
@@ -43210,17 +43282,28 @@ body{display:grid;place-items:center;min-height:100vh}
     /* ---- the message ----------------------------------------------------- */
 
     var mi = 0;
-    msgEl.textContent = MSG[0];
+    var live = msgEl;
+    var spare = root.querySelector('[data-ld-msg2]');
+    live.textContent = MSG[0];
     function message(ms) {
       var want = 0, i;
       for (i = 0; i < MSG_AT.length; i++) if (ms >= MSG_AT[i]) want = i;
       if (want === mi || done) return;
       mi = want;
-      msgEl.classList.add('is-fade');
-      setTimeout(function () {
-        msgEl.textContent = MSG[mi];
-        msgEl.classList.remove('is-fade');
-      }, 420);
+
+      /* The incoming line is placed and released in the same frame the
+         outgoing one starts leaving, so the two are on screen together and
+         there is never a blank one. */
+      spare.textContent = MSG[mi];
+      spare.classList.remove('is-out');
+      spare.setAttribute('aria-hidden', 'false');
+      live.setAttribute('aria-hidden', 'true');
+      live.classList.remove('is-on');
+      live.classList.add('is-out');
+      void spare.offsetWidth;
+      spare.classList.add('is-on');
+
+      var t = live; live = spare; spare = t;
     }
 
     /* ---- readiness ------------------------------------------------------- */
@@ -43244,8 +43327,9 @@ body{display:grid;place-items:center;min-height:100vh}
     function finish() {
       if (done) return;
       done = true;
-      msgEl.classList.remove('is-fade');
-      msgEl.textContent = MSG[MSG.length - 1];
+      live.textContent = MSG[MSG.length - 1];
+      live.classList.add('is-on');
+      live.classList.remove('is-out');
       fill.style.width = '100%';
       setTimeout(function () {
         /* The hero is attached here, not earlier: readyState is 'complete', so
