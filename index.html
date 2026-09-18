@@ -5045,7 +5045,83 @@ a.hero__role { text-decoration: none; }
   color: var(--ink-secondary);
 }
 
-.morework__ext { color: var(--ink-muted); font-size: var(--fs-meta); }
+/* THE ARROW IS THE ROUTER'S, NOT THE MARKUP'S.
+
+   These rows used to carry a written arrow AND pick up the [data-external]
+   one, and the reason only a single arrow ever showed is worth recording: 
+   wire.js looks the CTA label up from the CARD when the row has none of its
+   own, so the mark was landing on the "View Work" button at the foot of this
+   card instead of on the row it belonged to. Take that button away and the
+   mark comes home, and the row has two.
+
+   So the written one goes. The arrow now means what the stylesheet says it
+   means a few hundred lines down: this destination leaves the site. It sits
+   in the same third column the written one did, and takes the same muted ink
+   and meta size it had. */
+.morework__item[data-external]::after {
+  color: var(--ink-muted);
+  font-size: var(--fs-meta);
+}
+
+/* THE TILE CARRIES THE MARK.
+
+   These two rows name companies a reader may already recognise, and a generic
+   bank glyph and a generic heart were standing in for two marks this site
+   already hosts, in the strip at the top of the page. So the tile carries the
+   mark instead. It keeps its border, its sunken ground, its vertical centring
+   and its place as the row's first column; what changes is that a 36px circle
+   cannot hold a wordmark, so it becomes a plate wide enough to read one in.
+   Nothing else about the row moves: the grid, the gap, the padding, the name
+   and the description are the values they were. */
+.icon-tile--brand {
+  /* 40 rather than 36, which is still inside the row's own height: the name
+     and the description together already measure about 43px, so the row does
+     not grow. */
+  width: clamp(64px, 6vw, 92px);
+  height: 40px;
+  border-radius: var(--r-sm);
+  padding-inline: 9px;
+}
+
+.morework__logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  /* The mark's own ratio, fitted inside the plate: nothing is cropped and
+     nothing is stretched. First United is a 3.5:1 lockup and CVS is 2:1, so
+     they reach the plate's width and sit at their own heights rather than
+     being forced to a common one. */
+  background-size: contain;
+  /* A hair back from full strength, the same as the marks in the strip above,
+     so a logo sits under the card's title rather than over it. */
+  opacity: 0.92;
+}
+
+/* THE MARK ITSELF COMES FROM THE ONE PLACE IT IS ALREADY DEFINED.
+
+   The row carries .clients__logo--first-united / --cvs-health beside
+   .morework__logo, which is the modifier the client strip already uses, so
+   the image is named once in this stylesheet rather than twice. Only the
+   modifier, never the base class: the base is what sizes a mark off --logo-h
+   for the strip, and here the plate does the sizing. The single-file build
+   inlines those same two marks, so it stays correct there too without a
+   second copy of either. */
+
+/* Same answer the client strip gives: both marks are drawn for a light ground
+   and one of them carries black type, so on a dark card the colour is dropped
+   rather than protected. One light ink on the card's own ground. */
+:root[data-theme="dark"] .morework__logo {
+  filter: grayscale(1) invert(1);
+  opacity: 0.82;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .morework__logo {
+    filter: grayscale(1) invert(1);
+    opacity: 0.82;
+  }
+}
 
 /* --------------------------------------------------------------------------
    EXPERIENCE
@@ -6727,15 +6803,28 @@ a.hero__role { text-decoration: none; }
   text-transform: uppercase;
   line-height: 1;
   white-space: nowrap;
-  color: var(--ink);
+  /* BLUE, AND IT IS THE PAGE'S OWN BLUE.
+
+     The label had been carrying --ink, which is the same value as every other
+     word in the conversation above it: the one thing there is to do at the end
+     of the thread looked exactly like the thread. --link-go is the value the
+     project browser's own go-links and the booking line already use, so this
+     is the site saying "this one takes you somewhere" in the voice it already
+     has, rather than a second blue that agrees by coincidence. It carries its
+     own dark twin, so the dark theme is handled by the token, not by a rule
+     here. */
+  color: var(--link-go);
   cursor: pointer;
   transition: color var(--dur-fast) var(--ease);
 }
 
 .msg-cta__btn span { transition: transform 180ms cubic-bezier(0.2, 0.75, 0.25, 1); }
 
+/* The blue holds through hover and focus, the same way .pv__go and the
+   booking link hold theirs: what moves on hover is the arrow, which is the
+   affordance that was already doing the work. */
 .msg-cta__btn:hover,
-.msg-cta__btn:focus-visible { color: var(--ink-secondary); }
+.msg-cta__btn:focus-visible { color: var(--link-go); }
 
 .msg-cta__btn:hover span { transform: translateX(4px); }
 .msg-cta__btn:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
@@ -29798,8 +29887,18 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    a short window from pushing the message and the bar off screen. */
 .ld__svg {
   display: block;
-  width: max(280px, min(54vw, 100vh));
-  aspect-ratio: 320 / 176;
+  /* THE FRAME IS THE REFERENCE'S FRAME.
+
+     The composition the loader resolves into is the landing page's own shell,
+     and that shell is 1.12 wide to 1 tall. Drawing it inside the old 1.82
+     box would have meant squashing every proportion in it, so the viewBox
+     carries the reference's ratio and the width formula is rebuilt around
+     the HEIGHT budget instead: 56vh caps the form on a short window, 36vw on
+     a wide one, and the column below it (message, bar) keeps the room it had.
+     At 1440 by 900 that is a 504 by 449 form under a 649px column, against
+     504 by 428 under 628 before. */
+  width: max(280px, min(40vw, 60vh));
+  aspect-ratio: 320 / 285;
   height: auto;
   overflow: visible;
 }
@@ -29892,7 +29991,9 @@ button.cu-q:hover { background: var(--cu-teal-8); }
      the form takes the width; the message keeps its own measure and the bar
      its own width, so neither moves. */
   .ld__c { width: 100%; padding-inline: 10px; }
-  .ld__svg { width: min(96vw, 60vh); }
+  /* Same width the phone already gave it. The vh term comes down with the
+     taller frame so a short phone still clears the message and the bar. */
+  .ld__svg { width: min(96vw, 46vh); }
 }
 
 html.ld-lock, html.ld-lock body { overflow: hidden; }
@@ -29954,7 +30055,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 
 <div class="ld" id="pf-loader" role="status" aria-live="polite" aria-label="Loading">
   <div class="ld__c">
-    <svg class="ld__svg" viewBox="0 0 320 176" aria-hidden="true" focusable="false">
+    <svg class="ld__svg" viewBox="0 0 320 285" aria-hidden="true" focusable="false">
       <defs>
         <radialGradient id="ld-face" cx="33%" cy="26%" r="84%">
           <stop class="ld-hi"  offset="0%"></stop>
@@ -29975,19 +30076,36 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
           <stop class="ld-plane" offset="100%" stop-opacity="1"></stop>
         </linearGradient>
       </defs>
-      <ellipse data-ld-cast cx="160" cy="132" rx="46" ry="5" opacity="0"></ellipse>
+      <ellipse data-ld-cast cx="160" cy="186" rx="46" ry="5" opacity="0"></ellipse>
       <g filter="url(#ld-soft)">
+        <!-- EIGHTEEN SHELLS, ONE MATERIAL.
+
+             Every module of the settled composition is one of these, and all
+             eighteen spend the first two acts exactly inside the single mass.
+             Nothing is added to the scene at any point: the shells are drawn
+             out of the form, first into four regions and then into their own
+             places. Empty by construction, every one of them: there is no
+             text, mark or fill inside a shell anywhere in the sequence. -->
         <path data-ld-p="0" fill="url(#ld-face)"></path>
         <path data-ld-p="1" fill="url(#ld-face)"></path>
         <path data-ld-p="2" fill="url(#ld-face)"></path>
         <path data-ld-p="3" fill="url(#ld-face)"></path>
-        <!-- The fifth shell is the avatar in the settled composition. It is
-             the same material as the other four and it spends the first two
-             acts exactly inside the mass, so it is drawn out of the form
-             rather than placed on top of it. -->
         <path data-ld-p="4" fill="url(#ld-face)"></path>
+        <path data-ld-p="5" fill="url(#ld-face)"></path>
+        <path data-ld-p="6" fill="url(#ld-face)"></path>
+        <path data-ld-p="7" fill="url(#ld-face)"></path>
+        <path data-ld-p="8" fill="url(#ld-face)"></path>
+        <path data-ld-p="9" fill="url(#ld-face)"></path>
+        <path data-ld-p="10" fill="url(#ld-face)"></path>
+        <path data-ld-p="11" fill="url(#ld-face)"></path>
+        <path data-ld-p="12" fill="url(#ld-face)"></path>
+        <path data-ld-p="13" fill="url(#ld-face)"></path>
+        <path data-ld-p="14" fill="url(#ld-face)"></path>
+        <path data-ld-p="15" fill="url(#ld-face)"></path>
+        <path data-ld-p="16" fill="url(#ld-face)"></path>
+        <path data-ld-p="17" fill="url(#ld-face)"></path>
       </g>
-      <rect data-ld-plane x="-40" y="104" width="400" height="72" fill="url(#ld-plane)" opacity="0"></rect>
+      <rect data-ld-plane x="-40" y="158" width="400" height="127" fill="url(#ld-plane)" opacity="0"></rect>
     </svg>
     <p class="ld__msg"><span class="ld__m is-on" data-ld-msg>Accessing Sarthak&#8217;s workspace&#8230;</span><span class="ld__m" data-ld-msg2 aria-hidden="true"></span></p>
     <div class="ld__bar"><span class="ld__fill" data-ld-fill></span></div>
@@ -30016,7 +30134,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
     if (!root) return;
     var paths = [].slice.call(root.querySelectorAll('[data-ld-p]'));
     if (!paths.length) return;
-    var N = 72;
+    var N = 96;
 
     function shape(cx, cy, a, b, n) {
       var d = '', i, t, c, s2, x, y;
@@ -30036,7 +30154,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
        exactly what the main script holds for a reader who asked for no
        motion. Moving: the circle at rest, thirty units low, with the plane
        across it and its contact shadow underneath. */
-    var d0 = still ? shape(160, 88, 80, 62, 6.6) : shape(160, 118, 52, 52, 2.0);
+    var d0 = still ? shape(160, 142, 80, 62, 6.6) : shape(160, 172, 52, 52, 2.0);
     for (var i = 0; i < paths.length; i++) {
       paths[i].setAttribute('d', d0);
       paths[i].setAttribute('opacity', i === 0 ? '1' : '0');
@@ -39857,27 +39975,21 @@ body{display:grid;place-items:center;min-height:100vh}
 
               <div class="morework">
                 <a class="morework__item" data-project="fub">
-                  <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-bank"/></svg></span>
+                  <span class="icon-tile icon-tile--brand"><span class="morework__logo clients__logo--first-united" aria-hidden="true"></span></span>
                   <span>
                     <span class="morework__name">First United Bank</span>
                     <span class="morework__desc">Banking identity and digital experience · CG Infinity</span>
                   </span>
-                  <span class="morework__ext" aria-hidden="true">↗</span>
                 </a>
 
                 <a class="morework__item" data-project="cvs">
-                  <span class="icon-tile"><svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg></span>
+                  <span class="icon-tile icon-tile--brand"><span class="morework__logo clients__logo--cvs-health" aria-hidden="true"></span></span>
                   <span>
                     <span class="morework__name">CVS Health</span>
                     <span class="morework__desc">Enterprise platforms and&nbsp;experiences</span>
                   </span>
-                  <span class="morework__ext" aria-hidden="true">↗</span>
                 </a>
               </div>
-
-              <a class="cta cta--ink" href="#work" data-work-link="View Work">
-        <span data-cta-label>View Work</span> <span class="cta__arrow" aria-hidden="true">→</span>
-      </a>
             </div>
           </div>
         </article>
@@ -43384,7 +43496,10 @@ body{display:grid;place-items:center;min-height:100vh}
 
     var SRC = ['assets/app-1.js', 'assets/app-2.js'];
     var MIN = 5500;
-    var N = 72;
+    /* 96 rather than 72: the settled panels sit at a high exponent, where the
+       corner is the part of the curve with the fewest samples, and 72 left a
+       visible facet on the wide shells. */
+    var N = 96;
     /* THREE LINES, ONE PER ACT.
 
        Six lines across five and a half seconds gave each one under a second,
@@ -43439,7 +43554,7 @@ body{display:grid;place-items:center;min-height:100vh}
        viewport without a square SVG pushing the copy off a laptop screen.
        x stays centred at 160; y centres at 88 in a 320x176 viewBox. */
     var C = 160;
-    var CY = 88;
+    var CY = 142;
 
     /* THREE ACTS, AND THE HOLDS BETWEEN THEM.
 
@@ -43456,59 +43571,116 @@ body{display:grid;place-items:center;min-height:100vh}
          0 - 800     Act 1. The circle rises out of the horizon.
          800 - 1300  It settles and breathes.
          1300 - 2400 Act 2. Liquid deformation, then boxy by the midpoint.
-         2400 - 2800 The structured hold.
-         2800 - 4200 Act 3. One mass spreads, then divides.
-         4200 - 4800 The composition settles.
-         4800 - 5500 Held, breathing, while the hero is brought up behind it.
+         2400 - 2800 The structured hold, and the mass grows.
+         2800 - 3400 Act 3. It stretches to the full frame.
+         3400 - 4000 The mass divides into four regions.
+         4000 - 4700 The regions divide again and glide into place.
+         4700 - 5100 They settle.
+         5100 - 5500 Held while the bar closes and the hero comes up behind.
 
        Nothing after 2400 goes back to organic geometry. n never drops below
-       6.4 again, and the wobble term is spent by the time the box arrives.
+       6.4 again for any module that is a panel; the only shapes that round
+       off are the three rail pills and the six small controls, which round
+       off in the last second because that is what they are.
 
-       THE COMPOSITION IS THE LANDING PAGE, ABSTRACTED.
+       THE COMPOSITION IS THE PORTFOLIO'S OWN SHELL.
 
-       Measured off the real hero card at 1440: the conversation occupies the
-       centre at 0.42 of the card's width, the project browser is a tall
-       column on the right at 0.33 wide running 0.60 of the height, the tools
-       tile sits under it, and the identity rail is a narrow strip down the
-       left. Those four relationships, and the avatar at the top of the rail,
-       are what the five shells resolve into: same rhythm, same left-centre-
-       right weighting, no content. A reader who has never seen the site does
-       not read it as a diagram, but the page they land on a second later has
-       the shape they were just looking at. */
-    var SLAB = [C, CY, 148, 76, 6.6, 0, 3];
-    function sl() { return [SLAB.slice(), SLAB.slice(), SLAB.slice(), SLAB.slice(), SLAB.slice()]; }
-    function five(v) { return [v.slice(), v.slice(), v.slice(), v.slice(), v.slice()]; }
+       Not a dashboard arrangement. Every module below is one region of the
+       supplied reference, measured off it at 1322 by 1176 and scaled by
+       320/1322 into this viewBox, which carries the same 1.12 ratio so
+       nothing is squashed to fit. Left column: a tall shell over two stacked
+       tiles. Top: three rail pills and two round controls. Centre: a short
+       line over two deep message panels, with four reaction dots beneath.
+       Right: the project browser as one tall shell. Bottom: a wide band and
+       the tile beside it. Empty, all of them. The point is the architecture
+       arriving before the interface does. */
+    function all18(v) { var o = [], i; for (i = 0; i < 18; i++) o.push(v.slice()); return o; }
+    function op(n) { var o = [], i; for (i = 0; i < 18; i++) o.push(i < n ? 1 : 0); return o; }
 
     var KEYS = [
       /* Act 1. Form. */
-      { at: 0,    s: five([C, CY, 52, 52, 2.0, 0.000, 3]), o: [1, 0, 0, 0, 0] },
-      { at: 800,  s: five([C, CY, 58, 58, 2.0, 0.020, 3]), o: [1, 0, 0, 0, 0] },
-      { at: 1300, s: five([C, CY, 56, 56, 2.0, 0.016, 3]), o: [1, 0, 0, 0, 0] },
+      { at: 0,    s: all18([C, CY, 52, 52, 2.0, 0.000, 3]), o: op(1) },
+      { at: 800,  s: all18([C, CY, 58, 58, 2.0, 0.020, 3]), o: op(1) },
+      { at: 1300, s: all18([C, CY, 56, 56, 2.0, 0.016, 3]), o: op(1) },
 
       /* Act 2. Structure. The one moment of real liquid, then the box. */
-      { at: 1800, s: five([C, CY, 66, 60, 2.2, 0.100, 2]), o: [1, 0, 0, 0, 0] },
-      { at: 2400, s: five([C, CY, 78, 62, 6.4, 0.000, 3]), o: [1, 0, 0, 0, 0] },
-      { at: 2800, s: five([C, CY, 82, 62, 6.6, 0.000, 3]), o: [1, 0, 0, 0, 0] },
+      { at: 1800, s: all18([C, CY, 66, 60, 2.2, 0.100, 2]), o: op(1) },
+      { at: 2400, s: all18([C, CY, 78, 62, 6.4, 0.000, 3]), o: op(1) },
+      { at: 2800, s: all18([C, CY, 94, 76, 6.6, 0.000, 3]), o: op(1) },
 
-      /* Act 3. Interface. The mass spreads to the full frame first, so the
-         material that becomes five modules is visibly the material that was
-         the box: the shells leave from inside it as it shrinks into the
-         conversation module. */
-      { at: 3400, s: sl(), o: [1, 0, 0, 0, 0] },
-      { at: 4200, s: [
-          [142, 74, 70, 44, 6.6, 0, 3],   /* the conversation, centre */
-          [264, 62, 42, 48, 6.6, 0, 3],   /* the project browser, right */
-          [264, 144, 42, 18, 6.6, 0, 3],  /* the tile under it */
-          [37, 116, 23, 46, 6.6, 0, 3],   /* the identity rail, left */
-          [37, 28, 11, 11, 2.0, 0, 3]     /* the avatar at the top of it */
-        ], o: [1, 1, 1, 1, 1] },
-      { at: 4800, s: [
-          [142, 74, 68, 42, 6.8, 0, 3],
-          [264, 62, 44, 50, 6.8, 0, 3],
-          [264, 144, 44, 20, 6.8, 0, 3],
-          [37, 116, 25, 48, 6.8, 0, 3],
-          [37, 28, 12, 12, 2.0, 0, 3]
-        ], o: [1, 1, 1, 1, 1] }
+      /* Act 3. Interface. The mass takes the whole frame first, so the
+         material that becomes eighteen shells is visibly the material that
+         was the box. */
+      { at: 3400, s: all18([160, 142, 150, 120, 8.0, 0, 3]), o: op(1) },
+
+      /* Four regions. Each shell is still merged with its neighbours here,
+         so what the eye sees is one mass splitting four ways, not eighteen
+         objects arriving. */
+      { at: 4000, s: [
+          [35.8, 94.7, 31.5, 79.5, 8.0, 0, 3]   /* the left column */,
+          [35.8, 94.7, 31.5, 79.5, 8.0, 0, 3],
+          [35.8, 94.7, 31.5, 79.5, 8.0, 0, 3],
+          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3]   /* the centre */,
+          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
+          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
+          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
+          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
+          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
+          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
+          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
+          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
+          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
+          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
+          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
+          [267.1, 93.5, 50.0, 79.5, 8.0, 0, 3]   /* the project browser */,
+          [160.8, 225.3, 156.3, 44.5, 8.0, 0, 3]   /* the bottom band */,
+          [160.8, 225.3, 156.3, 44.5, 8.0, 0, 3]
+        ], o: op(18) },
+
+      /* Each region divides again and the modules glide out, arriving a
+         little large and a little high: the inertia of something that has
+         been moving, not a layout being switched on. */
+      { at: 4700, s: [[35.8, 49.5, 32.8, 37.8, 8.75, 0, 3],
+          [35.8, 104.1, 32.8, 14.8, 8.75, 0, 3],
+          [35.8, 147.4, 32.8, 25.8, 8.75, 0, 3],
+          [87.9, 20.6, 12.6, 4.2, 4.25, 0, 3],
+          [115.2, 20.6, 14.1, 4.2, 4.25, 0, 3],
+          [141.0, 20.6, 10.7, 4.2, 4.25, 0, 3],
+          [194.4, 20.5, 4.6, 4.6, 3.5, 0, 3],
+          [205.7, 20.5, 4.6, 4.6, 3.5, 0, 3],
+          [109.5, 50.1, 23.3, 7.0, 6.88, 0, 3],
+          [147.4, 83.6, 62.7, 19.1, 8.75, 0, 3],
+          [147.4, 125.3, 62.7, 19.9, 8.75, 0, 3],
+          [161.0, 153.6, 5.0, 5.0, 3.5, 0, 3],
+          [173.1, 153.6, 5.0, 5.0, 3.5, 0, 3],
+          [186.9, 153.6, 5.0, 5.0, 3.5, 0, 3],
+          [200.4, 153.6, 5.0, 5.0, 3.5, 0, 3],
+          [267.1, 91.5, 52.0, 82.7, 8.75, 0, 3],
+          [107.5, 223.3, 107.2, 46.3, 8.75, 0, 3],
+          [266.9, 223.3, 52.2, 46.3, 8.75, 0, 3]
+        ], o: op(18) },
+
+      /* Settled, on the reference's own measurements. */
+      { at: 5100, s: [
+          [35.8, 51.5, 31.5, 36.3, 9.0, 0, 3]   /* left column, the tall shell */,
+          [35.8, 106.1, 31.5, 14.2, 9.0, 0, 3]   /* left column, the middle tile */,
+          [35.8, 149.4, 31.5, 24.8, 9.0, 0, 3]   /* left column, the lower tile */,
+          [87.9, 22.6, 12.1, 4.0, 3.0, 0, 3]   /* top rail 1 */,
+          [115.2, 22.6, 13.6, 4.0, 3.0, 0, 3]   /* top rail 2 */,
+          [141.0, 22.6, 10.3, 4.0, 3.0, 0, 3]   /* top rail 3 */,
+          [194.4, 22.5, 4.4, 4.4, 2.0, 0, 3]   /* control 1 */,
+          [205.7, 22.5, 4.4, 4.4, 2.0, 0, 3]   /* control 2 */,
+          [109.5, 52.1, 22.4, 6.7, 6.5, 0, 3]   /* the short line above the messages */,
+          [147.4, 85.6, 60.3, 18.4, 9.0, 0, 3]   /* message 1 */,
+          [147.4, 127.3, 60.3, 19.1, 9.0, 0, 3]   /* message 2 */,
+          [161.0, 155.6, 4.8, 4.8, 2.0, 0, 3]   /* reaction 1 */,
+          [173.1, 155.6, 4.8, 4.8, 2.0, 0, 3]   /* reaction 2 */,
+          [186.9, 155.6, 4.8, 4.8, 2.0, 0, 3]   /* reaction 3 */,
+          [200.4, 155.6, 4.8, 4.8, 2.0, 0, 3]   /* reaction 4 */,
+          [267.1, 93.5, 50.0, 79.5, 9.0, 0, 3]   /* the project browser */,
+          [107.5, 225.3, 103.1, 44.5, 9.0, 0, 3]   /* the wide band */,
+          [266.9, 225.3, 50.2, 44.5, 9.0, 0, 3]   /* the tile beside it */
+        ], o: op(18) }
     ];
     var LAST = KEYS[KEYS.length - 1].at;
 
@@ -43525,7 +43697,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
       /* Past the scripted sequence the settled shells keep breathing, so a slow
          load reads as alive rather than stalled. */
-      var br = ms > LAST ? Math.sin((ms - LAST) / 900) * 0.013 : 0;
+      var br = ms > LAST ? Math.sin((ms - LAST) / 900) * 0.006 : 0;
 
       /* THE PROGRESSION LIVES IN THE MATERIAL, NOT IN THE ROOM.
 
