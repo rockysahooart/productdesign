@@ -29981,6 +29981,11 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
         <path data-ld-p="1" fill="url(#ld-face)"></path>
         <path data-ld-p="2" fill="url(#ld-face)"></path>
         <path data-ld-p="3" fill="url(#ld-face)"></path>
+        <!-- The fifth shell is the avatar in the settled composition. It is
+             the same material as the other four and it spends the first two
+             acts exactly inside the mass, so it is drawn out of the form
+             rather than placed on top of it. -->
+        <path data-ld-p="4" fill="url(#ld-face)"></path>
       </g>
       <rect data-ld-plane x="-40" y="104" width="400" height="72" fill="url(#ld-plane)" opacity="0"></rect>
     </svg>
@@ -29988,6 +29993,63 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
     <div class="ld__bar"><span class="ld__fill" data-ld-fill></span></div>
   </div>
 </div>
+<script>
+  /* ==========================================================================
+     THE FIRST FRAME, PAINTED BEFORE THE FIRST PAINT
+
+     The loader's own script sits at the end of the body, which on a document
+     this size is about four hundred milliseconds of parsing away. Until it
+     ran, the four shells had no `d` at all: the reader got the ground, the
+     line of copy and the bar, and then the object appeared out of nothing.
+     Measured at 1440: three painted frames, 0 to 418ms, with zero form on
+     screen.
+
+     This is the same geometry the run's own frame zero produces, written by a
+     blocking script directly under the markup so it lands in the first paint.
+     The main script then redraws the identical values, so there is no step
+     between the held frame and the moving one: the object is simply there
+     from the start, low behind the horizon, waiting to rise.
+     ====================================================================== */
+  (function () {
+    'use strict';
+    var root = document.getElementById('pf-loader');
+    if (!root) return;
+    var paths = [].slice.call(root.querySelectorAll('[data-ld-p]'));
+    if (!paths.length) return;
+    var N = 72;
+
+    function shape(cx, cy, a, b, n) {
+      var d = '', i, t, c, s2, x, y;
+      for (i = 0; i < N; i++) {
+        t = (i / N) * Math.PI * 2;
+        c = Math.cos(t); s2 = Math.sin(t);
+        x = Math.pow(Math.abs(c), 2 / n) * (c < 0 ? -1 : 1) * a;
+        y = Math.pow(Math.abs(s2), 2 / n) * (s2 < 0 ? -1 : 1) * b;
+        d += (i ? 'L' : 'M') + (cx + x).toFixed(2) + ' ' + (cy + y).toFixed(2);
+      }
+      return d + 'Z';
+    }
+
+    var still = !!(window.matchMedia &&
+                   window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    /* Still: the settled boxy form, centred, no plane and no cast, which is
+       exactly what the main script holds for a reader who asked for no
+       motion. Moving: the circle at rest, thirty units low, with the plane
+       across it and its contact shadow underneath. */
+    var d0 = still ? shape(160, 88, 80, 62, 6.6) : shape(160, 118, 52, 52, 2.0);
+    for (var i = 0; i < paths.length; i++) {
+      paths[i].setAttribute('d', d0);
+      paths[i].setAttribute('opacity', i === 0 ? '1' : '0');
+    }
+    var plane = root.querySelector('[data-ld-plane]');
+    var cast = root.querySelector('[data-ld-cast]');
+    if (plane) plane.setAttribute('opacity', still ? '0' : '1');
+    if (cast) {
+      cast.setAttribute('opacity', still ? '0' : '0.5');
+      cast.setAttribute('rx', '50');
+    }
+  }());
+</script>
 
 
 
@@ -43323,21 +43385,22 @@ body{display:grid;place-items:center;min-height:100vh}
     var SRC = ['assets/app-1.js', 'assets/app-2.js'];
     var MIN = 5500;
     var N = 72;
-    /* Six lines across the eight seconds, the last held to the handoff. They
-       run off the same clock as the form rather than an interval, so the copy
-       and the shape cannot drift apart on a slow frame. */
+    /* THREE LINES, ONE PER ACT.
+
+       Six lines across five and a half seconds gave each one under a second,
+       which is less than it takes to read a sentence in a 44px face: the copy
+       was cycling rather than speaking. One line per act instead. They run off
+       the same clock as the form rather than an interval, so the copy changes
+       when the object does and the two cannot drift apart on a slow frame. */
     var MSG = [
       'Accessing Sarthak’s workspace…',
-      'Loading the systems…',
-      'Pulling the projects together…',
       'Cleaning up my desk…',
-      'Making the work presentable…',
       'Welcome in.'
     ];
-    /* Each line arrives on a keyframe, so the copy changes when the form
-       does rather than on a clock of its own: circle, liquid, rounded square,
-       the large block, the split, and the first resolved layout. */
-    var MSG_AT = [0, 800, 1600, 2300, 3000, 4500];
+    /* Act 1 opens on the first line. The second arrives as the form resolves
+       into structure, the third as the composition settles: 2.4s, 1.8s and
+       1.3s on screen. */
+    var MSG_AT = [0, 2400, 4200];
 
     var still = !!(window.matchMedia &&
                    window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -43377,16 +43440,75 @@ body{display:grid;place-items:center;min-height:100vh}
        x stays centred at 160; y centres at 88 in a 320x176 viewBox. */
     var C = 160;
     var CY = 88;
+
+    /* THREE ACTS, AND THE HOLDS BETWEEN THEM.
+
+       The old sequence ran nine keyframes through four unrelated dashboard
+       arrangements. It was a demo of a morph engine, not a story: by the time
+       a reader understood one layout it had already become another, and none
+       of them meant anything.
+
+       One object, one structure, one interface instead. The eased curve has
+       zero velocity at every keyframe, so a pair of keys close together IS a
+       hold: the form arrives, stops, and is allowed to register before the
+       next move starts.
+
+         0 - 800     Act 1. The circle rises out of the horizon.
+         800 - 1300  It settles and breathes.
+         1300 - 2400 Act 2. Liquid deformation, then boxy by the midpoint.
+         2400 - 2800 The structured hold.
+         2800 - 4200 Act 3. One mass spreads, then divides.
+         4200 - 4800 The composition settles.
+         4800 - 5500 Held, breathing, while the hero is brought up behind it.
+
+       Nothing after 2400 goes back to organic geometry. n never drops below
+       6.4 again, and the wobble term is spent by the time the box arrives.
+
+       THE COMPOSITION IS THE LANDING PAGE, ABSTRACTED.
+
+       Measured off the real hero card at 1440: the conversation occupies the
+       centre at 0.42 of the card's width, the project browser is a tall
+       column on the right at 0.33 wide running 0.60 of the height, the tools
+       tile sits under it, and the identity rail is a narrow strip down the
+       left. Those four relationships, and the avatar at the top of the rail,
+       are what the five shells resolve into: same rhythm, same left-centre-
+       right weighting, no content. A reader who has never seen the site does
+       not read it as a diagram, but the page they land on a second later has
+       the shape they were just looking at. */
+    var SLAB = [C, CY, 148, 76, 6.6, 0, 3];
+    function sl() { return [SLAB.slice(), SLAB.slice(), SLAB.slice(), SLAB.slice(), SLAB.slice()]; }
+    function five(v) { return [v.slice(), v.slice(), v.slice(), v.slice(), v.slice()]; }
+
     var KEYS = [
-      { at: 0,    s: [[C, CY, 56, 56, 2.0, 0.000, 3], [C, CY, 56, 56, 2.0, 0, 3], [C, CY, 56, 56, 2.0, 0, 3], [C, CY, 56, 56, 2.0, 0, 3]], o: [1, 0, 0, 0] },
-      { at: 800,  s: [[C, CY, 60, 59, 2.0, 0.028, 3], [C, CY, 60, 59, 2.0, 0, 3], [C, CY, 60, 59, 2.0, 0, 3], [C, CY, 60, 59, 2.0, 0, 3]], o: [1, 0, 0, 0] },
-      { at: 1600, s: [[C, CY, 66, 61, 2.3, 0.105, 2], [C, CY, 66, 61, 2.3, 0, 2], [C, CY, 66, 61, 2.3, 0, 2], [C, CY, 66, 61, 2.3, 0, 2]], o: [1, 0, 0, 0] },
-      { at: 2300, s: [[C, CY, 62, 62, 4.6, 0.000, 3], [C, CY, 62, 62, 4.6, 0, 3], [C, CY, 62, 62, 4.6, 0, 3], [C, CY, 62, 62, 4.6, 0, 3]], o: [1, 0, 0, 0] },
-      { at: 3000, s: [[C, CY, 150, 64, 6.4, 0.000, 3], [C, CY, 150, 64, 6.4, 0, 3], [C, CY, 150, 64, 6.4, 0, 3], [C, CY, 150, 64, 6.4, 0, 3]], o: [1, 0, 0, 0] },
-      { at: 3800, s: [[C - 78, CY - 34, 70, 30, 6.6, 0, 3], [C + 78, CY - 34, 70, 30, 6.6, 0, 3], [C - 78, CY + 36, 70, 30, 6.6, 0, 3], [C + 78, CY + 36, 70, 30, 6.6, 0, 3]], o: [1, 1, 1, 1] },
-      { at: 4500, s: [[C - 92, CY, 56, 64, 6.6, 0, 3], [C + 52, CY - 40, 88, 24, 6.6, 0, 3], [C + 8, CY + 28, 44, 32, 6.6, 0, 3], [C + 104, CY + 28, 44, 32, 6.6, 0, 3]], o: [1, 1, 1, 1] },
-      { at: 5000, s: [[C - 104, CY, 44, 68, 6.8, 0, 3], [C + 28, CY - 44, 102, 24, 6.8, 0, 3], [C - 4, CY + 22, 70, 44, 6.8, 0, 3], [C + 100, CY + 22, 34, 44, 6.8, 0, 3]], o: [1, 1, 1, 1] },
-      { at: 5300, s: [[C, CY - 56, 150, 22, 6.8, 0, 3], [C - 100, CY + 22, 48, 46, 6.8, 0, 3], [C, CY + 22, 44, 46, 6.8, 0, 3], [C + 100, CY + 22, 48, 46, 6.8, 0, 3]], o: [1, 1, 1, 1] }
+      /* Act 1. Form. */
+      { at: 0,    s: five([C, CY, 52, 52, 2.0, 0.000, 3]), o: [1, 0, 0, 0, 0] },
+      { at: 800,  s: five([C, CY, 58, 58, 2.0, 0.020, 3]), o: [1, 0, 0, 0, 0] },
+      { at: 1300, s: five([C, CY, 56, 56, 2.0, 0.016, 3]), o: [1, 0, 0, 0, 0] },
+
+      /* Act 2. Structure. The one moment of real liquid, then the box. */
+      { at: 1800, s: five([C, CY, 66, 60, 2.2, 0.100, 2]), o: [1, 0, 0, 0, 0] },
+      { at: 2400, s: five([C, CY, 78, 62, 6.4, 0.000, 3]), o: [1, 0, 0, 0, 0] },
+      { at: 2800, s: five([C, CY, 82, 62, 6.6, 0.000, 3]), o: [1, 0, 0, 0, 0] },
+
+      /* Act 3. Interface. The mass spreads to the full frame first, so the
+         material that becomes five modules is visibly the material that was
+         the box: the shells leave from inside it as it shrinks into the
+         conversation module. */
+      { at: 3400, s: sl(), o: [1, 0, 0, 0, 0] },
+      { at: 4200, s: [
+          [142, 74, 70, 44, 6.6, 0, 3],   /* the conversation, centre */
+          [264, 62, 42, 48, 6.6, 0, 3],   /* the project browser, right */
+          [264, 144, 42, 18, 6.6, 0, 3],  /* the tile under it */
+          [37, 116, 23, 46, 6.6, 0, 3],   /* the identity rail, left */
+          [37, 28, 11, 11, 2.0, 0, 3]     /* the avatar at the top of it */
+        ], o: [1, 1, 1, 1, 1] },
+      { at: 4800, s: [
+          [142, 74, 68, 42, 6.8, 0, 3],
+          [264, 62, 44, 50, 6.8, 0, 3],
+          [264, 144, 44, 20, 6.8, 0, 3],
+          [37, 116, 25, 48, 6.8, 0, 3],
+          [37, 28, 12, 12, 2.0, 0, 3]
+        ], o: [1, 1, 1, 1, 1] }
     ];
     var LAST = KEYS[KEYS.length - 1].at;
 
@@ -43403,7 +43525,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
       /* Past the scripted sequence the settled shells keep breathing, so a slow
          load reads as alive rather than stalled. */
-      var br = ms > LAST ? Math.sin((ms - LAST) / 900) * 0.022 : 0;
+      var br = ms > LAST ? Math.sin((ms - LAST) / 900) * 0.013 : 0;
 
       /* THE PROGRESSION LIVES IN THE MATERIAL, NOT IN THE ROOM.
 
@@ -43440,7 +43562,7 @@ body{display:grid;place-items:center;min-height:100vh}
         shadow.setAttribute('stdDeviation', (11 - d * 4).toFixed(1));
       }
 
-      for (j = 0; j < 4; j++) {
+      for (j = 0; j < paths.length; j++) {
         var A = k0.s[j], B = k1.s[j];
         var amp = lerp(A[5], B[5], m);
         var ph = ms / 620;
@@ -43455,8 +43577,10 @@ body{display:grid;place-items:center;min-height:100vh}
     if (still) {
       if (plane) plane.setAttribute('opacity', '0');
       if (cast) cast.setAttribute('opacity', '0');
-      for (var q = 0; q < 4; q++) {
-        paths[q].setAttribute('d', shape(C, CY, 62, 62, 4.6, 0, 3, 0));
+      /* The same settled box the bootstrap under the markup already painted,
+         so a reader who asked for no motion never sees anything change. */
+      for (var q = 0; q < paths.length; q++) {
+        paths[q].setAttribute('d', shape(C, CY, 80, 62, 6.6, 0, 3, 0));
         paths[q].setAttribute('opacity', q === 0 ? '1' : '0');
       }
     } else {
@@ -43516,19 +43640,59 @@ body{display:grid;place-items:center;min-height:100vh}
       live.classList.remove('is-out');
       fill.style.width = '100%';
       setTimeout(function () {
+        /* THE LOADER LEAVES AFTER THE HERO ARRIVES, NOT BEFORE IT.
+
+           This used to attach the two scripts and add `is-out` in the same
+           statement. Attaching a script is not running it, so the dissolve
+           always started while the hero was still being fetched and parsed:
+           measured with the scripts held back by 1.2s, the loader was at 94%
+           opacity with the conversation thread still empty underneath it. On
+           a real connection that is a fade onto a bare page, and then the
+           hero popping in behind a loader that has already gone.
+
+           Now the fade waits for both scripts to have executed, and then for
+           two frames, which is the hero laid out and painted. The loader is
+           at full strength over a finished page and dissolves onto something
+           that is already there. */
+        var left = SRC.length;
+        var handed = false;
+
+        function dissolve() {
+          if (handed) return;
+          handed = true;
+          root.classList.add('is-out');
+          document.documentElement.classList.remove('ld-lock');
+          /* Comfortably past the 460ms dissolve, so the node is never taken
+             out from under a transition that is still running. */
+          setTimeout(function () {
+            if (root.parentNode) root.parentNode.removeChild(root);
+          }, 760);
+        }
+
+        function arrived() {
+          if (--left > 0) return;
+          requestAnimationFrame(function () {
+            requestAnimationFrame(dissolve);
+          });
+        }
+
         /* The hero is attached here, not earlier: readyState is 'complete', so
            each script boots on arrival and the conversation opens in view. */
         for (var i = 0; i < SRC.length; i++) {
           var sc = document.createElement('script');
           sc.src = SRC[i];
           sc.async = false;
+          sc.onload = arrived;
+          /* A script that never lands must not leave the reader behind a
+             full-screen overlay. */
+          sc.onerror = arrived;
           document.body.appendChild(sc);
         }
-        root.classList.add('is-out');
-        document.documentElement.classList.remove('ld-lock');
-        setTimeout(function () {
-          if (root.parentNode) root.parentNode.removeChild(root);
-        }, 500);
+        /* A build with nothing to attach (the single-file master, where the
+           hero's scripts are already inline) has nothing to wait for, so it
+           takes the same two frames and goes. */
+        if (!left) requestAnimationFrame(function () { requestAnimationFrame(dissolve); });
+        setTimeout(dissolve, 6000);
       }, 280);
     }
 
