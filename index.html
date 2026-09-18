@@ -29815,25 +29815,33 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 /* ==========================================================================
    THE LOADER
 
-   A prologue, not a splash screen: the same warm clay, the same upper-left
-   light, the same near-white shells the thread is built from, so the first
-   thing on screen already belongs to the page behind it.
+   A full-screen prologue that runs once, before the hero, and hands the page
+   over when the hero is ready to receive it.
 
-   It is written into the document rather than injected, so it paints with the
-   first frame and cannot flash the wrong theme: the inline theme script in the
-   head has already set data-theme by the time this parses.
+   IT IS BUILT FOR FRAME PACING, AND THAT IS THE WHOLE ARCHITECTURE.
 
-   One SVG, four paths. The form is one material throughout: a circle that
-   breathes, deforms, resolves to a rounded square, stretches, then divides.
-   The three shells that join it start life as exact copies of the first at
-   zero opacity, so nothing ever appears out of nowhere.
+   The previous version drew eighteen superellipse paths at ninety-six
+   vertices each, rebuilt all of them from scratch on every frame, and ran an
+   SVG feDropShadow over the group whose blur radius and offset changed every
+   frame as well. Measured at 1440: 37% of frames over a 16.9ms budget, and
+   taking the filter out on its own brought that to 11.5%. An SVG filter
+   cannot be composited, so every frame was a full re-run of it over geometry
+   that had just been rebuilt and re-parsed.
+
+   None of that is here. There is no per-frame JavaScript at all: the sequence
+   is CSS keyframes on transform and opacity, started once when the element
+   paints. The shells are ordinary divs at fixed percentage positions that are
+   never laid out again. The clay is a static radial gradient and one static
+   shadow, rasterised once per element. The script's only jobs are the bar's
+   last step and the handoff.
    ========================================================================== */
 .ld {
   --ld-bg:    #F4F4F2;
+  --ld-bg0:   rgba(244, 244, 242, 0);
   --ld-face:  #FDFCFA;
   --ld-hi:    #FFFFFF;
   --ld-lo:    #E6E4DF;
-  --ld-sh:    rgba(38, 34, 28, 0.14);
+  --ld-sh:    rgba(38, 34, 28, 0.16);
   --ld-track: rgba(38, 34, 28, 0.13);
   --ld-fill:  #262626;
   --ld-ink:   #262626;
@@ -29850,10 +29858,11 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 }
 :root[data-theme="dark"] .ld {
   --ld-bg:    #232326;
+  --ld-bg0:   rgba(35, 35, 38, 0);
   --ld-face:  #3A3A3E;
   --ld-hi:    #4A4A50;
   --ld-lo:    #2A2A2D;
-  --ld-sh:    rgba(0, 0, 0, 0.40);
+  --ld-sh:    rgba(0, 0, 0, 0.42);
   --ld-track: rgba(237, 237, 237, 0.16);
   --ld-fill:  #EDEDED;
   --ld-ink:   #EDEDED;
@@ -29861,10 +29870,11 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .ld {
     --ld-bg:    #232326;
+    --ld-bg0:   rgba(35, 35, 38, 0);
     --ld-face:  #3A3A3E;
     --ld-hi:    #4A4A50;
     --ld-lo:    #2A2A2D;
-    --ld-sh:    rgba(0, 0, 0, 0.40);
+    --ld-sh:    rgba(0, 0, 0, 0.42);
     --ld-track: rgba(237, 237, 237, 0.16);
     --ld-fill:  #EDEDED;
     --ld-ink:   #EDEDED;
@@ -29877,46 +29887,152 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   justify-items: center;
   gap: clamp(28px, 4.4vh, 52px);
   padding-inline: 20px;
-  /* The column has to clear the form, not the copy: the message carries its
-     own measure below, and the bar has always had its own width. */
   width: min(1500px, 92vw);
 }
-/* The largest state spans 300 of the 320 viewBox units, so the rendered form
-   reaches about 0.94 of this width: on a laptop and a tablet that lands near
-   half the viewport, on an ultrawide just under it. The vh term is what stops
-   a short window from pushing the message and the bar off screen. */
-.ld__svg {
-  display: block;
-  /* THE FRAME IS THE REFERENCE'S FRAME.
 
-     The composition the loader resolves into is the landing page's own shell,
-     and that shell is 1.12 wide to 1 tall. Drawing it inside the old 1.82
-     box would have meant squashing every proportion in it, so the viewBox
-     carries the reference's ratio and the width formula is rebuilt around
-     the HEIGHT budget instead: 56vh caps the form on a short window, 36vw on
-     a wide one, and the column below it (message, bar) keeps the room it had.
-     At 1440 by 900 that is a 504 by 449 form under a 649px column, against
-     504 by 428 under 628 before. */
+/* THE STAGE. Its ratio is the landing page's own shell, 1.12 to 1, and the
+   width is capped off the HEIGHT budget so the message and the bar keep their
+   room. It is an inline-size container, which gives the corner radius a unit
+   that scales with the form and brings layout containment with it. */
+.ld__stage {
+  position: relative;
   width: max(280px, min(40vw, 60vh));
   aspect-ratio: 320 / 285;
-  height: auto;
-  overflow: visible;
+  container-type: inline-size;
+  --sr: clamp(3px, 1.7cqw, 10px);
 }
-.ld__svg .ld-hi { stop-color: var(--ld-hi); }
-.ld__svg .ld-mid { stop-color: var(--ld-face); }
-.ld__svg .ld-lo { stop-color: var(--ld-lo); }
-.ld__svg .ld-plane { stop-color: var(--ld-bg); }
-.ld__svg [data-ld-cast] { fill: var(--ld-sh); }
-.ld__svg feDropShadow { flood-color: var(--ld-sh); }
 
-/* The message is the storytelling scale, resolved from the same tokens the
-   dividers and the case-study title use. --fs-disp-k is pinned to 1 so the
-   landing page's own display multiplier cannot make a second scale of it. */
+/* THE MATERIAL, PAINTED ONCE.
+
+   A static radial gradient and one static shadow. Neither is ever animated:
+   an element whose only moving properties are transform and opacity is
+   promoted to its own layer, rasterised once, and then moved by the
+   compositor. That is the whole difference between this and a live filter. */
+.ld__blorb,
+.ld__s {
+  background: radial-gradient(118% 118% at 30% 24%,
+              var(--ld-hi) 0%, var(--ld-face) 56%, var(--ld-lo) 100%);
+  box-shadow: 0 9px 18px -9px var(--ld-sh);
+}
+
+/* THE HORIZON. Not a line and not a blur: the page's own ground colour,
+   feathered upward, laid across the lower part of the frame. Where it covers
+   the form the form is not there, which reads as an edge the object is
+   behind. Its opacity is the only thing that moves. */
+.ld__horizon {
+  position: absolute;
+  left: -10%; right: -10%; bottom: 0;
+  height: 46%;
+  background: linear-gradient(to bottom, var(--ld-bg0) 0%, var(--ld-bg) 44%, var(--ld-bg) 100%);
+  will-change: opacity;
+  animation: ld-horizon 5500ms linear forwards;
+}
+@keyframes ld-horizon {
+  0%   { opacity: 1; animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+  14.5%, 100% { opacity: 0; }
+}
+
+/* THE FORM. One element for the whole of acts one and two: a circle that
+   rises, settles, takes one subtle liquid deformation and resolves into a
+   box. Centred by auto margins rather than by a transform, so the transform
+   is free to carry the entire animation. Two animated properties, transform
+   and opacity, plus the corner radius, which is one small element's paint and
+   the only way a circle becomes a square. */
+.ld__blorb {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 34%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  will-change: transform, opacity;
+  animation: ld-blorb 5500ms linear forwards;
+}
+@keyframes ld-blorb {
+  /* rising out of the horizon */
+  0%    { transform: translateY(27.6%) scale(0.956); border-radius: 50%; opacity: 1;
+          animation-timing-function: cubic-bezier(0.32, 0, 0.2, 1); }
+  /* clear of it */
+  14.5% { transform: translateY(0) scale(1.066); border-radius: 50%;
+          animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+  /* settled */
+  23.6% { transform: translateY(0) scale(1.029); border-radius: 50%;
+          animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+  /* the one liquid moment: a lean, a stretch, an off-centre radius */
+  32.7% { transform: translateY(0) scale(1.213, 1.103) rotate(-2.2deg);
+          border-radius: 44% 56% 52% 48% / 54% 46% 56% 44%;
+          animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+  /* boxy, and it does not go back */
+  43.6% { transform: translateY(0) scale(1.434, 1.140) rotate(0deg); border-radius: 15%;
+          animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+  50.9% { transform: translateY(0) scale(1.728, 1.397) rotate(0deg); border-radius: 11%;
+          animation-timing-function: cubic-bezier(0.5, 0, 0.2, 1); }
+  /* one mass, the size of the whole composition */
+  61.8% { transform: translateY(0) scale(2.757, 2.206) rotate(0deg); border-radius: 5%; opacity: 1;
+          animation-timing-function: linear; }
+  /* handing the frame to the shell, which is already on its way up */
+  74.5%, 100% { transform: translateY(0) scale(2.757, 2.206) rotate(0deg); border-radius: 5%; opacity: 0; }
+}
+
+/* THE SHELL. Eighteen divs at fixed percentage positions, laid out once and
+   never again. They are not animated individually: the GROUP scales and fades
+   in as one composited layer, out of the footprint the mass already occupies,
+   so the layout resolves from the form rather than replacing it. Once it has
+   landed nothing here animates at all. */
+.ld__shell {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: scale(0.9);
+  will-change: transform, opacity;
+  animation: ld-shell 5500ms linear forwards;
+}
+@keyframes ld-shell {
+  0%, 56.4% { opacity: 0; transform: scale(0.9);
+              animation-timing-function: cubic-bezier(0.22, 0.7, 0.25, 1); }
+  70.9%, 100% { opacity: 1; transform: scale(1); }
+}
+
+.ld__s {
+  position: absolute;
+  border-radius: var(--sr);
+}
+/* The three rail pills and the six small controls are the only round things
+   left after the midpoint, and they are round because that is what they are. */
+.ld__s--pill { border-radius: 999px; }
+.ld__s--dot  { border-radius: 50%; }
+
+.ld__s--00 { left: 1.344%; top: 5.333%; width: 19.688%; height: 25.474%; }   /* left tall */
+.ld__s--01 { left: 1.344%; top: 32.246%; width: 19.688%; height: 9.965%; }   /* left mid tile */
+.ld__s--02 { left: 1.344%; top: 43.719%; width: 19.688%; height: 17.404%; }   /* left low tile */
+.ld__s--03 { left: 23.688%; top: 6.526%; width: 7.562%; height: 2.807%; }   /* rail 1 */
+.ld__s--04 { left: 31.750%; top: 6.526%; width: 8.500%; height: 2.807%; }   /* rail 2 */
+.ld__s--05 { left: 40.844%; top: 6.526%; width: 6.438%; height: 2.807%; }   /* rail 3 */
+.ld__s--06 { left: 59.375%; top: 6.351%; width: 2.750%; height: 3.088%; }   /* ctl 1 */
+.ld__s--07 { left: 62.906%; top: 6.351%; width: 2.750%; height: 3.088%; }   /* ctl 2 */
+.ld__s--08 { left: 27.219%; top: 15.930%; width: 14.000%; height: 4.702%; }   /* short line */
+.ld__s--09 { left: 27.219%; top: 23.579%; width: 37.687%; height: 12.912%; }   /* message 1 */
+.ld__s--10 { left: 27.219%; top: 37.965%; width: 37.687%; height: 13.404%; }   /* message 2 */
+.ld__s--11 { left: 48.812%; top: 52.912%; width: 3.000%; height: 3.368%; }   /* react 1 */
+.ld__s--12 { left: 52.594%; top: 52.912%; width: 3.000%; height: 3.368%; }   /* react 2 */
+.ld__s--13 { left: 56.906%; top: 52.912%; width: 3.000%; height: 3.368%; }   /* react 3 */
+.ld__s--14 { left: 61.125%; top: 52.912%; width: 3.000%; height: 3.368%; }   /* react 4 */
+.ld__s--15 { left: 67.844%; top: 4.912%; width: 31.250%; height: 55.789%; }   /* project browser */
+.ld__s--16 { left: 1.375%; top: 63.439%; width: 64.437%; height: 31.228%; }   /* wide band */
+.ld__s--17 { left: 67.719%; top: 63.439%; width: 31.375%; height: 31.228%; }   /* bottom tile */
+
+/* THE MESSAGE. Three lines, one per act, all three in the document from the
+   start, in one grid cell of a fixed-height stage. Nothing is created,
+   destroyed or swapped, nothing reflows around them, and the only properties
+   that move are opacity and a 6px translate. The blur that used to soften the
+   crossfade is gone: it was a paint cost on the largest type on the screen. */
 .ld__msg {
   --fs-disp-k: 1;
+  display: grid;
+  place-items: center;
+  height: 2.7em;
   margin: 0;
   max-width: min(720px, 88vw);
-  min-height: 1.2em;
   font-family: var(--font-heading);
   font-variation-settings: var(--wonk-on);
   font-weight: 600;
@@ -29926,33 +30042,38 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   color: var(--ld-ink);
   text-align: center;
 }
-/* A FIXED STAGE, AND TWO LAYERS THAT CROSS.
-
-   The lines used to share one element, so each had to leave before the next
-   could arrive and the gap read as a blink. Both layers now sit in the same
-   grid cell of a stage with a fixed height: the outgoing line drifts up a few
-   pixels and softens as it goes, the incoming line is already rising and
-   sharpening underneath it, and the two overlap for the whole 320ms. Nothing
-   around them can move, because the stage reserves its height whether one
-   line is showing or two. */
-.ld__msg {
-  display: grid;
-  place-items: center;
-  height: 2.7em;
-}
 .ld__m {
   grid-area: 1 / 1;
   display: block;
   opacity: 0;
-  transform: translateY(6px);
-  filter: blur(3px);
-  transition: opacity 320ms ease,
-              transform 320ms cubic-bezier(0.4, 0, 0.2, 1),
-              filter 320ms ease;
+  translate: 0 6px;
+  animation-duration: 5500ms;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
 }
-.ld__m.is-on  { opacity: 1; transform: translateY(0); filter: blur(0); }
-.ld__m.is-out { opacity: 0; transform: translateY(-5px); filter: blur(2.5px); }
+/* The two lines of a crossfade run the same ramp over the same 320ms, so the
+   pair sums to exactly one throughout and there is never a blank frame. */
+.ld__m--1 { animation-name: ld-m1; }
+.ld__m--2 { animation-name: ld-m2; }
+.ld__m--3 { animation-name: ld-m3; }
+@keyframes ld-m1 {
+  0%, 43.636%   { opacity: 1; translate: 0 0; }
+  49.455%, 100% { opacity: 0; translate: 0 -5px; }
+}
+@keyframes ld-m2 {
+  0%, 43.636%      { opacity: 0; translate: 0 6px; }
+  49.455%, 76.364% { opacity: 1; translate: 0 0; }
+  82.182%, 100%    { opacity: 0; translate: 0 -5px; }
+}
+@keyframes ld-m3 {
+  0%, 76.364%   { opacity: 0; translate: 0 6px; }
+  82.182%, 100% { opacity: 1; translate: 0 0; }
+}
 
+/* THE BAR. The inner fill is scaled, not widened: scaleX is a compositor
+   property and width is a layout one. It runs to 92% on its own clock and the
+   script closes the last 8% when the page is actually ready, which makes it
+   the one thing on screen that is reporting rather than performing. */
 .ld__bar {
   width: min(224px, 62vw);
   height: 2px;
@@ -29962,45 +30083,52 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 }
 .ld__fill {
   display: block;
-  width: 0%;
+  width: 100%;
   height: 100%;
   border-radius: inherit;
   background: var(--ld-fill);
-  transition: width 220ms cubic-bezier(0.33, 0, 0.2, 1);
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+  animation: ld-bar 5500ms linear forwards;
+}
+@keyframes ld-bar {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(0.92); }
 }
 
-
-/* --- one luminance, held ------------------------------------------------
-   The loader stays in the theme the portfolio is already in, for the whole
-   sequence. Nothing here animates the background, the type colour or the bar
-   colour: the only transition on the shell is the dissolve at the handoff, so
-   there is no full-screen luminance change to flash, flicker or repeat.
-
-   The progression the sequence needs is carried by the object instead, in
-   shape, layout, and the depth of its own light and shadow. */
-
-/* MOBILE: THE FORM GETS THE ROOM, NOTHING ELSE MOVES.
-
-   On a phone the shared vw/vh formula left the object reading as an icon.
-   This raises the form alone: the message keeps the display size it shares
-   with the case-study title, and the bar keeps its own width and height, so
-   the hierarchy under the object is untouched. */
 @media (max-width: 719px) {
-  /* The column's own inset was the real cap: the form was being shrunk to fit
-     inside it rather than by its own rule. The column gives up its gutter and
-     the form takes the width; the message keeps its own measure and the bar
-     its own width, so neither moves. */
   .ld__c { width: 100%; padding-inline: 10px; }
-  /* Same width the phone already gave it. The vh term comes down with the
-     taller frame so a short phone still clears the message and the bar. */
-  .ld__svg { width: min(96vw, 46vh); }
+  /* 100% of the column rather than 96vw. The column already gives up 10px
+     either side, so 96vw was four pixels wider than the space it had and the
+     right-hand shells' shadows were being clipped by the overlay's edge. */
+  .ld__stage { width: min(100%, 46vh); }
 }
 
 html.ld-lock, html.ld-lock body { overflow: hidden; }
 
+/* NO MOTION: the settled composition, held. The form and the horizon never
+   appear, the shell is simply there, and the copy still crossfades on opacity
+   alone, with the 6px travel removed by an !important, which outranks a
+   keyframe. */
 @media (prefers-reduced-motion: reduce) {
-  .ld__m { transition: opacity 300ms ease; transform: none; filter: none; }
-  .ld__m.is-on, .ld__m.is-out { transform: none; filter: none; }
+  .ld__horizon, .ld__blorb { animation: none; opacity: 0; }
+  .ld__shell { animation: none; opacity: 1; transform: none; }
+
+  /* THE COPY AND THE BAR ARE INFORMATION, NOT DECORATION.
+
+     There is a site-wide `* { animation-duration: 0.001ms !important }` under
+     this query, and it is the right rule for everything else here: it is what
+     makes the form and the horizon simply not happen. Applied to these two it
+     would snap the message timeline to its last line, so a reader who asked
+     for less motion would be told "Welcome in." for five and a half seconds
+     while the page was still loading, and the bar would sit full while it
+     was not. A class selector outranks the universal one at equal importance,
+     so the two things that are reporting rather than performing keep their
+     clock. What they lose is the travel: the copy crossfades on opacity with
+     the 6px rise removed, and the bar is a 2px line growing once. */
+  .ld__m { translate: none !important; animation-duration: 5500ms !important; }
+  .ld__fill { animation-duration: 5500ms !important; }
 }
 
 /* ==========================================================================
@@ -30055,119 +30183,165 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 
 <div class="ld" id="pf-loader" role="status" aria-live="polite" aria-label="Loading">
   <div class="ld__c">
-    <svg class="ld__svg" viewBox="0 0 320 285" aria-hidden="true" focusable="false">
-      <defs>
-        <radialGradient id="ld-face" cx="33%" cy="26%" r="84%">
-          <stop class="ld-hi"  offset="0%"></stop>
-          <stop class="ld-mid" offset="56%"></stop>
-          <stop class="ld-lo"  offset="100%"></stop>
-        </radialGradient>
-        <filter id="ld-soft" x="-40%" y="-40%" width="180%" height="180%">
-          <feDropShadow dx="5" dy="11" stdDeviation="11"></feDropShadow>
-        </filter>
-        <!-- The horizon is not a line. It is this: the page's own background
-             colour, feathered in over 30 units, laid across the lower part of
-             the frame. Where it covers the form the form is simply not there,
-             which reads as an edge the object is behind rather than as a
-             shape drawn on top of it. -->
-        <linearGradient id="ld-plane" x1="0" y1="0" x2="0" y2="1">
-          <stop class="ld-plane" offset="0%" stop-opacity="0"></stop>
-          <stop class="ld-plane" offset="42%" stop-opacity="1"></stop>
-          <stop class="ld-plane" offset="100%" stop-opacity="1"></stop>
-        </linearGradient>
-      </defs>
-      <ellipse data-ld-cast cx="160" cy="186" rx="46" ry="5" opacity="0"></ellipse>
-      <g filter="url(#ld-soft)">
-        <!-- EIGHTEEN SHELLS, ONE MATERIAL.
-
-             Every module of the settled composition is one of these, and all
-             eighteen spend the first two acts exactly inside the single mass.
-             Nothing is added to the scene at any point: the shells are drawn
-             out of the form, first into four regions and then into their own
-             places. Empty by construction, every one of them: there is no
-             text, mark or fill inside a shell anywhere in the sequence. -->
-        <path data-ld-p="0" fill="url(#ld-face)"></path>
-        <path data-ld-p="1" fill="url(#ld-face)"></path>
-        <path data-ld-p="2" fill="url(#ld-face)"></path>
-        <path data-ld-p="3" fill="url(#ld-face)"></path>
-        <path data-ld-p="4" fill="url(#ld-face)"></path>
-        <path data-ld-p="5" fill="url(#ld-face)"></path>
-        <path data-ld-p="6" fill="url(#ld-face)"></path>
-        <path data-ld-p="7" fill="url(#ld-face)"></path>
-        <path data-ld-p="8" fill="url(#ld-face)"></path>
-        <path data-ld-p="9" fill="url(#ld-face)"></path>
-        <path data-ld-p="10" fill="url(#ld-face)"></path>
-        <path data-ld-p="11" fill="url(#ld-face)"></path>
-        <path data-ld-p="12" fill="url(#ld-face)"></path>
-        <path data-ld-p="13" fill="url(#ld-face)"></path>
-        <path data-ld-p="14" fill="url(#ld-face)"></path>
-        <path data-ld-p="15" fill="url(#ld-face)"></path>
-        <path data-ld-p="16" fill="url(#ld-face)"></path>
-        <path data-ld-p="17" fill="url(#ld-face)"></path>
-      </g>
-      <rect data-ld-plane x="-40" y="158" width="400" height="127" fill="url(#ld-plane)" opacity="0"></rect>
-    </svg>
-    <p class="ld__msg"><span class="ld__m is-on" data-ld-msg>Accessing Sarthak&#8217;s workspace&#8230;</span><span class="ld__m" data-ld-msg2 aria-hidden="true"></span></p>
+    <!-- THE STAGE. Three layers and nothing else: the horizon, the one form
+         that carries acts one and two, and the eighteen shells of the settled
+         composition. No SVG, no filter, no canvas. Every element here is in
+         the document from the first paint and none of them is created,
+         removed or re-laid-out while the sequence runs. -->
+    <div class="ld__stage" aria-hidden="true">
+      <div class="ld__horizon"></div>
+      <div class="ld__blorb"></div>
+      <!-- The landing page's own shell, abstracted: a tall left column over
+           two tiles, a top rail with two controls, the message panels with
+           their reactions, the project browser on the right, and the wide
+           band with the tile beside it. Empty by construction. -->
+      <div class="ld__shell">
+      <span class="ld__s ld__s--00"></span><!-- left tall -->
+      <span class="ld__s ld__s--01"></span><!-- left mid tile -->
+      <span class="ld__s ld__s--02"></span><!-- left low tile -->
+      <span class="ld__s ld__s--03 ld__s--pill"></span><!-- rail 1 -->
+      <span class="ld__s ld__s--04 ld__s--pill"></span><!-- rail 2 -->
+      <span class="ld__s ld__s--05 ld__s--pill"></span><!-- rail 3 -->
+      <span class="ld__s ld__s--06 ld__s--dot"></span><!-- ctl 1 -->
+      <span class="ld__s ld__s--07 ld__s--dot"></span><!-- ctl 2 -->
+      <span class="ld__s ld__s--08"></span><!-- short line -->
+      <span class="ld__s ld__s--09"></span><!-- message 1 -->
+      <span class="ld__s ld__s--10"></span><!-- message 2 -->
+      <span class="ld__s ld__s--11 ld__s--dot"></span><!-- react 1 -->
+      <span class="ld__s ld__s--12 ld__s--dot"></span><!-- react 2 -->
+      <span class="ld__s ld__s--13 ld__s--dot"></span><!-- react 3 -->
+      <span class="ld__s ld__s--14 ld__s--dot"></span><!-- react 4 -->
+      <span class="ld__s ld__s--15"></span><!-- project browser -->
+      <span class="ld__s ld__s--16"></span><!-- wide band -->
+      <span class="ld__s ld__s--17"></span><!-- bottom tile -->
+      </div>
+    </div>
+    <p class="ld__msg">
+      <!-- All three lines, mounted for the whole sequence. The crossfade is
+           two of them on one keyframe timeline, not a swap. -->
+      <span class="ld__m ld__m--1">Accessing Sarthak&#8217;s workspace&#8230;</span>
+      <span class="ld__m ld__m--2" aria-hidden="true">Cleaning up my desk&#8230;</span>
+      <span class="ld__m ld__m--3" aria-hidden="true">Welcome in.</span>
+    </p>
     <div class="ld__bar"><span class="ld__fill" data-ld-fill></span></div>
   </div>
 </div>
 <script>
   /* ==========================================================================
-     THE FIRST FRAME, PAINTED BEFORE THE FIRST PAINT
+     THE LOADER'S SCRIPT, AND THE HANDOFF
 
-     The loader's own script sits at the end of the body, which on a document
-     this size is about four hundred milliseconds of parsing away. Until it
-     ran, the four shells had no `d` at all: the reader got the ground, the
-     line of copy and the bar, and then the object appeared out of nothing.
-     Measured at 1440: three painted frames, 0 to 418ms, with zero form on
-     screen.
+     There is no animation code here. The sequence is CSS keyframes that start
+     when the element paints; this file does three things and then stops:
+     scroll-locks the page, closes the progress bar when the page is genuinely
+     ready, and hands over to the hero once the hero exists.
 
-     This is the same geometry the run's own frame zero produces, written by a
-     blocking script directly under the markup so it lands in the first paint.
-     The main script then redraws the identical values, so there is no step
-     between the held frame and the moving one: the object is simply there
-     from the start, low behind the horizon, waiting to rise.
+     It sits directly under the markup so its clock starts at the same moment
+     the keyframes do, which is also why the form is on screen in the first
+     painted frame rather than four hundred milliseconds later.
+
+     THE HERO IS NOT DUPLICATED, IT IS DEFERRED. app-1.js starts the thread
+     from a DOMContentLoaded handler, so leaving it in the document would run
+     the conversation behind an opaque overlay and the reader would arrive
+     halfway through it. The two scripts are attached at the handoff instead:
+     by then readyState is 'complete', their own boot runs immediately, and
+     the thread opens on "Hello Team :)" exactly once, in view.
      ====================================================================== */
   (function () {
     'use strict';
     var root = document.getElementById('pf-loader');
     if (!root) return;
-    var paths = [].slice.call(root.querySelectorAll('[data-ld-p]'));
-    if (!paths.length) return;
-    var N = 96;
 
-    function shape(cx, cy, a, b, n) {
-      var d = '', i, t, c, s2, x, y;
-      for (i = 0; i < N; i++) {
-        t = (i / N) * Math.PI * 2;
-        c = Math.cos(t); s2 = Math.sin(t);
-        x = Math.pow(Math.abs(c), 2 / n) * (c < 0 ? -1 : 1) * a;
-        y = Math.pow(Math.abs(s2), 2 / n) * (s2 < 0 ? -1 : 1) * b;
-        d += (i ? 'L' : 'M') + (cx + x).toFixed(2) + ' ' + (cy + y).toFixed(2);
+    var SRC = ['assets/app-1.js', 'assets/app-2.js'];
+    var MIN = 5500;
+    var fill = root.querySelector('[data-ld-fill]');
+    var done = false;
+
+    document.documentElement.classList.add('ld-lock');
+
+    /* ---- the two conditions ---------------------------------------------
+       The sequence has to have been readable, AND the page has to be ready.
+       Neither alone is enough: finishing early cuts the copy off mid-line,
+       and finishing late strands the reader behind an overlay. */
+    var ready = false, elapsed = false;
+    function tick() { if (ready && elapsed && !done) finish(); }
+
+    var waits = [];
+    if (document.fonts && document.fonts.ready) waits.push(document.fonts.ready);
+    waits.push(new Promise(function (res) {
+      if (document.readyState === 'complete') res();
+      else window.addEventListener('load', res, { once: true });
+    }));
+    Promise.all(waits).then(mark, mark);
+    function mark() { ready = true; tick(); }
+    setTimeout(mark, 8000);
+    setTimeout(function () { elapsed = true; tick(); }, MIN);
+
+    function finish() {
+      done = true;
+
+      /* THE LAST 8% OF THE BAR, WITHOUT A LAYOUT.
+
+         The fill is mid-keyframe on a scaleX. Dropping the animation would
+         snap it back to its base value, so its current scale is read once,
+         pinned inline, and then transitioned the rest of the way. One read
+         and one reflow, at the end of the sequence, and never during it. */
+      if (fill) {
+        var cur = 0.92;
+        try {
+          var m = getComputedStyle(fill).transform;
+          if (m && m !== 'none') cur = parseFloat(m.slice(m.indexOf('(') + 1)) || cur;
+        } catch (e) {}
+        fill.style.transform = 'scaleX(' + cur.toFixed(4) + ')';
+        fill.style.animation = 'none';
+        void fill.offsetWidth;
+        fill.style.transition = 'transform 320ms cubic-bezier(0.33, 0, 0.2, 1)';
+        fill.style.transform = 'scaleX(1)';
       }
-      return d + 'Z';
-    }
 
-    var still = !!(window.matchMedia &&
-                   window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    /* Still: the settled boxy form, centred, no plane and no cast, which is
-       exactly what the main script holds for a reader who asked for no
-       motion. Moving: the circle at rest, thirty units low, with the plane
-       across it and its contact shadow underneath. */
-    var d0 = still ? shape(160, 142, 80, 62, 6.6) : shape(160, 172, 52, 52, 2.0);
-    for (var i = 0; i < paths.length; i++) {
-      paths[i].setAttribute('d', d0);
-      paths[i].setAttribute('opacity', i === 0 ? '1' : '0');
-    }
-    var plane = root.querySelector('[data-ld-plane]');
-    var cast = root.querySelector('[data-ld-cast]');
-    if (plane) plane.setAttribute('opacity', still ? '0' : '1');
-    if (cast) {
-      cast.setAttribute('opacity', still ? '0' : '0.5');
-      cast.setAttribute('rx', '50');
+      setTimeout(function () {
+        /* THE LOADER LEAVES AFTER THE HERO ARRIVES, NOT BEFORE IT.
+
+           Attaching a script is not running it, so adding the dissolve in the
+           same statement always faded onto a page that was still being
+           parsed. The fade waits for both scripts to have executed and then
+           for two frames, which is the hero laid out and painted. */
+        var left = SRC.length, handed = false;
+
+        function dissolve() {
+          if (handed) return;
+          handed = true;
+          root.classList.add('is-out');
+          document.documentElement.classList.remove('ld-lock');
+          /* Comfortably past the 460ms dissolve, so the node is never taken
+             out from under a transition that is still running. */
+          setTimeout(function () {
+            if (root.parentNode) root.parentNode.removeChild(root);
+          }, 760);
+        }
+        function arrived() {
+          if (--left > 0) return;
+          requestAnimationFrame(function () { requestAnimationFrame(dissolve); });
+        }
+
+        for (var i = 0; i < SRC.length; i++) {
+          var sc = document.createElement('script');
+          sc.src = SRC[i];
+          sc.async = false;
+          sc.onload = arrived;
+          /* A script that never lands must not leave the reader behind a
+             full-screen overlay. */
+          sc.onerror = arrived;
+          document.body.appendChild(sc);
+        }
+        /* A build with nothing to attach (the single-file master, where the
+           hero's scripts are already inline) has nothing to wait for. */
+        if (!left) requestAnimationFrame(function () { requestAnimationFrame(dissolve); });
+        setTimeout(dissolve, 6000);
+      }, 320);
     }
   }());
 </script>
+
 
 
 
@@ -43463,427 +43637,6 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
 <template id="tpl-hw"><svg class="hw" viewBox="0 0 2007 329" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="hw-g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="4817" y2="0"><stop offset="0" stop-color="var(--kw-a)"/><stop offset=".28" stop-color="var(--kw-b)"/><stop offset=".5" stop-color="var(--kw-c)"/><stop offset=".72" stop-color="var(--kw-b)"/><stop offset="1" stop-color="var(--kw-a)"/></linearGradient><mask id="hw-ink"><image href="assets/18f020fbf820.png" x="0" y="0" width="2007" height="329"/></mask><mask id="hw-pen"><g class="hw__pen" fill="none" stroke="#fff" stroke-width="25.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 311 L15 312M21 307 L20 314" style="--l:13.2;--at:0ms;--ms:24ms"/><path d="M15 307 L21 307 L48 279 L56 277 L103 237 L176 182" style="--l:206.3;--at:1ms;--ms:24ms"/><path d="M48 279 L45 277 L47 267 L99 198 L152 134" style="--l:183.3;--at:21ms;--ms:24ms"/><path d="M158 280 L151 280" style="--l:7.0;--at:39ms;--ms:24ms"/><path d="M227 156 L223 172 L175 235 L162 261 L155 265" style="--l:132.8;--at:40ms;--ms:24ms"/><path d="M152 134 L241 38 L258 19" style="--l:156.4;--at:52ms;--ms:24ms"/><path d="M161 263 L158 282 L164 283 L173 280 L239 232 L242 229 L243 223 L250 217" style="--l:136.0;--at:68ms;--ms:24ms"/><path d="M176 182 L205 163 L218 157 L227 156 L230 146" style="--l:68.5;--at:81ms;--ms:24ms"/><path d="M228 154 L233 153" style="--l:5.1;--at:87ms;--ms:24ms"/><path d="M242 228 L249 228 L270 209 L273 204 L267 203" style="--l:47.2;--at:88ms;--ms:24ms"/><path d="M282 202 L280 214 L274 225 L259 250 L253 254" style="--l:61.1;--at:92ms;--ms:24ms"/><path d="M258 19 L260 14M258 18 L261 18" style="--l:8.4;--at:98ms;--ms:24ms"/><path d="M258 252 L259 265 L269 262 L319 229 L325 227 L333 228 L336 226 L342 217 L359 200" style="--l:136.2;--at:99ms;--ms:24ms"/><path d="M273 204 L275 205 L282 202 L298 185 L299 180" style="--l:38.3;--at:112ms;--ms:24ms"/><path d="M325 227 L324 220" style="--l:7.1;--at:116ms;--ms:24ms"/><path d="M332 228 L329 240 L323 251 L323 256 L327 260 L333 260 L344 255 L405 212 L415 211 L409 233 L416 233 L458 203" style="--l:219.7;--at:117ms;--ms:24ms"/><path d="M359 200 L358 197 L361 192M359 200 L364 198" style="--l:14.4;--at:138ms;--ms:24ms"/><path d="M411 234 L383 263" style="--l:40.3;--at:139ms;--ms:24ms"/><path d="M414 210 L433 189 L445 179" style="--l:43.9;--at:143ms;--ms:24ms"/><path d="M474 199 L471 223 L461 235 L454 236" style="--l:46.9;--at:147ms;--ms:24ms"/><path d="M458 203 L474 199 L488 188" style="--l:34.3;--at:152ms;--ms:24ms"/><path d="M471 223 L487 219 L525 193 L544 187" style="--l:82.5;--at:155ms;--ms:24ms"/><path d="M484 190 L483 187 L487 180M528 230 L520 233M528 225 L522 225M539 191 L540 189M540 189 L540 186" style="--l:31.0;--at:163ms;--ms:24ms"/><path d="M539 188 L537 204 L528 220 L528 230 L533 237 L547 235 L561 230 L565 227 L567 221 L571 219 L578 228 L594 241 L604 238 L616 229 L633 226 L647 211" style="--l:193.1;--at:166ms;--ms:24ms"/><path d="M566 261 L562 266 L558 266M578 228 L564 228" style="--l:24.4;--at:185ms;--ms:24ms"/><path d="M593 241 L590 250 L585 254 L577 259 L566 261 L567 250 L576 241 L582 231" style="--l:71.9;--at:187ms;--ms:24ms"/><path d="M651 195 L649 193 L634 195 L616 203 L595 217 L588 224 L584 232" style="--l:81.7;--at:194ms;--ms:24ms"/><path d="M636 243 L633 248" style="--l:5.8;--at:202ms;--ms:24ms"/><path d="M633 226 L633 241 L637 243 L658 237 L673 228 L679 220" style="--l:68.8;--at:203ms;--ms:24ms"/><path d="M647 211 L650 196 L660 191 L667 191 L673 185 L673 182" style="--l:45.0;--at:209ms;--ms:24ms"/><path d="M679 223 L686 222 L705 209 L721 206 L723 203" style="--l:50.0;--at:214ms;--ms:24ms"/><path d="M721 206 L718 229 L693 251" style="--l:56.5;--at:218ms;--ms:24ms"/><path d="M723 205 L729 202" style="--l:6.7;--at:224ms;--ms:24ms"/><path d="M718 229 L733 226 L780 198 L788 194 L797 193 L800 186" style="--l:95.6;--at:225ms;--ms:24ms"/><path d="M799 191 L801 195 L798 207 L780 234 L773 252 L772 267 L775 272 L783 278 L802 281 L853 270" style="--l:170.9;--at:234ms;--ms:24ms"/><path d="M801 194 L805 192" style="--l:4.5;--at:250ms;--ms:24ms"/><path d="M861 234 L887 228 L937 228" style="--l:76.7;--at:251ms;--ms:24ms"/><path d="M933 229 L928 234" style="--l:7.1;--at:258ms;--ms:24ms"/><path d="M1075 203 L1082 195 L1085 179 L1079 174 L1061 176 L1047 182 L1025 196 L988 232 L978 249 L976 256 L977 265 L981 269 L990 272 L1018 270 L1055 254 L1071 251 L1089 232 L1094 216 L1113 197 L1134 182 L1141 181 L1151 187 L1155 184" style="--l:401.0;--at:259ms;--ms:39ms"/><path d="M1071 250 L1071 269 L1076 274 L1089 276 L1106 272 L1148 252 L1179 234" style="--l:139.1;--at:298ms;--ms:24ms"/><path d="M1081 196 L1082 198 L1091 198 L1103 193" style="--l:24.2;--at:311ms;--ms:24ms"/><path d="M1152 187 L1150 192 L1140 202 L1111 224 L1100 230 L1089 232" style="--l:79.6;--at:313ms;--ms:24ms"/><path d="M1141 181 L1145 175 L1152 176M1154 186 L1159 186" style="--l:19.3;--at:321ms;--ms:24ms"/><path d="M1215 217 L1211 241 L1187 268 L1165 285 L1162 285" style="--l:91.3;--at:323ms;--ms:24ms"/><path d="M1190 228 L1188 231 L1181 232" style="--l:10.7;--at:332ms;--ms:24ms"/><path d="M1179 234 L1183 227 L1189 225 L1190 222 L1198 222 L1202 219 L1215 217 L1232 199 L1237 197" style="--l:73.8;--at:333ms;--ms:24ms"/><path d="M1196 256 L1193 252 L1185 256M1197 222 L1194 227 L1190 228 L1189 225" style="--l:27.1;--at:340ms;--ms:24ms"/><path d="M1211 241 L1227 237 L1273 206 L1288 204 L1294 201" style="--l:93.8;--at:343ms;--ms:24ms"/><path d="M1232 199 L1234 193M1263 256 L1258 254 L1254 261M1263 277 L1255 277M1258 254 L1259 249" style="--l:32.9;--at:352ms;--ms:24ms"/><path d="M1287 204 L1284 219 L1271 239 L1265 241" style="--l:45.5;--at:355ms;--ms:24ms"/><path d="M1269 240 L1269 247 L1259 265 L1259 273 L1264 277 L1276 273 L1309 251 L1319 242 L1321 235 L1341 217 L1349 217 L1347 225 L1339 236 L1333 233" style="--l:178.5;--at:359ms;--ms:24ms"/><path d="M1286 205 L1285 202 L1288 197M1336 241 L1333 237 L1329 237 L1325 241 L1319 242" style="--l:29.7;--at:376ms;--ms:24ms"/><path d="M1376 131 L1371 134 L1354 136 L1344 140 L1332 140" style="--l:45.7;--at:379ms;--ms:24ms"/><path d="M1338 236 L1330 256 L1330 266 L1335 271 L1350 271 L1384 253 L1395 251 L1398 242 L1408 232 L1412 218 L1447 183" style="--l:190.9;--at:384ms;--ms:24ms"/><path d="M1347 139 L1354 147 L1376 153" style="--l:33.4;--at:402ms;--ms:24ms"/><path d="M1349 217 L1423 143 L1426 133 L1429 130 L1463 111" style="--l:158.3;--at:405ms;--ms:24ms"/><path d="M1409 124 L1408 127 L1387 129 L1379 133 L1376 132 L1377 127" style="--l:41.5;--at:421ms;--ms:24ms"/><path d="M1383 132 L1386 135 L1394 135 L1396 129M1397 259 L1401 256M1396 132 L1406 132 L1408 127" style="--l:39.0;--at:425ms;--ms:24ms"/><path d="M1395 250 L1395 257 L1401 269 L1412 270 L1435 260 L1485 225 L1530 185" style="--l:177.8;--at:428ms;--ms:24ms"/><path d="M1408 131 L1414 131 L1419 126M1428 131 L1422 126 L1409 125 L1409 123" style="--l:35.9;--at:446ms;--ms:24ms"/><path d="M1448 206 L1448 211 L1443 215 L1437 216 L1421 229 L1408 232" style="--l:51.4;--at:449ms;--ms:24ms"/><path d="M1437 216 L1438 212" style="--l:4.1;--at:454ms;--ms:24ms"/><path d="M1447 183 L1457 178 L1467 179 L1469 182 L1463 194 L1451 206 L1445 206" style="--l:61.2;--at:454ms;--ms:24ms"/><path d="M1460 178 L1461 175" style="--l:3.2;--at:460ms;--ms:24ms"/><path d="M1465 111 L1467 102 L1473 94 L1494 76 L1527 42" style="--l:94.3;--at:461ms;--ms:24ms"/><path d="M1463 111 L1468 114 L1483 114 L1519 107 L1539 106 L1556 101 L1610 98" style="--l:149.3;--at:470ms;--ms:24ms"/><path d="M1506 275 L1502 271" style="--l:5.7;--at:484ms;--ms:24ms"/><path d="M1510 264 L1509 272 L1506 275 L1507 279 L1518 279 L1529 276 L1533 270 L1526 264" style="--l:55.3;--at:485ms;--ms:24ms"/><path d="M1531 184 L1545 189 L1548 192 L1548 201 L1542 213 L1542 217 L1534 226 L1513 262 L1511 264 L1509 263" style="--l:104.3;--at:490ms;--ms:24ms"/><path d="M1530 185 L1534 178" style="--l:8.1;--at:500ms;--ms:24ms"/><path d="M1533 270 L1551 270 L1563 265 L1569 268 L1584 267 L1590 264 L1599 266 L1603 265 L1606 258 L1613 252" style="--l:89.6;--at:501ms;--ms:24ms"/><path d="M1548 104 L1554 109M1563 101 L1562 106 L1558 108" style="--l:17.4;--at:510ms;--ms:24ms"/><path d="M1587 252 L1570 257 L1566 265" style="--l:26.7;--at:511ms;--ms:24ms"/><path d="M1591 99 L1589 103" style="--l:4.5;--at:514ms;--ms:24ms"/><path d="M1590 264 L1586 252 L1606 237 L1609 226 L1616 219 L1658 190 L1672 187 L1676 179" style="--l:133.3;--at:514ms;--ms:24ms"/><path d="M1622 101 L1618 107 L1609 111M1610 98 L1625 100" style="--l:32.2;--at:527ms;--ms:24ms"/><path d="M1603 264 L1605 268 L1618 267 L1651 259 L1709 230" style="--l:116.3;--at:530ms;--ms:24ms"/><path d="M1612 255 L1625 252" style="--l:13.3;--at:542ms;--ms:24ms"/><path d="M1672 189 L1669 200 L1643 221 L1620 235 L1606 237" style="--l:85.9;--at:543ms;--ms:24ms"/><path d="M1638 263 L1637 267M1673 189 L1672 187M1672 186 L1673 189 L1682 186M1711 253 L1706 255" style="--l:24.4;--at:551ms;--ms:24ms"/><path d="M1798 204 L1792 210 L1791 214 L1775 227 L1744 248 L1722 260 L1712 260 L1711 250 L1719 242 L1723 228" style="--l:141.7;--at:553ms;--ms:24ms"/><path d="M1709 230 L1724 228 L1750 209 L1778 197 L1790 198 L1798 204 L1807 203 L1812 208" style="--l:116.0;--at:567ms;--ms:24ms"/><path d="M1806 176 L1786 185 L1779 197" style="--l:35.8;--at:578ms;--ms:24ms"/><path d="M1800 204 L1804 209 L1804 219 L1792 244 L1790 253 L1791 268 L1797 278 L1807 286 L1822 292 L1826 292 L1830 289" style="--l:118.0;--at:582ms;--ms:24ms"/><path d="M1812 195 L1809 194 L1810 179 L1806 177 L1807 175M1812 208 L1818 208" style="--l:30.9;--at:593ms;--ms:24ms"/><path d="M1807 203 L1812 195 L1820 194 L1857 160 L1890 126 L1894 114 L1924 85" style="--l:169.5;--at:596ms;--ms:24ms"/><path d="M1825 293 L1834 296 L1852 296 L1893 288 L1920 280" style="--l:97.4;--at:613ms;--ms:24ms"/><path d="M1957 64 L1953 76 L1931 98 L1903 123 L1890 126" style="--l:94.6;--at:622ms;--ms:24ms"/><path d="M1924 85 L1943 68 L1957 64 L1987 34 L1991 33" style="--l:86.6;--at:631ms;--ms:24ms"/><path d="M1987 34 L1987 29" style="--l:5.0;--at:640ms;--ms:24ms"/></g></mask></defs><g mask="url(#hw-pen)"><g mask="url(#hw-ink)"><rect class="hw__paint" x="0" y="0" width="4817" height="329" fill="url(#hw-g)"/></g></g></svg></template>
-
-<script>
-  /* ==========================================================================
-     THE LOADER, AND THE HANDOFF
-
-     The form is one material. Four paths are drawn from the same superellipse,
-     |x/a|^n + |y/b|^n = 1, sampled at a fixed 72 points so every shape has the
-     same vertices in the same order and the morph between any two is a plain
-     interpolation rather than a swap. A circle is n=2; a rounded square is a
-     larger n; the liquid stage is the circle with a slow low-frequency wave
-     added to the radius. Nothing appears or disappears: the three shells that
-     join the first begin as exact copies of it at zero opacity and lerp out to
-     their own places.
-
-     THE HERO IS NOT DUPLICATED, IT IS DEFERRED. app-1.js starts the thread from
-     a DOMContentLoaded handler, so leaving it in the document would run the
-     conversation behind an opaque overlay and the reader would arrive halfway
-     through it. The two scripts are attached at the handoff instead: by then
-     readyState is 'complete', their own boot runs immediately, and the thread
-     opens on "Hello Team :)" exactly once, in view.
-
-     The bar is not a timer. It tracks the sequence up to 92% and only closes
-     the last 8% once the fonts have loaded and the window's load event has
-     fired. A fast connection still gets the whole readable sequence; a slow one
-     keeps the form breathing rather than freezing.
-     ====================================================================== */
-  (function () {
-    'use strict';
-    var root = document.getElementById('pf-loader');
-    if (!root) return;
-
-    var SRC = ['assets/app-1.js', 'assets/app-2.js'];
-    var MIN = 5500;
-    /* 96 rather than 72: the settled panels sit at a high exponent, where the
-       corner is the part of the curve with the fewest samples, and 72 left a
-       visible facet on the wide shells. */
-    var N = 96;
-    /* THREE LINES, ONE PER ACT.
-
-       Six lines across five and a half seconds gave each one under a second,
-       which is less than it takes to read a sentence in a 44px face: the copy
-       was cycling rather than speaking. One line per act instead. They run off
-       the same clock as the form rather than an interval, so the copy changes
-       when the object does and the two cannot drift apart on a slow frame. */
-    var MSG = [
-      'Accessing Sarthak’s workspace…',
-      'Cleaning up my desk…',
-      'Welcome in.'
-    ];
-    /* Act 1 opens on the first line. The second arrives as the form resolves
-       into structure, the third as the composition settles: 2.4s, 1.8s and
-       1.3s on screen. */
-    var MSG_AT = [0, 2400, 4200];
-
-    var still = !!(window.matchMedia &&
-                   window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-    var paths = [].slice.call(root.querySelectorAll('[data-ld-p]'));
-    var grad = root.querySelector('#ld-face');
-    var shadow = root.querySelector('#ld-soft feDropShadow');
-    var plane = root.querySelector('[data-ld-plane]');
-    var cast = root.querySelector('[data-ld-cast]');
-    var RISE = 800;   /* the circle clears the plane over the first beat */
-    var msgEl = root.querySelector('[data-ld-msg]');
-    var fill = root.querySelector('[data-ld-fill]');
-    var done = false;
-
-    document.documentElement.classList.add('ld-lock');
-
-    /* ---- geometry -------------------------------------------------------- */
-
-    function shape(cx, cy, a, b, n, amp, k, ph) {
-      var d = '', i, t, c, s, x, y, r;
-      for (i = 0; i < N; i++) {
-        t = (i / N) * Math.PI * 2;
-        c = Math.cos(t); s = Math.sin(t);
-        x = Math.pow(Math.abs(c), 2 / n) * (c < 0 ? -1 : 1) * a;
-        y = Math.pow(Math.abs(s), 2 / n) * (s < 0 ? -1 : 1) * b;
-        r = amp ? 1 + amp * Math.sin(k * t + ph) : 1;
-        d += (i ? 'L' : 'M') + (cx + x * r).toFixed(2) + ' ' + (cy + y * r).toFixed(2);
-      }
-      return d + 'Z';
-    }
-
-    function lerp(u, v, m) { return u + (v - u) * m; }
-    function ease(x) { return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
-
-    /* cx, cy, a, b, n, amp, k, opacity */
-    /* The box is wider than it is tall so the form can grow across the
-       viewport without a square SVG pushing the copy off a laptop screen.
-       x stays centred at 160; y centres at 88 in a 320x176 viewBox. */
-    var C = 160;
-    var CY = 142;
-
-    /* THREE ACTS, AND THE HOLDS BETWEEN THEM.
-
-       The old sequence ran nine keyframes through four unrelated dashboard
-       arrangements. It was a demo of a morph engine, not a story: by the time
-       a reader understood one layout it had already become another, and none
-       of them meant anything.
-
-       One object, one structure, one interface instead. The eased curve has
-       zero velocity at every keyframe, so a pair of keys close together IS a
-       hold: the form arrives, stops, and is allowed to register before the
-       next move starts.
-
-         0 - 800     Act 1. The circle rises out of the horizon.
-         800 - 1300  It settles and breathes.
-         1300 - 2400 Act 2. Liquid deformation, then boxy by the midpoint.
-         2400 - 2800 The structured hold, and the mass grows.
-         2800 - 3400 Act 3. It stretches to the full frame.
-         3400 - 4000 The mass divides into four regions.
-         4000 - 4700 The regions divide again and glide into place.
-         4700 - 5100 They settle.
-         5100 - 5500 Held while the bar closes and the hero comes up behind.
-
-       Nothing after 2400 goes back to organic geometry. n never drops below
-       6.4 again for any module that is a panel; the only shapes that round
-       off are the three rail pills and the six small controls, which round
-       off in the last second because that is what they are.
-
-       THE COMPOSITION IS THE PORTFOLIO'S OWN SHELL.
-
-       Not a dashboard arrangement. Every module below is one region of the
-       supplied reference, measured off it at 1322 by 1176 and scaled by
-       320/1322 into this viewBox, which carries the same 1.12 ratio so
-       nothing is squashed to fit. Left column: a tall shell over two stacked
-       tiles. Top: three rail pills and two round controls. Centre: a short
-       line over two deep message panels, with four reaction dots beneath.
-       Right: the project browser as one tall shell. Bottom: a wide band and
-       the tile beside it. Empty, all of them. The point is the architecture
-       arriving before the interface does. */
-    function all18(v) { var o = [], i; for (i = 0; i < 18; i++) o.push(v.slice()); return o; }
-    function op(n) { var o = [], i; for (i = 0; i < 18; i++) o.push(i < n ? 1 : 0); return o; }
-
-    var KEYS = [
-      /* Act 1. Form. */
-      { at: 0,    s: all18([C, CY, 52, 52, 2.0, 0.000, 3]), o: op(1) },
-      { at: 800,  s: all18([C, CY, 58, 58, 2.0, 0.020, 3]), o: op(1) },
-      { at: 1300, s: all18([C, CY, 56, 56, 2.0, 0.016, 3]), o: op(1) },
-
-      /* Act 2. Structure. The one moment of real liquid, then the box. */
-      { at: 1800, s: all18([C, CY, 66, 60, 2.2, 0.100, 2]), o: op(1) },
-      { at: 2400, s: all18([C, CY, 78, 62, 6.4, 0.000, 3]), o: op(1) },
-      { at: 2800, s: all18([C, CY, 94, 76, 6.6, 0.000, 3]), o: op(1) },
-
-      /* Act 3. Interface. The mass takes the whole frame first, so the
-         material that becomes eighteen shells is visibly the material that
-         was the box. */
-      { at: 3400, s: all18([160, 142, 150, 120, 8.0, 0, 3]), o: op(1) },
-
-      /* Four regions. Each shell is still merged with its neighbours here,
-         so what the eye sees is one mass splitting four ways, not eighteen
-         objects arriving. */
-      { at: 4000, s: [
-          [35.8, 94.7, 31.5, 79.5, 8.0, 0, 3]   /* the left column */,
-          [35.8, 94.7, 31.5, 79.5, 8.0, 0, 3],
-          [35.8, 94.7, 31.5, 79.5, 8.0, 0, 3],
-          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3]   /* the centre */,
-          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
-          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
-          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
-          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
-          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
-          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
-          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
-          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
-          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
-          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
-          [142.9, 89.2, 67.1, 71.2, 8.0, 0, 3],
-          [267.1, 93.5, 50.0, 79.5, 8.0, 0, 3]   /* the project browser */,
-          [160.8, 225.3, 156.3, 44.5, 8.0, 0, 3]   /* the bottom band */,
-          [160.8, 225.3, 156.3, 44.5, 8.0, 0, 3]
-        ], o: op(18) },
-
-      /* Each region divides again and the modules glide out, arriving a
-         little large and a little high: the inertia of something that has
-         been moving, not a layout being switched on. */
-      { at: 4700, s: [[35.8, 49.5, 32.8, 37.8, 8.75, 0, 3],
-          [35.8, 104.1, 32.8, 14.8, 8.75, 0, 3],
-          [35.8, 147.4, 32.8, 25.8, 8.75, 0, 3],
-          [87.9, 20.6, 12.6, 4.2, 4.25, 0, 3],
-          [115.2, 20.6, 14.1, 4.2, 4.25, 0, 3],
-          [141.0, 20.6, 10.7, 4.2, 4.25, 0, 3],
-          [194.4, 20.5, 4.6, 4.6, 3.5, 0, 3],
-          [205.7, 20.5, 4.6, 4.6, 3.5, 0, 3],
-          [109.5, 50.1, 23.3, 7.0, 6.88, 0, 3],
-          [147.4, 83.6, 62.7, 19.1, 8.75, 0, 3],
-          [147.4, 125.3, 62.7, 19.9, 8.75, 0, 3],
-          [161.0, 153.6, 5.0, 5.0, 3.5, 0, 3],
-          [173.1, 153.6, 5.0, 5.0, 3.5, 0, 3],
-          [186.9, 153.6, 5.0, 5.0, 3.5, 0, 3],
-          [200.4, 153.6, 5.0, 5.0, 3.5, 0, 3],
-          [267.1, 91.5, 52.0, 82.7, 8.75, 0, 3],
-          [107.5, 223.3, 107.2, 46.3, 8.75, 0, 3],
-          [266.9, 223.3, 52.2, 46.3, 8.75, 0, 3]
-        ], o: op(18) },
-
-      /* Settled, on the reference's own measurements. */
-      { at: 5100, s: [
-          [35.8, 51.5, 31.5, 36.3, 9.0, 0, 3]   /* left column, the tall shell */,
-          [35.8, 106.1, 31.5, 14.2, 9.0, 0, 3]   /* left column, the middle tile */,
-          [35.8, 149.4, 31.5, 24.8, 9.0, 0, 3]   /* left column, the lower tile */,
-          [87.9, 22.6, 12.1, 4.0, 3.0, 0, 3]   /* top rail 1 */,
-          [115.2, 22.6, 13.6, 4.0, 3.0, 0, 3]   /* top rail 2 */,
-          [141.0, 22.6, 10.3, 4.0, 3.0, 0, 3]   /* top rail 3 */,
-          [194.4, 22.5, 4.4, 4.4, 2.0, 0, 3]   /* control 1 */,
-          [205.7, 22.5, 4.4, 4.4, 2.0, 0, 3]   /* control 2 */,
-          [109.5, 52.1, 22.4, 6.7, 6.5, 0, 3]   /* the short line above the messages */,
-          [147.4, 85.6, 60.3, 18.4, 9.0, 0, 3]   /* message 1 */,
-          [147.4, 127.3, 60.3, 19.1, 9.0, 0, 3]   /* message 2 */,
-          [161.0, 155.6, 4.8, 4.8, 2.0, 0, 3]   /* reaction 1 */,
-          [173.1, 155.6, 4.8, 4.8, 2.0, 0, 3]   /* reaction 2 */,
-          [186.9, 155.6, 4.8, 4.8, 2.0, 0, 3]   /* reaction 3 */,
-          [200.4, 155.6, 4.8, 4.8, 2.0, 0, 3]   /* reaction 4 */,
-          [267.1, 93.5, 50.0, 79.5, 9.0, 0, 3]   /* the project browser */,
-          [107.5, 225.3, 103.1, 44.5, 9.0, 0, 3]   /* the wide band */,
-          [266.9, 225.3, 50.2, 44.5, 9.0, 0, 3]   /* the tile beside it */
-        ], o: op(18) }
-    ];
-    var LAST = KEYS[KEYS.length - 1].at;
-
-    function draw(ms) {
-      var i, j, k0 = KEYS[0], k1 = KEYS[0], m = 0;
-      for (i = 0; i < KEYS.length - 1; i++) {
-        if (ms >= KEYS[i].at && ms <= KEYS[i + 1].at) {
-          k0 = KEYS[i]; k1 = KEYS[i + 1];
-          m = ease((ms - k0.at) / (k1.at - k0.at));
-          break;
-        }
-      }
-      if (ms >= LAST) { k0 = k1 = KEYS[KEYS.length - 1]; m = 1; }
-
-      /* Past the scripted sequence the settled shells keep breathing, so a slow
-         load reads as alive rather than stalled. */
-      var br = ms > LAST ? Math.sin((ms - LAST) / 900) * 0.006 : 0;
-
-      /* THE PROGRESSION LIVES IN THE MATERIAL, NOT IN THE ROOM.
-
-         The luminance of the screen never moves. What moves is the object's
-         own light: the highlight tightens and travels a little as the form
-         resolves, and the contact shadow drops and sharpens as the shells
-         separate and gain edges. Both run one way, from open and soft to
-         close and structured, so there is nothing here that can flicker or
-         repeat. */
-      /* THE OPENING: RISING OUT OF AN IMPLIED PLANE.
-
-         For the first beat the form sits low and the plane covers its lower
-         third, so it reads as something behind a tabletop edge rather than a
-         circle floating in a void. A soft cast shadow sits on that plane
-         underneath it, widest and darkest while the form is closest. Both the
-         occlusion and the shadow resolve as the form lifts, on the same eased
-         curve as the rise, so the object leaves the surface rather than the
-         surface being switched off. */
-      var lift = 1 - ease(Math.min(ms / RISE, 1));
-      if (plane) plane.setAttribute('opacity', lift.toFixed(3));
-      if (cast) {
-        cast.setAttribute('opacity', (lift * 0.5).toFixed(3));
-        cast.setAttribute('rx', (34 + lift * 16).toFixed(1));
-      }
-
-      var d = Math.min(ms / LAST, 1);
-      if (grad) {
-        grad.setAttribute('cx', (33 - d * 5).toFixed(1) + '%');
-        grad.setAttribute('cy', (26 - d * 4).toFixed(1) + '%');
-        grad.setAttribute('r', (84 - d * 13).toFixed(1) + '%');
-      }
-      if (shadow) {
-        shadow.setAttribute('dy', (11 + d * 7).toFixed(1));
-        shadow.setAttribute('stdDeviation', (11 - d * 4).toFixed(1));
-      }
-
-      for (j = 0; j < paths.length; j++) {
-        var A = k0.s[j], B = k1.s[j];
-        var amp = lerp(A[5], B[5], m);
-        var ph = ms / 620;
-        paths[j].setAttribute('d', shape(
-          lerp(A[0], B[0], m), lerp(A[1], B[1], m) + lift * 30,
-          lerp(A[2], B[2], m) * (1 + br), lerp(A[3], B[3], m) * (1 - br * 0.6),
-          lerp(A[4], B[4], m), amp, A[6], ph));
-        paths[j].setAttribute('opacity', lerp(k0.o[j], k1.o[j], m).toFixed(3));
-      }
-    }
-
-    if (still) {
-      if (plane) plane.setAttribute('opacity', '0');
-      if (cast) cast.setAttribute('opacity', '0');
-      /* The same settled box the bootstrap under the markup already painted,
-         so a reader who asked for no motion never sees anything change. */
-      for (var q = 0; q < paths.length; q++) {
-        paths[q].setAttribute('d', shape(C, CY, 80, 62, 6.6, 0, 3, 0));
-        paths[q].setAttribute('opacity', q === 0 ? '1' : '0');
-      }
-    } else {
-      draw(0);
-    }
-
-    /* ---- the message ----------------------------------------------------- */
-
-    var mi = 0;
-    var live = msgEl;
-    var spare = root.querySelector('[data-ld-msg2]');
-    live.textContent = MSG[0];
-    function message(ms) {
-      var want = 0, i;
-      for (i = 0; i < MSG_AT.length; i++) if (ms >= MSG_AT[i]) want = i;
-      if (want === mi || done) return;
-      mi = want;
-
-      /* The incoming line is placed and released in the same frame the
-         outgoing one starts leaving, so the two are on screen together and
-         there is never a blank one. */
-      spare.textContent = MSG[mi];
-      spare.classList.remove('is-out');
-      spare.setAttribute('aria-hidden', 'false');
-      live.setAttribute('aria-hidden', 'true');
-      live.classList.remove('is-on');
-      live.classList.add('is-out');
-      void spare.offsetWidth;
-      spare.classList.add('is-on');
-
-      var t = live; live = spare; spare = t;
-    }
-
-    /* ---- readiness ------------------------------------------------------- */
-
-    var ready = false;
-    function markReady() { ready = true; }
-    var waits = [];
-    if (document.fonts && document.fonts.ready) waits.push(document.fonts.ready);
-    waits.push(new Promise(function (res) {
-      if (document.readyState === 'complete') res();
-      else window.addEventListener('load', res, { once: true });
-    }));
-    Promise.all(waits).then(markReady, markReady);
-    setTimeout(markReady, 8000);
-
-    /* ---- the run --------------------------------------------------------- */
-
-    var t0 = (window.performance && performance.now) ? performance.now() : Date.now();
-    function now() { return ((window.performance && performance.now) ? performance.now() : Date.now()) - t0; }
-
-    function finish() {
-      if (done) return;
-      done = true;
-      live.textContent = MSG[MSG.length - 1];
-      live.classList.add('is-on');
-      live.classList.remove('is-out');
-      fill.style.width = '100%';
-      setTimeout(function () {
-        /* THE LOADER LEAVES AFTER THE HERO ARRIVES, NOT BEFORE IT.
-
-           This used to attach the two scripts and add `is-out` in the same
-           statement. Attaching a script is not running it, so the dissolve
-           always started while the hero was still being fetched and parsed:
-           measured with the scripts held back by 1.2s, the loader was at 94%
-           opacity with the conversation thread still empty underneath it. On
-           a real connection that is a fade onto a bare page, and then the
-           hero popping in behind a loader that has already gone.
-
-           Now the fade waits for both scripts to have executed, and then for
-           two frames, which is the hero laid out and painted. The loader is
-           at full strength over a finished page and dissolves onto something
-           that is already there. */
-        var left = SRC.length;
-        var handed = false;
-
-        function dissolve() {
-          if (handed) return;
-          handed = true;
-          root.classList.add('is-out');
-          document.documentElement.classList.remove('ld-lock');
-          /* Comfortably past the 460ms dissolve, so the node is never taken
-             out from under a transition that is still running. */
-          setTimeout(function () {
-            if (root.parentNode) root.parentNode.removeChild(root);
-          }, 760);
-        }
-
-        function arrived() {
-          if (--left > 0) return;
-          requestAnimationFrame(function () {
-            requestAnimationFrame(dissolve);
-          });
-        }
-
-        /* The hero is attached here, not earlier: readyState is 'complete', so
-           each script boots on arrival and the conversation opens in view. */
-        for (var i = 0; i < SRC.length; i++) {
-          var sc = document.createElement('script');
-          sc.src = SRC[i];
-          sc.async = false;
-          sc.onload = arrived;
-          /* A script that never lands must not leave the reader behind a
-             full-screen overlay. */
-          sc.onerror = arrived;
-          document.body.appendChild(sc);
-        }
-        /* A build with nothing to attach (the single-file master, where the
-           hero's scripts are already inline) has nothing to wait for, so it
-           takes the same two frames and goes. */
-        if (!left) requestAnimationFrame(function () { requestAnimationFrame(dissolve); });
-        setTimeout(dissolve, 6000);
-      }, 280);
-    }
-
-    function frame() {
-      if (done) return;
-      var ms = now();
-      if (!still) draw(ms);
-      message(ms);
-      /* The bar always travels with the sequence. Readiness does not jump it
-         forward, it only lifts the ceiling that holds it short of the end. */
-      var p = Math.min(ms / MIN, 1) * 100;
-      if (!ready) p = Math.min(p, 92);
-      fill.style.width = p.toFixed(1) + '%';
-      if (ready && ms >= MIN) { finish(); return; }
-      requestAnimationFrame(frame);
-    }
-    requestAnimationFrame(frame);
-  }());
-</script>
 
 <script>
   /* FIVE-PHASE WAYFINDING, AS AN ENHANCEMENT.
