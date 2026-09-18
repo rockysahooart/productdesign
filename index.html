@@ -29150,12 +29150,114 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .page[data-view="home"] .hero-card .hero__clients .clients__marquee {
     margin-inline: -20px;
     padding-inline: 20px;
+
+    /* THE STRIP WAS 42px SHORT ON ONE SIDE, AND THAT WAS ARITHMETIC.
+
+       The base rule sets `width: 100%`, which is 100% of the parent's CONTENT
+       box. The negative margin either side is then free to move the box left
+       but has nothing to widen: the left margin pulled the strip out to the
+       card's edge and the right margin pulled nothing, so the rail started at
+       the border and stopped 42px inside it. Auto width lets the flex parent
+       stretch it, the two negative margins cancel the two paddings, and the
+       rail spans edge to edge the way the mask already assumed it did. */
+    width: auto;
+    align-self: stretch;
+
+    /* Room above and below the marks inside the rail, so the strip is a band
+       with air in it rather than a line of logos the height of the logos. */
+    padding-block: 9px;
+
+    /* A longer dissolve than the 22px this had. At 22 a wordmark was most of
+       the way across before it began to fade, so it read as a logo meeting an
+       edge; at 38 the fade is longer than half a mark and the logo is gone
+       before it reaches the border. */
     -webkit-mask-image: linear-gradient(to right,
-      rgba(0,0,0,0) 0, rgba(0,0,0,1) 22px,
-      rgba(0,0,0,1) calc(100% - 22px), rgba(0,0,0,0) 100%);
+      rgba(0,0,0,0) 0, rgba(0,0,0,1) 38px,
+      rgba(0,0,0,1) calc(100% - 38px), rgba(0,0,0,0) 100%);
             mask-image: linear-gradient(to right,
-      rgba(0,0,0,0) 0, rgba(0,0,0,1) 22px,
-      rgba(0,0,0,1) calc(100% - 22px), rgba(0,0,0,0) 100%);
+      rgba(0,0,0,0) 0, rgba(0,0,0,1) 38px,
+      rgba(0,0,0,1) calc(100% - 38px), rgba(0,0,0,0) 100%);
+  }
+
+  /* THE MARKS GET THEIR OWN SIZE BACK.
+
+     The phone rule further up sets a HEIGHT on .clients__logo and nothing
+     else. The width kept coming from --logo-h, which on a phone is about
+     19px, so every mark was handed a box 28px tall and 19px worth of width
+     and `background-size: contain` did the only thing it can: it drew the
+     mark to the narrow dimension and centred it in the tall one. CG rendered
+     12px tall inside a 28px box. The scales set by eye in 07-clients.css,
+     which are the whole optical-sizing argument, were being applied to a
+     width nobody could see.
+
+     So both dimensions come off one token again. --logo-h is the only number,
+     each brand's own --logo-scale multiplies it, and --logo-ratio turns that
+     into a width: the wide wordmarks sit shorter than the compact CVS lockup
+     on purpose, and the four rendered widths land within about 22px of each
+     other instead of being decided by the aspect ratios alone. */
+  .page[data-view="home"] .hero-card .hero__clients {
+    --logo-h:      clamp(22px, 5.6vw, 26px);
+    --clients-gap: clamp(50px, 15.5vw, 68px);
+    /* The track is now roughly 500 to 585px wide rather than 385, so the old
+       19s would have read as a faster strip, not a bigger one. 28s holds the
+       travel at about 18 to 21px per second across the four widths: slower
+       than it was, which is the point. */
+    --clients-dur: 28s;
+  }
+
+  .page[data-view="home"] .hero-card .hero__clients .clients__logo {
+    height: calc(var(--logo-h) * var(--logo-scale, 1));
+    width:  calc(var(--logo-h) * var(--logo-scale, 1) * var(--logo-ratio));
+    /* The box is already the mark's own ratio, so contain fills it exactly
+       and nothing is cropped, stretched or letterboxed. */
+    background-size: contain;
+    background-position: center;
+    opacity: 0.86;
+  }
+
+  /* A SLOT, NOT A GAP.
+
+     Gap alone spaces the BOXES, and four boxes of four different widths read
+     as four different amounts of air even when the number between them is
+     constant. Each mark gets a slot wider than the widest of them and sits
+     centred in it, so the narrow lockup carries its own margin with it and
+     the rhythm along the rail is even. The extra height is the same idea on
+     the other axis: the marks are different heights by design, and a common
+     box keeps them off the top and bottom of the band. */
+  .page[data-view="home"] .hero-card .hero__clients .clients__item {
+    min-width: calc(var(--logo-h) * 3.3);
+    min-height: calc(var(--logo-h) * 1.45);
+    justify-content: center;
+  }
+
+  /* The trailing gap is what makes the seam invisible: the clone starts
+     exactly one gap after the last mark of the original, so the loop point
+     is a gap like every other gap. It has to be restated with the new value
+     for the same reason the gap itself does. */
+  .page[data-view="home"] .hero-card .hero__clients .clients__track {
+    gap: var(--clients-gap);
+    padding-inline-end: var(--clients-gap);
+    animation-duration: var(--clients-dur);
+  }
+
+  /* Under reduced motion there is no loop and no clone: the one track wraps
+     and centres instead. A trailing gap is the seam's spacing, and with no
+     seam it is just 60px of dead weight pulling a centred row off centre. */
+  @media (prefers-reduced-motion: reduce) {
+    .page[data-view="home"] .hero-card .hero__clients .clients__track {
+      padding-inline-end: 0;
+    }
+
+    /* And the dissolve goes with it. A fade at both ends is how a moving
+       strip leaves the card; on a static, centred, wrapped row it is just the
+       first and last mark rendered at half strength. The bleed goes too,
+       because there is nothing left to bleed into. */
+    .page[data-view="home"] .hero-card .hero__clients .clients__marquee {
+      margin-inline: 0;
+      padding-inline: 0;
+      -webkit-mask-image: none;
+              mask-image: none;
+    }
   }
 
   /* ---- TOOLS ------------------------------------------------------------ */
