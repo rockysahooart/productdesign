@@ -2260,6 +2260,23 @@ em,
 
 .cell--governance .slot::after { content: none; }
 
+/* ONE ACTION, AND IT IS THE BLUE ONE.
+
+   The filled button works and is wired, but it is ink on a plate and it only
+   exists from 720 up: below that the row hides `.cta--fill` on every card,
+   so the card's action changed colour, changed shape and changed position
+   depending on how wide the window was. Three treatments for one destination.
+
+   So this card keeps the line and drops the plate. `.pv__go--act` is the same
+   blue as `Download my guide` directly above it, sets identically at 320 and
+   at 3440, and is a plain anchor, which means it does not wait on the route
+   table to become clickable.
+
+   The element stays in the markup, hidden, for the reason it always was:
+   js/wire.js reads the label from the card, and a card with no
+   [data-cta-label] is a card the route table can no longer speak through. */
+.cell--governance .card--project .cta--fill { display: none; }
+
 /* THE ACTION IS BACK, BECAUSE THE CARD HAS SOMEWHERE TO GO.
 
    This card's action used to be hidden, and the reasoning held for as long as
@@ -29509,6 +29526,21 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
    `--m` marks the copy. It is display:none from 720 up, so desktop and
    ultrawide see exactly what they saw before: one CTA, in the browser.
+
+   THE GOVERNANCE CARD JOINED LATER. The paragraph above used to end by
+   exempting it, and the exemption was right while it lasted: the card had one
+   interaction, `Download my guide`, and nothing else to offer, so a second
+   action would have been an action to nowhere. It has a page now. So it takes
+   the same anchor as the rest, with the same class, the same line, the same
+   blue and the same place under the subtitle, and keeps its download link
+   inline in the prose where it already was. `Download my guide` still leaves
+   for the PDF; `View case study` stays on the site.
+
+   This is the only visible route into the project on a phone, which is the
+   point. `.card--project .cta--fill` is display:none below 720 for every card
+   in the row, the filled button included, so without this line the card's one
+   affordance down here is the corner arrow: real, but nothing about it says
+   where it goes.
    -------------------------------------------------------------------------- */
 @media (min-width: 720px) {
   .card__desc .pv__go--m { display: none; }
@@ -29524,6 +29556,24 @@ button.cu-q:hover { background: var(--cu-teal-8); }
     margin-top: 12px;
     width: fit-content;
   }
+}
+
+/* --act IS THE SAME LINE WITHOUT THE BREAKPOINT.
+
+   `--m` exists because six cards already had a filled button up here and only
+   needed a stand-in below 720. The governance card is the one card where the
+   link IS the action at every width, so it takes the same treatment with no
+   media query around it: same block, same 12px, same blue, same place under
+   the subtitle. Phone, desktop and ultrawide get one line that reads the same
+   and goes to the same place.
+
+   Declared after `--m` so a card carrying both would keep this one, and the
+   cascade says so in the order rather than in an `!important`. */
+.card__desc .pv__go--act,
+.pv__sub .pv__go--act {
+  display: block;
+  margin-top: 12px;
+  width: fit-content;
 }
 
 
@@ -29826,20 +29876,102 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    the one blue the project browser already gives to a link that leaves.
    ========================================================================== */
 
-/* The framework's name, under the project's. Display face, but a step down
-   from the title, so the hierarchy reads project first and product second. */
-#slop .gv-name {
-  margin: clamp(26px, 3.6vw, 40px) 0 0;
-  font-family: var(--font-heading);
-  font-variation-settings: var(--wonk-on);
-  font-weight: 600;
-  font-size: clamp(26px, 4.2vw, 38px);
-  line-height: 1.12;
-  letter-spacing: -0.012em;
-  color: var(--ink);
+/* THE FIRST SCREEN HAS TO CONTAIN THE ACTION.
+
+   Kicker, name, one sentence, one link. On a 390 by 844 phone that is the
+   whole of what a reader gets before they decide whether to scroll, so the
+   download sits inside the masthead rather than after the first figure, and
+   the masthead's own spacing is pulled in until all four fit above the fold
+   with room to spare.
+
+   The long project title is not repeated here. The bar above says Design
+   Governance, the kicker says what kind of work it is, and repeating
+   "Designing governance infrastructure for agent-generated interfaces" at
+   display size would have taken three lines of the phone screen and pushed
+   the link below it. */
+#slop .gv-mast { margin-bottom: 0; }
+
+#slop .gv-title {
+  margin: clamp(10px, 1.4vw, 16px) 0 0;
+  font-size: clamp(38px, 7vw, 68px);
+  line-height: 1.04;
+  letter-spacing: -0.018em;
 }
-#slop .gv-sub { margin-top: 10px; }
-#slop .gv-body { margin-top: clamp(16px, 2vw, 22px); }
+
+#slop .gv-sub {
+  margin-top: clamp(12px, 1.6vw, 18px);
+  max-width: 34em;
+}
+
+/* The one action. Same blue, same arrow, same hover as every other link on
+   the site; `--act` only gives it its own line and a little air, which is the
+   treatment the project cards already use. No plate, because no plate exists
+   in this style anywhere else on a text page. */
+#slop .gv-get {
+  margin: clamp(16px, 2vw, 22px) 0 0;
+}
+#slop .gv-get .pv__go {
+  font-size: clamp(16px, 1.25vw, 18px);
+  font-weight: var(--fw-strong);
+}
+
+#slop .gv-body { margin-top: clamp(26px, 3.2vw, 38px); }
+
+/* THREE LINES, MARKED THE WAY THE SITE MARKS A LIST.
+
+   Not a bullet glyph: an em-dash rule in the muted ink, set in the gutter, so
+   the three items read as a set without a second colour or a second shape
+   entering the page. `grid` rather than list-style keeps the wrap hanging
+   under the text instead of under the mark. */
+#slop .gv-list {
+  margin: clamp(18px, 2.2vw, 24px) 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+#slop .gv-list li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  color: var(--ink-secondary);
+}
+#slop .gv-list li::before {
+  content: "\2014";
+  color: var(--ink-muted);
+  line-height: inherit;
+}
+
+/* THREE LINES, MARKED THE WAY THE SITE MARKS A LIST.
+
+   Not a bullet glyph: an em-dash rule in the muted ink, set in the gutter, so
+   the three items read as a set without a second colour or a second shape
+   entering the page. `grid` rather than list-style keeps the wrap hanging
+   under the text instead of under the mark. */
+#slop .gv-list {
+  margin: clamp(18px, 2.2vw, 24px) 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+#slop .gv-list li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.6;
+  color: var(--ink-secondary);
+}
+#slop .gv-list li::before {
+  content: "\2014";
+  color: var(--ink-muted);
+  line-height: inherit;
+}
 
 /* Both figures sit in the same shell as every other artefact on the site. */
 #slop .gv-fig {
@@ -31774,7 +31906,8 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
                      offering a tap that goes nowhere. -->
                 <div class="pv__head">
                   <h3 class="pv__title">Designing governance infrastructure for agent-generated interfaces</h3>
-                  <p class="pv__sub">I&rsquo;m currently building governance standards for catching &ldquo;AI slop,&rdquo; designed to be dropped directly into an agent chat to audit generated product work for weak logic, missing states, unsupported decisions, and other gaps before it ships. <a class="pv__go" data-pf-solo href="./slop-audit.pdf" target="_blank" rel="noopener noreferrer">Download my guide <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
+                  <p class="pv__sub">I&rsquo;m currently building governance standards for catching &ldquo;AI slop,&rdquo; designed to be dropped directly into an agent chat to audit generated product work for weak logic, missing states, unsupported decisions, and other gaps before it ships. <a class="pv__go" data-pf-solo href="./slop-audit.pdf" target="_blank" rel="noopener noreferrer">Download my guide <span class="pv__go-a" aria-hidden="true">&rarr;</span></a>
+                    <a class="pv__go pv__go--act" href="#/slop">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
                 </div>
                 <div class="pv__vis"><img class="pv__img img--ink" src="assets/4a72be947a92.webp"
                        alt="A hand-drawn diagram, &ldquo;Creating governance for AI design decisions: a rule-based system to reduce AI slop&rdquo;, defined underneath as polished looking work without evidence, context or real product logic. Five numbered panels. One, Source: a PDF holding rules, guidelines, checklists and examples. Two, /slop-audit turns it into a skill that uses the PDF as its source, applies the rules, reviews design and copy, flags issues and gives feedback. Three, Use it: run /slop-audit with pasted design, copy, or a link to the PDF. Four, What it looks for, in two columns: design red flags: generic UI, missing states, inconsistent components, random spacing and colours, no user logic, looks polished but shallow; copy red flags: unsupported claims, vague or generic language, fake confidence, invented metrics, no source or context, sounds correct but isn&rsquo;t. Five, Output: audit results listing red flags with reasons, suggestions, what to fix, and higher quality work that&rsquo;s ready to ship. A bracket across the foot reads &ldquo;less AI slop leads to better products&rdquo;."
@@ -40978,6 +41111,8 @@ body{display:grid;place-items:center;min-height:100vh}
               <h3 class="t-card card__title">Designing governance infrastructure for agent-generated interfaces</h3>
               <p class="card__desc">
                 I&rsquo;m currently building governance standards for catching &ldquo;AI slop,&rdquo; designed to be dropped directly into an agent chat to audit generated product work for weak logic, missing states, unsupported decisions, and other gaps before it ships. <a class="pv__go" data-pf-solo href="./slop-audit.pdf" target="_blank" rel="noopener noreferrer">Download my guide <span class="pv__go-a" aria-hidden="true">&rarr;</span></a>
+
+                <a class="pv__go pv__go--act" href="#/slop">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a>
               </p>
               <p class="card__status card__status--wip">Claude skill in development</p>
               <!-- Kept in the markup and hidden in the stylesheet rather than
@@ -44527,22 +44662,28 @@ body{display:grid;place-items:center;min-height:100vh}
       </div>
     </div>
 
-    <header class="ar-mast">
+    <header class="ar-mast gv-mast">
       <p class="ar-kicker">Design governance &middot; AI-generated work</p>
-      <h1 class="ar-title" id="gv-title">Designing governance infrastructure for
-        agent-generated <em>interfaces</em></h1>
+      <h1 class="ar-title gv-title" id="gv-title">The Slop <em>Audit</em></h1>
+      <p class="ar-p ar-p--lead gv-sub">I built a design-governance framework
+        for auditing agent-generated product work before it ships.</p>
+      <p class="gv-get"><a class="pv__go pv__go--act" href="./slop-audit.pdf"
+        target="_blank" rel="noopener noreferrer">Download The Slop Audit
+        <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
     </header>
 
-    <p class="gv-name">The Slop Audit</p>
-    <p class="ar-p ar-p--lead gv-sub">A design-governance framework for auditing
-      agent-generated product work before it ships.</p>
+    <p class="ar-p gv-body">I released the PDF as the current public version,
+      free for anyone to read and use. I&rsquo;m now translating that framework
+      into the <code>/slop-audit</code> Claude skill, so the same rules can run
+      directly inside an agent workflow.</p>
 
-    <p class="ar-p gv-body">The Slop Audit is the governance framework inside
-      this project, and it is the current shipped product: a PDF holding the
-      rules, the protocol for running them, the checklists and the worked
-      examples, free to the public. The <code>/slop-audit</code> Claude skill
-      is being built now by translating that framework into rules an agent can
-      execute. The skill comes out of the PDF, not the other way around.</p>
+    <ul class="gv-list">
+      <li>I check design for weak logic, missing states, and decisions with
+        nothing behind them.</li>
+      <li>I check copy for claims that sound certain but carry no source.</li>
+      <li>I designed it to return structured findings with evidence, severity
+        and a clear fix, instead of vague critique.</li>
+    </ul>
 
     <figure class="gv-fig">
       <img class="img--ink" src="assets/4a72be947a92.webp"
@@ -44551,22 +44692,17 @@ body{display:grid;place-items:center;min-height:100vh}
       <figcaption class="gv-cap">
         <span class="gv-cap__row">
           <span class="gv-cap__k gv-cap__k--now">Current, public</span>
-          <span class="gv-cap__v">The Slop Audit PDF. The rules, protocols,
-            checklists and examples.</span>
+          <span class="gv-cap__v">I&rsquo;ve released the PDF: the rules, the
+            checklists and worked examples.</span>
         </span>
         <span class="gv-cap__arrow" aria-hidden="true">&darr;</span>
         <span class="gv-cap__row">
           <span class="gv-cap__k">In development</span>
-          <span class="gv-cap__v">The <code>/slop-audit</code> Claude skill,
-            built from the PDF as its source.</span>
+          <span class="gv-cap__v">I&rsquo;m building the
+            <code>/slop-audit</code> skill from that PDF.</span>
         </span>
       </figcaption>
     </figure>
-
-    <p class="ar-p gv-get">The PDF is the current shipped product. Free to
-      read, download, and use. <a class="pv__go" href="./slop-audit.pdf"
-      target="_blank" rel="noopener noreferrer">Download The Slop Audit
-      <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
 
     <figure class="gv-fig gv-fig--flow">
       <div class="gv-flow" role="img"
@@ -44592,12 +44728,9 @@ body{display:grid;place-items:center;min-height:100vh}
           </ul>
         </div>
       </div>
-      <figcaption class="gv-cap gv-cap--plain">What the framework audits, and
-        the shape of what it gives back.</figcaption>
+      <figcaption class="gv-cap gv-cap--plain">What I check, and what I get
+        back.</figcaption>
     </figure>
-
-    <p class="cs-beat">I&rsquo;m turning a static governance framework into
-      something agents can use while the work is still being made.</p>
 
   </main>
 
