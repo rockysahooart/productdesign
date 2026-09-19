@@ -29969,6 +29969,72 @@ button.cu-q:hover { background: var(--cu-teal-8); }
     inset 0 -1.5px 2px -1px var(--ld-bev-lo);
 }
 
+/* THE SHELLS DO NOT ARRIVE IN PLACE.
+
+   The group's fade puts them on screen from the midpoint, but a composition
+   that is already correct the moment you can see it has not been assembled,
+   it has been switched on. So each shell carries its own path: it comes up
+   offset from where it belongs, moves twice more while the group is still
+   coming up to full strength, and only settles onto the grid at 85% of the
+   timeline. The last fifteen percent is the composition holding still.
+
+   Four paths, assigned round-robin by index, each ending at zero. Different
+   directions at the same moments is what reads as reorganising rather than
+   as one block sliding. Translate only: it is an independent transform
+   property, so the compositor moves each shell without repainting it, and
+   eighteen of them cost the same as one. */
+.ld__s {
+  animation: ld-fit-ad 5500ms linear forwards;
+}
+  .ld__s--00,
+  .ld__s--04,
+  .ld__s--08,
+  .ld__s--12,
+  .ld__s--16 { animation-name: ld-fit-ad; }
+  .ld__s--01,
+  .ld__s--05,
+  .ld__s--09,
+  .ld__s--13,
+  .ld__s--17 { animation-name: ld-fit-bd; }
+  .ld__s--02,
+  .ld__s--06,
+  .ld__s--10,
+  .ld__s--14 { animation-name: ld-fit-cd; }
+  .ld__s--03,
+  .ld__s--07,
+  .ld__s--11,
+  .ld__s--15 { animation-name: ld-fit-dd; }
+
+@keyframes ld-fit-ad {
+  0%, 50% { translate: -40% -28%; animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1); }
+  61% { translate: 22% 16%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  71% { translate: -11% 8%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  80% { translate: 5% -3%; animation-timing-function: cubic-bezier(0.2, 0.82, 0.28, 1); }
+  88%, 100% { translate: 0 0; }
+}
+@keyframes ld-fit-bd {
+  0%, 50% { translate: 34% -26%; animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1); }
+  61% { translate: -20% 14%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  71% { translate: 9% -8%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  80% { translate: -4% 3%; animation-timing-function: cubic-bezier(0.2, 0.82, 0.28, 1); }
+  88%, 100% { translate: 0 0; }
+}
+@keyframes ld-fit-cd {
+  0%, 50% { translate: -31% 34%; animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1); }
+  61% { translate: 17% -20%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  71% { translate: -9% 11%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  80% { translate: 4% -5%; animation-timing-function: cubic-bezier(0.2, 0.82, 0.28, 1); }
+  88%, 100% { translate: 0 0; }
+}
+@keyframes ld-fit-dd {
+  0%, 50% { translate: 29% 31%; animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1); }
+  61% { translate: -17% -17%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  71% { translate: 11% 8%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  80% { translate: -5% 3%; animation-timing-function: cubic-bezier(0.2, 0.82, 0.28, 1); }
+  88%, 100% { translate: 0 0; }
+}
+
+
 /* THE HORIZON. Not a line and not a blur: the page's own ground colour,
    feathered upward, laid across the lower part of the frame. Where it covers
    the form the form is not there, which reads as an edge the object is
@@ -30056,24 +30122,24 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .ld__s--pill { border-radius: 999px; }
 .ld__s--dot  { border-radius: 50%; }
 
-.ld__s--00 { left: 1.344%; top: 5.333%; width: 19.688%; height: 25.474%; }   /* left tall */
-.ld__s--01 { left: 1.344%; top: 32.246%; width: 19.688%; height: 9.965%; }   /* left mid tile */
-.ld__s--02 { left: 1.344%; top: 43.719%; width: 19.688%; height: 17.404%; }   /* left low tile */
-.ld__s--03 { left: 23.688%; top: 6.526%; width: 7.562%; height: 2.807%; }   /* rail 1 */
-.ld__s--04 { left: 31.750%; top: 6.526%; width: 8.500%; height: 2.807%; }   /* rail 2 */
-.ld__s--05 { left: 40.844%; top: 6.526%; width: 6.438%; height: 2.807%; }   /* rail 3 */
-.ld__s--06 { left: 59.375%; top: 6.351%; width: 2.750%; height: 3.088%; }   /* ctl 1 */
-.ld__s--07 { left: 62.906%; top: 6.351%; width: 2.750%; height: 3.088%; }   /* ctl 2 */
-.ld__s--08 { left: 27.219%; top: 15.930%; width: 14.000%; height: 4.702%; }   /* short line */
-.ld__s--09 { left: 27.219%; top: 23.579%; width: 37.687%; height: 12.912%; }   /* message 1 */
-.ld__s--10 { left: 27.219%; top: 37.965%; width: 37.687%; height: 13.404%; }   /* message 2 */
-.ld__s--11 { left: 48.812%; top: 52.912%; width: 3.000%; height: 3.368%; }   /* react 1 */
-.ld__s--12 { left: 52.594%; top: 52.912%; width: 3.000%; height: 3.368%; }   /* react 2 */
-.ld__s--13 { left: 56.906%; top: 52.912%; width: 3.000%; height: 3.368%; }   /* react 3 */
-.ld__s--14 { left: 61.125%; top: 52.912%; width: 3.000%; height: 3.368%; }   /* react 4 */
-.ld__s--15 { left: 67.844%; top: 4.912%; width: 31.250%; height: 55.789%; }   /* project browser */
-.ld__s--16 { left: 1.375%; top: 63.439%; width: 64.437%; height: 31.228%; }   /* wide band */
-.ld__s--17 { left: 67.719%; top: 63.439%; width: 31.375%; height: 31.228%; }   /* bottom tile */
+.ld__s--00 { left: 3.750%; top: 4.211%; width: 10.000%; height: 11.228%; }   /* identity mark */
+.ld__s--01 { left: 3.750%; top: 18.947%; width: 16.250%; height: 21.053%; }   /* rail tile */
+.ld__s--02 { left: 3.750%; top: 43.509%; width: 16.250%; height: 22.456%; }   /* rail tile */
+.ld__s--03 { left: 23.125%; top: 4.211%; width: 11.250%; height: 4.211%; }   /* rail */
+.ld__s--04 { left: 36.250%; top: 4.211%; width: 11.250%; height: 4.211%; }   /* rail */
+.ld__s--05 { left: 49.375%; top: 4.211%; width: 11.250%; height: 4.211%; }   /* rail */
+.ld__s--06 { left: 62.500%; top: 4.211%; width: 3.750%; height: 4.211%; }   /* control */
+.ld__s--07 { left: 68.125%; top: 4.211%; width: 3.750%; height: 4.211%; }   /* control */
+.ld__s--08 { left: 23.125%; top: 11.930%; width: 30.000%; height: 4.912%; }   /* opening line */
+.ld__s--09 { left: 23.125%; top: 20.351%; width: 48.750%; height: 21.053%; }   /* first panel */
+.ld__s--10 { left: 23.125%; top: 44.912%; width: 48.750%; height: 21.053%; }   /* second panel */
+.ld__s--11 { left: 23.125%; top: 69.474%; width: 3.750%; height: 4.211%; }   /* reaction */
+.ld__s--12 { left: 28.750%; top: 69.474%; width: 3.750%; height: 4.211%; }   /* reaction */
+.ld__s--13 { left: 34.375%; top: 69.474%; width: 3.750%; height: 4.211%; }   /* reaction */
+.ld__s--14 { left: 40.000%; top: 69.474%; width: 3.750%; height: 4.211%; }   /* reaction */
+.ld__s--15 { left: 75.000%; top: 4.211%; width: 21.250%; height: 61.754%; }   /* the project browser */
+.ld__s--16 { left: 3.750%; top: 77.193%; width: 68.125%; height: 18.596%; }   /* the wide band */
+.ld__s--17 { left: 75.000%; top: 77.193%; width: 21.250%; height: 18.596%; }   /* the tile beside it */   /* bottom tile */
 
 /* THE MESSAGE. Three lines, one per act, all three in the document from the
    start, in one grid cell of a fixed-height stage. Nothing is created,
@@ -30191,7 +30257,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
      message and the bar below keep their room on a short phone. */
   .ld__stage {
     width: min(80vw, 36vh);
-    aspect-ratio: 800 / 1522;
+    aspect-ratio: 360 / 720;
   }
 
   /* Taller than wide to begin with, so the vertical growth in the second
@@ -30240,35 +30306,41 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
   .ld__shell { animation-name: ld-shell-m; }
 
-  /* Four beats, top to bottom, beginning at the midpoint: the canvas, then
-     the identity row, then each exchange, then the composer. They carry
-     travel only and never opacity, so the group's own fade stays the single
-     thing controlling presence and nothing arrives twice. */
-  .ld__s {
-    animation: ld-rise-m 980ms cubic-bezier(0.22, 0.7, 0.25, 1) both;
-    animation-delay: 2900ms;
-  }
-  .ld__s--06,
-  .ld__s--07,
-  .ld__s--08 { animation-delay: 3020ms; }
+  /* The same paths, biased to the column. A narrow screen reads vertical
+     movement, so the drift is mostly rise and fall and barely any sway. */
+  .ld__s { animation-name: ld-fit-am; }
+  .ld__s--00,
+  .ld__s--04,
+  .ld__s--08,
+  .ld__s--12,
+  .ld__s--16 { animation-name: ld-fit-am; }
+  .ld__s--01,
+  .ld__s--05,
   .ld__s--09,
+  .ld__s--13,
+  .ld__s--17 { animation-name: ld-fit-bm; }
+  .ld__s--02,
+  .ld__s--06,
   .ld__s--10,
-  .ld__s--11 { animation-delay: 3140ms; }
-  .ld__s--12 { animation-delay: 3260ms; }
+  .ld__s--14 { animation-name: ld-fit-cm; }
+  .ld__s--03,
+  .ld__s--07,
+  .ld__s--11,
+  .ld__s--15 { animation-name: ld-fit-dm; }
 
   .ld__s--00 { left: 0.000%; top: 0.000%; width: 100.000%; height: 100.000%; }   /* the canvas */
-  .ld__s--01 { left: 5.500%; top: 3.154%; width: 18.250%; height: 9.593%; }   /* identity mark */
-  .ld__s--02 { left: 26.750%; top: 5.519%; width: 39.000%; height: 2.168%; }   /* identity line */
-  .ld__s--03 { left: 26.750%; top: 8.870%; width: 25.375%; height: 2.102%; }   /* identity sub */
-  .ld__s--04 { left: 74.625%; top: 1.643%; width: 10.000%; height: 5.256%; }   /* control */
-  .ld__s--05 { left: 86.875%; top: 1.643%; width: 10.000%; height: 5.256%; }   /* control */
-  .ld__s--06 { left: 8.250%; top: 20.959%; width: 9.500%; height: 4.993%; }   /* speaker mark */
-  .ld__s--07 { left: 20.250%; top: 21.288%; width: 37.750%; height: 6.176%; }   /* opening line */
-  .ld__s--08 { left: 20.500%; top: 30.880%; width: 72.250%; height: 15.637%; }   /* first panel */
-  .ld__s--09 { left: 8.000%; top: 51.051%; width: 9.500%; height: 4.993%; }   /* speaker mark */
-  .ld__s--10 { left: 20.500%; top: 51.117%; width: 72.250%; height: 15.900%; }   /* second panel */
-  .ld__s--11 { left: 38.875%; top: 74.047%; width: 22.875%; height: 2.760%; }   /* reaction */
-  .ld__s--12 { left: 8.625%; top: 88.830%; width: 83.125%; height: 9.527%; }   /* composer */
+  .ld__s--01 { left: 5.556%; top: 2.778%; width: 15.556%; height: 7.778%; }   /* identity mark */
+  .ld__s--02 { left: 25.556%; top: 4.167%; width: 52.222%; height: 1.944%; }   /* identity line */
+  .ld__s--03 { left: 25.556%; top: 7.222%; width: 35.556%; height: 1.944%; }   /* identity sub */
+  .ld__s--04 { left: 78.889%; top: 4.722%; width: 6.667%; height: 3.333%; }   /* control */
+  .ld__s--05 { left: 86.667%; top: 4.722%; width: 6.667%; height: 3.333%; }   /* control */
+  .ld__s--06 { left: 5.556%; top: 16.111%; width: 7.778%; height: 3.889%; }   /* speaker mark */
+  .ld__s--07 { left: 17.778%; top: 16.111%; width: 37.778%; height: 5.000%; }   /* opening line */
+  .ld__s--08 { left: 17.778%; top: 23.333%; width: 76.667%; height: 16.667%; }   /* first panel */
+  .ld__s--09 { left: 5.556%; top: 42.222%; width: 7.778%; height: 3.889%; }   /* speaker mark */
+  .ld__s--10 { left: 17.778%; top: 42.222%; width: 76.667%; height: 16.667%; }   /* second panel */
+  .ld__s--11 { left: 36.111%; top: 61.111%; width: 27.778%; height: 2.500%; }   /* reaction */
+  .ld__s--12 { left: 5.556%; top: 86.111%; width: 88.889%; height: 11.111%; }   /* composer */
 
   /* The recessed parts: marks, identity lines, controls, the reaction. Same
      clay, one step down in the light. */
@@ -30280,25 +30352,25 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .ld__s--06,
   .ld__s--09,
   .ld__s--11 {
-    /* PRESSED CLAY.
+    /* MOULDED, NOT STAMPED.
 
-       These were a flat grey fill with a hairline inset, which is skeleton
-       loader, not material: the one place in the composition where the light
-       stopped being consistent. They are the same clay pushed INTO the
-       surface instead of raised out of it, so the modelling inverts. The
-       shade now sits along the top where the wall of the recess faces away
-       from the light, the lit lip sits along the bottom where it faces back
-       into it, and a hair of rim light runs under the lower edge. The face
-       carries its own gradient too, thrown to the lower right, which is the
-       bounce off that far wall. Deeper in tone than the shells around them,
-       never flatter. */
-    background: radial-gradient(150% 150% at 72% 84%,
-                var(--ld-lo) 0%, var(--ld-press) 62%, var(--ld-press) 100%);
+       These were pressed into the surface, and a recess is a hole: it reads
+       as absence, which is what made them feel like placeholders even with
+       the modelling right. Everything in this composition is clay that has
+       been ADDED, so they are convex like everything else, lit from the same
+       upper left, with their own cast shadow on the shell beneath them.
+
+       What separates them from the shell they sit on is tone and depth, not
+       direction: one step down in value so the hierarchy still reads, and a
+       shallower fall because a small object close to a surface throws a
+       short shadow. Same hand, smaller gesture. */
+    background: radial-gradient(140% 140% at 30% 22%,
+                var(--ld-face) 0%, var(--ld-lo) 56%, var(--ld-press) 100%);
     box-shadow:
-      inset 0 2px 4px -1px var(--ld-bev-lo),
-      inset 0 -2px 3px -1px var(--ld-bev-hi),
-      inset 0 0 0 1px var(--ld-bev-lo),
-      0 1px 0 0 var(--ld-rim);
+      0 4px 11px -6px var(--ld-sh),
+      0 1px 2px -1px var(--ld-sh),
+      inset 0 1.5px 1.5px -0.5px var(--ld-bev-hi),
+      inset 0 -2px 3px -1.5px var(--ld-bev-lo);
   }
   .ld__s--01,
   .ld__s--04,
@@ -30311,18 +30383,16 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   /* The composer is an outline in the reference and an outline it stays: the
      one thing in the composition that is waiting rather than showing. */
   .ld__s--12 {
-    /* The composer is the one element in the reference drawn as an outline.
-       An outline is a line, and there are no lines in this material, so it
-       is the shallowest well the system has instead: barely sunk, no fill of
-       its own beyond a breath of shade, the same inverted lips as every
-       other recess. Still reads as the thing that is waiting for you. */
-    background: linear-gradient(to bottom,
-                var(--ld-lo) 0%, var(--ld-face) 42%, var(--ld-face) 100%);
+    /* The composer is drawn as an outline in the reference, and there are no
+       lines in this material. It is the shallowest RAISED slab instead: the
+       same clay, barely lifted, so it still reads as the quiet thing at the
+       foot rather than as a hole in the card. */
+    background: radial-gradient(150% 150% at 28% 20%,
+                var(--ld-hi) 0%, var(--ld-face) 62%, var(--ld-lo) 100%);
     box-shadow:
-      inset 0 2px 3px -1px var(--ld-bev-lo),
-      inset 0 -1.5px 2px -1px var(--ld-bev-hi),
-      inset 0 0 0 1px var(--ld-bev-lo),
-      0 1px 0 0 var(--ld-rim);
+      0 3px 9px -6px var(--ld-sh),
+      inset 0 1.5px 1.5px -0.5px var(--ld-bev-hi),
+      inset 0 -1.5px 2px -1px var(--ld-bev-lo);
   }
   .ld__s--13,
   .ld__s--14,
@@ -30355,9 +30425,33 @@ button.cu-q:hover { background: var(--cu-teal-8); }
               animation-timing-function: cubic-bezier(0.22, 0.7, 0.25, 1); }
   76.4%, 100% { opacity: 1; transform: translateY(0) scale(1); }
 }
-@keyframes ld-rise-m {
-  from { translate: 0 20px; }
-  to   { translate: 0 0; }
+@keyframes ld-fit-am {
+  0%, 50% { translate: -10% -56%; animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1); }
+  61% { translate: 5% 34%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  71% { translate: -3% -18%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  80% { translate: 1% 7%; animation-timing-function: cubic-bezier(0.2, 0.82, 0.28, 1); }
+  88%, 100% { translate: 0 0; }
+}
+@keyframes ld-fit-bm {
+  0%, 50% { translate: 12% 50%; animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1); }
+  61% { translate: -7% -30%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  71% { translate: 5% 15%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  80% { translate: -2% -6%; animation-timing-function: cubic-bezier(0.2, 0.82, 0.28, 1); }
+  88%, 100% { translate: 0 0; }
+}
+@keyframes ld-fit-cm {
+  0%, 50% { translate: -8% 60%; animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1); }
+  61% { translate: 5% -36%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  71% { translate: -3% 19%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  80% { translate: 1% -8%; animation-timing-function: cubic-bezier(0.2, 0.82, 0.28, 1); }
+  88%, 100% { translate: 0 0; }
+}
+@keyframes ld-fit-dm {
+  0%, 50% { translate: 11% -48%; animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1); }
+  61% { translate: -6% 30%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  71% { translate: 3% -15%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  80% { translate: -1% 6%; animation-timing-function: cubic-bezier(0.2, 0.82, 0.28, 1); }
+  88%, 100% { translate: 0 0; }
 }
 
 /* --------------------------------------------------------------------------
@@ -30381,7 +30475,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
   .ld__stage {
     width: min(78vw, 126vh);
-    aspect-ratio: 1713 / 914;
+    aspect-ratio: 1680 / 896;
   }
 
   /* A smaller object in a much larger frame. The negative space either side
@@ -30428,51 +30522,46 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
   .ld__shell { animation-name: ld-shell-u; }
 
-  /* Left, then centre, then right. Each zone enters from its own side, in
-     the direction the mass was already moving, so the grid assembles rather
-     than appearing. */
-  .ld__s {
-    animation-duration: 980ms;
-    animation-timing-function: cubic-bezier(0.22, 0.7, 0.25, 1);
-    animation-fill-mode: both;
-  }
+  /* The same paths, biased to the table. A wide screen reads lateral
+     movement, so the drift travels sideways and hardly rises at all. */
+  .ld__s { animation-name: ld-fit-au; }
   .ld__s--00,
-  .ld__s--01,
-  .ld__s--02,
-  .ld__s--03,
-  .ld__s--16 { animation-name: ld-sweep-l; animation-delay: 2900ms; }
   .ld__s--04,
-  .ld__s--05,
-  .ld__s--12,
-  .ld__s--13,
-  .ld__s--14,
-  .ld__s--15,
-  .ld__s--17 { animation-name: ld-sweep-c; animation-delay: 3060ms; }
-  .ld__s--06,
-  .ld__s--07,
   .ld__s--08,
+  .ld__s--12,
+  .ld__s--16 { animation-name: ld-fit-au; }
+  .ld__s--01,
+  .ld__s--05,
   .ld__s--09,
+  .ld__s--13,
+  .ld__s--17 { animation-name: ld-fit-bu; }
+  .ld__s--02,
+  .ld__s--06,
   .ld__s--10,
-  .ld__s--11 { animation-name: ld-sweep-r; animation-delay: 3220ms; }
+  .ld__s--14 { animation-name: ld-fit-cu; }
+  .ld__s--03,
+  .ld__s--07,
+  .ld__s--11,
+  .ld__s--15 { animation-name: ld-fit-du; }
 
-  .ld__s--00 { left: 0.701%; top: 2.407%; width: 15.178%; height: 23.632%; }   /* rail, top */
-  .ld__s--01 { left: 1.284%; top: 28.228%; width: 14.011%; height: 9.847%; }   /* rail, mid */
-  .ld__s--02 { left: 1.284%; top: 40.263%; width: 14.011%; height: 15.755%; }   /* rail, low */
-  .ld__s--03 { left: 1.284%; top: 58.206%; width: 14.011%; height: 38.512%; }   /* rail, tall */
-  .ld__s--04 { left: 16.229%; top: 1.969%; width: 33.275%; height: 55.142%; }   /* conversation */
-  .ld__s--05 { left: 16.637%; top: 58.206%; width: 32.866%; height: 38.512%; }   /* the band below it */
-  .ld__s--06 { left: 50.555%; top: 2.407%; width: 15.412%; height: 47.046%; }   /* project */
-  .ld__s--07 { left: 67.250%; top: 2.407%; width: 15.645%; height: 47.046%; }   /* project */
-  .ld__s--08 { left: 84.063%; top: 2.407%; width: 15.178%; height: 47.046%; }   /* project */
-  .ld__s--09 { left: 50.555%; top: 51.422%; width: 15.412%; height: 45.295%; }   /* project */
-  .ld__s--10 { left: 67.250%; top: 51.422%; width: 15.645%; height: 45.295%; }   /* project */
-  .ld__s--11 { left: 84.063%; top: 51.422%; width: 15.178%; height: 45.295%; }   /* project */
-  .ld__s--12 { left: 20.899%; top: 15.317%; width: 10.625%; height: 5.689%; }   /* opening line */
-  .ld__s--13 { left: 20.899%; top: 24.945%; width: 27.904%; height: 11.160%; }   /* first panel */
-  .ld__s--14 { left: 20.899%; top: 38.512%; width: 27.904%; height: 10.941%; }   /* second panel */
-  .ld__s--15 { left: 17.513%; top: 60.832%; width: 31.524%; height: 11.379%; }   /* the wide band */
-  .ld__s--16 { left: 3.736%; top: 4.595%; width: 9.107%; height: 17.068%; }   /* identity mark */
-  .ld__s--17 { left: 17.747%; top: 15.098%; width: 1.868%; height: 3.501%; }   /* speaker mark */
+  .ld__s--00 { left: 1.905%; top: 3.571%; width: 14.286%; height: 24.107%; }   /* rail tile */
+  .ld__s--01 { left: 1.905%; top: 30.357%; width: 14.286%; height: 10.714%; }   /* rail tile */
+  .ld__s--02 { left: 1.905%; top: 43.750%; width: 14.286%; height: 16.071%; }   /* rail tile */
+  .ld__s--03 { left: 1.905%; top: 62.500%; width: 14.286%; height: 33.929%; }   /* rail tile */
+  .ld__s--04 { left: 17.619%; top: 3.571%; width: 33.333%; height: 52.232%; }   /* the conversation */
+  .ld__s--05 { left: 17.619%; top: 58.482%; width: 33.333%; height: 37.946%; }   /* the band below it */
+  .ld__s--06 { left: 52.381%; top: 3.571%; width: 14.286%; height: 45.089%; }   /* project */
+  .ld__s--07 { left: 68.095%; top: 3.571%; width: 14.286%; height: 45.089%; }   /* project */
+  .ld__s--08 { left: 83.810%; top: 3.571%; width: 14.286%; height: 45.089%; }   /* project */
+  .ld__s--09 { left: 52.381%; top: 51.339%; width: 14.286%; height: 45.089%; }   /* project */
+  .ld__s--10 { left: 68.095%; top: 51.339%; width: 14.286%; height: 45.089%; }   /* project */
+  .ld__s--11 { left: 83.810%; top: 51.339%; width: 14.286%; height: 45.089%; }   /* project */
+  .ld__s--12 { left: 21.905%; top: 8.929%; width: 11.429%; height: 3.571%; }   /* opening line */
+  .ld__s--13 { left: 19.048%; top: 15.179%; width: 30.476%; height: 11.607%; }   /* first panel */
+  .ld__s--14 { left: 19.048%; top: 29.464%; width: 30.476%; height: 11.607%; }   /* second panel */
+  .ld__s--15 { left: 19.048%; top: 61.161%; width: 30.476%; height: 12.500%; }   /* the wide band */
+  .ld__s--16 { left: 3.333%; top: 6.250%; width: 7.143%; height: 13.393%; }   /* identity mark */
+  .ld__s--17 { left: 19.048%; top: 8.929%; width: 1.905%; height: 3.571%; }   /* speaker mark */
 
   .ld__s--12,
   .ld__s--13,
@@ -30480,25 +30569,25 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .ld__s--15,
   .ld__s--16,
   .ld__s--17 {
-    /* PRESSED CLAY.
+    /* MOULDED, NOT STAMPED.
 
-       These were a flat grey fill with a hairline inset, which is skeleton
-       loader, not material: the one place in the composition where the light
-       stopped being consistent. They are the same clay pushed INTO the
-       surface instead of raised out of it, so the modelling inverts. The
-       shade now sits along the top where the wall of the recess faces away
-       from the light, the lit lip sits along the bottom where it faces back
-       into it, and a hair of rim light runs under the lower edge. The face
-       carries its own gradient too, thrown to the lower right, which is the
-       bounce off that far wall. Deeper in tone than the shells around them,
-       never flatter. */
-    background: radial-gradient(150% 150% at 72% 84%,
-                var(--ld-lo) 0%, var(--ld-press) 62%, var(--ld-press) 100%);
+       These were pressed into the surface, and a recess is a hole: it reads
+       as absence, which is what made them feel like placeholders even with
+       the modelling right. Everything in this composition is clay that has
+       been ADDED, so they are convex like everything else, lit from the same
+       upper left, with their own cast shadow on the shell beneath them.
+
+       What separates them from the shell they sit on is tone and depth, not
+       direction: one step down in value so the hierarchy still reads, and a
+       shallower fall because a small object close to a surface throws a
+       short shadow. Same hand, smaller gesture. */
+    background: radial-gradient(140% 140% at 30% 22%,
+                var(--ld-face) 0%, var(--ld-lo) 56%, var(--ld-press) 100%);
     box-shadow:
-      inset 0 2px 4px -1px var(--ld-bev-lo),
-      inset 0 -2px 3px -1px var(--ld-bev-hi),
-      inset 0 0 0 1px var(--ld-bev-lo),
-      0 1px 0 0 var(--ld-rim);
+      0 4px 11px -6px var(--ld-sh),
+      0 1px 2px -1px var(--ld-sh),
+      inset 0 1.5px 1.5px -0.5px var(--ld-bev-hi),
+      inset 0 -2px 3px -1.5px var(--ld-bev-lo);
   }
   .ld__s--16,
   .ld__s--17 { border-radius: 50%; }
@@ -30541,9 +30630,34 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   0%, 52.7% { opacity: 0; animation-timing-function: cubic-bezier(0.22, 0.7, 0.25, 1); }
   76.4%, 100% { opacity: 1; }
 }
-@keyframes ld-sweep-l { from { translate: -64px 0; } to { translate: 0 0; } }
-@keyframes ld-sweep-c { from { translate: 0 34px; } to { translate: 0 0; } }
-@keyframes ld-sweep-r { from { translate: 64px 0; } to { translate: 0 0; } }
+@keyframes ld-fit-au {
+  0%, 50% { translate: -62% -8%; animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1); }
+  61% { translate: 38% 5%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  71% { translate: -19% -3%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  80% { translate: 8% 1%; animation-timing-function: cubic-bezier(0.2, 0.82, 0.28, 1); }
+  88%, 100% { translate: 0 0; }
+}
+@keyframes ld-fit-bu {
+  0%, 50% { translate: 58% 10%; animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1); }
+  61% { translate: -36% -6%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  71% { translate: 17% 3%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  80% { translate: -7% -1%; animation-timing-function: cubic-bezier(0.2, 0.82, 0.28, 1); }
+  88%, 100% { translate: 0 0; }
+}
+@keyframes ld-fit-cu {
+  0%, 50% { translate: -54% 12%; animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1); }
+  61% { translate: 34% -7%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  71% { translate: -17% 5%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  80% { translate: 7% -2%; animation-timing-function: cubic-bezier(0.2, 0.82, 0.28, 1); }
+  88%, 100% { translate: 0 0; }
+}
+@keyframes ld-fit-du {
+  0%, 50% { translate: 60% -10%; animation-timing-function: cubic-bezier(0.34, 0, 0.3, 1); }
+  61% { translate: -38% 7%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  71% { translate: 19% -5%; animation-timing-function: cubic-bezier(0.4, 0, 0.32, 1); }
+  80% { translate: -8% 2%; animation-timing-function: cubic-bezier(0.2, 0.82, 0.28, 1); }
+  88%, 100% { translate: 0 0; }
+}
 
 html.ld-lock, html.ld-lock body { overflow: hidden; }
 
