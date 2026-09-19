@@ -2260,22 +2260,18 @@ em,
 
 .cell--governance .slot::after { content: none; }
 
-/* THE CARD SAYS IT ONCE, IN THE ROW THE OTHER CARDS SAY THEIR STATE IN.
+/* THE ACTION IS BACK, BECAUSE THE CARD HAS SOMEWHERE TO GO.
 
-   js/wire.js rewrites a project's action to "Case study coming soon" when the
-   route table has nothing for it, which is right on a card whose action is the
-   only line of words down there. Here it produced the sentence twice on a
-   desktop (once in the action, once under the description), and at phone
-   widths, where `.card--project .cta--fill` is hidden because the corner arrow
-   is the affordance, it produced it nowhere. Worse, kept for the phone it drew
-   a full-width outlined box: a disabled button, which is the exact thing the
-   status line was introduced to replace.
+   This card's action used to be hidden, and the reasoning held for as long as
+   it was true: a filled button on a card with no destination is a disabled
+   control, and "Case study coming soon" said the same thing more honestly in
+   a line of text. The project has a page now, so the button is the right
+   affordance again and the apology is the wrong one.
 
-   So the action goes and the status line stays, which is the row Carry already
-   uses to say its work is still in a playground. One sentence, one treatment,
-   every width, and no control on a card that has nothing to open. */
-.cell--governance .card--project .cta--fill { display: none; }
-
+   Nothing was added to make it appear. The element was kept in the markup for
+   exactly this, and its class list is already the one the other cards in this
+   row carry, so removing the rule is the whole change: same fill, same size,
+   same spacing, same hover, same place on the card. */
 .cell--governance .slot img {
   object-fit: contain;
 }
@@ -40983,7 +40979,7 @@ body{display:grid;place-items:center;min-height:100vh}
               <p class="card__desc">
                 I&rsquo;m currently building governance standards for catching &ldquo;AI slop,&rdquo; designed to be dropped directly into an agent chat to audit generated product work for weak logic, missing states, unsupported decisions, and other gaps before it ships. <a class="pv__go" data-pf-solo href="./slop-audit.pdf" target="_blank" rel="noopener noreferrer">Download my guide <span class="pv__go-a" aria-hidden="true">&rarr;</span></a>
               </p>
-              <p class="card__status card__status--wip">Case study coming soon</p>
+              <p class="card__status card__status--wip">Claude skill in development</p>
               <!-- Kept in the markup and hidden in the stylesheet rather than
                    deleted: js/wire.js looks the label up from the card, and a
                    card with no [data-cta-label] is a card the route table can
