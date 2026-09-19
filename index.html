@@ -29842,6 +29842,18 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   --ld-hi:    #FFFFFF;
   --ld-lo:    #E6E4DF;
   --ld-sh:    rgba(38, 34, 28, 0.16);
+  /* THE CLAY, AS FOUR MORE VALUES.
+
+     A gradient and a cast shadow give an object a face and a place to sit.
+     What makes it feel MODELLED is the edge: a lit lip where the light lands
+     on the top of the form, a shaded one underneath where it rolls away, and
+     for anything pressed INTO the surface the same two reversed. These are
+     those edges, and they are the reason a 4px pill and a 400px panel read as
+     the same material rather than as a shape and a placeholder. */
+  --ld-bev-hi: rgba(255, 255, 255, 0.95);
+  --ld-bev-lo: rgba(38, 34, 28, 0.11);
+  --ld-press:  #DCDAD3;
+  --ld-rim:    rgba(255, 255, 255, 0.72);
   --ld-track: rgba(38, 34, 28, 0.13);
   --ld-fill:  #262626;
   --ld-ink:   #262626;
@@ -29863,6 +29875,10 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   --ld-hi:    #4A4A50;
   --ld-lo:    #2A2A2D;
   --ld-sh:    rgba(0, 0, 0, 0.42);
+  --ld-bev-hi: rgba(255, 255, 255, 0.085);
+  --ld-bev-lo: rgba(0, 0, 0, 0.44);
+  --ld-press:  #232327;
+  --ld-rim:    rgba(255, 255, 255, 0.05);
   --ld-track: rgba(237, 237, 237, 0.16);
   --ld-fill:  #EDEDED;
   --ld-ink:   #EDEDED;
@@ -29875,6 +29891,10 @@ button.cu-q:hover { background: var(--cu-teal-8); }
     --ld-hi:    #4A4A50;
     --ld-lo:    #2A2A2D;
     --ld-sh:    rgba(0, 0, 0, 0.42);
+  --ld-bev-hi: rgba(255, 255, 255, 0.085);
+  --ld-bev-lo: rgba(0, 0, 0, 0.44);
+  --ld-press:  #232327;
+  --ld-rim:    rgba(255, 255, 255, 0.05);
     --ld-track: rgba(237, 237, 237, 0.16);
     --ld-fill:  #EDEDED;
     --ld-ink:   #EDEDED;
@@ -29908,11 +29928,45 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    an element whose only moving properties are transform and opacity is
    promoted to its own layer, rasterised once, and then moved by the
    compositor. That is the whole difference between this and a live filter. */
-.ld__blorb,
+.ld__blorb {
+  background: radial-gradient(118% 118% at 30% 24%,
+              var(--ld-hi) 0%, var(--ld-face) 56%, var(--ld-lo) 100%);
+  /* The form's own relief stays two layers. It is the one element whose
+     corner radius interpolates, which repaints it, so its shadow stack is
+     the one place worth being frugal. */
+  box-shadow:
+    0 10px 20px -10px var(--ld-sh),
+    inset 0 2px 2px -1px var(--ld-bev-hi);
+}
+
+/* RAISED CLAY: a face, a place to sit, and two lips.
+
+   The cast shadow puts it above the ground and the contact shadow puts it ON
+   something. The two insets are the modelling: a lit edge across the top
+   where the light lands, a shaded one across the bottom where the form rolls
+   away from it. Deep relief, for the containers. */
 .ld__s {
   background: radial-gradient(118% 118% at 30% 24%,
               var(--ld-hi) 0%, var(--ld-face) 56%, var(--ld-lo) 100%);
-  box-shadow: 0 9px 18px -9px var(--ld-sh);
+  box-shadow:
+    0 10px 24px -12px var(--ld-sh),
+    0 2px 5px -3px var(--ld-sh),
+    inset 0 2px 2px -1px var(--ld-bev-hi),
+    inset 0 -3px 4px -2px var(--ld-bev-lo);
+}
+
+/* SHALLOWER, BUT THE SAME HAND.
+
+   A 9px control cannot carry a 24px fall: at that size a container's relief
+   reads as a smudge. It keeps both lips and loses most of the cast, so the
+   depth is proportional to the object and the material is not. */
+.ld__s--pill,
+.ld__s--dot {
+  box-shadow:
+    0 3px 8px -5px var(--ld-sh),
+    0 1px 2px -1px var(--ld-sh),
+    inset 0 1.5px 1.5px -0.5px var(--ld-bev-hi),
+    inset 0 -1.5px 2px -1px var(--ld-bev-lo);
 }
 
 /* THE HORIZON. Not a line and not a blur: the page's own ground colour,
@@ -30165,7 +30219,6 @@ button.cu-q:hover { background: var(--cu-teal-8); }
        shadow reads as depth. Here most of them sit ON another shell, and at
        18px of blur the fall reads as a second rectangle under the first
        rather than as light. Same ink, twice the blur, pulled back in. */
-    box-shadow: 0 6px 22px -12px var(--ld-sh);
     /* AND A WIDER LIGHT.
 
        The desktop gradient is sized 118% of its element, which on a small
@@ -30176,6 +30229,13 @@ button.cu-q:hover { background: var(--cu-teal-8); }
        where the shadow already is: the same material, sized to the object. */
     background: radial-gradient(200% 200% at 26% 18%,
                 var(--ld-hi) 0%, var(--ld-face) 62%, var(--ld-lo) 100%);
+    /* Most of these sit ON another shell rather than on the ground, so the
+       fall is longer and lighter and the modelling does the work instead. */
+    box-shadow:
+      0 7px 22px -13px var(--ld-sh),
+      0 1px 3px -2px var(--ld-sh),
+      inset 0 2px 2px -1px var(--ld-bev-hi),
+      inset 0 -2.5px 4px -2px var(--ld-bev-lo);
   }
 
   .ld__shell { animation-name: ld-shell-m; }
@@ -30220,8 +30280,25 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .ld__s--06,
   .ld__s--09,
   .ld__s--11 {
-    background: var(--ld-lo);
-    box-shadow: inset 0 1px 2px var(--ld-sh);
+    /* PRESSED CLAY.
+
+       These were a flat grey fill with a hairline inset, which is skeleton
+       loader, not material: the one place in the composition where the light
+       stopped being consistent. They are the same clay pushed INTO the
+       surface instead of raised out of it, so the modelling inverts. The
+       shade now sits along the top where the wall of the recess faces away
+       from the light, the lit lip sits along the bottom where it faces back
+       into it, and a hair of rim light runs under the lower edge. The face
+       carries its own gradient too, thrown to the lower right, which is the
+       bounce off that far wall. Deeper in tone than the shells around them,
+       never flatter. */
+    background: radial-gradient(150% 150% at 72% 84%,
+                var(--ld-lo) 0%, var(--ld-press) 62%, var(--ld-press) 100%);
+    box-shadow:
+      inset 0 2px 4px -1px var(--ld-bev-lo),
+      inset 0 -2px 3px -1px var(--ld-bev-hi),
+      inset 0 0 0 1px var(--ld-bev-lo),
+      0 1px 0 0 var(--ld-rim);
   }
   .ld__s--01,
   .ld__s--04,
@@ -30234,9 +30311,18 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   /* The composer is an outline in the reference and an outline it stays: the
      one thing in the composition that is waiting rather than showing. */
   .ld__s--12 {
-    background: none;
-    box-shadow: none;
-    border: 1px solid var(--ld-lo);
+    /* The composer is the one element in the reference drawn as an outline.
+       An outline is a line, and there are no lines in this material, so it
+       is the shallowest well the system has instead: barely sunk, no fill of
+       its own beyond a breath of shade, the same inverted lips as every
+       other recess. Still reads as the thing that is waiting for you. */
+    background: linear-gradient(to bottom,
+                var(--ld-lo) 0%, var(--ld-face) 42%, var(--ld-face) 100%);
+    box-shadow:
+      inset 0 2px 3px -1px var(--ld-bev-lo),
+      inset 0 -1.5px 2px -1px var(--ld-bev-hi),
+      inset 0 0 0 1px var(--ld-bev-lo),
+      0 1px 0 0 var(--ld-rim);
   }
   .ld__s--13,
   .ld__s--14,
@@ -30321,7 +30407,6 @@ button.cu-q:hover { background: var(--cu-teal-8); }
        shadow reads as depth. Here most of them sit ON another shell, and at
        18px of blur the fall reads as a second rectangle under the first
        rather than as light. Same ink, twice the blur, pulled back in. */
-    box-shadow: 0 6px 22px -12px var(--ld-sh);
     /* AND A WIDER LIGHT.
 
        The desktop gradient is sized 118% of its element, which on a small
@@ -30332,6 +30417,13 @@ button.cu-q:hover { background: var(--cu-teal-8); }
        where the shadow already is: the same material, sized to the object. */
     background: radial-gradient(200% 200% at 26% 18%,
                 var(--ld-hi) 0%, var(--ld-face) 62%, var(--ld-lo) 100%);
+    /* Most of these sit ON another shell rather than on the ground, so the
+       fall is longer and lighter and the modelling does the work instead. */
+    box-shadow:
+      0 7px 22px -13px var(--ld-sh),
+      0 1px 3px -2px var(--ld-sh),
+      inset 0 2px 2px -1px var(--ld-bev-hi),
+      inset 0 -2.5px 4px -2px var(--ld-bev-lo);
   }
 
   .ld__shell { animation-name: ld-shell-u; }
@@ -30388,8 +30480,25 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .ld__s--15,
   .ld__s--16,
   .ld__s--17 {
-    background: var(--ld-lo);
-    box-shadow: inset 0 1px 2px var(--ld-sh);
+    /* PRESSED CLAY.
+
+       These were a flat grey fill with a hairline inset, which is skeleton
+       loader, not material: the one place in the composition where the light
+       stopped being consistent. They are the same clay pushed INTO the
+       surface instead of raised out of it, so the modelling inverts. The
+       shade now sits along the top where the wall of the recess faces away
+       from the light, the lit lip sits along the bottom where it faces back
+       into it, and a hair of rim light runs under the lower edge. The face
+       carries its own gradient too, thrown to the lower right, which is the
+       bounce off that far wall. Deeper in tone than the shells around them,
+       never flatter. */
+    background: radial-gradient(150% 150% at 72% 84%,
+                var(--ld-lo) 0%, var(--ld-press) 62%, var(--ld-press) 100%);
+    box-shadow:
+      inset 0 2px 4px -1px var(--ld-bev-lo),
+      inset 0 -2px 3px -1px var(--ld-bev-hi),
+      inset 0 0 0 1px var(--ld-bev-lo),
+      0 1px 0 0 var(--ld-rim);
   }
   .ld__s--16,
   .ld__s--17 { border-radius: 50%; }
