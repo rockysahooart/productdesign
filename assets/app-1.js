@@ -76,7 +76,8 @@ window.PF = window.PF || {};
        is 'soon', so PF.neighbours skips it and no study gains a Next that
        lands on a page that does not exist. */
     { key: 'governance', mode: 'design', name: 'Design Governance',
-      context: 'Design governance \u00b7 AI-generated work', status: 'soon' },
+      context: 'Design governance \u00b7 AI-generated work',
+      route: '#/slop', status: 'live' },
 
     { key: 'carry', mode: 'design', name: 'Carry',
       context: 'Patient experience · Healthcare',
