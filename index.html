@@ -25,6 +25,40 @@
 <meta name="twitter:image" content="https://www.rockysahoo.space/social-preview-v2.png">
 <meta name="twitter:image:alt" content="Sarthak Sahoo product design portfolio introduction">
 
+<!-- WHO THIS IS, IN THE ONE FORMAT A SEARCH ENGINE READS WITHOUT GUESSING.
+
+     "Sarthak Sahoo" returns dozens of people. Nothing on a page of pictures
+     and prose tells a crawler which of them made it, so the same facts the
+     footer already states are repeated here in the vocabulary built for the
+     question: the name, what the work is called, and the profiles that are
+     demonstrably the same person. sameAs is the load-bearing line - it is
+     how an identity on this domain gets tied to one that already has
+     standing elsewhere.
+
+     Nothing here is a claim the site does not already make in words. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Sarthak Sahoo",
+  "alternateName": "Rocky Sahoo",
+  "url": "https://www.rockysahoo.space/",
+  "jobTitle": "Product Designer",
+  "description": "Product designer working across healthcare, biotechnology, financial services, developer tools, and complex systems.",
+  "sameAs": [
+    "https://www.linkedin.com/in/sarthakrockysahoo/",
+    "https://www.instagram.com/rockysahoo.art/",
+    "https://rockysahoo.design/"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebSite",
+    "@id": "https://www.rockysahoo.space/",
+    "name": "Sarthak Sahoo, Product Designer",
+    "url": "https://www.rockysahoo.space/"
+  }
+}
+</script>
+
 <!-- ==========================================================================
      THE LINK, WHEN SOMEBODY ELSE POSTS IT, AND WHY IT IS THE FIRST THING HERE
 
@@ -57,6 +91,22 @@
      ========================================================================== -->
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- THE OLD FRAGMENT STILL GOES SOMEWHERE.
+
+     #/slop was the address of this project for as long as the site had no
+     page to give it. Anything already pointing there - a message, a bookmark,
+     a link in a profile - is sent on to the real path rather than left to
+     resolve into the index. replace(), not assign(), so the fragment does not
+     become a step in the reader's history to go back through. Inline and
+     first, so it happens before a frame is painted. -->
+<script>
+  (function () {
+    if (location.hash === '#/slop' || location.hash === '#/slop/') {
+      location.replace('/slop/');
+    }
+  })();
+</script>
 <meta name="theme-color" content="#E9E9E9" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
 
@@ -2260,21 +2310,22 @@ em,
 
 .cell--governance .slot::after { content: none; }
 
-/* ONE ACTION, AND IT IS THE BLUE ONE.
+/* THIS CARD CARRIES NO ACTION OF ITS OWN.
 
-   The filled button works and is wired, but it is ink on a plate and it only
-   exists from 720 up: below that the row hides `.cta--fill` on every card,
-   so the card's action changed colour, changed shape and changed position
-   depending on how wide the window was. Three treatments for one destination.
+   Every other card in the row shows a filled "View Case Study" from 720 up.
+   This one does not, at any width. What it has instead is the thing the row
+   has always had underneath it: `.card__overlay-link` stretches across the
+   whole tile and the route table points it at #/slop, so the card IS the
+   link. The corner arrow is the mark that says so.
 
-   So this card keeps the line and drops the plate. `.pv__go--act` is the same
-   blue as `Download my guide` directly above it, sets identically at 320 and
-   at 3440, and is a plain anchor, which means it does not wait on the route
-   table to become clickable.
+   The one visible anchor in the copy stays what it was, `Download my guide`,
+   and it keeps `data-pf-solo` so a click on it reaches the PDF instead of
+   being swallowed by the tile. One card, one visible link, and the tile for
+   the case study.
 
-   The element stays in the markup, hidden, for the reason it always was:
-   js/wire.js reads the label from the card, and a card with no
-   [data-cta-label] is a card the route table can no longer speak through. */
+   The element stays in the markup, hidden, because js/wire.js reads the
+   label from the card and a card with no [data-cta-label] is a card the
+   route table can no longer speak through. */
 .cell--governance .card--project .cta--fill { display: none; }
 
 /* THE ACTION IS BACK, BECAUSE THE CARD HAS SOMEWHERE TO GO.
@@ -29558,23 +29609,6 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   }
 }
 
-/* --act IS THE SAME LINE WITHOUT THE BREAKPOINT.
-
-   `--m` exists because six cards already had a filled button up here and only
-   needed a stand-in below 720. The governance card is the one card where the
-   link IS the action at every width, so it takes the same treatment with no
-   media query around it: same block, same 12px, same blue, same place under
-   the subtitle. Phone, desktop and ultrawide get one line that reads the same
-   and goes to the same place.
-
-   Declared after `--m` so a card carrying both would keep this one, and the
-   cascade says so in the order rather than in an `!important`. */
-.card__desc .pv__go--act,
-.pv__sub .pv__go--act {
-  display: block;
-  margin-top: 12px;
-  width: fit-content;
-}
 
 
 /* --------------------------------------------------------------------------
@@ -31263,11 +31297,36 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
     if (!root) return;
 
     var SRC = ['assets/app-1.js', 'assets/app-2.js'];
-    var MIN = 5500;
+
+    /* ONCE A VISIT, NOT ONCE A PAGE.
+
+       The studies live at their own paths now, so moving between them is a
+       real navigation and this script runs again on arrival. Five and a half
+       seconds is an introduction; played a second time on the way to a case
+       study it is a toll. So the full sequence is kept for the first page of
+       a visit and skipped for the rest of it.
+
+       sessionStorage rather than localStorage: a new visit tomorrow gets the
+       introduction again, which is the point of having one. Wrapped, because
+       the accessor itself throws in a locked-down browser rather than
+       returning null, and a loader that cannot read a flag should simply
+       play. */
+    var seen = false;
+    try { seen = sessionStorage.getItem('pf-seen') === '1'; } catch (e) {}
+    try { sessionStorage.setItem('pf-seen', '1'); } catch (e) {}
+
+    var MIN = seen ? 0 : 5500;
     var fill = root.querySelector('[data-ld-fill]');
     var done = false;
 
-    document.documentElement.classList.add('ld-lock');
+    /* Skipped means skipped: no dissolve over a hero that has not been laid
+       out yet, so the overlay goes before it can paint rather than fading. */
+    if (seen) {
+      root.setAttribute('hidden', '');
+      root.style.display = 'none';
+    } else {
+      document.documentElement.classList.add('ld-lock');
+    }
 
     /* ---- the two conditions ---------------------------------------------
        The sequence has to have been readable, AND the page has to be ready.
@@ -31906,8 +31965,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
                      offering a tap that goes nowhere. -->
                 <div class="pv__head">
                   <h3 class="pv__title">Designing governance infrastructure for agent-generated interfaces</h3>
-                  <p class="pv__sub">I&rsquo;m currently building governance standards for catching &ldquo;AI slop,&rdquo; designed to be dropped directly into an agent chat to audit generated product work for weak logic, missing states, unsupported decisions, and other gaps before it ships. <a class="pv__go" data-pf-solo href="./slop-audit.pdf" target="_blank" rel="noopener noreferrer">Download my guide <span class="pv__go-a" aria-hidden="true">&rarr;</span></a>
-                    <a class="pv__go pv__go--act" href="#/slop">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
+                  <p class="pv__sub">I&rsquo;m currently building governance standards for catching &ldquo;AI slop,&rdquo; designed to be dropped directly into an agent chat to audit generated product work for weak logic, missing states, unsupported decisions, and other gaps before it ships. <a class="pv__go" data-pf-solo href="./slop-audit.pdf" target="_blank" rel="noopener noreferrer">Download my guide <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
                 </div>
                 <div class="pv__vis"><img class="pv__img img--ink" src="assets/4a72be947a92.webp"
                        alt="A hand-drawn diagram, &ldquo;Creating governance for AI design decisions: a rule-based system to reduce AI slop&rdquo;, defined underneath as polished looking work without evidence, context or real product logic. Five numbered panels. One, Source: a PDF holding rules, guidelines, checklists and examples. Two, /slop-audit turns it into a skill that uses the PDF as its source, applies the rules, reviews design and copy, flags issues and gives feedback. Three, Use it: run /slop-audit with pasted design, copy, or a link to the PDF. Four, What it looks for, in two columns: design red flags: generic UI, missing states, inconsistent components, random spacing and colours, no user logic, looks polished but shallow; copy red flags: unsupported claims, vague or generic language, fake confidence, invented metrics, no source or context, sounds correct but isn&rsquo;t. Five, Output: audit results listing red flags with reasons, suggestions, what to fix, and higher quality work that&rsquo;s ready to ship. A bracket across the foot reads &ldquo;less AI slop leads to better products&rdquo;."
@@ -41111,8 +41169,6 @@ body{display:grid;place-items:center;min-height:100vh}
               <h3 class="t-card card__title">Designing governance infrastructure for agent-generated interfaces</h3>
               <p class="card__desc">
                 I&rsquo;m currently building governance standards for catching &ldquo;AI slop,&rdquo; designed to be dropped directly into an agent chat to audit generated product work for weak logic, missing states, unsupported decisions, and other gaps before it ships. <a class="pv__go" data-pf-solo href="./slop-audit.pdf" target="_blank" rel="noopener noreferrer">Download my guide <span class="pv__go-a" aria-hidden="true">&rarr;</span></a>
-
-                <a class="pv__go pv__go--act" href="#/slop">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a>
               </p>
               <p class="card__status card__status--wip">Claude skill in development</p>
               <!-- Kept in the markup and hidden in the stylesheet rather than
@@ -44667,7 +44723,7 @@ body{display:grid;place-items:center;min-height:100vh}
       <h1 class="ar-title gv-title" id="gv-title">The Slop <em>Audit</em></h1>
       <p class="ar-p ar-p--lead gv-sub">I built a design-governance framework
         for auditing agent-generated product work before it ships.</p>
-      <p class="gv-get"><a class="pv__go pv__go--act" href="./slop-audit.pdf"
+      <p class="gv-get"><a class="pv__go" href="./slop-audit.pdf"
         target="_blank" rel="noopener noreferrer">Download The Slop Audit
         <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
     </header>
