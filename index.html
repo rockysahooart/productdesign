@@ -7154,7 +7154,7 @@ a.hero__role { text-decoration: none; }
 /* Two icons side by side are two words, not one: they get the same interval
    between them that a space would give. */
 .pxi[data-px="smiley"] { aspect-ratio: 16 / 13; }
-.pxi[data-px="smiley-o"] { aspect-ratio: 12 / 8; }
+.pxi[data-px="smiley-o"] { aspect-ratio: 1; }
 .pxi[data-px="phone"] { aspect-ratio: 6 / 13; }
 .pxi[data-px="laptop"] { aspect-ratio: 14 / 11; }
 .pxi[data-px="pin"] { aspect-ratio: 10 / 12; }
@@ -7170,34 +7170,44 @@ a.hero__role { text-decoration: none; }
 
 /* THE SMILEY IS PUNCTUATION, NOT AN ICON.
 
-   It replaces a typed `:)`, so it behaves like the two characters it stands
-   in for: it sits on the baseline the words sit on and adds nothing to the
-   height of the line.
+   It stands in for a typed `:)`, and the test of it is whether the line reads
+   as one piece of typography or as a sentence with a picture stuck on the
+   end. Three things decide that, and the first two versions got each of them
+   wrong in turn.
 
-   NO RING. The circle around it was doing the opposite of its job. At this
-   size the outline was most of the ink on the glyph, which made the thing
-   read as a badge set into the sentence, and it left so little room inside
-   that the eyes were single pixels and the mouth was three. Dropping it
-   spends the whole box on the face instead: the eyes are two pixels square,
-   the mouth is a four-step curve, and both are legible at the size a phone
-   actually renders this.
+   WEIGHT. The ring went first, because at this size an outline is most of the
+   ink on the glyph and it read as a badge. Then the face that replaced it was
+   drawn with two-pixel eyes and a two-pixel mouth, which is a sprite: heavier
+   per stroke than Cormorant is anywhere, so it sat in the line like a
+   different typeface. This one is one pixel everywhere. Two single-pixel
+   eyes, a three-step smile, nothing filled.
 
-   0.68em with the ring gone puts the eyes at about Cormorant's cap height
-   and the mouth on the baseline, so it sets like a capital letter rather
-   than like an object. Still well under the 1.113 line box, so the bubble
-   measures exactly what it measured before.
+   FOOTPRINT. A face is wider than it is tall and the box follows the drawing,
+   so the 12-by-8 grid set 18px of glyph beside 18px of type and left a hole
+   after `Team`. Six by six is square: the same face, a fifth less width.
 
-   `vertical-align: 0` and nothing else: its bottom edge IS the baseline. The
-   other pixel glyphs are pulled down because they are cap-height objects
-   standing in for nouns; this one is a face at the end of a greeting.
+   THE STEPS HAVE TO TOUCH. The first attempt at this smile stepped down in
+   ones and read as five loose dots, because consecutive steps met only at a
+   corner and a diagonal contact is not a contact at three device pixels per
+   square. Each step now shares a column with the step before it, which is
+   how a curve is drawn on a grid: the eye joins what is orthogonally
+   adjacent and nothing else.
 
-   currentColor rather than --pxi-fg, because it is set in the sentence and
-   should be the colour of the sentence. That is also the whole of its dark
-   mode: the text goes light, the face goes with it. */
+   BASELINE. `vertical-align: 0` puts the box's bottom edge on the baseline,
+   which is where the bottom of the smile lands, so it sets like a full stop
+   rather than hanging off the line.
+
+   The space before it is a non-breaking space plus a little: the word space
+   alone was tight against a glyph whose leftmost ink is at x0, where a
+   letter would have side bearing.
+
+   currentColor, so it is the colour of the sentence in both themes and has
+   no palette of its own to keep in step. No transition, no transform: it is
+   a character, and characters do not animate. */
 .pxi--face {
-  height: 0.68em;
+  height: 0.82em;
   vertical-align: 0;
-  margin-inline: 0 0.02em;
+  margin-inline: 0.17em 0.02em;
   color: currentColor;
 }
 
@@ -31541,7 +31551,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
     </symbol>
     
 
-    <symbol id="px-smiley-o" viewBox="0 0 12 8"><path fill="currentColor" d="M2 0h2v2H2zM8 0h2v2H8zM0 4h2v1H0zM10 4h2v1H10zM1 5h2v1H1zM9 5h2v1H9zM2 6h2v1H2zM8 6h2v1H8zM4 7h4v1H4z"/></symbol>
+    <symbol id="px-smiley-o" viewBox="0 0 6 6"><path fill="currentColor" d="M1 0h1v1H1zM4 0h1v1H4zM0 3h1v1H0zM5 3h1v1H5zM1 4h1v1H1zM4 4h1v1H4zM2 5h2v1H2z"/></symbol>
     <symbol id="px-smiley" viewBox="0 1 16 13"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM3 2h10v1h-10zM2 3h12v1h-12zM1 4h4v1h-4zM7 4h2v1h-2zM11 4h4v1h-4zM1 5h4v1h-4zM7 5h2v1h-2zM11 5h4v1h-4zM0 6h16v1h-16zM0 7h16v1h-16zM0 8h16v1h-16zM1 9h2v1h-2zM4 9h8v1h-8zM13 9h2v1h-2zM1 10h3v1h-3zM6 10h4v1h-4zM12 10h3v1h-3zM2 11h4v1h-4zM10 11h4v1h-4zM3 12h10v1h-10zM5 13h6v1h-6z"/><path fill="var(--pxi-bg)" d="M5 4h2v1h-2zM9 4h2v1h-2zM5 5h2v1h-2zM9 5h2v1h-2zM3 9h1v1h-1zM12 9h1v1h-1zM4 10h2v1h-2zM10 10h2v1h-2zM6 11h4v1h-4z"/></symbol>
     <symbol id="px-phone" viewBox="5 1 6 13"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM5 2h6v1h-6zM5 3h1v1h-1zM10 3h1v1h-1zM5 4h1v1h-1zM10 4h1v1h-1zM5 5h1v1h-1zM10 5h1v1h-1zM5 6h1v1h-1zM10 6h1v1h-1zM5 7h1v1h-1zM10 7h1v1h-1zM5 8h1v1h-1zM10 8h1v1h-1zM5 9h1v1h-1zM10 9h1v1h-1zM5 10h1v1h-1zM10 10h1v1h-1zM5 11h6v1h-6zM5 12h2v1h-2zM9 12h2v1h-2zM5 13h6v1h-6z"/><path fill="var(--pxi-bg)" d="M6 3h4v1h-4zM6 4h4v1h-4zM6 5h4v1h-4zM6 6h4v1h-4zM6 7h4v1h-4zM6 8h4v1h-4zM6 9h4v1h-4zM6 10h4v1h-4zM7 12h2v1h-2z"/></symbol>
     <symbol id="px-laptop" viewBox="1 2 14 11"><path fill="var(--pxi-fg)" d="M3 2h10v1h-10zM3 3h1v1h-1zM12 3h1v1h-1zM3 4h1v1h-1zM12 4h1v1h-1zM3 5h1v1h-1zM12 5h1v1h-1zM3 6h1v1h-1zM12 6h1v1h-1zM3 7h1v1h-1zM12 7h1v1h-1zM3 8h10v1h-10zM1 10h14v1h-14zM1 11h5v1h-5zM10 11h5v1h-5zM1 12h14v1h-14z"/><path fill="var(--pxi-bg)" d="M4 3h8v1h-8zM4 4h8v1h-8zM4 5h8v1h-8zM4 6h8v1h-8zM4 7h8v1h-8zM6 11h4v1h-4z"/></symbol>
