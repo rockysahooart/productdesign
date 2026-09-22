@@ -7154,7 +7154,7 @@ a.hero__role { text-decoration: none; }
 /* Two icons side by side are two words, not one: they get the same interval
    between them that a space would give. */
 .pxi[data-px="smiley"] { aspect-ratio: 16 / 13; }
-.pxi[data-px="smiley-o"] { aspect-ratio: 1; }
+.pxi[data-px="smiley-o"] { aspect-ratio: 12 / 8; }
 .pxi[data-px="phone"] { aspect-ratio: 6 / 13; }
 .pxi[data-px="laptop"] { aspect-ratio: 14 / 11; }
 .pxi[data-px="pin"] { aspect-ratio: 10 / 12; }
@@ -7170,24 +7170,32 @@ a.hero__role { text-decoration: none; }
 
 /* THE SMILEY IS PUNCTUATION, NOT AN ICON.
 
-   It replaces a typed `:)`, so it has to behave like the two characters it
-   stands in for: smaller than the words, sitting on the same baseline they
-   do, and adding nothing to the height of the line.
+   It replaces a typed `:)`, so it behaves like the two characters it stands
+   in for: it sits on the baseline the words sit on and adds nothing to the
+   height of the line.
 
-   0.62em puts it between Cormorant's x-height and its cap height, which is
-   the size a face drawn on a ten-pixel grid can still be read at and the size
-   at which it stops competing with `Hello Team`. Well under the 1.113 line
-   box, so the bubble measures exactly what it measured before.
+   NO RING. The circle around it was doing the opposite of its job. At this
+   size the outline was most of the ink on the glyph, which made the thing
+   read as a badge set into the sentence, and it left so little room inside
+   that the eyes were single pixels and the mouth was three. Dropping it
+   spends the whole box on the face instead: the eyes are two pixels square,
+   the mouth is a four-step curve, and both are legible at the size a phone
+   actually renders this.
+
+   0.68em with the ring gone puts the eyes at about Cormorant's cap height
+   and the mouth on the baseline, so it sets like a capital letter rather
+   than like an object. Still well under the 1.113 line box, so the bubble
+   measures exactly what it measured before.
 
    `vertical-align: 0` and nothing else: its bottom edge IS the baseline. The
    other pixel glyphs are pulled down because they are cap-height objects
-   standing in for nouns; this one is not.
+   standing in for nouns; this one is a face at the end of a greeting.
 
    currentColor rather than --pxi-fg, because it is set in the sentence and
    should be the colour of the sentence. That is also the whole of its dark
    mode: the text goes light, the face goes with it. */
 .pxi--face {
-  height: 0.62em;
+  height: 0.68em;
   vertical-align: 0;
   margin-inline: 0 0.02em;
   color: currentColor;
@@ -24062,43 +24070,16 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    and a half pixels at every width. line-height is a ratio, so it follows the
    type down and the relationship between them is exactly what it was.
 
+   One declaration, because one is all it needs. The pixel devices that used
+   to be sized in here are gone from the copy, and the face after `Hello Team`
+   is in em, so it rides this down without being told to.
+
    Scoped to 719 so the tablet band above keeps what it had.
    -------------------------------------------------------------------------- */
 @media (max-width: 719px) {
   .hero__thread {
     font-size: calc(clamp(20px, 2.2vw + 11px, 31px) * var(--fs-disp-k) - 5px);
   }
-
-  /* THE DEVICES STOP BEING THE LOUDEST THING IN THE SENTENCE.
-
-     1.14em was a whisker off 1.15 and it did not work: an icon taller than
-     the line it sits in is a focal point no matter what the type does around
-     it, and shrinking the type had been making them MORE prominent, not less,
-     because they were following it down at a fixed ratio.
-
-     So the ratio itself changes. 0.95em puts them a little above Cormorant's
-     cap height instead of above its line box, which is where an inline symbol
-     belongs: read as part of the sentence, not as pictures set into it.
-
-     The pull-down goes with it. -0.21em was tuned for a cap-height object
-     hanging below the baseline; on a shorter glyph it dropped it into the
-     descenders. -0.08em is the small optical overshoot a square shape wants
-     against a round typeface, and nothing more.
-
-     Only inside the conversation. The same glyphs set the about page and the
-     timeline, and nothing there was too big. The margins are in em, so the
-     space around them tracks the type and the interval before `based` is the
-     one it always was. */
-  .hero__thread .pxi {
-    height: 0.95em;
-    vertical-align: -0.08em;
-  }
-
-  /* The face keeps its own ratio and rides the type down with it: 0.62em of
-     20.5px was 12.5, of 18px it is 11.1. Proportional, which is what it
-     should be, because it is standing in for two typed characters. Its own
-     baseline rule is not touched by the line above. */
-  .hero__thread .pxi--face { height: 0.62em; vertical-align: 0; }
 }
 
 @media (min-width: 960px) and (max-width: 1279px) {
@@ -31560,7 +31541,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
     </symbol>
     
 
-    <symbol id="px-smiley-o" viewBox="0 0 10 10"><path fill="currentColor" d="M3 0h4v1H3zM1 1h2v1H1zM7 1h2v1H7zM0 2h1v6H0zM9 2h1v6H9zM1 8h2v1H1zM7 8h2v1H7zM3 9h4v1H3zM3 3h1v1H3zM6 3h1v1H6zM3 6h1v1H3zM6 6h1v1H6zM4 7h2v1H4z"/></symbol>
+    <symbol id="px-smiley-o" viewBox="0 0 12 8"><path fill="currentColor" d="M2 0h2v2H2zM8 0h2v2H8zM0 4h2v1H0zM10 4h2v1H10zM1 5h2v1H1zM9 5h2v1H9zM2 6h2v1H2zM8 6h2v1H8zM4 7h4v1H4z"/></symbol>
     <symbol id="px-smiley" viewBox="0 1 16 13"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM3 2h10v1h-10zM2 3h12v1h-12zM1 4h4v1h-4zM7 4h2v1h-2zM11 4h4v1h-4zM1 5h4v1h-4zM7 5h2v1h-2zM11 5h4v1h-4zM0 6h16v1h-16zM0 7h16v1h-16zM0 8h16v1h-16zM1 9h2v1h-2zM4 9h8v1h-8zM13 9h2v1h-2zM1 10h3v1h-3zM6 10h4v1h-4zM12 10h3v1h-3zM2 11h4v1h-4zM10 11h4v1h-4zM3 12h10v1h-10zM5 13h6v1h-6z"/><path fill="var(--pxi-bg)" d="M5 4h2v1h-2zM9 4h2v1h-2zM5 5h2v1h-2zM9 5h2v1h-2zM3 9h1v1h-1zM12 9h1v1h-1zM4 10h2v1h-2zM10 10h2v1h-2zM6 11h4v1h-4z"/></symbol>
     <symbol id="px-phone" viewBox="5 1 6 13"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM5 2h6v1h-6zM5 3h1v1h-1zM10 3h1v1h-1zM5 4h1v1h-1zM10 4h1v1h-1zM5 5h1v1h-1zM10 5h1v1h-1zM5 6h1v1h-1zM10 6h1v1h-1zM5 7h1v1h-1zM10 7h1v1h-1zM5 8h1v1h-1zM10 8h1v1h-1zM5 9h1v1h-1zM10 9h1v1h-1zM5 10h1v1h-1zM10 10h1v1h-1zM5 11h6v1h-6zM5 12h2v1h-2zM9 12h2v1h-2zM5 13h6v1h-6z"/><path fill="var(--pxi-bg)" d="M6 3h4v1h-4zM6 4h4v1h-4zM6 5h4v1h-4zM6 6h4v1h-4zM6 7h4v1h-4zM6 8h4v1h-4zM6 9h4v1h-4zM6 10h4v1h-4zM7 12h2v1h-2z"/></symbol>
     <symbol id="px-laptop" viewBox="1 2 14 11"><path fill="var(--pxi-fg)" d="M3 2h10v1h-10zM3 3h1v1h-1zM12 3h1v1h-1zM3 4h1v1h-1zM12 4h1v1h-1zM3 5h1v1h-1zM12 5h1v1h-1zM3 6h1v1h-1zM12 6h1v1h-1zM3 7h1v1h-1zM12 7h1v1h-1zM3 8h10v1h-10zM1 10h14v1h-14zM1 11h5v1h-5zM10 11h5v1h-5zM1 12h14v1h-14z"/><path fill="var(--pxi-bg)" d="M4 3h8v1h-8zM4 4h8v1h-8zM4 5h8v1h-8zM4 6h8v1h-8zM4 7h8v1h-8zM6 11h4v1h-4z"/></symbol>
@@ -31974,7 +31955,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
               </span>
               <span class="msg" data-msg>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
-                  <em>Sarthak Sahoo</em>, a Product <span class="pxi-nb">Designer&nbsp;<svg class="pxi" data-px="phone" role="img" aria-label="product"><use href="#px-phone"/></svg><svg class="pxi" data-px="laptop" role="img" aria-label="design"><use href="#px-laptop"/></svg></span> based in Austin, TX</span></span>
+                  <em>Sarthak Sahoo</em>, a Product Designer based in Austin, TX</span></span>
               </span>
               
               <span class="msg" data-msg data-cluster data-scramble data-shuffle data-dwell="700">
