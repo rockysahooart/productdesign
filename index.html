@@ -24048,7 +24048,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 }
 
 /* --------------------------------------------------------------------------
-   THE PHONE TAKES TWO AND A HALF PIXELS OFF THE TOP
+   THE PHONE TAKES FIVE PIXELS OFF THE TOP
 
    The rule above runs to 959, which is the tablet as well, and the tablet is
    not the problem: at 768 the same size sets three comfortable lines. On a
@@ -24066,25 +24066,39 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    -------------------------------------------------------------------------- */
 @media (max-width: 719px) {
   .hero__thread {
-    font-size: calc(clamp(20px, 2.2vw + 11px, 31px) * var(--fs-disp-k) - 2.5px);
+    font-size: calc(clamp(20px, 2.2vw + 11px, 31px) * var(--fs-disp-k) - 5px);
   }
 
-  /* THE DEVICES COME DOWN A LITTLE FURTHER THAN THE WORDS.
+  /* THE DEVICES STOP BEING THE LOUDEST THING IN THE SENTENCE.
 
-     An em height would have shrunk them by 2.7px on its own, purely by
-     following the type, and left them exactly as large next to it as before.
-     1.14 takes them to 2.9px smaller AND a hair smaller relative to the
-     sentence, which is the part that made them read as dominant.
+     1.14em was a whisker off 1.15 and it did not work: an icon taller than
+     the line it sits in is a focal point no matter what the type does around
+     it, and shrinking the type had been making them MORE prominent, not less,
+     because they were following it down at a fixed ratio.
+
+     So the ratio itself changes. 0.95em puts them a little above Cormorant's
+     cap height instead of above its line box, which is where an inline symbol
+     belongs: read as part of the sentence, not as pictures set into it.
+
+     The pull-down goes with it. -0.21em was tuned for a cap-height object
+     hanging below the baseline; on a shorter glyph it dropped it into the
+     descenders. -0.08em is the small optical overshoot a square shape wants
+     against a round typeface, and nothing more.
 
      Only inside the conversation. The same glyphs set the about page and the
      timeline, and nothing there was too big. The margins are in em, so the
      space around them tracks the type and the interval before `based` is the
      one it always was. */
-  .hero__thread .pxi { height: 1.14em; }
+  .hero__thread .pxi {
+    height: 0.95em;
+    vertical-align: -0.08em;
+  }
 
-  /* The face keeps its own size, which is set against the text, not against
-     the other glyphs. */
-  .hero__thread .pxi--face { height: 0.62em; }
+  /* The face keeps its own ratio and rides the type down with it: 0.62em of
+     20.5px was 12.5, of 18px it is 11.1. Proportional, which is what it
+     should be, because it is standing in for two typed characters. Its own
+     baseline rule is not touched by the line above. */
+  .hero__thread .pxi--face { height: 0.62em; vertical-align: 0; }
 }
 
 @media (min-width: 960px) and (max-width: 1279px) {
