@@ -7143,7 +7143,7 @@ a.hero__role { text-decoration: none; }
 /* Two icons side by side are two words, not one: they get the same interval
    between them that a space would give. */
 .pxi[data-px="smiley"] { aspect-ratio: 16 / 13; }
-.pxi[data-px="smiley-o"] { aspect-ratio: 5 / 6; }
+.pxi[data-px="smiley-o"] { aspect-ratio: 18 / 17; }
 .pxi[data-px="phone"] { aspect-ratio: 6 / 13; }
 .pxi[data-px="laptop"] { aspect-ratio: 14 / 11; }
 .pxi[data-px="pin"] { aspect-ratio: 10 / 12; }
@@ -7157,47 +7157,56 @@ a.hero__role { text-decoration: none; }
 
 .pxi + .pxi { margin-left: 0.24em; }
 
-/* THE SMILEY IS PUNCTUATION, NOT AN ICON.
+/* THE COMPANION MARK AFTER THE GREETING.
 
-   It stands in for a typed `:)`, and the test of it is whether the line reads
-   as one piece of typography or as a sentence with a picture stuck on the
-   end. Three things decide that, and the first two versions got each of them
-   wrong in turn.
+   The face is drawn on an eighteen-by-seventeen grid as flat rectangles, one
+   run of colour per row, rather than carried as a picture. A raster set at
+   fifteen pixels has to be downsampled to get there and a downsample of a
+   pixel sprite is a blurred pixel sprite; rectangles are resolution
+   independent, so it is exactly as sharp at 15px on a phone as at 25px on an
+   ultrawide, and it costs the repository no new file to upload.
 
-   WEIGHT. The ring went first, because at this size an outline is most of the
-   ink on the glyph and it read as a badge. Then the face that replaced it was
-   drawn with two-pixel eyes and a two-pixel mouth, which is a sprite: heavier
-   per stroke than Cormorant is anywhere, so it sat in the line like a
-   different typeface. This one is one pixel everywhere. Two single-pixel
-   eyes, a three-step smile, nothing filled.
+   `crispEdges` on the parent is what keeps the rect boundaries from landing
+   half on a device pixel when the em height works out fractional.
 
-   FOOTPRINT. A face is wider than it is tall and the box follows the drawing,
-   so the 12-by-8 grid set 18px of glyph beside 18px of type and left a hole
-   after `Team`. Six by six is square: the same face, a fifth less width.
+   It carries its own four colours now — the yellow, the near-black of the
+   features, the cream of the three highlight blocks at the upper left, and
+   two pure white pixels, one in each pupil. Those two are the sparkle, and
+   there are exactly two of them: the quantiser only found the left one in
+   the reference, and a face with one lit eye is winking, not smiling.
 
-   THE STEPS HAVE TO TOUCH. The first attempt at this smile stepped down in
-   ones and read as five loose dots, because consecutive steps met only at a
-   corner and a diagonal contact is not a contact at three device pixels per
-   square. Each step now shares a column with the step before it, which is
-   how a curve is drawn on a grid: the eye joins what is orthogonally
-   adjacent and nothing else.
+   None of it inherits the sentence's ink the way the drawn-in-line version
+   did. That is the point of it: a small bright thing beside the words, not a
+   mark made of them.
 
-   BASELINE. `vertical-align: 0` puts the box's bottom edge on the baseline,
-   which is where the bottom of the smile lands, so it sets like a full stop
-   rather than hanging off the line.
-
-   The space before it is a non-breaking space plus a little: the word space
-   alone was tight against a glyph whose leftmost ink is at x0, where a
-   letter would have side bearing.
-
-   currentColor, so it is the colour of the sentence in both themes and has
-   no palette of its own to keep in step. No transition, no transform: it is
-   a character, and characters do not animate. */
+   `vertical-align: middle` puts its own centre on the baseline plus half the
+   x-height, which is the optical centre of the line. A face has a centre, not
+   a foot, so it should not stand on the baseline. */
 .pxi--face {
-  height: 0.82em;
-  vertical-align: 0;
-  margin-inline: 0.17em 0.02em;
-  color: currentColor;
+  height: 0.80em;
+  vertical-align: middle;
+  margin-inline: -0.04em 0.02em;
+  animation: pxi-bob 900ms steps(1, end) infinite;
+}
+
+/* IDLE, THE WAY A SPRITE IDLES.
+
+   Two positions and nothing between them. `steps(1, end)` holds each value
+   for its whole interval and then snaps, which is how a two-frame sprite has
+   always waited in place: no easing, no overshoot, no interpolation to soften
+   it. The lower position is held slightly longer than the upper one, so the
+   loop has a downbeat instead of reading as a metronome.
+
+   Travel is whole pixels, not a fraction of an em, because half a pixel of
+   vertical offset is the one thing that would make a pixel drawing look
+   soft. Nothing scales, rotates or distorts: `translate` moves the box and
+   leaves the drawing alone, and it is not a layout property, so the line it
+   sits in never reflows.
+
+   The site's reduced-motion rule already reaches this and stops it. */
+@keyframes pxi-bob {
+  0%   { translate: 0 0; }
+  55%  { translate: 0 var(--pxi-bob, -2px); }
 }
 
 /* An icon and the punctuation after it are one unit: a comma stranded at the
@@ -24098,21 +24107,21 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
      Mobile only, as asked. Above 720 the rule above this one does not apply
      and the face keeps the size it had. */
+  /* Larger on a phone, where 0.80em of 18px type is small enough that the
+     glint in the eye starts to close up. The travel stays at two whole
+     pixels: the sprite is about 0.9px per cell here, so two pixels is a
+     little over two cells, which reads at arm's length without becoming a
+     distraction beside a sentence somebody is trying to read. */
   .hero__thread .pxi--face {
-    height: 0.70em;
-    /* NOT THE BASELINE. THE MIDDLE OF THE WORDS.
-
-       `vertical-align: 0` sat the glyph's bottom edge on the baseline, which
-       is right for a letter and wrong for a face: a letter has a foot and a
-       face has a centre, so the correct thing was hanging by its chin.
-
-       `middle` is the real answer rather than a number that happens to look
-       centred. It aligns the glyph's own midpoint with the baseline plus half
-       the x-height, which is the optical centre of a line of lowercase, so it
-       tracks the type instead of being re-tuned every time the size moves. */
-    vertical-align: middle;
-    margin-inline: -0.12em 0.02em;
+    height: 0.86em;
+    --pxi-bob: -2px;
   }
+}
+
+@media (min-width: 720px) {
+  /* One more pixel of travel, because the sprite itself is half again as
+     tall here and two pixels would read as a twitch rather than a bob. */
+  .hero__thread .pxi--face { --pxi-bob: -3px; }
 }
 
 @media (min-width: 960px) and (max-width: 1279px) {
@@ -26199,6 +26208,136 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    corner again and holds its white to 42%, so the upper-left reads as one
    broad soft plane rather than a corner that brightens. Nothing glossy: there
    is no second highlight layer anywhere in here, only the one radial. */
+/* ==========================================================================
+   THE WORKSPACE, SITTING ON THE SECOND MESSAGE
+
+   A decorative layer, and nothing else: aria-hidden, pointer-events none,
+   nothing focusable inside it. It is a child of the second bubble rather than
+   of the page, so it is anchored to that bubble and not to the viewport, and
+   `bottom: 100%` puts its foot exactly on the bubble's top edge. One pixel of
+   negative margin closes the hairline that subpixel rounding opens there, so
+   the desk reads as resting on the bubble rather than hovering a fraction
+   above it. No rug, no floor line, no shadow strip.
+
+   SIZED BY HEIGHT, CAPPED BY THE BUBBLE. The scene is 1.2238 wide to 1 tall.
+   Fitting it to the full width of the bubble would make it 201px tall on a
+   phone and 435px tall at 1440, which is not an ornament on a message, it is
+   a mural. So the height is the thing that is chosen and the width follows
+   from the ratio, with `min(100%, …)` making the bubble a hard ceiling it can
+   never cross. Nothing is cropped and nothing is rearranged: one number
+   scales the whole composition, and it stays right-weighted because the box
+   is pinned to the right edge.
+
+   The room it occupies is real. `padding-top` on the message reserves exactly
+   the height the art will take, which is why the scene sits in open space
+   instead of covering `Hello Team` above it. That is the one piece of
+   existing geometry this changes, and it changes it by adding space rather
+   than by moving anything.
+   ========================================================================== */
+.hero__thread .msg--art {
+  --art-h: clamp(150px, 20vw, 220px);
+}
+
+/* WHERE THE ROOM COMES FROM DEPENDS ON WHETHER THE THREAD IS A WINDOW.
+
+   Below 720 the thread is its whole content: overflow is visible, nothing
+   retires, and the honest way to give the scene somewhere to stand is to
+   reserve it. `padding-top` adds exactly the height the art will take, so it
+   sits in open space and `Hello Team` is untouched above it.
+
+   From 720 up the thread is a window with `overflow: hidden` and messages are
+   meant to leave through the top of it. Measured there, the headroom above
+   the first bubble is only 61 to 126px, so reserving 150 to 220 pushed that
+   bubble straight out through the clip. No room is reserved at those widths.
+
+   Instead the scene is sized to clear the first bubble sideways. It is pinned
+   to the right of a wide bubble, `Hello Team` is a short bubble on the left,
+   and 12vw keeps the gap between them open at every width in the band. The
+   window behaves exactly as it did: thread heights at 1024, 1280, 1512 and
+   2400 are the same numbers as before this existed. */
+@media (max-width: 719px) {
+  .hero__thread .msg--art { padding-top: var(--art-h); }
+}
+
+@media (min-width: 720px) {
+  .hero__thread .msg--art { --art-h: clamp(110px, 12vw, 220px); }
+}
+
+.hero__thread .msg__art {
+  position: absolute;
+  right: 0;
+  bottom: 100%;
+  margin-bottom: -1px;
+  width: min(100%, calc(var(--art-h) * 1.2238));
+  aspect-ratio: 1.2238;
+  z-index: 1;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.hero__thread .msg__art > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* THE VINES CARRY ON PAST THE PICTURE.
+
+   The illustration's trailing plants stop where the file stops. These are the
+   few inches after that: drawn as vectors rather than cut from the raster, so
+   they can move without the rest of the scene moving with them, and so they
+   stay sharp at any size. They hang from the foot of the art and cross the
+   bubble's top edge, which is the join the eye would otherwise notice.
+
+   Pinned to the art's own outer edges, because that is where the plants are.
+   Both sit outside the bubble's 18px of padding, so neither reaches the copy,
+   and the copy is raised above them anyway. */
+.hero__thread .msg__vine {
+  position: absolute;
+  top: calc(100% - 26px);
+  width: clamp(15px, 1.6vw, 22px);
+  height: auto;
+  aspect-ratio: 22 / 66;
+  z-index: 2;
+  overflow: visible;
+}
+
+.hero__thread .msg__vine--l { left: 1.5%; transform-origin: 50% 0; animation: vine-sway-a 4.4s ease-in-out infinite; }
+.hero__thread .msg__vine--r { right: 4%;  transform-origin: 50% 0; animation: vine-sway-b 3.9s ease-in-out infinite; }
+
+/* THE INNER VINE STANDS DOWN WHERE THE BUBBLE OUTGROWS THE PICTURE.
+
+   The art is pinned to the right edge and its height is capped, so the wider
+   the bubble gets the further its own left edge moves in from the bubble's.
+   Past 1280 the bubble is more than twice the width of the scene and that
+   edge is no longer an outer edge at all: it is the middle of the sentence,
+   which is measurably where the left vine was landing. The right vine is on
+   the bubble's own right edge at every width and is unaffected.
+
+   Hidden rather than shortened, because the copy begins at the bubble's top
+   padding and there is no length short enough to clear it from there. */
+@media (min-width: 1280px) {
+  .hero__thread .msg__vine--l { display: none; }
+}
+
+/* Rotation about the point where each vine meets its plant, and a pixel or
+   two sideways with it. No scale, no bounce, no float, no parallax, and
+   nothing in script: two keyframe blocks and two durations that do not
+   divide into each other, so the pair never falls into step. */
+@keyframes vine-sway-a {
+  0%, 100% { transform: rotate(-1.6deg) translateX(-1px); }
+  50%      { transform: rotate(2.2deg)  translateX(2px); }
+}
+@keyframes vine-sway-b {
+  0%, 100% { transform: rotate(1.9deg)  translateX(1px); }
+  50%      { transform: rotate(-1.5deg) translateX(-2px); }
+}
+
+/* The words stay on top of all of it. */
+.hero__thread .msg--art .msg__text { position: relative; z-index: 3; }
+
 .hero__thread .msg__bubble {
   /* WHY THE BASE IS NOT PURE WHITE.
 
@@ -31629,7 +31768,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
     </symbol>
     
 
-    <symbol id="px-smiley-o" viewBox="0 0 5 6"><path fill="currentColor" d="M1 0h1v1H1zM3 0h1v1H3zM0 3h1v1H0zM4 3h1v1H4zM1 4h1v1H1zM3 4h1v1H3zM2 5h1v1H2z"/></symbol>
+    <symbol id="px-smiley-o" viewBox="0 0 18 17"><path fill="#FDD536" d="M6 0h6v1H6zM4 1h10v1H4zM3 2h2v1H3zM7 2h8v1H7zM2 3h2v1H2zM5 3h11v1H5zM2 4h1v1H2zM4 4h12v1H4zM1 5h4v1H1zM6 5h6v1H6zM13 5h4v1H13zM1 6h3v1H1zM7 6h4v1H7zM14 6h3v1H14zM0 7h4v1H0zM7 7h4v1H7zM14 7h4v1H14zM0 8h4v1H0zM7 8h4v1H7zM14 8h4v1H14zM0 9h5v1H0zM6 9h6v1H6zM13 9h5v1H13zM0 10h3v1H0zM4 10h10v1H4zM15 10h3v1H15zM1 11h2v1H1zM5 11h8v1H5zM15 11h2v1H15zM1 12h4v1H1zM6 12h6v1H6zM13 12h4v1H13zM2 13h4v1H2zM12 13h4v1H12zM3 14h4v1H3zM11 14h4v1H11zM4 15h10v1H4zM6 16h6v1H6z"/><path fill="#181818" d="M5 5h1v1H5zM12 5h1v1H12zM4 6h1v1H4zM6 6h1v1H6zM11 6h1v1H11zM13 6h1v1H13zM4 7h3v1H4zM11 7h3v1H11zM4 8h3v1H4zM11 8h3v1H11zM5 9h1v1H5zM12 9h1v1H12zM3 10h1v1H3zM14 10h1v1H14zM3 11h2v1H3zM13 11h2v1H13zM5 12h1v1H5zM12 12h1v1H12zM6 13h6v1H6zM7 14h4v1H7z"/><path fill="#F6F0D6" d="M5 2h2v1H5zM4 3h1v1H4zM3 4h1v1H3z"/><path fill="#FFFFFF" d="M5 6h1v1H5zM12 6h1v1H12z"/></symbol>
     <symbol id="px-smiley" viewBox="0 1 16 13"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM3 2h10v1h-10zM2 3h12v1h-12zM1 4h4v1h-4zM7 4h2v1h-2zM11 4h4v1h-4zM1 5h4v1h-4zM7 5h2v1h-2zM11 5h4v1h-4zM0 6h16v1h-16zM0 7h16v1h-16zM0 8h16v1h-16zM1 9h2v1h-2zM4 9h8v1h-8zM13 9h2v1h-2zM1 10h3v1h-3zM6 10h4v1h-4zM12 10h3v1h-3zM2 11h4v1h-4zM10 11h4v1h-4zM3 12h10v1h-10zM5 13h6v1h-6z"/><path fill="var(--pxi-bg)" d="M5 4h2v1h-2zM9 4h2v1h-2zM5 5h2v1h-2zM9 5h2v1h-2zM3 9h1v1h-1zM12 9h1v1h-1zM4 10h2v1h-2zM10 10h2v1h-2zM6 11h4v1h-4z"/></symbol>
     <symbol id="px-phone" viewBox="5 1 6 13"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM5 2h6v1h-6zM5 3h1v1h-1zM10 3h1v1h-1zM5 4h1v1h-1zM10 4h1v1h-1zM5 5h1v1h-1zM10 5h1v1h-1zM5 6h1v1h-1zM10 6h1v1h-1zM5 7h1v1h-1zM10 7h1v1h-1zM5 8h1v1h-1zM10 8h1v1h-1zM5 9h1v1h-1zM10 9h1v1h-1zM5 10h1v1h-1zM10 10h1v1h-1zM5 11h6v1h-6zM5 12h2v1h-2zM9 12h2v1h-2zM5 13h6v1h-6z"/><path fill="var(--pxi-bg)" d="M6 3h4v1h-4zM6 4h4v1h-4zM6 5h4v1h-4zM6 6h4v1h-4zM6 7h4v1h-4zM6 8h4v1h-4zM6 9h4v1h-4zM6 10h4v1h-4zM7 12h2v1h-2z"/></symbol>
     <symbol id="px-laptop" viewBox="1 2 14 11"><path fill="var(--pxi-fg)" d="M3 2h10v1h-10zM3 3h1v1h-1zM12 3h1v1h-1zM3 4h1v1h-1zM12 4h1v1h-1zM3 5h1v1h-1zM12 5h1v1h-1zM3 6h1v1h-1zM12 6h1v1h-1zM3 7h1v1h-1zM12 7h1v1h-1zM3 8h10v1h-10zM1 10h14v1h-14zM1 11h5v1h-5zM10 11h5v1h-5zM1 12h14v1h-14z"/><path fill="var(--pxi-bg)" d="M4 3h8v1h-8zM4 4h8v1h-8zM4 5h8v1h-8zM4 6h8v1h-8zM4 7h8v1h-8zM6 11h4v1h-4z"/></symbol>
@@ -32041,8 +32180,8 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
                 <span class="msg__from" aria-hidden="true">SS</span>
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">Hello Team&nbsp;<svg class="pxi pxi--face" data-px="smiley-o" role="img" aria-label="smiling face"><use href="#px-smiley-o"/></svg></span></span>
               </span>
-              <span class="msg" data-msg>
-                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
+              <span class="msg msg--art" data-msg>
+                <span class="msg__bubble"><span class="msg__art" aria-hidden="true"><img src="/assets/4c33a7707c59.webp" alt="" width="760" height="621" loading="lazy" decoding="async"><svg class="msg__vine msg__vine--l" viewBox="0 0 22 66" fill="none" aria-hidden="true" focusable="false"><path d="M11 0C8.6 12 13 22 10 34c-2.4 9.6 2 18 1 31" stroke="#355C14" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="0" cy="0" rx="4.4" ry="5.8" fill="#417016" transform="translate(5.2 12.5) rotate(-26)"/><ellipse cx="0" cy="0" rx="4.1" ry="5.4" fill="#4E8A1C" transform="translate(15.4 22) rotate(24)"/><ellipse cx="0" cy="0" rx="4.3" ry="5.6" fill="#3B6A14" transform="translate(5 34.5) rotate(-22)"/><ellipse cx="0" cy="0" rx="3.9" ry="5.2" fill="#4E8A1C" transform="translate(15 46) rotate(21)"/><ellipse cx="0" cy="0" rx="3.6" ry="4.8" fill="#417016" transform="translate(8 58) rotate(-14)"/></svg><svg class="msg__vine msg__vine--r" viewBox="0 0 22 66" fill="none" aria-hidden="true" focusable="false"><path d="M11 0C8.6 12 13 22 10 34c-2.4 9.6 2 18 1 31" stroke="#355C14" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="0" cy="0" rx="4.4" ry="5.8" fill="#417016" transform="translate(5.2 12.5) rotate(-26)"/><ellipse cx="0" cy="0" rx="4.1" ry="5.4" fill="#4E8A1C" transform="translate(15.4 22) rotate(24)"/><ellipse cx="0" cy="0" rx="4.3" ry="5.6" fill="#3B6A14" transform="translate(5 34.5) rotate(-22)"/><ellipse cx="0" cy="0" rx="3.9" ry="5.2" fill="#4E8A1C" transform="translate(15 46) rotate(21)"/><ellipse cx="0" cy="0" rx="3.6" ry="4.8" fill="#417016" transform="translate(8 58) rotate(-14)"/></svg></span><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
                   <em>Sarthak Sahoo</em>, a Product Designer based in Austin, TX</span></span>
               </span>
               
