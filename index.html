@@ -26220,130 +26220,114 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    broad soft plane rather than a corner that brightens. Nothing glossy: there
    is no second highlight layer anywhere in here, only the one radial. */
 /* ==========================================================================
-   THE WORKSPACE, SITTING ON THE SECOND MESSAGE
+   THE WORKSPACE, RESTING ON THE SECOND MESSAGE
 
-   A decorative layer, and nothing else: aria-hidden, pointer-events none,
-   nothing focusable inside it. It is a child of the second bubble rather than
-   of the page, so it is anchored to that bubble and not to the viewport, and
-   `bottom: 100%` puts its foot exactly on the bubble's top edge. One pixel of
-   negative margin closes the hairline that subpixel rounding opens there, so
-   the desk reads as resting on the bubble rather than hovering a fraction
-   above it. No rug, no floor line, no shadow strip.
+   A SIBLING, NOT A CHILD. It used to live inside the bubble, which meant it
+   inherited every transform the bubble runs: measured, the bubble scales to
+   1.0119 as it arrives and keeps scaling (0.9975, 0.9941) as later messages
+   compress it — so the scene grew into place and then kept breathing. It is a child
+   of the message now, whose own transform is `none` at every frame of the
+   sequence, so nothing the bubble does reaches it.
 
-   SIZED BY HEIGHT, CAPPED BY THE BUBBLE. The scene is 1.2238 wide to 1 tall.
-   Fitting it to the full width of the bubble would make it 201px tall on a
-   phone and 435px tall at 1440, which is not an ornament on a message, it is
-   a mural. So the height is the thing that is chosen and the width follows
-   from the ratio, with `min(100%, …)` making the bubble a hard ceiling it can
-   never cross. Nothing is cropped and nothing is rearranged: one number
-   scales the whole composition, and it stays right-weighted because the box
-   is pinned to the right edge.
+   IT WAITS FOR THE BUBBLE TO FINISH. Hidden until the message reports
+   `data-state="settled"`, then one 110ms fade at final size in final
+   position. No scale, no translate, no staggered parts: one picture, one
+   reveal.
 
-   The room it occupies is real. `padding-top` on the message reserves exactly
-   the height the art will take, which is why the scene sits in open space
-   instead of covering `Hello Team` above it. That is the one piece of
-   existing geometry this changes, and it changes it by adding space rather
-   than by moving anything.
+   ANCHORED ON THE GROUND, NOT ON THE FILE. The asset is already trimmed to
+   its alpha bounds, but its lowest visible pixel is not the floor — it is the
+   tip of a hanging vine. Row 596 of 621 is where the shoes, desk legs and
+   chair castors stop; the last 24 rows are two threads of plant, 2 to 38
+   pixels wide. Sitting the file's bottom on the bubble therefore parked the
+   floor 4 percent of the scene's height in the air, which is the float. The
+   offsets below put row 596 on the bubble's top edge instead and let the
+   vines hang over it, which is what a trailing plant does.
    ========================================================================== */
 .hero__thread .msg--art {
-  --art-h: clamp(150px, 20vw, 220px);
-}
-
-/* WHERE THE ROOM COMES FROM DEPENDS ON WHETHER THE THREAD IS A WINDOW.
-
-   Below 720 the thread is its whole content: overflow is visible, nothing
-   retires, and the honest way to give the scene somewhere to stand is to
-   reserve it. `padding-top` adds exactly the height the art will take, so it
-   sits in open space and `Hello Team` is untouched above it.
-
-   From 720 up the thread is a window with `overflow: hidden` and messages are
-   meant to leave through the top of it. Measured there, the headroom above
-   the first bubble is only 61 to 126px, so reserving 150 to 220 pushed that
-   bubble straight out through the clip. No room is reserved at those widths.
-
-   Instead the scene is sized to clear the first bubble sideways. It is pinned
-   to the right of a wide bubble, `Hello Team` is a short bubble on the left,
-   and 12vw keeps the gap between them open at every width in the band. The
-   window behaves exactly as it did: thread heights at 1024, 1280, 1512 and
-   2400 are the same numbers as before this existed. */
-@media (max-width: 719px) {
-  .hero__thread .msg--art { padding-top: var(--art-h); }
-}
-
-@media (min-width: 720px) {
-  .hero__thread .msg--art { --art-h: clamp(110px, 12vw, 220px); }
+  position: relative;
+  /* Bounded by the viewport as well as by the clamp, so the scene never has
+     to be width-capped. That keeps its rendered height exactly --art-h, which
+     the ground-plane offsets below are calculated from. */
+  --art-h: min(clamp(150px, 20vw, 220px), 44vw);
+  --art-foot: 0.959742;   /* 596 / 621 */
 }
 
 .hero__thread .msg__art {
   position: absolute;
   right: 0;
-  bottom: 100%;
-  margin-bottom: -1px;
-  width: min(100%, calc(var(--art-h) * 1.2238));
+  width: calc(var(--art-h) * 1.2238);
   aspect-ratio: 1.2238;
   z-index: 1;
+  opacity: 0;
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
 }
 
-.hero__thread .msg__art > img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.hero__thread .msg__art > img { display: block; width: 100%; height: 100%; }
+
+/* Below 720 the thread's overflow is visible, so the room is reserved and the
+   art stands in it. Above, the thread is a window that clips, reserving there
+   pushed the first bubble out through the top, so the art is placed over the
+   band instead and sized to stay clear of it. */
+@media (max-width: 719px) {
+  .hero__thread .msg--art { padding-top: var(--art-h); }
+  .hero__thread .msg__art { top: calc(var(--art-h) * (1 - var(--art-foot)) + 1px); }
 }
 
-/* THE VINES CARRY ON PAST THE PICTURE.
+@media (min-width: 720px) {
+  .hero__thread .msg--art { --art-h: min(clamp(110px, 12vw, 220px), 44vw); }
+  .hero__thread .msg__art { top: calc(1px - var(--art-h) * var(--art-foot)); }
+}
 
-   The illustration's trailing plants stop where the file stops. These are the
-   few inches after that: drawn as vectors rather than cut from the raster, so
-   they can move without the rest of the scene moving with them, and so they
-   stay sharp at any size. They hang from the foot of the art and cross the
-   bubble's top edge, which is the join the eye would otherwise notice.
+/* ONE VINE, CARRYING ON FROM A REAL ONE.
 
-   Pinned to the art's own outer edges, because that is where the plants are.
-   Both sit outside the bubble's 18px of padding, so neither reaches the copy,
-   and the copy is raised above them anyway. */
+   The asset's right-hand vine tapers to a five-pixel tip at 80.1% of the
+   width, on its last row. This starts a pixel and a half above that, at the
+   same width and the same green sampled out of it (rgb 75,124,19), so it
+   reads as the rest of the plant rather than as a second plant. One stem,
+   three leaves growing off it, nothing floating loose.
+
+   The left-hand vine is not continued. It ends higher, thinner and paler, and
+   anything joined to it at this size showed the join. A visible seam is worse
+   than a plant that simply stops, so it stops. */
 .hero__thread .msg__vine {
   position: absolute;
-  top: calc(100% - 26px);
-  width: clamp(15px, 1.6vw, 22px);
-  height: auto;
-  aspect-ratio: 22 / 66;
-  z-index: 2;
+  /* The join is the asset's last LEAF, not its last pixel. Its vine tapers
+     to a two-pixel thread over its final rows, which at render scale is half
+     a pixel and invisible; the lowest thing the eye actually reads is the
+     leaf at row 600, spanning x53 to x72 and centred on 8.2% of the width. So
+     the stem starts there — 4.32% plus half of this box — and at 96.4% of the
+     height, which is that row. The first leaf sits near the top of the box and covers the
+     joint. Leaves are drawn at the size the asset's own are once scaled,
+     about nine pixels, rather than the five-pixel slivers that made the
+     continuation read as a second, different plant.
+
+     Short, too: it clears the bubble's 18px top padding and stops, so it
+     never reaches the first line of the sentence. */
+  left: 4.32%;
+  top: 96.4%;
+  width: calc(var(--art-h) * 0.095);
+  aspect-ratio: 14 / 22;
   overflow: visible;
+  transform-origin: 50% 0;
+  animation: none;
 }
 
-.hero__thread .msg__vine--l { left: 1.5%; transform-origin: 50% 0; animation: vine-sway-a 4.4s ease-in-out infinite; }
-.hero__thread .msg__vine--r { right: 4%;  transform-origin: 50% 0; animation: vine-sway-b 3.9s ease-in-out infinite; }
-
-/* THE INNER VINE STANDS DOWN WHERE THE BUBBLE OUTGROWS THE PICTURE.
-
-   The art is pinned to the right edge and its height is capped, so the wider
-   the bubble gets the further its own left edge moves in from the bubble's.
-   Past 1280 the bubble is more than twice the width of the scene and that
-   edge is no longer an outer edge at all: it is the middle of the sentence,
-   which is measurably where the left vine was landing. The right vine is on
-   the bubble's own right edge at every width and is unaffected.
-
-   Hidden rather than shortened, because the copy begins at the bubble's top
-   padding and there is no length short enough to clear it from there. */
-@media (min-width: 1280px) {
-  .hero__thread .msg__vine--l { display: none; }
+/* Nothing appears, and nothing moves, until the message has settled. */
+.hero__thread .msg--art[data-state="settled"] .msg__art {
+  opacity: 1;
+  transition: opacity 110ms linear;
+}
+.hero__thread .msg--art[data-state="settled"] .msg__vine {
+  animation: vine-sway 4.2s ease-in-out infinite;
 }
 
-/* Rotation about the point where each vine meets its plant, and a pixel or
-   two sideways with it. No scale, no bounce, no float, no parallax, and
-   nothing in script: two keyframe blocks and two durations that do not
-   divide into each other, so the pair never falls into step. */
-@keyframes vine-sway-a {
-  0%, 100% { transform: rotate(-1.6deg) translateX(-1px); }
-  50%      { transform: rotate(2.2deg)  translateX(2px); }
-}
-@keyframes vine-sway-b {
-  0%, 100% { transform: rotate(1.9deg)  translateX(1px); }
-  50%      { transform: rotate(-1.5deg) translateX(-2px); }
+/* Rotation about the point where the vine meets the plant, and a pixel or two
+   sideways with it. No scale, no bounce, no float, and nothing in script. */
+@keyframes vine-sway {
+  0%, 100% { transform: rotate(-1.7deg) translateX(-1px); }
+  50%      { transform: rotate(2.1deg)  translateX(2px); }
 }
 
 /* The words stay on top of all of it. */
@@ -32192,7 +32176,8 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">Hello Team&nbsp;<svg class="pxi pxi--face" data-px="smiley-o" role="img" aria-label="smiling face"><use href="#px-smiley-o"/></svg></span></span>
               </span>
               <span class="msg msg--art" data-msg>
-                <span class="msg__bubble"><span class="msg__art" aria-hidden="true"><img src="assets/4c33a7707c59.webp" alt="" width="760" height="621" loading="lazy" decoding="async"><svg class="msg__vine msg__vine--l" viewBox="0 0 22 66" fill="none" aria-hidden="true" focusable="false"><path d="M11 0C8.6 12 13 22 10 34c-2.4 9.6 2 18 1 31" stroke="#355C14" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="0" cy="0" rx="4.4" ry="5.8" fill="#417016" transform="translate(5.2 12.5) rotate(-26)"/><ellipse cx="0" cy="0" rx="4.1" ry="5.4" fill="#4E8A1C" transform="translate(15.4 22) rotate(24)"/><ellipse cx="0" cy="0" rx="4.3" ry="5.6" fill="#3B6A14" transform="translate(5 34.5) rotate(-22)"/><ellipse cx="0" cy="0" rx="3.9" ry="5.2" fill="#4E8A1C" transform="translate(15 46) rotate(21)"/><ellipse cx="0" cy="0" rx="3.6" ry="4.8" fill="#417016" transform="translate(8 58) rotate(-14)"/></svg><svg class="msg__vine msg__vine--r" viewBox="0 0 22 66" fill="none" aria-hidden="true" focusable="false"><path d="M11 0C8.6 12 13 22 10 34c-2.4 9.6 2 18 1 31" stroke="#355C14" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="0" cy="0" rx="4.4" ry="5.8" fill="#417016" transform="translate(5.2 12.5) rotate(-26)"/><ellipse cx="0" cy="0" rx="4.1" ry="5.4" fill="#4E8A1C" transform="translate(15.4 22) rotate(24)"/><ellipse cx="0" cy="0" rx="4.3" ry="5.6" fill="#3B6A14" transform="translate(5 34.5) rotate(-22)"/><ellipse cx="0" cy="0" rx="3.9" ry="5.2" fill="#4E8A1C" transform="translate(15 46) rotate(21)"/><ellipse cx="0" cy="0" rx="3.6" ry="4.8" fill="#417016" transform="translate(8 58) rotate(-14)"/></svg></span><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
+                <span class="msg__art" aria-hidden="true"><img src="assets/4c33a7707c59.webp" alt="" width="760" height="621" loading="lazy" decoding="async"><svg class="msg__vine" viewBox="0 0 14 22" fill="none" aria-hidden="true" focusable="false"><path d="M7 0c-.5 4.2.9 7.4.3 11.4-.5 3.6.4 6.6.2 10" stroke="#4C7B10" stroke-width="1.3" stroke-linecap="round"/><path d="M7.2 4.4c-2.2-.5-5 .6-5.5 3-.5 2.3 1.2 3.9 3.2 3.6 2.2-.3 3-3 2.3-6.6z" fill="#4E8A1C"/><path d="M7.3 12.4c2.1-.5 4.8.5 5.3 2.8.4 2.2-1.1 3.7-3 3.4-2.1-.3-2.9-2.8-2.3-6.2z" fill="#417016"/></svg></span>
+                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
                   <em>Sarthak Sahoo</em>, a Product Designer based in Austin, TX</span></span>
               </span>
               
