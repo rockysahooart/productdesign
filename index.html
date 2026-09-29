@@ -26225,97 +26225,156 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    A SIBLING, NOT A CHILD. It used to live inside the bubble, which meant it
    inherited every transform the bubble runs: measured, the bubble scales to
    1.0119 as it arrives and keeps scaling (0.9975, 0.9941) as later messages
-   compress it — so the scene grew into place and then kept breathing. It is a child
-   of the message now, whose own transform is `none` at every frame of the
-   sequence, so nothing the bubble does reaches it.
+   compress it, so the scene grew into place and then kept breathing. It is a
+   child of the message now, whose own transform is `none` at every frame of
+   the sequence, so nothing the bubble does reaches it.
 
    IT WAITS FOR THE BUBBLE TO FINISH. Hidden until the message reports
    `data-state="settled"`, then one 110ms fade at final size in final
    position. No scale, no translate, no staggered parts: one picture, one
    reveal.
 
-   ANCHORED ON THE GROUND, NOT ON THE FILE. The asset is already trimmed to
-   its alpha bounds, but its lowest visible pixel is not the floor — it is the
-   tip of a hanging vine. Row 596 of 621 is where the shoes, desk legs and
-   chair castors stop; the last 24 rows are two threads of plant, 2 to 38
-   pixels wide. Sitting the file's bottom on the bubble therefore parked the
-   floor 4 percent of the scene's height in the air, which is the float. The
-   offsets below put row 596 on the bubble's top edge instead and let the
-   vines hang over it, which is what a trailing plant does.
+   THE TABLETOP IS THE CONTACT EDGE. The art is two files cut from one
+   drawing. The scene is rows 0 to 603 of the trimmed source: everything down
+   to the underside of the tabletop at row 592, plus twelve rows past it. The
+   hanging plant is rows 592 to 876, and it is its own file because it is the
+   only thing that moves. Those twelve shared rows are the collar: the
+   overlay's pivot sits inside them, so the small rotation can never open a
+   gap at the joint, because the same pixels are already painted underneath.
+   --art-foot (592/604) is where the tabletop falls in the scene box, and the
+   offsets below put that line one pixel inside the bubble's top edge.
    ========================================================================== */
 .hero__thread .msg--art {
   position: relative;
-  /* Bounded by the viewport as well as by the clamp, so the scene never has
-     to be width-capped. That keeps its rendered height exactly --art-h, which
-     the ground-plane offsets below are calculated from. */
-  --art-h: min(clamp(150px, 20vw, 220px), 44vw);
-  --art-foot: 0.959742;   /* 596 / 621 */
+  /* ONE COMPOSITION, EVERY WIDTH. The scene is a fixed share of the bubble's
+     own column and nothing else: 47.5% of it wide, standing off the right
+     edge by 5% of it, so it occupies the right half at 320 exactly as it does
+     at 2400 and there is no second layout for phones. The cell is that column
+     plus a 36px avatar track and a 10px gap, which is the 46px below.
+
+     No cap: a cap is a second composition in disguise — it would let the
+     scene shrink relative to the bubble past some width and change the
+     picture. The column is what the bubble is, so the column is what the
+     scene is measured against. */
+  --art-k: 0.475;    /* scene width, as a share of the bubble column */
+  --art-in: 0.05;    /* right inset, same share */
+  --art-foot: 0.980132;   /* 592 / 604: where the tabletop falls in the file */
 }
 
 .hero__thread .msg__art {
   position: absolute;
-  right: 0;
-  width: calc(var(--art-h) * 1.2238);
-  aspect-ratio: 1.2238;
+  /* The bubble's layout box ends exactly where the message cell does; the one
+     to two pixels you can measure between them is only the 0.994 scale the
+     bubble carries, taken off both sides. So the inset below is measured from
+     the bubble's own edge. */
+  right: calc((100% - 46px) * var(--art-in));
+  width: calc((100% - 46px) * var(--art-k));
+  aspect-ratio: 2.142384;
   z-index: 1;
   opacity: 0;
+  /* ONE-WAY. The player re-asserts `data-state="settled"` on the rows when it
+     remeasures, and on that pass the attribute selector below can stop
+     matching for a single style recalc, which was enough to drop the scene to
+     zero and fade it back in a second time, about a second after it arrived.
+     A reverse transition that never gets anywhere is the fix: going back to
+     this rule now waits a day before it starts, so the picture that has been
+     revealed stays revealed. */
+  transition: opacity 0s linear 86400s;
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
 }
 
-.hero__thread .msg__art > img { display: block; width: 100%; height: 100%; }
+.hero__thread .msg__scene { display: block; width: 100%; height: 100%; }
 
-/* Below 720 the thread's overflow is visible, so the room is reserved and the
-   art stands in it. Above, the thread is a window that clips, reserving there
-   pushed the first bubble out through the top, so the art is placed over the
-   band instead and sized to stay clear of it. */
+/* The scene's own bottom edge is twelve rows below the tabletop, so the foot
+   fraction is what has to land on the bubble, not the file's edge. Below 720
+   the thread's overflow is visible and the room above the bubble is reserved:
+   the reserved strip is exactly the part of the scene above the tabletop, so
+   top: 1px lands the tabletop one pixel inside the bubble. Above 720 the
+   thread is a window that clips, and reserving there pushed the first bubble
+   out through the top, so the scene is hung off the bubble's top edge
+   instead. Different mechanics, identical result: the same tabletop, on the
+   same edge, at the same 47.5%. */
 @media (max-width: 719px) {
-  .hero__thread .msg--art { padding-top: var(--art-h); }
-  .hero__thread .msg__art { top: calc(var(--art-h) * (1 - var(--art-foot)) + 1px); }
+  .hero__thread .msg--art {
+    padding-top: calc((100% - 46px) * var(--art-k) * var(--art-foot) / 2.142384);
+  }
+  .hero__thread .msg__art { top: 1px; }
 }
 
 @media (min-width: 720px) {
-  .hero__thread .msg--art { --art-h: min(clamp(110px, 12vw, 220px), 44vw); }
-  .hero__thread .msg__art { top: calc(1px - var(--art-h) * var(--art-foot)); }
+  /* `bottom: 100%` puts the scene's foot on the bubble's top edge with no
+     arithmetic at all, and the only shift after that is by a fraction of the
+     scene's OWN height, which is what a percentage in `translateY` means.
+     1.9868% is 12/604, the collar below the tabletop; one pixel more and the
+     tabletop is inside the bubble. It is done this way rather than with a
+     `top` offset because the width is a percentage and a percentage inside
+     `top` resolves against the HEIGHT. */
+  .hero__thread .msg__art {
+    bottom: 100%;
+    transform: translateY(calc(1.9868% + 1px));
+  }
 }
 
-/* ONE VINE, CARRYING ON FROM A REAL ONE.
+/* THE ONE THING THAT MOVES.
 
-   The asset's right-hand vine tapers to a five-pixel tip at 80.1% of the
-   width, on its last row. This starts a pixel and a half above that, at the
-   same width and the same green sampled out of it (rgb 75,124,19), so it
-   reads as the rest of the plant rather than as a second plant. One stem,
-   three leaves growing off it, nothing floating loose.
+   Not a drawn approximation of the plant: the plant itself, cut out of the
+   same file at the tabletop line, so its shape, colour and taper match
+   because they are the same pixels.
 
-   The left-hand vine is not continued. It ends higher, thinner and paler, and
-   anything joined to it at this size showed the join. A visible seam is worse
-   than a plant that simply stops, so it stops. */
-.hero__thread .msg__vine {
+   HOW LONG. It is cut at row 98 of the 285 that hang below the table, which
+   is the narrowest line across the whole trail: 21 pixels of ink in four
+   threads, none wider than eight, which at the size this renders is about a
+   pixel each and reads as nothing. Every longer cut runs through the body of
+   a leaf. That length also keeps the whole trail clear of the first line of
+   the sentence at every width: the longest it ever gets is about 21px against
+   32px of bubble padding, so it stops in the space above the words rather
+   than reaching them.
+
+   IT LIVES IN THE BUBBLE. The bubble carries both a transform and a filter,
+   either of which makes it a stacking context, which means the text inside it
+   cannot be lifted above anything outside it — z-index 3 on the words loses to
+   z-index 1 on a sibling layer. So the trailing half of the plant is a child
+   of the bubble instead: painted over the bubble's face, under its words. It
+   costs the 0.6% the bubble is scaled by, a fifth of a pixel across the
+   plant, and the join is covered anyway.
+
+   WHERE. The numbers the cut was made with, as shares of the scene: the plant
+   is 14.6832% of the scene's width (190/1294) and its left edge is the
+   scene's left edge, so from the bubble's right edge it stands off by the
+   scene's inset plus the other 85.3168%. Inside the bubble a percentage is a
+   percentage of the column, which is what --art-k and --art-in are shares of,
+   so the same numbers describe the same lengths in both places.
+
+   It turns about 47.6% across its own top edge, the middle of the stem where
+   it leaves the tabletop, so the joint stays put and only the hanging length
+   swings. The scene's last twelve rows are that same joint, painted again
+   above it, so no rotation can open a gap there. */
+.hero__thread .msg--art .msg__vine {
+  --vine-scene: calc(100% * var(--art-k));
   position: absolute;
-  /* The join is the asset's last LEAF, not its last pixel. Its vine tapers
-     to a two-pixel thread over its final rows, which at render scale is half
-     a pixel and invisible; the lowest thing the eye actually reads is the
-     leaf at row 600, spanning x53 to x72 and centred on 8.2% of the width. So
-     the stem starts there — 4.32% plus half of this box — and at 96.4% of the
-     height, which is that row. The first leaf sits near the top of the box and covers the
-     joint. Leaves are drawn at the size the asset's own are once scaled,
-     about nine pixels, rather than the five-pixel slivers that made the
-     continuation read as a second, different plant.
-
-     Short, too: it clears the bubble's 18px top padding and stops, so it
-     never reaches the first line of the sentence. */
-  left: 4.32%;
-  top: 96.4%;
-  width: calc(var(--art-h) * 0.095);
-  aspect-ratio: 14 / 22;
-  overflow: visible;
-  transform-origin: 50% 0;
+  display: block;
+  top: 0;
+  right: calc(100% * var(--art-in) + var(--vine-scene) * 0.853168);
+  width: calc(var(--vine-scene) * 0.146832);
+  height: auto;
+  aspect-ratio: 1.938776;   /* 190 / 98 */
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0s linear 86400s;   /* one-way, as above */
+  transform-origin: 47.6% 0;
   animation: none;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-/* Nothing appears, and nothing moves, until the message has settled. */
-.hero__thread .msg--art[data-state="settled"] .msg__art {
+/* Nothing appears, and nothing moves, until the message has settled. Both
+   halves of the plant are gated on the same attribute and fade over the same
+   110ms, so they arrive as one picture. */
+.hero__thread .msg--art[data-state="settled"] .msg__art,
+.hero__thread .msg--art[data-state="settled"] .msg__vine {
   opacity: 1;
   transition: opacity 110ms linear;
 }
@@ -26323,11 +26382,15 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   animation: vine-sway 4.2s ease-in-out infinite;
 }
 
-/* Rotation about the point where the vine meets the plant, and a pixel or two
-   sideways with it. No scale, no bounce, no float, and nothing in script. */
+/* Rest is the drawn position, at both ends of the loop, so the global
+   reduced-motion rule (one iteration, 0.001ms) leaves the plant exactly as it
+   was drawn rather than frozen mid-swing. Three degrees across the whole
+   sway, a pixel and a half of travel with it. No scale, no bounce, nothing in
+   script. */
 @keyframes vine-sway {
-  0%, 100% { transform: rotate(-1.7deg) translateX(-1px); }
-  50%      { transform: rotate(2.1deg)  translateX(2px); }
+  0%, 100% { transform: none; }
+  30%      { transform: rotate(-1.3deg) translateX(-1px); }
+  70%      { transform: rotate(1.7deg)  translateX(1.5px); }
 }
 
 /* The words stay on top of all of it. */
@@ -32176,8 +32239,8 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">Hello Team&nbsp;<svg class="pxi pxi--face" data-px="smiley-o" role="img" aria-label="smiling face"><use href="#px-smiley-o"/></svg></span></span>
               </span>
               <span class="msg msg--art" data-msg>
-                <span class="msg__art" aria-hidden="true"><img src="assets/4c33a7707c59.webp" alt="" width="760" height="621" loading="lazy" decoding="async"><svg class="msg__vine" viewBox="0 0 14 22" fill="none" aria-hidden="true" focusable="false"><path d="M7 0c-.5 4.2.9 7.4.3 11.4-.5 3.6.4 6.6.2 10" stroke="#4C7B10" stroke-width="1.3" stroke-linecap="round"/><path d="M7.2 4.4c-2.2-.5-5 .6-5.5 3-.5 2.3 1.2 3.9 3.2 3.6 2.2-.3 3-3 2.3-6.6z" fill="#4E8A1C"/><path d="M7.3 12.4c2.1-.5 4.8.5 5.3 2.8.4 2.2-1.1 3.7-3 3.4-2.1-.3-2.9-2.8-2.3-6.2z" fill="#417016"/></svg></span>
-                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
+                <span class="msg__art" aria-hidden="true"><img class="msg__scene" src="assets/1071501dfe1e.webp" alt="" width="960" height="448" loading="lazy" decoding="async"></span>
+                <span class="msg__bubble"><img class="msg__vine" src="assets/1e37a317b31d.webp" alt="" width="141" height="73" aria-hidden="true" loading="lazy" decoding="async"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
                   <em>Sarthak Sahoo</em>, a Product Designer based in Austin, TX</span></span>
               </span>
               
