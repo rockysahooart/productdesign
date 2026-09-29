@@ -29770,7 +29770,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    No new token, no new colour, no new face. */
 :is(#carry, #optiflow, #audit, #specimen) .cs-group {
   display: block;
-  margin: clamp(56px, 7vw, 92px) 0 clamp(-28px, -3vw, -20px);
+  margin: clamp(56px, 7vw, 92px) 0 clamp(18px, 2.2vw, 26px);
   padding-top: clamp(18px, 2.2vw, 26px);
   border-top: 1px solid var(--border);
   font-family: var(--font-body);
@@ -29780,6 +29780,35 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   text-transform: uppercase;
   color: var(--ink-muted);
   max-width: none;
+}
+
+/* ==========================================================================
+   TWO BLOCKS THAT NEVER USED TO TOUCH
+
+   The story beat between every section was carrying the rhythm of this column
+   on its own: 96 above it and 80 below, and the sections themselves have no
+   outer margin at all. That held for as long as a beat sat between every pair
+   of them, which it did, until the reordering put a section next to a section
+   in four places and they came out flush at zero.
+
+   So the space is stated rather than inherited from a neighbour that may not
+   be there. It applies only where BOTH sides are ordinary blocks: a beat
+   keeps its own margins and is excluded from both ends, and the group label
+   is excluded as a predecessor because it is an eyebrow and is supposed to
+   stay near the thing it labels.
+
+   Same value as the beat's lower margin, because this is the same interval:
+   one block ending and another starting. */
+:is(#carry, #optiflow, #audit, #specimen) .cs-wrap
+  > :not(.cs-beat):not(.cs-group) + :not(.cs-beat) {
+  margin-top: clamp(48px, 6vw, 80px);
+}
+
+/* The readout is not a block after the demo, it is the panel the demo writes
+   into: `data-wf-copy`, `aria-live`. It keeps the short interval it would
+   have had inside a component rather than the one between two sections. */
+:is(#audit) .cs-wrap > .wfx + .wfx__read {
+  margin-top: clamp(16px, 2vw, 24px);
 }
 
 :is(#carry, #optiflow, #audit, #specimen, #slop) .cs-beat {
