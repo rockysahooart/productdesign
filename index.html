@@ -26271,15 +26271,6 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   width: calc((100% - 46px) * var(--art-k));
   aspect-ratio: 2.142384;
   z-index: 1;
-  opacity: 0;
-  /* ONE-WAY. The player re-asserts `data-state="settled"` on the rows when it
-     remeasures, and on that pass the attribute selector below can stop
-     matching for a single style recalc, which was enough to drop the scene to
-     zero and fade it back in a second time, about a second after it arrived.
-     A reverse transition that never gets anywhere is the fix: going back to
-     this rule now waits a day before it starts, so the picture that has been
-     revealed stays revealed. */
-  transition: opacity 0s linear 86400s;
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
@@ -26397,24 +26388,81 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   height: auto;
   aspect-ratio: 1.938776;   /* 190 / 98 */
   z-index: 2;
-  opacity: 0;
-  transition: opacity 0s linear 86400s;   /* one-way, as above */
   transform-origin: 47.6% 0;
-  animation: none;
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
 }
 
-/* Nothing appears, and nothing moves, until the message has settled. Both
-   halves of the plant are gated on the same attribute and fade over the same
-   110ms, so they arrive as one picture. */
-.hero__thread .msg--art[data-state="settled"] .msg__art,
-.hero__thread .msg--art[data-state="settled"] .msg__vine {
-  opacity: 1;
-  transition: opacity 110ms linear;
+/* ==========================================================================
+   ONE REVEAL PER MESSAGE
+
+   A MESSAGE AND ITS PICTURE ARE ONE THING. They used to be two: the bubble
+   arrived on `live` and the illustration waited for `settled`, which is a
+   whole 640ms later, so the scene landed on a message that had already
+   finished landing. There is no second timeline here now — no delay, no
+   timer, no observer, no script. The row's own `data-state`, which the player
+   already writes, is the only thing either of them reads.
+
+   THE SAME FRAME, AND THE SAME CURVE. `msg-reveal` is the opacity track of
+   `msg-clay`, the animation the bubble actually runs when it arrives, with
+   the transform, the shadow and the swell taken out: the same 0.32 start, the
+   same cubic-bezier, the same 64% where it reaches full, the same 420ms —
+   450ms for the reacted bubble, which is heavier and takes longer. Both rules
+   match on the same style recalc, so the two animations start at currentTime
+   0 on one frame and read the same value on every frame after it. The picture
+   never scales, slides or bounces — only the bubble does that — and it is
+   already at its final size and place the first time it is anything but
+   invisible.
+
+   WHICH STATES ARE LIT. The message is on screen at `live` and `settled`, and
+   at `gone` it is on its way out with the row fading around it; its picture is
+   lit for exactly those three. Before that — no state at all, `idle`, or
+   `loading`, where the bubble is a 74px indicator and the text is
+   `display: none` — there is no message yet, and there is no picture either.
+
+   WHICH MAKES THE REPLAY FREE. The control puts every row back to `idle`, and
+   an `idle` row has no lit rule, so both halves of it are dark again on the
+   same recalc. Nothing survives a cycle because nothing was ever stored.
+   ========================================================================== */
+@keyframes msg-reveal {
+  0%   { opacity: 0.32; animation-timing-function: cubic-bezier(0.2, 0.62, 0.35, 1); }
+  64%  { opacity: 1; }
+  100% { opacity: 1; }
 }
-.hero__thread .msg--art[data-state="settled"] .msg__vine {
+
+.hero__thread .msg__art,
+.hero__thread .msg__vine,
+.hero__thread .msg__hands {
+  opacity: 0;
+  /* No transition on the way down, because the bubble has none either: the
+     replay clears the track first and the rows go back to `idle` inside that
+     blank, where the bubble's own opacity is cut rather than faded. Measured
+     frame by frame, adding a fade here was the one thing that left a picture
+     on screen after its message had gone. */
+  transition: none;
+}
+
+.hero__thread .msg[data-state="live"] .msg__art,
+.hero__thread .msg[data-state="live"] .msg__vine,
+.hero__thread .msg[data-state="live"] .msg__hands {
+  animation: msg-reveal 420ms linear both;
+}
+
+/* The heaviest message takes longer to arrive, and its picture takes exactly
+   as long: this mirrors the 450ms its reacted bubble is given. */
+.hero__thread .msg[data-state="live"] .msg__hands { animation-duration: 450ms; }
+
+.hero__thread .msg[data-state="settled"] .msg__art,
+.hero__thread .msg[data-state="settled"] .msg__vine,
+.hero__thread .msg[data-state="settled"] .msg__hands,
+.hero__thread .msg[data-state="gone"] .msg__art,
+.hero__thread .msg[data-state="gone"] .msg__vine,
+.hero__thread .msg[data-state="gone"] .msg__hands { opacity: 1; }
+
+/* The plant starts breathing once the message has landed, and not before:
+   during the 640ms the bubble is still moving and so is everything on it. */
+.hero__thread .msg[data-state="settled"] .msg__vine {
   animation: vine-sway 4.2s ease-in-out infinite;
 }
 
@@ -26489,19 +26537,9 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   width: calc((100% - 46px) * var(--hands-k));
   height: auto;
   aspect-ratio: 2.908847;   /* 1085 / 373 */
-  opacity: 0;
-  /* One-way, for the same reason the workspace is: the player re-asserts
-     `settled` on a remeasure, and a single unmatched recalc used to drop this
-     to zero and fade it in a second time. */
-  transition: opacity 0s linear 86400s;
   pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
-}
-
-.hero__thread .msg--hands[data-state="settled"] .msg__hands {
-  opacity: 1;
-  transition: opacity 110ms linear;
 }
 
 .hero__thread .msg__bubble {
@@ -32347,14 +32385,14 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
                 <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">Hello Team&nbsp;<svg class="pxi pxi--face" data-px="smiley-o" role="img" aria-label="smiling face"><use href="#px-smiley-o"/></svg></span></span>
               </span>
               <span class="msg msg--art" data-msg>
-                <span class="msg__art" aria-hidden="true"><img class="msg__scene" src="assets/1071501dfe1e.webp" alt="" width="960" height="448" loading="lazy" decoding="async"></span>
-                <span class="msg__bubble"><img class="msg__vine" src="assets/1e37a317b31d.webp" alt="" width="141" height="73" aria-hidden="true" loading="lazy" decoding="async"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
+                <span class="msg__art" aria-hidden="true"><img class="msg__scene" src="assets/1071501dfe1e.webp" alt="" width="960" height="448" decoding="async"></span>
+                <span class="msg__bubble"><img class="msg__vine" src="assets/1e37a317b31d.webp" alt="" width="141" height="73" aria-hidden="true" decoding="async"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">I&rsquo;m
                   <em>Sarthak Sahoo</em>, a Product Designer based in Austin, TX</span></span>
               </span>
               
               <span class="msg msg--hands" data-msg data-cluster data-scramble data-shuffle data-dwell="700">
                 <span class="msg__from" aria-hidden="true">SS</span>
-                <img class="msg__hands" src="assets/2c5ec0e625c0.webp" alt="" width="900" height="309" aria-hidden="true" loading="lazy" decoding="async">
+                <img class="msg__hands" src="assets/2c5ec0e625c0.webp" alt="" width="900" height="309" aria-hidden="true" decoding="async">
                 <span class="msg__bubble msg__bubble--reacted"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text"><span class="sc sc--plain">I&rsquo;ve</span>
                   <span class="sc sc--plain">designed</span> <span class="sc sc--plain sc--hum"><span class="kw kw--craft">human-centered</span></span> <span class="sc sc--plain">products</span> <span class="sc sc--plain">in</span> <span class="sc sc--plain">an</span> <span class="sc sc--plain">AI-saturated</span> <span class="sc sc--plain">world.</span></span><span class="msg__reactions"><button type="button" class="rx" data-rx="fire" aria-label="React with fire"><span class="rx__e" aria-hidden="true">🔥</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="clap" aria-label="React with applause"><span class="rx__e" aria-hidden="true">👏</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hundred" aria-label="React with hundred"><span class="rx__e" aria-hidden="true">💯</span><span class="rx__n" aria-hidden="true"></span></button></span></span>
               </span>
