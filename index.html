@@ -3013,6 +3013,79 @@ em,
      marks are on the roles they belong to, inside the timeline itself. */
   .hero-card .hero__past  { grid-area: past;  grid-column: 1 / 3; grid-row: 2; }
   .hero-card .hero__tools { grid-area: tools; grid-column: 3 / 4; grid-row: 2; }
+}
+
+/* ==========================================================================
+   THE PAGE HAS TWO STAGES ON A DESKTOP
+
+   The landing page used to arrive whole: a conversation playing in the middle
+   of a composition that already showed the profile, the browser, the
+   timeline, the tools and five sections under them. The conversation is the
+   thing that is meant to be read first, and it was competing with the answer
+   to the question it is asking.
+
+   So above 1024 the page opens on the conversation alone and gives the rest
+   of itself when the invitation is taken. `display: none` rather than opacity,
+   because a held-back section that still occupies its grid area is a page that
+   looks broken, and one that is merely transparent is still in the tab order.
+   The card drops to a single column while it waits, so the conversation sits
+   in a composition rather than in the hole four missing tiles leave behind.
+
+   ONE REVEAL, NOT TWELVE. Everything that arrives uses the same 280ms, the
+   same curve and the same eight pixels, started by the same class, so the
+   second stage reads as the page opening rather than as a dozen cards
+   loading. No stagger, no scale, no delay ladder.
+
+   `pf-work` is set by the invitation's own handler (openList) and cleared by
+   the replay control (restart), so the sequence resets exactly when the
+   conversation does and at no other time. Below 1024 nothing here applies and
+   the page is the one that ships today.
+   ========================================================================== */
+@media (min-width: 1024px) {
+  html:not(.pf-work) .page[data-view="home"] .hero-card {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "copy";
+    grid-template-rows: auto;
+    /* No justify-items and no width cap on the copy: both were tried, and
+       both changed the conversation's measure between the two stages, which
+       means the thread is laid out at one width and revealed at another
+       without a resize to re-measure on. The composition stays the one the
+       player measured. */
+  }
+
+  html:not(.pf-work) .page[data-view="home"] .hero__identity,
+  html:not(.pf-work) .page[data-view="home"] .hero__clients,
+  html:not(.pf-work) .page[data-view="home"] .pv-fit,
+  html:not(.pf-work) .page[data-view="home"] .hero__past,
+  html:not(.pf-work) .page[data-view="home"] .hero__tools,
+  html:not(.pf-work) .page[data-view="home"] > .section:not(.section--hero) {
+    display: none;
+  }
+
+  html.pf-work .page[data-view="home"] .hero__identity,
+  html.pf-work .page[data-view="home"] .hero__clients,
+  html.pf-work .page[data-view="home"] .pv-fit,
+  html.pf-work .page[data-view="home"] .hero__past,
+  html.pf-work .page[data-view="home"] .hero__tools,
+  html.pf-work .page[data-view="home"] > .section:not(.section--hero) {
+    animation: pf-stage-in 280ms ease-out both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html.pf-work .page[data-view="home"] .hero__identity,
+    html.pf-work .page[data-view="home"] .hero__clients,
+    html.pf-work .page[data-view="home"] .pv-fit,
+    html.pf-work .page[data-view="home"] .hero__past,
+    html.pf-work .page[data-view="home"] .hero__tools,
+    html.pf-work .page[data-view="home"] > .section:not(.section--hero) {
+      animation: none;
+    }
+  }
+}
+
+@keyframes pf-stage-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
 
   .hero-card .hero__past,
   .hero-card .hero__tools { align-self: stretch; }
@@ -32736,8 +32809,8 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
                      from js/routes.js and says the study is coming rather than
                      offering a tap that goes nowhere. -->
                 <div class="pv__head">
-                  <h3 class="pv__title">Designing governance infrastructure for agent-generated interfaces</h3>
-                  <p class="pv__sub">I&rsquo;m currently building governance standards for catching &ldquo;AI slop,&rdquo; designed to be dropped directly into an agent chat to audit generated product work for weak logic, missing states, unsupported decisions, and other gaps before it ships. <a class="pv__go" data-pf-solo href="./slop-audit.pdf" target="_blank" rel="noopener noreferrer">Download my guide <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
+                  <h3 class="pv__title">Governance for agent-generated interfaces</h3>
+                  <p class="pv__sub">Rules and audits for AI design decisions. <a class="pv__go" data-pf-solo href="./slop-audit.pdf" target="_blank" rel="noopener noreferrer">Download my guide <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
                 </div>
                 <div class="pv__vis"><img class="pv__img img--ink" src="assets/4a72be947a92.webp"
                        alt="A hand-drawn diagram, &ldquo;Creating governance for AI design decisions: a rule-based system to reduce AI slop&rdquo;, defined underneath as polished looking work without evidence, context or real product logic. Five numbered panels. One, Source: a PDF holding rules, guidelines, checklists and examples. Two, /slop-audit turns it into a skill that uses the PDF as its source, applies the rules, reviews design and copy, flags issues and gives feedback. Three, Use it: run /slop-audit with pasted design, copy, or a link to the PDF. Four, What it looks for, in two columns: design red flags: generic UI, missing states, inconsistent components, random spacing and colours, no user logic, looks polished but shallow; copy red flags: unsupported claims, vague or generic language, fake confidence, invented metrics, no source or context, sounds correct but isn&rsquo;t. Five, Output: audit results listing red flags with reasons, suggestions, what to fix, and higher quality work that&rsquo;s ready to ship. A bracket across the foot reads &ldquo;less AI slop leads to better products&rdquo;."
@@ -32776,8 +32849,8 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
                        display:none at every width below it. -->
                   <a class="pv__open" href="#/carry"><span class="visually-hidden">Improving patient recall after oncology visits</span></a>
                   <div class="pv__head">
-                  <h3 class="pv__title">Improving patient recall after oncology visits</h3>
-                  <p class="pv__sub">I designed a patient flow that captures questions before an appointment and connects them back to answers afterward. <a class="pv__go" href="#/carry">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
+                  <h3 class="pv__title">Improving patient recall</h3>
+                  <p class="pv__sub">A visit companion for questions and follow-ups. <a class="pv__go" href="#/carry">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
                 </div>
                 <div class="pv__vis"><div class="pv__embed pv__embed--carry">
                     <iframe class="pv__frame" srcdoc="&lt;!DOCTYPE html&gt;
@@ -35603,8 +35676,8 @@ em,
                        display:none at every width below it. -->
                   <a class="pv__open" href="#/specimen"><span class="visually-hidden">Redesigning an oncology specimen kit for safer shipping and handling</span></a>
                   <div class="pv__head">
-                  <h3 class="pv__title">Redesigning an oncology specimen kit for safer shipping and handling</h3>
-                  <p class="pv__sub">I moved preparation guidance onto the kit and designed protected storage for specimens in transit. <a class="pv__go" href="#/specimen">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
+                  <h3 class="pv__title">Redesigning specimen kits</h3>
+                  <p class="pv__sub">Safer storage and shipping for oncology samples. <a class="pv__go" href="#/specimen">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
                 </div>
                 <div class="pv__vis"><img class="pv__img" src="assets/33013bae02cd.webp"
                        alt="A specimen kit opened flat: the printed tissue preparation instructions in the lid, the moulded foam insert below it with an FFPE block cassette seated in its well."
@@ -35629,8 +35702,8 @@ em,
                        display:none at every width below it. -->
                   <a class="pv__open" href="#/optiflow"><span class="visually-hidden">Designing AI-assisted billing review for operations teams across complex workflows</span></a>
                   <div class="pv__head">
-                  <h3 class="pv__title">Designing AI-assisted billing review for operations teams across complex workflows</h3>
-                  <p class="pv__sub">I designed the review workflow where users validate extracted billing data, turning their corrections into higher-confidence model output. <a class="pv__go" href="#/optiflow">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
+                  <h3 class="pv__title">AI-assisted billing review</h3>
+                  <p class="pv__sub">Human validation for higher-confidence model output. <a class="pv__go" href="#/optiflow">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
                 </div>
                 <div class="pv__vis"><div class="pv__embed pv__embed--tagging">
                     <iframe class="pv__frame" srcdoc="&lt;!DOCTYPE html&gt;
@@ -38619,8 +38692,8 @@ em,
                        role="tabpanel" aria-label="Design System Audit" hidden>
                 <a class="pv__open" href="#/audit"><span class="visually-hidden">Standardizing oncology workflows for clinical provider teams across complex systems</span></a>
                   <div class="pv__head">
-                  <h3 class="pv__title">Standardizing oncology workflows for clinical provider teams across complex systems</h3>
-                  <p class="pv__sub">I audited four provider workflows and defined shared rules for actions, statuses, and interaction patterns. <a class="pv__go" href="#/audit">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
+                  <h3 class="pv__title">Standardizing provider workflows</h3>
+                  <p class="pv__sub">Shared workflow logic across complex systems. <a class="pv__go" href="#/audit">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
                 </div>
                 <div class="pv__vis">
                   
@@ -38702,8 +38775,8 @@ em,
                        display:none at every width below it. -->
                   <a class="pv__open" href="https://rockysahooart.github.io/encryption-coffee-shop/" target="_blank" rel="noopener noreferrer"><span class="visually-hidden">Making cryptography easier to understand inside a developer library</span></a>
                   <div class="pv__head">
-                  <h3 class="pv__title">Making cryptography easier to understand inside a developer library</h3>
-                  <p class="pv__sub">I designed an interactive cryptography explainer for a cross-platform library that helps developers handle binary data, showing how ECDH and AES-GCM work together before they use the encryption APIs in code. <a class="pv__go" href="https://rockysahooart.github.io/encryption-coffee-shop/" target="_blank" rel="noopener noreferrer">View experience <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
+                  <h3 class="pv__title">Making cryptography easier to understand</h3>
+                  <p class="pv__sub">An interactive explainer for encrypted data. <a class="pv__go" href="https://rockysahooart.github.io/encryption-coffee-shop/" target="_blank" rel="noopener noreferrer">View experience <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
                 </div>
                 <div class="pv__vis"><div class="pv__embed pv__embed--crypto">
                     <iframe class="pv__frame" srcdoc="&lt;!doctype html&gt;
@@ -39046,8 +39119,8 @@ body{display:grid;place-items:center;min-height:100vh}
                        role="tabpanel" aria-label="PNC Bank" hidden>
                 <a class="pv__open" href="https://spiky-experiences-472785.framer.app/case-study" target="_blank" rel="noopener noreferrer"><span class="visually-hidden">Transforming fragmented securities-based lending into one origination experience.</span></a>
                   <div class="pv__head">
-                  <h3 class="pv__title">Transforming fragmented securities-based lending into one origination experience.</h3>
-                  <p class="pv__sub">I transformed a fragmented legacy lending process into one guided experience where relationship bankers evaluate securities and collateral in real time, add co-borrowers, submit loan requests, and track underwriting decisions. <a class="pv__go" href="https://spiky-experiences-472785.framer.app/case-study" target="_blank" rel="noopener noreferrer">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
+                  <h3 class="pv__title">Securities-based lending origination</h3>
+                  <p class="pv__sub">One guided flow for collateral, co-borrowers, loan requests, and underwriting. <a class="pv__go" href="https://spiky-experiences-472785.framer.app/case-study" target="_blank" rel="noopener noreferrer">View case study <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
                 </div>
                 <div class="pv__vis"><div class="pv__embed pv__embed--pnc">
                     <iframe class="pv__frame" srcdoc="&lt;!DOCTYPE html&gt;
@@ -39821,8 +39894,8 @@ body{display:grid;place-items:center;min-height:100vh}
               <article class="pv__slide" data-project="mi" data-rank="8" data-pv-slide data-mode="design"
                        role="tabpanel" aria-label="Missing Information" hidden>
                 <div class="pv__head">
-                  <h3 class="pv__title">Resolving Missing Information Across Healthcare Systems</h3>
-                  <p class="pv__sub">Helping critical information move more gently between the people, places, and systems that care depends on.</p>
+                  <h3 class="pv__title">Resolving missing information</h3>
+                  <p class="pv__sub">A clearer path for information moving across healthcare systems.</p>
                   <p class="pv__soon">Case study coming soon</p>
                 </div>
                 <div class="pv__vis"><img class="pv__img" src="assets/e36b4931f6a0.webp"
@@ -39835,8 +39908,8 @@ body{display:grid;place-items:center;min-height:100vh}
                      the title, the sentence and the screen, and nothing claimed
                      about it that is not in those three. -->
                 <div class="pv__head">
-                  <h3 class="pv__title">Designing a music education marketplace for students and teachers</h3>
-                  <p class="pv__sub">I&rsquo;m building a two-sided marketplace that helps students find and book teachers while giving educators one place to manage lessons, payments, students, and progress. <a class="pv__go" data-pf-solo href="https://spiky-experiences-472785.framer.app/scale-market" target="_blank" rel="noopener noreferrer">View project <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
+                  <h3 class="pv__title">Building a music education marketplace</h3>
+                  <p class="pv__sub">A two-sided marketplace for students and teachers. <a class="pv__go" data-pf-solo href="https://spiky-experiences-472785.framer.app/scale-market" target="_blank" rel="noopener noreferrer">View project <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
                 </div>
                 <div class="pv__vis"><div class="pv__embed pv__embed--scale" role="img"
                      aria-label="The Scale app&rsquo;s Find Teachers screen on a phone. A back arrow and the title Find Teachers; a heading reading &ldquo;Find your music teacher.&rdquo; over the line &ldquo;Connect with experienced instructors for personalized music education and mentorship.&rdquo;; three filter tabs: Skill, selected, then Genre and Location; a search field reading &ldquo;Search skills&hellip;&rdquo;; a Level row offering Beginner, Intermediate and Advanced; and a dark Find Teachers button, with a line of terms and privacy text beneath it.">
@@ -41042,7 +41115,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
             <div class="card__copy">
               <p class="card__eyebrow">Design System Audit</p>
-              <p class="card__brief" aria-hidden="true"><span class="card__brief-in"><span class="t-card card__brief-t">Standardizing provider workflows</span><span class="card__brief-s">Shared workflow logic across clinical systems.</span></span></p>
+              <p class="card__brief" aria-hidden="true"><span class="card__brief-in"><span class="t-card card__brief-t">Standardizing provider workflows</span><span class="card__brief-s">Shared workflow logic across complex systems.</span></span></p>
               <h3 class="t-card card__title">Standardizing oncology workflows for clinical provider teams across complex systems</h3>
               <p class="card__desc">
                 I audited four provider workflows and defined shared rules for actions, statuses, and interaction patterns.
@@ -41141,7 +41214,7 @@ body{display:grid;place-items:center;min-height:100vh}
       <div class="row row--work-wide">
 
         <article class="cell cell--pnc">
-          <div class="card card--link card--project"
+          <div class="card card--link card--project card--brief"
                style="--hue: var(--hue-pnc); --split: minmax(0, 1fr) minmax(0, 1.1fr)">
             <a class="card__overlay-link" data-project="pnc">
               <span class="visually-hidden">Explore the PNC Bank project</span>
@@ -41149,6 +41222,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
             <div class="card__copy">
               <p class="card__eyebrow">PNC Bank</p>
+              <p class="card__brief" aria-hidden="true"><span class="card__brief-in"><span class="t-card card__brief-t">Securities-based lending origination</span><span class="card__brief-s">One guided flow for collateral, co-borrowers, loan requests, and underwriting.</span></span></p>
               <h3 class="t-card card__title">Transforming fragmented securities-based lending into one origination experience.</h3>
               <p class="card__desc">
                 I transformed a fragmented legacy lending process into one guided experience where relationship bankers evaluate securities and collateral in real time, add co-borrowers, submit loan requests, and track underwriting decisions.
