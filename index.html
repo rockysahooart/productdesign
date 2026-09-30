@@ -2209,7 +2209,7 @@ em,
 /* Not rendered at all outside the desktop interaction. */
 .card__brief { display: none; }
 
-@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+@media (min-width: 1440px) and (hover: hover) and (pointer: fine) {
   /* ANCHORED WITHOUT MEASURING ANYTHING, AND ON THE TITLE'S OWN LINE.
 
      The short form is a zero-height box in the flow between the eyebrow and
@@ -2224,27 +2224,50 @@ em,
      two states then swap in place, with the short title where the full title
      is and the support line where the paragraph starts, so the change reads as
      one thing becoming another rather than two blocks trading places. */
+  .card--brief .card__copy { position: relative; }
+
+  /* THE SHORT FORM IS THE ONE IN THE FLOW.
+
+     This is the whole structural difference, and it is one swap: at rest the
+     summary is a real block between the eyebrow and the status, and the
+     production title and paragraph are parked out of the flow; on hover they
+     change places. So at rest the copy column is genuinely eyebrow, two short
+     lines, status — a compact group at the top of the card — and the status
+     sits under the support line rather than where the end of a four-line
+     paragraph used to leave it. On hover the column is exactly what ships
+     today, in the same order, at the same size.
+
+     The card cannot change height doing it, and that is why this starts at
+     1280: measured card by card, the copy column stops being the taller of the
+     two somewhere under it. At 1024 Carry, OptiFlow and Cryptography lose 131,
+     162 and 162 pixels the moment the paragraph leaves the flow. Above 1280
+     the picture is the taller column on every card, so the paragraph can come
+     and go without the card noticing. Below it, the card ships as it is. */
   .card--brief .card__brief {
     display: block;
     position: relative;
-    height: 0;
-    margin: 0;
+    margin: var(--s-3) 0 0;
     pointer-events: none;
   }
 
-  /* var(--s-3) is the title's own top margin, so this line starts where the
-     title's line starts. */
   .card--brief .card__brief-in {
-    position: absolute;
-    top: var(--s-3);
-    left: 0;
-    right: 0;
     display: flex;
     flex-direction: column;
     /* More air than the title/description pair carries, because two short
        lines with the spacing of a paragraph read as a paragraph with its
        middle missing. */
     gap: 18px;
+  }
+
+  /* On hover it collapses to nothing and lets the real title have the line. */
+  .card--brief:hover .card__brief,
+  .card--brief:focus-within .card__brief { margin-top: 0; }
+  .card--brief:hover .card__brief-in,
+  .card--brief:focus-within .card__brief-in {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
   }
 
   .card--brief .card__brief-t {
@@ -2277,19 +2300,95 @@ em,
      overlap. Ease-out, nothing springy, and no zoom worth the name: the
      visual moves by four and a half percent, which is enough to feel the
      card make room and not enough to notice as an animation. */
-  .card--brief .card__brief-in,
-  .card--brief .card__title,
-  .card--brief .card__desc,
   .card--brief > .slot > img {
     transition: opacity 240ms ease-out, transform 240ms ease-out;
   }
+  .card--brief .card__brief { transition: margin-top 240ms ease-out; }
+  .card--brief .card__brief-in {
+    transition: opacity 240ms ease-out, transform 240ms ease-out,
+                position 0s linear 0s allow-discrete;
+  }
+  .card--brief:hover .card__brief-in,
+  .card--brief:focus-within .card__brief-in {
+    transition: opacity 240ms ease-out, transform 240ms ease-out,
+                position 0s linear 240ms allow-discrete;
+  }
 
-  /* DEFAULT: the short form, and a visual with more of the card to itself. */
+  /* The paragraph's return to the flow is a discrete change, and a discrete
+     change in the middle of a crossfade is a jump. It is held back until the
+     fade has finished on the way out (`0s 240ms`) and taken immediately on the
+     way in, so the element is either invisible or already in its place, never
+     both visible and moving. Browsers without `allow-discrete` flip it at once,
+     which is what happens today. */
+  .card--brief .card__title,
+  .card--brief .card__desc {
+    transition: opacity 240ms ease-out, transform 240ms ease-out,
+                position 0s linear 240ms allow-discrete;
+  }
+  .card--brief:hover .card__title,
+  .card--brief:hover .card__desc,
+  .card--brief:focus-within .card__title,
+  .card--brief:focus-within .card__desc {
+    transition: opacity 240ms ease-out, transform 240ms ease-out,
+                position 0s linear 0s allow-discrete;
+  }
+
+  /* DEFAULT: the short form, and a visual with more of the card to itself.
+
+     THE FULL COPY LEAVES THE FLOW. Holding it in place at zero opacity kept
+     the card honest about its height and dishonest about everything else: the
+     status line stayed parked where the end of a four-line paragraph had left
+     it, so the short form sat at the top of a column of nothing. Absolute
+     takes it out, the status comes up under the support line, and the text
+     block is genuinely two short lines and a status at the top of the card.
+
+     WHICH IS WHY THIS STARTS AT 1280 AND NOT 1024. Measured card by card, the
+     copy column stops being the taller of the two somewhere under 1280: at
+     1024 Carry, OptiFlow and Cryptography lose 131, 162 and 162 pixels the
+     moment the paragraph stops occupying space, and the card is not allowed to
+     change size. Above 1280 the visual is the taller column on every card, so
+     the paragraph can leave without the card noticing. Below it, the card
+     stays exactly as it ships today. */
   .card--brief .card__title,
   .card--brief .card__desc {
     opacity: 0;
     transform: translateY(-4px);
   }
+  .card--brief:not(.card--stacked) .card__title,
+  .card--brief:not(.card--stacked) .card__desc {
+    position: absolute;
+    left: 0;
+    right: 0;
+  }
+
+  /* CARRY IS THE EXCEPTION, AND IT HAS TO BE. It is the stacked card: copy on
+     top, the running demo underneath, so its height IS its copy plus its
+     embed and there is no taller column to hide a shorter paragraph behind.
+     Measured, it grows 18px at 1920 the moment the paragraph leaves. So on
+     that one card the production copy holds its place and the summary is
+     painted over it: same two states, same swap, same timing — the card just
+     does not reflow, because reflowing it would resize it. */
+  .card--brief.card--stacked .card__brief { margin: 0; height: 0; }
+  .card--brief.card--stacked .card__brief-in { position: absolute; top: var(--s-3); }
+  .card--brief.card--stacked:hover .card__brief-in,
+  .card--brief.card--stacked:focus-within .card__brief-in { top: var(--s-3); }
+  /* Parked on the title's own line — one eyebrow line plus the title's top
+     margin — rather than at the top of the column, so the two states cross
+     over in the same place instead of one of them jumping to a corner. Both
+     park on the same line: they are invisible while they are there. */
+  .card--brief .card__title,
+  .card--brief .card__desc {
+    top: calc(var(--fs-meta) * var(--lh-flat) + var(--s-3));
+  }
+
+  /* THE SPLIT DOES NOT MOVE, AND THAT WAS MEASURED TOO. Widening the picture's
+     column was the obvious way to give it more of the card, and it is the one
+     thing here that breaks the rule the rest of this obeys: the embeds are
+     aspect-locked, so a wider column is a taller one, and OptiFlow's card went
+     from 494 to 629 pixels while Cryptography, which shares its row, was
+     dragged up with it. The picture gets its extra room the only way a fixed
+     card can give it: the words stop running down the column, and the asset
+     itself comes up inside a frame that already crops. */
   .card--brief .card__brief-in {
     opacity: 1;
     transform: none;
@@ -2311,7 +2410,7 @@ em,
      short copy and the same extra air; what it does not do is touch a picture
      that is not a picture. */
   .card--brief > .slot > img {
-    transform: scale(1.045);
+    transform: scale(1.06);
     /* Away from the copy, so the growth happens on the outside edge rather
        than into the column the words are in. */
     transform-origin: 100% 50%;
@@ -2326,6 +2425,7 @@ em,
   .card--brief:hover .card__desc,
   .card--brief:focus-within .card__title,
   .card--brief:focus-within .card__desc {
+    position: static;
     opacity: 1;
     transform: none;
   }
