@@ -2175,6 +2175,183 @@ em,
   max-width: 42ch;
 }
 
+/* ==========================================================================
+   TWO COMPOSITIONS IN ONE CARD
+
+   A project card has always said everything it has to say at once: the full
+   title, the paragraph, the link. Read one, that is right; read six down a
+   column, and the paragraph is the thing standing between you and the next
+   card. So on a pointer-driven desktop the card opens with the short form —
+   what the project is, in a line — and gives the full form back the moment
+   you point at it or tab into it.
+
+   NOTHING LEAVES THE FLOW, EVER. The obvious way to do this is to swap one
+   block of copy for another, and the obvious way is wrong: the copy column
+   would change height, and on the cards where it is the taller of the two
+   columns the whole card would resize under the cursor. So the production
+   copy stays exactly where it is, at the size it is, in the flow it is in —
+   the card's height is the same number in both states because the same
+   elements are laying it out — and the short form is painted over it.
+
+   ANCHORED WITHOUT MEASURING ANYTHING. The short form sits in the flow
+   between the eyebrow and the title as a zero-height box, so it occupies
+   nothing and its top edge is exactly where the title's margin box begins.
+   Its contents hang off that edge absolutely. No height is read, nothing is
+   measured in script, and the anchor cannot drift when the eyebrow wraps.
+
+   POINTER AND KEYBOARD, NOT POINTER ONLY. `:focus-within` is on the same
+   rule as `:hover`, so tabbing to the card's own link opens it before the
+   link inside the paragraph can be reached. Phones and tablets never enter
+   this at all: the query wants a fine pointer that can hover AND a desktop
+   measure, so touch keeps the card it has today.
+   ========================================================================== */
+
+/* Not rendered at all outside the desktop interaction. */
+.card__brief { display: none; }
+
+@media (min-width: 1024px) and (hover: hover) and (pointer: fine) {
+  /* ANCHORED WITHOUT MEASURING ANYTHING, AND ON THE TITLE'S OWN LINE.
+
+     The short form is a zero-height box in the flow between the eyebrow and
+     the title, so it occupies nothing and its top edge is exactly where the
+     title's margin box begins; its contents hang off that edge absolutely.
+     Nothing is measured, and the anchor still holds if an eyebrow wraps.
+
+     It is top-aligned rather than centred. Centring it in the copy column was
+     the first attempt and the column is stretched to the card, not to its own
+     text, so "centre" landed on top of the status line on four of the six
+     cards. Sharing the title's line has a better reason behind it anyway: the
+     two states then swap in place, with the short title where the full title
+     is and the support line where the paragraph starts, so the change reads as
+     one thing becoming another rather than two blocks trading places. */
+  .card--brief .card__brief {
+    display: block;
+    position: relative;
+    height: 0;
+    margin: 0;
+    pointer-events: none;
+  }
+
+  /* var(--s-3) is the title's own top margin, so this line starts where the
+     title's line starts. */
+  .card--brief .card__brief-in {
+    position: absolute;
+    top: var(--s-3);
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    /* More air than the title/description pair carries, because two short
+       lines with the spacing of a paragraph read as a paragraph with its
+       middle missing. */
+    gap: 18px;
+  }
+
+  .card--brief .card__brief-t {
+    display: block;
+    /* The card's own type role, six percent up. Written against the role's own
+       token rather than as an em: `t-card` sizes from --fs-card, and an em here
+       would have multiplied the inherited body size instead and quietly made
+       the title smaller than the line under it. */
+    font-size: calc(var(--fs-card) * var(--fs-disp-k) * 1.06);
+    line-height: 1.14;
+    color: var(--ink);
+    text-wrap: balance;
+    max-width: 24ch;
+  }
+
+  .card--brief .card__brief-s {
+    display: block;
+    font-size: var(--fs-body);
+    line-height: var(--lh-body);
+    letter-spacing: var(--tr-body);
+    color: var(--ink-secondary);
+    /* Narrower than the paragraph it stands in for: a supporting line that
+       runs the full measure reads as the first line of something longer. */
+    max-width: 28ch;
+  }
+
+  /* --- the swap ---------------------------------------------------------
+     One duration and one curve for both halves and for the visual, so the
+     three of them read as one movement rather than three that happen to
+     overlap. Ease-out, nothing springy, and no zoom worth the name: the
+     visual moves by four and a half percent, which is enough to feel the
+     card make room and not enough to notice as an animation. */
+  .card--brief .card__brief-in,
+  .card--brief .card__title,
+  .card--brief .card__desc,
+  .card--brief > .slot > img {
+    transition: opacity 240ms ease-out, transform 240ms ease-out;
+  }
+
+  /* DEFAULT: the short form, and a visual with more of the card to itself. */
+  .card--brief .card__title,
+  .card--brief .card__desc {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  .card--brief .card__brief-in {
+    opacity: 1;
+    transform: none;
+  }
+  /* THE PICTURE GROWS INSIDE ITS OWN FRAME, NOT INSIDE THE CARD.
+
+     The first version scaled the slot, which at 1024 pushed Carry's frame 18px
+     outside the card — the one thing this is not allowed to do. So the image
+     is what scales, and the frame it scales inside already clips: the slots
+     that hold a picture carry `overflow: hidden` today, so four and a half
+     percent more asset is four and a half percent more picture and a slightly
+     tighter crop, with nothing leaving the frame, let alone the card.
+
+     THE LIVE EMBEDS ARE LEFT ALONE, ON PURPOSE. Carry and OptiFlow are running
+     components, not pictures, and measured here their own content reaches 315px
+     and 2,600px beyond the frame by design — sheets parked off-stage, an SVG
+     canvas wider than its window. Scaling those means either clipping working
+     interface or pushing it out of the card. Their default state is the same
+     short copy and the same extra air; what it does not do is touch a picture
+     that is not a picture. */
+  .card--brief > .slot > img {
+    transform: scale(1.045);
+    /* Away from the copy, so the growth happens on the outside edge rather
+       than into the column the words are in. */
+    transform-origin: 100% 50%;
+  }
+
+  /* The paragraph's own link must not be reachable while the paragraph is
+     not on screen; the card's overlay link still is. */
+  .card--brief .card__desc .pv__go { pointer-events: none; }
+
+  /* HOVER AND FOCUS: production, unchanged, down to the punctuation. */
+  .card--brief:hover .card__title,
+  .card--brief:hover .card__desc,
+  .card--brief:focus-within .card__title,
+  .card--brief:focus-within .card__desc {
+    opacity: 1;
+    transform: none;
+  }
+  .card--brief:hover .card__brief-in,
+  .card--brief:focus-within .card__brief-in {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  .card--brief:hover > .slot > img,
+  .card--brief:focus-within > .slot > img {
+    transform: none;
+  }
+  .card--brief:hover .card__desc .pv__go,
+  .card--brief:focus-within .card__desc .pv__go { pointer-events: auto; }
+
+  /* Reduced motion keeps both states and the swap between them, and takes
+     the travel and the scale out of it: the copy crossfades in place and the
+     visual does not move at all. */
+  @media (prefers-reduced-motion: reduce) {
+    .card--brief .card__title,
+    .card--brief .card__desc,
+    .card--brief .card__brief-in { transform: none !important; }
+    .card--brief > .slot > img { transform: none !important; }
+  }
+}
+
 /* Cards that stack their own content rather than splitting it. */
 .card__stack {
   display: flex;
@@ -39976,7 +40153,7 @@ body{display:grid;place-items:center;min-height:100vh}
       <div class="row row--work-1">
 
         <article class="cell cell--carry">
-          <div class="card card--link card--project card--stacked"
+          <div class="card card--link card--project card--stacked card--brief"
                style="--hue: var(--hue-carry)">
             <a class="card__overlay-link" data-project="carry">
               <span class="visually-hidden">Explore the Carry case study</span>
@@ -39984,6 +40161,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
             <div class="card__copy">
               <p class="card__eyebrow">Carry · New product concept</p>
+              <p class="card__brief" aria-hidden="true"><span class="card__brief-in"><span class="t-card card__brief-t">Improving patient recall</span><span class="card__brief-s">A visit companion for questions and follow-ups.</span></span></p>
               <h3 class="t-card card__title">Improving patient recall after oncology visits</h3>
               <p class="card__desc">
                 I designed a patient flow that captures questions before an appointment and connects them back to answers afterward.
@@ -40157,7 +40335,7 @@ body{display:grid;place-items:center;min-height:100vh}
         </article>
 
         <article class="cell cell--optiflow">
-          <div class="card card--link card--project card--footed"
+          <div class="card card--link card--project card--footed card--brief"
                style="--hue: var(--hue-optiflow); --split: minmax(0, 1.15fr) minmax(0, 1fr)">
             <a class="card__overlay-link" data-project="optiflow">
               <span class="visually-hidden">Explore the OptiFlow case study</span>
@@ -40165,6 +40343,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
             <div class="card__copy">
               <p class="card__eyebrow">OptiFlow</p>
+              <p class="card__brief" aria-hidden="true"><span class="card__brief-in"><span class="t-card card__brief-t">AI-assisted billing review</span><span class="card__brief-s">Human validation for higher-confidence model output.</span></span></p>
               <h3 class="t-card card__title">Designing AI-assisted billing review for operations teams across complex workflows</h3>
               <p class="card__desc">
                 I designed the review workflow where users validate extracted billing data, turning their corrections into higher-confidence model output.
@@ -40396,7 +40575,7 @@ body{display:grid;place-items:center;min-height:100vh}
 </article>
 
         <article class="cell cell--crypto">
-          <div class="card card--link card--project card--footed"
+          <div class="card card--link card--project card--footed card--brief"
                style="--hue: var(--hue-crypto); --split: minmax(0, 1fr) minmax(0, 0.92fr)">
             <a class="card__overlay-link" data-project="crypto">
               <span class="visually-hidden">Explore the Cryptography project</span>
@@ -40404,6 +40583,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
             <div class="card__copy">
               <p class="card__eyebrow">Cryptography</p>
+              <p class="card__brief" aria-hidden="true"><span class="card__brief-in"><span class="t-card card__brief-t">Making cryptography easier to understand</span><span class="card__brief-s">An interactive explainer for encrypted data.</span></span></p>
               <h3 class="t-card card__title">Making cryptography easier to understand inside a developer library</h3>
               <p class="card__desc">
                 I designed an interactive cryptography explainer for a cross-platform library that helps developers handle binary data, showing how ECDH and AES-GCM work together before they use the encryption APIs in code.
@@ -40754,7 +40934,7 @@ body{display:grid;place-items:center;min-height:100vh}
       
       <div class="row row--work-wide">
         <article class="cell cell--dsa">
-          <div class="card card--link card--project"
+          <div class="card card--link card--project card--brief"
                style="--hue: var(--hue-dsa); --split: minmax(0, 1fr) minmax(0, 1.1fr)">
             <a class="card__overlay-link" data-project="dsa">
               <span class="visually-hidden">Explore the Design System Audit case study</span>
@@ -40762,6 +40942,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
             <div class="card__copy">
               <p class="card__eyebrow">Design System Audit</p>
+              <p class="card__brief" aria-hidden="true"><span class="card__brief-in"><span class="t-card card__brief-t">Standardizing provider workflows</span><span class="card__brief-s">Shared workflow logic across clinical systems.</span></span></p>
               <h3 class="t-card card__title">Standardizing oncology workflows for clinical provider teams across complex systems</h3>
               <p class="card__desc">
                 I audited four provider workflows and defined shared rules for actions, statuses, and interaction patterns.
@@ -40820,7 +41001,7 @@ body{display:grid;place-items:center;min-height:100vh}
       
       <div class="row row--work-wide">
         <article class="cell cell--specimen">
-          <div class="card card--link card--project"
+          <div class="card card--link card--project card--brief"
                style="--hue: var(--hue-specimen); --split: minmax(0, 1fr) minmax(0, 1.1fr)">
             <a class="card__overlay-link" data-project="specimen">
               <span class="visually-hidden">Explore the Specimen Kit project</span>
@@ -40828,6 +41009,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
             <div class="card__copy">
               <p class="card__eyebrow">Specimen Kit</p>
+              <p class="card__brief" aria-hidden="true"><span class="card__brief-in"><span class="t-card card__brief-t">Redesigning specimen kits</span><span class="card__brief-s">Safer storage and shipping for oncology samples.</span></span></p>
               <h3 class="t-card card__title">Redesigning an oncology specimen kit for safer shipping and handling</h3>
               <p class="card__desc">
                 I moved preparation guidance onto the kit and designed protected storage for specimens in transit.
@@ -41649,7 +41831,7 @@ body{display:grid;place-items:center;min-height:100vh}
       
       <div class="row row--work-wide">
         <article class="cell cell--governance">
-          <div class="card card--link card--project"
+          <div class="card card--link card--project card--brief"
                style="--split: minmax(0, 1fr) minmax(0, 1.1fr)">
             <!-- No --hue. Nothing in the stylesheet reads it. It is carried on
                  the other six cards and consumed nowhere, so rather than mint a
@@ -41661,6 +41843,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
             <div class="card__copy">
               <p class="card__eyebrow">Design Governance</p>
+              <p class="card__brief" aria-hidden="true"><span class="card__brief-in"><span class="t-card card__brief-t">Governance for agent-generated interfaces</span><span class="card__brief-s">Rules and audits for AI design decisions.</span></span></p>
               <h3 class="t-card card__title">Designing governance infrastructure for agent-generated interfaces</h3>
               <p class="card__desc">
                 I&rsquo;m currently building governance standards for catching &ldquo;AI slop,&rdquo; designed to be dropped directly into an agent chat to audit generated product work for weak logic, missing states, unsupported decisions, and other gaps before it ships. <a class="pv__go" data-pf-solo href="./slop-audit.pdf" target="_blank" rel="noopener noreferrer">Download my guide <span class="pv__go-a" aria-hidden="true">&rarr;</span></a>
