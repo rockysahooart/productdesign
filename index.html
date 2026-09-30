@@ -26298,9 +26298,45 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    same edge, at the same 47.5%. */
 @media (max-width: 719px) {
   .hero__thread .msg--art {
-    padding-top: calc((100% - 46px) * var(--art-k) * var(--art-foot) / 2.142384);
+    --art-h: calc((100% - 46px) * var(--art-k) / 2.142384);
+
+    /* HOW FAR THE SCENE CLIMBS BACK INTO THE ROW ABOVE.
+
+       Reserving the scene's full height put it in a row of its own, under a
+       band of empty space as wide as the whole column — but the scene is only
+       the right half of that column, and the greeting above it is a short
+       left-aligned bubble. The room to the right of "Hello Team" is the room
+       the scene should be standing in.
+
+       How much of it there is follows from two widths and nothing else. The
+       greeting's bubble is about 137px wide at every phone size, because its
+       type does not scale; the scene's left edge sits at 47.5% of the column.
+       So they overlap by `137 - 0.475 * column`, which is 53px at 320, 19px at
+       390 and nothing at all by 430. The less they overlap, the further the
+       scene can climb before its drawing comes near the bubble.
+
+       Measured against the bubble's actual rounded shape and the scene's
+       actual alpha, the climb that leaves a 28px clearance is almost exactly
+       linear in the column: 0px at 320, 20px at 375, 25px at 390, 40px at 430.
+       That line is `37.5% of the row - 84px`, which is what this is. It never
+       goes below zero, so the narrowest phones — where the scene already sits
+       under the greeting with 27px to spare — are left exactly as they were.
+
+       The ceiling stops the scene rising past the greeting's own top once
+       there is no overlap left to spend, around 600 and up. */
+    --art-up: clamp(0px, calc(37.5% - 84px), calc(var(--art-h) * 0.627));
+
+    padding-top: calc(var(--art-h) * var(--art-foot) - var(--art-up));
   }
-  .hero__thread .msg__art { top: 1px; }
+  /* The scene moves with the bubble, not against it: the same amount comes
+     off the reservation and off the offset, so the tabletop stays on the
+     bubble's top edge to the pixel. A negative margin rather than a smaller
+     `top`, because this is a percentage of the row's width and a percentage
+     in `top` would resolve against its height. */
+  .hero__thread .msg__art {
+    top: 1px;
+    margin-top: calc(0px - var(--art-up));
+  }
 }
 
 @media (min-width: 720px) {
@@ -26395,6 +26431,78 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
 /* The words stay on top of all of it. */
 .hero__thread .msg--art .msg__text { position: relative; z-index: 3; }
+
+/* ==========================================================================
+   THE HANDS, LOOKING UP FROM BEHIND THE THIRD MESSAGE
+
+   THE SAME PICTURE, MIRRORED. Everything the workspace does above the second
+   bubble, this does below it and the other way round: the same 47.5% of the
+   bubble's column, the same 5% inset, the same 46px gutter subtracted to get
+   from the message cell to the column. The only differences are which edge it
+   is measured from — left here, right there — and which way it meets the
+   bubble.
+
+   BEHIND, NOT ON TOP. The workspace stands on the bubble, so it is painted
+   over it. These are looking up from behind it, so they are painted under it:
+   the element comes before the bubble in the row and carries no z-index,
+   which in one stacking context is all "behind" needs. The bubble's own face
+   then does the cropping, and the wrists end wherever its top edge is rather
+   than at a line drawn in the file.
+
+   HOW FAR BEHIND. 26% of the picture's height is below the bubble's top edge.
+   That line runs just above the cuffs: every sleeve ends inside the bubble
+   rather than in mid-air, and no hand or screen is swallowed by it.
+
+   ROOM TAKEN, NOT BORROWED. The rest is reserved above the bubble as padding,
+   at every width, not only on phones. The second message's scene could hang
+   over the band because the message above it is a short greeting with empty
+   space beside it; this one has a full-width paragraph above it, and the room
+   over its own bubble is the only room there is.
+
+   Reserving all of it made the stack tall enough to push the greeting out
+   through the top of the window at 2400 and deepened the clipping that is
+   already there between 720 and 900. So 16% of the picture's height is lifted
+   into the gap the rows already leave between them — that gap is 25 to 38px
+   and the lift is 5 to 16, so it is spent, not overrun — and the padding
+   carries the remaining 58%. Both numbers are shares of the picture, so the
+   whole arrangement scales with it and there is no second layout anywhere.
+   ========================================================================== */
+.hero__thread .msg--hands {
+  position: relative;
+  --hands-k: 0.475;      /* width, as a share of the bubble column */
+  --hands-in: 0.05;      /* left inset, same share */
+  --hands-tuck: 0.26;    /* share hidden behind the bubble */
+  --hands-rise: 0.16;    /* share lifted into the gap above the row */
+  --hands-h: calc((100% - 46px) * var(--hands-k) / 2.908847);
+  padding-top: calc(var(--hands-h) * (1 - var(--hands-tuck) - var(--hands-rise)));
+}
+
+.hero__thread .msg__hands {
+  position: absolute;
+  top: 0;
+  /* The lift is a negative margin rather than a negative `top`, because
+     --hands-h is built from a percentage of the row's width and a percentage
+     inside `top` would resolve against its height instead. Margins resolve
+     against the inline size, which is the one that means anything here. */
+  margin-top: calc(var(--hands-h) * -1 * var(--hands-rise));
+  left: calc(46px + (100% - 46px) * var(--hands-in));
+  width: calc((100% - 46px) * var(--hands-k));
+  height: auto;
+  aspect-ratio: 2.908847;   /* 1085 / 373 */
+  opacity: 0;
+  /* One-way, for the same reason the workspace is: the player re-asserts
+     `settled` on a remeasure, and a single unmatched recalc used to drop this
+     to zero and fade it in a second time. */
+  transition: opacity 0s linear 86400s;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.hero__thread .msg--hands[data-state="settled"] .msg__hands {
+  opacity: 1;
+  transition: opacity 110ms linear;
+}
 
 .hero__thread .msg__bubble {
   /* WHY THE BASE IS NOT PURE WHITE.
@@ -32244,8 +32352,9 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
                   <em>Sarthak Sahoo</em>, a Product Designer based in Austin, TX</span></span>
               </span>
               
-              <span class="msg" data-msg data-cluster data-scramble data-shuffle data-dwell="700">
+              <span class="msg msg--hands" data-msg data-cluster data-scramble data-shuffle data-dwell="700">
                 <span class="msg__from" aria-hidden="true">SS</span>
+                <img class="msg__hands" src="assets/2c5ec0e625c0.webp" alt="" width="900" height="309" aria-hidden="true" loading="lazy" decoding="async">
                 <span class="msg__bubble msg__bubble--reacted"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text"><span class="sc sc--plain">I&rsquo;ve</span>
                   <span class="sc sc--plain">designed</span> <span class="sc sc--plain sc--hum"><span class="kw kw--craft">human-centered</span></span> <span class="sc sc--plain">products</span> <span class="sc sc--plain">in</span> <span class="sc sc--plain">an</span> <span class="sc sc--plain">AI-saturated</span> <span class="sc sc--plain">world.</span></span><span class="msg__reactions"><button type="button" class="rx" data-rx="fire" aria-label="React with fire"><span class="rx__e" aria-hidden="true">🔥</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="clap" aria-label="React with applause"><span class="rx__e" aria-hidden="true">👏</span><span class="rx__n" aria-hidden="true"></span></button><button type="button" class="rx" data-rx="hundred" aria-label="React with hundred"><span class="rx__e" aria-hidden="true">💯</span><span class="rx__n" aria-hidden="true"></span></button></span></span>
               </span>
