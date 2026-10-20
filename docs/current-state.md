@@ -33,6 +33,11 @@ As of 2026-10-20 on `main`.
 
 ## Recently shipped
 
+- **2026-10-20: LiveFront copy.** Title "Redesigning Craigslist for faster used-car
+  discovery"; the description frames it as a paid product design brief with LiveFront
+  (deliberate wording: not a design challenge, take-home or shipped client work).
+  `PF.PROJECTS` context and README match.
+
 - **2026-10-20: LiveFront challenge as project 01.** "Redesigning Craigslist's iPhone app
   for clearer used-car search", from the Figma file; a drawn, looping HTML/CSS phone
   (`css/34-livefront.css`), CTA "view project" to the public deck. The lower Key Industry
