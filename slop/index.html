@@ -156,9 +156,9 @@
        should get the page, not a slower one.
 
        data-landing is the state the desktop composition is in: intro (the
-       conversation, alone and centred), decision (it has finished, and the
-       identity has assembled around it), work (the reader asked for the
-       rest). It starts at intro here for the same reason data-stage does,
+       conversation, alone and centred), ready (it has finished and its
+       invitation is up, nothing else), work (the reader pressed See the
+       work). It starts at intro here for the same reason data-stage does,
        and js/reveal.js moves it on. Below 960 nothing reads it. */
     try {
       if (!window.matchMedia || !matchMedia('(prefers-reduced-motion: reduce)').matches) {
@@ -18375,7 +18375,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 :root[data-stage] [data-reveal]:not([data-shown]) { pointer-events: none; }
 
 /* --------------------------------------------------------------------------
-   THREE STATES ON DESKTOP AND ULTRAWIDE: INTRO, DECISION, WORK
+   THREE STATES ON DESKTOP AND ULTRAWIDE: INTRO, READY, WORK
 
    :root[data-landing] says which one the composition is in. The head script
    sets intro before first paint; js/reveal.js moves it on.
@@ -18383,23 +18383,21 @@ button.cu-q:hover { background: var(--cu-teal-8); }
      intro      the conversation, alone, in the middle of the screen. Nothing
                 else of the portfolio is on the page: not the roles, not the
                 profile, not the work.
-     decision   the conversation has finished and its invitation is up
-                (pf:cta). The identity assembles around it: the roles, the
-                profile, LET'S TALK, and the Trusted By bubbles, and on a
-                laptop or desktop (960 to 2099) the project browser too. On
-                ultrawide the browser is still not on the page. This is the
-                first moment the reader has a choice.
-     work       the reader pressed See the work. Skills, Tools, Where I've
-                been and every section below arrive at once (and on ultrawide
-                the browser), and the composition settles into the layout it
-                has always had.
+     ready      the conversation has finished and its own invitation is up
+                (pf:cta). That is the only change. Nothing assembles around
+                it; the reader is looking at one finished conversation and one
+                choice. The layout is the intro's.
+     work       the reader pressed See the work. The conversation settles into
+                its column and everything else arrives with it, in one short
+                movement, into the layout the page has always had.
 
-   CENTRED BY THE GRID, NOT MOVED ON TOP OF IT. This used to be a translate
-   on the conversation's column, which left the boxes where the final layout
-   put them and painted the messages somewhere else. Now the grid itself is
-   different while the page is introducing itself: its two outer tracks are
-   equal, each the average of the final two, so the middle track sits in the
-   middle of the page.
+   THE INVITATION IS THE GATE, NOT A CUE. For a while the invitation
+   appearing also brought the identity in around it (and on a laptop the
+   browser). It does not any more: only the press does.
+
+   CENTRED BY THE GRID, NOT MOVED ON TOP OF IT. While the page is introducing
+   itself its two outer tracks are equal, each the average of the final two,
+   so the middle track sits in the middle of the page.
 
    AND THE MIDDLE TRACK IS EXACTLY AS WIDE AS IT WILL BE. That is the one
    thing that cannot change: the thread measures its column once (see the
@@ -18407,35 +18405,48 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    changing the layout changed that width and broke it. Two outer tracks that
    are each the mean of the final two add up to what the final two add up to,
    so the 1fr between them resolves to the same number of pixels in every
-   state. The click animates the outer tracks to their final sizes; their sum
+   state. The press animates the outer tracks to their final sizes; their sum
    stays constant the whole way, so the conversation slides into place with
    its width untouched, and nothing is re-measured.
 
    The profile column and the browser are given their final widths outright
    and sit against the conversation's side of a track that is temporarily the
-   wrong size, so they are never re-flowed either. What is not on the page yet
-   is display:none rather than invisible: an intro is a sparse page, not the
-   final page with its furniture painted out, and it should not scroll into a
-   blank band. Everything that measures itself down there does it through a
-   ResizeObserver, which fires when it arrives.
+   wrong size, so they are never re-flowed either. What lives below the hero
+   row is display:none until the press rather than invisible: an intro is a
+   sparse page, not the final page with its furniture painted out, and it
+   should not scroll into a blank band. Everything that measures itself down
+   there does it through a ResizeObserver, which fires when it arrives.
 
-   Vertically, the row the conversation lives in is placed in the middle of
-   the screen by the page's own top padding. Same reasoning, same answer: the
-   row is never resized, only where it starts.
+   Vertically the hero row is placed by the page's own top padding: on a
+   laptop a third of the free height above it (optically centred; see
+   --land-lift), on ultrawide half. The row is never resized, only where it
+   starts.
+
+   ONE MOVEMENT, ABOUT A THIRD OF A SECOND. On the press, the tracks, the
+   padding and every arriving block run the same 320ms curve together. No
+   stagger: the page assembles round the conversation, it does not deal
+   itself out.
 
    Below 960 none of this applies. Phones and tablets keep the cascade that
    runs the whole page in after the invitation, and nothing here reads them.
    -------------------------------------------------------------------------- */
 
-/* Trusted By exists for the desktop decision state only. */
+/* TRUSTED BY. Built for the decision state, which no longer exists: nothing
+   assembles before the press now, and the final layout carries Skills in
+   that slot and the same employers in Where I've been. Not shown anywhere;
+   the markup and its styles are kept so it can come back as one rule. */
 .hero-trust { display: none; }
 
 @media (min-width: 960px) {
   :root[data-landing] {
-    --land-ms: 560ms;
-    --land-ease: cubic-bezier(0.4, 0, 0.2, 1);
-    --dc-ms: 560ms;
-    --dc-ease: cubic-bezier(0.34, 0.03, 0.24, 1);
+    --land-ms: 320ms;
+    --land-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  }
+
+  /* The staged blocks arrive on the same curve as the layout moves. */
+  :root[data-landing] [data-reveal] {
+    --rv-ms: var(--land-ms);
+    --rv-ease: var(--land-ease);
   }
 
   /* --- not on the page until the work is open ---------------------------- */
@@ -18447,14 +18458,22 @@ button.cu-q:hover { background: var(--cu-teal-8); }
     display: none;
   }
 
-  /* Arriving from display:none, the fade needs somewhere to start from. One
-     transition for all of it, the same one the staged blocks already have,
-     so the page opens as one movement rather than a dozen entrances. */
+  /* Arriving from display:none, the fade needs somewhere to start from. */
   @starting-style {
     :root[data-landing="work"] .page[data-view="home"] [data-reveal] { opacity: 0; }
   }
 
-  /* --- the decision state, assembling ------------------------------------ */
+  /* The roles are part of the page, not of the conversation: hidden until
+     the press, then up with everything else. */
+  :root[data-landing]:not([data-landing="work"]) .hero-card .hero__eyebrow {
+    opacity: 0;
+    visibility: hidden;
+  }
+  :root[data-landing] .hero-card .hero__eyebrow {
+    transition:
+      opacity var(--land-ms) var(--land-ease),
+      visibility 0s linear;
+  }
 
   .hero-card .hero-tile--profile > .hero-trust {
     min-height: 0;
@@ -18463,11 +18482,6 @@ button.cu-q:hover { background: var(--cu-teal-8); }
     gap: 14px;
     padding-top: 10px;
   }
-  :root[data-landing="intro"] .hero-card .hero-tile--profile > .hero-trust,
-  :root[data-landing="decision"] .hero-card .hero-tile--profile > .hero-trust {
-    display: flex;
-  }
-
   .hero-trust__lbl {
     margin: 0;
     font-size: 13px;
@@ -18498,34 +18512,6 @@ button.cu-q:hover { background: var(--cu-teal-8); }
     --logo-h: clamp(18px, 1.45vw, 24px);
   }
 
-  /* The roles and the bubbles start hidden; the profile and LET'S TALK are
-     staged blocks and already are. */
-  :root[data-landing="intro"] .hero-card .hero__eyebrow,
-  :root[data-landing="intro"] .hero-trust__lbl,
-  :root[data-landing="intro"] .hero-trust__chip {
-    opacity: 0;
-    visibility: hidden;
-  }
-  :root[data-landing] .hero-card .hero__eyebrow,
-  :root[data-landing] .hero-trust__lbl,
-  :root[data-landing] .hero-trust__chip {
-    transition:
-      opacity var(--dc-ms) var(--dc-ease) var(--dc-at, 0ms),
-      visibility 0s linear var(--dc-at, 0ms);
-  }
-
-  /* THE ORDER IS THE DELAYS. One state change, at the invitation, and the
-     stylesheet deals the five groups out after it: a beat, then a hundred
-     and forty milliseconds apart. No timer reads the thread a second time. */
-  :root[data-landing="decision"] .hero-card .hero__eyebrow { --dc-at: 180ms; }
-  :root[data-landing="decision"] .hero-card .hero-tile--profile > .hero-id--who[data-shown] {
-    transition-delay: 320ms, 320ms;
-  }
-  :root[data-landing="decision"] .hero-card .hero-tile--profile > .hero-id--talk[data-shown] {
-    transition-delay: 460ms, 460ms;
-  }
-  :root[data-landing="decision"] .hero-trust__lbl  { --dc-at: 600ms; }
-  :root[data-landing="decision"] .hero-trust__chip { --dc-at: 740ms; }
 }
 
 /* --- desktop: the bento -------------------------------------------------- */
@@ -18547,28 +18533,12 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   :root[data-landing] .hero-card {
     transition: grid-template-columns var(--land-ms) var(--land-ease);
   }
-  :root[data-landing="intro"] .hero-card {
+  :root[data-landing]:not([data-landing="work"]) .hero-card {
     grid-template-columns:
       calc((var(--hero-l) + var(--hero-r)) / 2)
       minmax(0, 1fr)
       calc((var(--hero-l) + var(--hero-r)) / 2);
-  }
-  :root[data-landing]:not([data-landing="work"]) .hero-card {
     grid-template-rows: minmax(var(--hero-row), auto);
-  }
-
-  /* ON A LAPTOP THE BROWSER IS PART OF THE DECISION. finalpart.jpg: when the
-     invitation is up, the work is already beside the conversation, and See
-     the work opens the rest of the page rather than the work itself. So at
-     the decision the grid goes straight to its final tracks (the
-     conversation moves over on the first beat, its width still untouched)
-     and the browser comes up last of the five, after the logos. In the intro
-     it is a staged block like the profile: laid out at its final width,
-     invisible, out of the tab order. Ultrawide keeps its own sequence below,
-     where the browser waits for the click. */
-  :root[data-landing="decision"] .hero-card { transition-delay: 180ms; }
-  :root[data-landing="decision"] .hero-card .hero__work[data-shown] {
-    transition-delay: 880ms, 880ms;
   }
 
   :root[data-landing] .page[data-view="home"] {
@@ -18576,12 +18546,9 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   }
   /* OPTICALLY, NOT ARITHMETICALLY, CENTRED. Half the free height above and
      half below put the composition in the numerical middle, and on a laptop
-     it read as sitting low: the browser card and the logo bubbles carry
-     their weight at the bottom, so equal margins look like a smaller one
-     underneath. A third of the free height goes above and two thirds below,
-     which moves the whole row up together (nothing inside it moves relative
-     to anything else) and still leaves real air above it. --land-lift is
-     that share. */
+     it read as sitting low. A third of the free height goes above and two
+     thirds below, which moves the whole row up together and still leaves
+     real air above it. --land-lift is that share. */
   :root[data-landing] .page[data-view="home"] { --land-lift: 0.33; }
   :root[data-landing]:not([data-landing="work"]) .page[data-view="home"] {
     padding-top: max(var(--page-pad),
@@ -18592,9 +18559,8 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 /* --- ultrawide: the page is the grid ------------------------------------- */
 
 @media (min-width: 2100px) {
-  /* The browser is the right two thirds of an ultrawide screen: here it
-     waits for See the work, and the decision state is the conversation and
-     the identity, centred. */
+  /* The browser is the right two thirds of an ultrawide screen: off the page
+     until the press. */
   :root[data-landing]:not([data-landing="work"]) .hero-card .hero-tile--work { display: none; }
 
   .hero-card .hero__identity,
@@ -18606,22 +18572,16 @@ button.cu-q:hover { background: var(--cu-teal-8); }
       grid-template-columns var(--land-ms) var(--land-ease),
       padding-top var(--land-ms) var(--land-ease);
   }
-  /* CENTRED FOR THE INTRODUCTION ONLY. This is how the ultrawide page always
-     behaved: the conversation starts in the middle and, on the first beat
-     of the identity arriving, goes to the place the ultrawide grid has
-     always given it, top left of the browser's column, and the page builds
-     round it there. The decision state is the final grid; only the browser
-     and what is below wait for the click. */
-  :root[data-landing="intro"] .page[data-view="home"] {
+  /* CENTRED UNTIL THE PRESS. The conversation starts in the middle and, when
+     the page opens, goes to the place the ultrawide grid has always given it,
+     top left of the browser's column, as the page builds round it. */
+  :root[data-landing]:not([data-landing="work"]) .page[data-view="home"] {
     grid-template-columns:
       minmax(272px, calc((360px + var(--pv-col)) / 2))
       minmax(560px, 1fr)
       calc((360px + var(--pv-col)) / 2);
-    padding-top: max(var(--ux-gutter), calc((100svh - var(--row-1)) / 2));
-  }
-  :root[data-landing="decision"] .page[data-view="home"] { transition-delay: 180ms; }
-  :root[data-landing]:not([data-landing="work"]) .page[data-view="home"] {
     grid-template-rows: var(--row-1);
+    padding-top: max(var(--ux-gutter), calc((100svh - var(--row-1)) / 2));
   }
 }
 
@@ -32758,7 +32718,8 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
               </address>
             </div>
 
-            <!-- TRUSTED BY. The decision state's third block on desktop: four
+            <!-- TRUSTED BY. Not shown at the moment (see css/16-reveal.css). Was
+                 the decision state's third block on desktop: four
                  small clay bubbles, one logo each, where Skills will be once
                  the work is open. Skills takes the place back then, and the
                  same employers carry on as the timeline in Where I've been, so

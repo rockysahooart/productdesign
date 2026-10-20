@@ -7827,13 +7827,11 @@ window.PF = window.PF || {};
 
      intro      armed by index.html before first paint. The conversation alone,
                 centred by the grid (css/16-reveal.css).
-     decision   pf:cta. The roles, the profile, LET'S TALK and the Trusted By
-                bubbles assemble around the finished conversation, and below
-                ultrawide the project browser after them; the stylesheet times
-                them off this one change. See the work is now a gate.
-     work       the reader pressed See the work. Skills, Tools, Where I've
-                been, everything below (and on ultrawide the browser), at
-                once, and the composition settles into its final layout.
+     ready      pf:cta. The conversation is finished and its invitation is up,
+                and that is all: nothing else arrives. See the work is the
+                gate, not a cue.
+     work       the reader pressed See the work. Everything else at once, and
+                the conversation settles into its column of the final layout.
 
    The press that opens the page is taken here, before the button's own
    handler sees it, so the first press opens the page and leaves the
@@ -7946,21 +7944,17 @@ window.PF = window.PF || {};
     show(GROUPS);
   }
 
-  /* STATE 2. The profile, LET'S TALK and the project browser are staged
-     blocks (groups 1, 2 and 4; 3 is the phone's logo rail, not on the page
-     here), so they are marked shown; the roles and the bubbles are keyed to
-     the state itself. The stylesheet spaces them out, and on ultrawide keeps
-     the browser off the page until the click. The ceiling goes: the thread
-     has delivered, and from here only the reader opens the rest. */
-  function decide() {
+  /* STATE 2. The thread has put its own invitation up; this only records
+     that it has, and shows nothing. The ceiling goes: the thread has
+     delivered, and from here only the reader opens the page. */
+  function ready() {
     if (done || landing() !== 'intro') return;
-    land('decision');
-    show(4);
+    land('ready');
     if (ceiling) { clearTimeout(ceiling); ceiling = null; }
   }
 
   function onCta() {
-    if (wide.matches) decide();
+    if (wide.matches) ready();
     else run();
   }
 
@@ -7968,7 +7962,7 @@ window.PF = window.PF || {};
      would swap the conversation for the list of work) never sees the press
      that opens the page. */
   function onPress(e) {
-    if (landing() !== 'decision') return;
+    if (landing() !== 'ready') return;
     var t = e.target;
     if (!t || !t.closest || !t.closest('.msg-cta__btn')) return;
     e.preventDefault();
@@ -7976,9 +7970,9 @@ window.PF = window.PF || {};
     all();
   }
 
-  /* A window dragged under 960 mid-decision has no state 2 to be in. */
+  /* A window dragged under 960 while ready has no state 2 to be in. */
   function onWidth() {
-    if (!wide.matches && landing() === 'decision') all();
+    if (!wide.matches && landing() === 'ready') all();
   }
 
   function finish() {
