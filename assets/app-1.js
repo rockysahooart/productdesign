@@ -7798,25 +7798,39 @@ window.PF = window.PF || {};
 
 /* ===== js/reveal.js ===== */
 /* ==========================================================================
-   reveal.js. THE PAGE ARRIVES WHEN THE CONVERSATION IS OVER
+   reveal.js. THE PAGE ARRIVES WHEN THE CONVERSATION IS OVER, AND OPENS WHEN
+   THE READER ASKS
 
-   The hero opens as the three roles, the conversation, and the two controls
-   that belong to it. On desktop the thread is also pulled to the middle of
-   the composition, because while it is the only thing on the page it should
-   not be sitting in the column it will later share. Nothing else is there.
+   ONE CUE FROM THE THREAD. This used to assemble as the lines were said: a
+   stage on the first message, another on the second, the rest on the
+   invitation. Three cues meant the reader's eye was taken off the sentence
+   twice by furniture arriving beside it, and the sentence is the thing. So the
+   whole conversation plays out alone, every message, every illustration, the
+   reactions and the pause after them, and nothing happens until the one moment
+   that means the introduction is finished: the invitation appearing under the
+   last thing said. That moment is pf:cta, which js/thread.js emits from
+   showCta(). It is the thread's own clock, not a copy of it: there is no timer
+   here that could drift away from what is on screen.
 
-   ONE CUE, NOT THREE. This used to assemble as the lines were said: a stage
-   on the first message, another on the second, the rest on the invitation.
-   Three cues meant the reader's eye was taken off the sentence twice by
-   furniture arriving beside it, and the sentence is the thing. So the whole
-   conversation now plays out alone, every message, every illustration, the
-   reactions and the pause after them, and the page builds behind the one
-   moment that means the introduction is finished: the invitation appearing
-   under the last thing said. That moment is pf:cta, which js/thread.js emits
-   from showCta(). It is the thread's own clock, not a copy of it: there is no
-   timer here that could drift away from what is on screen.
+   ON DESKTOP AND ULTRAWIDE, THREE STATES. :root[data-landing]:
 
-   A BEAT, THEN FIVE MORE, A HUNDRED AND FORTY MILLISECONDS APART
+     intro      armed by index.html before first paint. The conversation alone,
+                centred by the grid (css/16-reveal.css).
+     decision   pf:cta. The roles, the profile, LET'S TALK and the Trusted By
+                bubbles assemble around the finished conversation; the
+                stylesheet times them off this one change. The work is not on
+                the page. See the work is now a gate, not a cue.
+     work       the reader pressed See the work. Everything else, at once,
+                and the composition settles into its final layout.
+
+   The press that opens the page is taken here, before the button's own
+   handler sees it, so the first press opens the page and leaves the
+   conversation where it is; from then on the button does what it always has.
+
+   BELOW 960, THE CASCADE. A phone or a tablet has no composition to centre and
+   no column to assemble beside, so there the invitation still runs the whole
+   page in on its own, a beat then five groups a hundred and forty milliseconds
+   apart:
 
      group 1   the portrait card
      group 2   let's talk
@@ -7825,30 +7839,27 @@ window.PF = window.PF || {};
      group 5   capabilities, where I've been, the tools, and every remaining
                section of the page
 
-   Long enough to read as an order, short enough that the composition is
-   settled about half a second after the invitation. A group with nothing in
-   it at the current width does not spend its beat, so the rhythm is the same
-   on a layout that does not carry one of them.
+   A group with nothing in it at the current width does not spend its beat.
 
    IT IS ONE-WAY AND IT IS ONCE. Nothing here ever hides anything. Switching
    role restarts the conversation and replay runs it again; neither takes the
-   page back apart, because a composition that disassembles while somebody is
-   reading it is a trick rather than an entrance.
+   page back apart.
 
-   THE ESCAPE HATCHES MATTER MORE THAN THE CHOREOGRAPHY. A sequence that can
-   strand a reader in front of an empty page is a worse page, so:
+   THE ESCAPE HATCHES:
 
      · the whole thing is off unless index.html armed it before first paint,
        which it does not do without JS or under reduced motion;
-     · scrolling past the hero shows everything immediately, scrolling is
-       somebody saying they would like to read the page now;
-     · a keyboard reaching for anything staged shows everything immediately;
-     · a deep link to a case study, or to any anchor, skips the sequence;
-     · and a hard ceiling fires the last group whatever else has happened, so
-       a thread that stalls cannot take the page down with it.
+     · a deep link to a case study, or to any anchor (the skip link is one),
+       opens everything at once;
+     · a hard ceiling opens everything if the thread never reaches its
+       invitation, so a conversation that stalls cannot strand anybody. Once
+       the invitation is up it is cleared: from then on the reader decides;
+     · below 960 only, where the cascade runs by itself anyway: scrolling past
+       half a viewport, or a third focus step, also opens everything. On a
+       desktop there is nothing staged to scroll to or focus, because what has
+       not arrived is not on the page.
 
-   Every one of those lands on all(), which is the cascade with the waiting
-   taken out: one frame, everything visible.
+   Every one of those lands on all(): one frame, everything visible.
    ========================================================================== */
 
 window.PF = window.PF || {};
@@ -7867,19 +7878,24 @@ window.PF = window.PF || {};
   var STEP = 140;
 
   /* And a beat before the first group, so the invitation is a moment of its
-     own rather than the first frame of the page arriving. It appears, it is
-     read, and then the composition starts building behind it. */
+     own rather than the first frame of the page arriving. */
   var LEAD = 180;
 
-  /* Nothing may wait longer than this, no matter what the thread does. Read
-     from the moment the page is interactive rather than from the first
-     message, because a thread that never starts is exactly the case this is
-     for. */
+  /* Nothing may wait longer than this for the invitation. Read from the moment
+     the page is interactive rather than from the first message, because a
+     thread that never starts is exactly the case this is for. */
   var CEILING_MS = 26000;
+
+  /* The width at which the composition has three states rather than a
+     cascade. The same 960 css/16-reveal.css is written against. */
+  var wide = window.matchMedia('(min-width: 960px)');
 
   var at = 0;
   var done = false;
   var pending = null;
+
+  function land(state) { root.setAttribute('data-landing', state); }
+  function landing() { return root.getAttribute('data-landing'); }
 
   function group(i) {
     return document.querySelectorAll('[data-reveal="' + i + '"]:not([data-shown])');
@@ -7893,11 +7909,11 @@ window.PF = window.PF || {};
     }
     at = upto;
     root.setAttribute('data-stage', String(at));
-    if (at >= GROUPS) finish();
+    if (at >= GROUPS) { land('work'); finish(); }
   }
 
-  /* THE CASCADE. A beat after the invitation, then one group a beat, and a
-     beat is only spent on a group that has something in it at this width. */
+  /* THE CASCADE, below 960. A beat after the invitation, then one group a
+     beat, and a beat is only spent on a group that has something in it. */
   function run() {
     if (done || pending) return;
     function next() {
@@ -7911,11 +7927,44 @@ window.PF = window.PF || {};
     pending = setTimeout(next, LEAD);
   }
 
-  /* Everything, now. Every escape hatch lands here, so there is one way for
-     the page to become whole. */
+  /* Everything, now. Every escape hatch and the press on See the work land
+     here, so there is one way for the page to become whole. */
   function all() {
     if (pending) { clearTimeout(pending); pending = null; }
     show(GROUPS);
+  }
+
+  /* STATE 2. The profile and LET'S TALK are staged blocks, groups 1 and 2, so
+     they are marked shown; the roles and the bubbles are keyed to the state
+     itself. The stylesheet spaces all five out. The ceiling goes: the thread
+     has delivered, and from here only the reader opens the page. */
+  function decide() {
+    if (done || landing() !== 'intro') return;
+    land('decision');
+    show(2);
+    if (ceiling) { clearTimeout(ceiling); ceiling = null; }
+  }
+
+  function onCta() {
+    if (wide.matches) decide();
+    else run();
+  }
+
+  /* STATE 3. Captured on the way down, so the thread's own handler (which
+     would swap the conversation for the list of work) never sees the press
+     that opens the page. */
+  function onPress(e) {
+    if (landing() !== 'decision') return;
+    var t = e.target;
+    if (!t || !t.closest || !t.closest('.msg-cta__btn')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    all();
+  }
+
+  /* A window dragged under 960 mid-decision has no state 2 to be in. */
+  function onWidth() {
+    if (!wide.matches && landing() === 'decision') all();
   }
 
   function finish() {
@@ -7924,135 +7973,36 @@ window.PF = window.PF || {};
     if (pending) { clearTimeout(pending); pending = null; }
     /* The attributes stay on the elements. They are already shown, and the
        rules that hid them no longer match anything. What goes is the
-       listening: no scroll handler, no timer, nothing left running behind a
-       page that has finished arriving. */
+       listening: nothing left running behind a page that has finished
+       arriving. */
     window.removeEventListener('scroll', onScroll);
-    window.removeEventListener('resize', onResize);
-    if (sized) sized.disconnect();
     document.removeEventListener('focusin', onFocus, true);
-    document.removeEventListener('pf:cta', run);
+    document.removeEventListener('pf:cta', onCta);
+    document.removeEventListener('click', onPress, true);
+    if (wide.removeEventListener) wide.removeEventListener('change', onWidth);
     if (ceiling) clearTimeout(ceiling);
   }
 
-  /* ----------------------------------------------------------------------
-     THE CONVERSATION STARTS IN THE MIDDLE
-
-     The thread is the centre column of a three column composition, and the
-     browser's track is wider than the portrait's, so with both of them
-     hidden the messages sit left of centre. This is half the difference
-     between the two outer tracks, which is exactly the distance that puts
-     the thread's centre on the composition's centre.
-
-     Measured from the rendered boxes rather than computed from the CSS,
-     because the tracks are clamps against the viewport at one layout and
-     different clamps at the ultrawide one, and because the two outer
-     elements are the only things that can say where the composition's edges
-     actually are: the card itself is display:contents above 2400 and has no
-     box of its own to ask.
-
-     The offset is zeroed before reading, so a measurement never includes the
-     offset it is about to replace. css/16-reveal.css applies it, only above
-     960 and only while nothing else has arrived yet.
-
-     AND IN THE MIDDLE OF THE SCREEN, NOT AT THE TOP OF IT. Centring across
-     was only half of it. The hero's row is as tall as its tallest column, and
-     the two outer ones are hidden but still there, so the conversation sat at
-     the top of a row with nothing visible under it: at 2560 by 1440 the
-     messages ended a little past a third of the way down and the rest of the
-     screen was empty. --solo-y puts the middle of what the conversation
-     actually shows (the roles, the two controls, and the thread's reserved
-     box, which already holds room for the invitation) on the middle of the
-     first screen. Never upward: when that is taller than the screen it starts
-     where it always did.
-
-     Also a transform, for the same reason as the sideways one. Moving the row
-     or giving the hero a viewport height would be a layout change in the one
-     place the thread measures, which is what broke it twice before.
-
-     The thread reserves its height when the conversation starts, after this
-     file has run, so a change in the thread's size measures again. Each
-     reading is taken with the transition switched off and committed before
-     it is switched back on: a transition in flight reports where the box is
-     on its way, not where it rests, and a re-measure is a correction, not a
-     journey.
-     ---------------------------------------------------------------------- */
-  var home = document.querySelector('.page[data-view="home"]') || document;
-  var elLeft  = home.querySelector('.hero__identity');
-  var elMid   = home.querySelector('.hero__copy');
-  var elRight = home.querySelector('.hero__work');
-  var elThread = elMid && elMid.querySelector('.hero__thread');
-
-  function centre() {
-    if (at > 0 || !elLeft || !elMid || !elRight) return;
-    var was = elMid.style.transition;
-    elMid.style.transition = 'none';
-    root.style.setProperty('--solo-x', '0px');
-    root.style.setProperty('--solo-y', '0px');
-    var a = elLeft.getBoundingClientRect();
-    var b = elMid.getBoundingClientRect();
-    var c = elRight.getBoundingClientRect();
-    if (a.width && b.width && c.width) {
-      var dx = (a.left + c.right) / 2 - (b.left + b.width / 2);
-      root.style.setProperty('--solo-x', dx.toFixed(2) + 'px');
-
-      /* What is on screen, not the box: the column can be stretched to the
-         row's height, and the mobile invitation inside it is display:none. */
-      var top = Infinity, bottom = -Infinity, kids = elMid.children, r, i;
-      for (i = 0; i < kids.length; i++) {
-        r = kids[i].getBoundingClientRect();
-        if (!r.width || !r.height) continue;
-        if (r.top < top) top = r.top;
-        if (r.bottom > bottom) bottom = r.bottom;
-      }
-      if (bottom > top) {
-        var y = window.scrollY || 0;
-        var dy = window.innerHeight / 2 - (top + bottom) / 2 - y;
-        root.style.setProperty('--solo-y', Math.max(0, dy).toFixed(2) + 'px');
-      }
-    }
-    elMid.getBoundingClientRect();   /* commit the new offset untransitioned */
-    elMid.style.transition = was;
-  }
-
-  var framed = false;
-  function onResize() {
-    if (framed || at > 0) return;
-    framed = true;
-    requestAnimationFrame(function () { framed = false; centre(); });
-  }
-
-  if (elThread && window.ResizeObserver) {
-    var sized = new ResizeObserver(onResize);
-    sized.observe(elThread);
-  }
-
-  centre();
-  /* Measured again on the next frame, then allowed to travel on the one after
-     that. The second reading is for the case where something above the hero
-     was still resolving when the first one happened; the frame between the
-     last reading and the class is what makes the first offset a position
-     rather than a journey. */
-  requestAnimationFrame(function () {
-    centre();
-    requestAnimationFrame(function () { root.classList.add('has-solo'); });
-  });
-
-  /* PAST THE HERO IS A REQUEST TO SEE THE PAGE. Half a viewport is enough to
-     mean it and short enough that nobody arrives at a blank band. */
+  /* PAST THE HERO IS A REQUEST TO SEE THE PAGE, on a phone or a tablet. */
   function onScroll() {
+    if (wide.matches) return;
     if (window.scrollY > window.innerHeight * 0.5) all();
   }
 
-  /* Tab is the other way in. Focus cannot actually land inside a staged block
-     , they are visibility:hidden until shown, so this catches the moment
-     somebody starts moving through the page at all and gets out of the way. */
+  /* Tab is the other way in, below 960. Focus cannot land inside a staged
+     block (they are visibility:hidden until shown), so this catches somebody
+     starting to move through the page at all and gets out of the way. */
   var steps = 0;
-  function onFocus() { if (++steps > 2) all(); }
+  function onFocus() {
+    if (wide.matches) return;
+    if (++steps > 2) all();
+  }
 
-  document.addEventListener('pf:cta', run);
+  document.addEventListener('pf:cta', onCta);
+  document.addEventListener('click', onPress, true);
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onResize);
   document.addEventListener('focusin', onFocus, true);
+  if (wide.addEventListener) wide.addEventListener('change', onWidth);
 
   /* A DEEP LINK IS NOT AN ARRIVAL. Someone who opened a case study, or a link
      to a section (#work most of all, since that is the one people send)
@@ -8066,7 +8016,6 @@ window.PF = window.PF || {};
   PF.revealAll = all;
 
 })(window.PF);
-
 
 /* ===== js/dsa.js ===== */
 /* ==========================================================================
