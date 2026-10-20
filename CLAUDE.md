@@ -114,5 +114,8 @@ Don't leave throwaway scripts in the repo root.
 
 See [docs/current-state.md](docs/current-state.md#open-items). Summary: `Hello Team.`
 copy change (approved, not built); 2×2 Worked With logo grid (blocked on design
-reference 2); recreate `tools/buildslop.py`; a proposed punctuation fix to the
-OptiFlow walkthrough labels in `assets/app-2.js`, waiting for the owner's approval.
+reference 2); recreate `tools/buildslop.py`; build a test harness.
+
+Recently shipped: `b38798c`, OptiFlow walkthrough labels in `assets/app-2.js`
+use colons to match the static markup (see
+[docs/current-state.md](docs/current-state.md#recently-shipped)).

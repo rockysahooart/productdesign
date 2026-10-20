@@ -36,10 +36,13 @@ As of 2026-10-19, commit `6dfd694` on `main`.
 3. **Recreate the `/slop/` generator** (e.g. `tools/buildslop.py`) and validate it
    byte-identically against the published pair. See the architecture doc.
 4. **Test harness**: none in the repo. The checks in `CLAUDE.md` should become a reusable script under `tools/` or `tests/`.
-5. **OptiFlow walkthrough labels: punctuation fix awaiting approval.** The
-   repository's `assets/app-2.js` is production and stays as is until the owner
-   approves a change. See [the app-2.js audit](#assetsapp-2js-audit-2026-10-19) below.
-6. No favicon; `/favicon.ico` 404s. Pre-existing.
+5. No favicon; `/favicon.ico` 404s. Pre-existing.
+
+## Recently shipped
+
+- **`b38798c` (2026-10-19): OptiFlow walkthrough labels use colons.** The label
+  strings in `assets/app-2.js` changed from `—` to `:` so they match the static
+  markup. Approved by the owner after the [app-2.js audit](#assetsapp-2js-audit-2026-10-19) below.
 
 ## `assets/app-2.js` audit (2026-10-19)
 
@@ -47,8 +50,8 @@ The repo copy (40,826 bytes) was compared with the copy in the retired
 `candidate-build` folder (40,709 bytes, last modified 2026-09-17 02:07, about
 three hours after the repo version was committed in `e460fa8`). Both are 1,000 lines.
 
-- **With comments stripped, the only differences are four string literals in
-  `ofw.js`** (the OptiFlow walkthrough), where `—` becomes `:`:
+- **With comments stripped, the only differences are the label strings in four
+  assignments in `ofw.js`** (the OptiFlow walkthrough), where `—` becomes `:`:
   `197 — Authorization Missing` / `PR — Patient Responsibility` in the feedback
   panel (`[data-fbtag]`), the snackbar (`[data-snacktext]`, `Removed: …` /
   `Added: …`), and the two `.ofw-t` tag chips the add sequence writes. No logic,
@@ -56,13 +59,16 @@ three hours after the repo version was committed in `e460fa8`). Both are 1,000 l
 - Every other difference is comment punctuation in `ofw.js`, `peek.js` and
   `bim.js`. That pass also introduced a few comment blemishes (two trailing
   spaces, a lost indent before `(4, 2, 1)`, `bim.js.` for `bim.js —`). Harmless.
-- **Visible consequence today:** `index.html` already uses the colon style in the
-  walkthrough's static markup (`PR: Patient Responsibility`, `197: Authorization Mis…`,
-  `M62: Missing Auth Co…`). The production `app-2.js` overwrites those labels with
-  the em-dash form once the walkthrough runs, so the same tag switches punctuation
-  mid-sequence. Adopting the colon strings would make them consistent.
-- Decision: **left untouched** pending owner approval. If approved, the minimum
-  change is the four string literals; the comment edits are optional.
+- **Visible consequence (before the fix):** `index.html` already used the colon
+  style in the walkthrough's static markup (`PR: Patient Responsibility`,
+  `197: Authorization Mis…`, `M62: Missing Auth Co…`), but `app-2.js` overwrote
+  those labels with the em-dash form once the walkthrough ran, so the same tag
+  switched punctuation mid-sequence.
+- **Resolution: shipped in `b38798c`.** Only the label strings changed (5 lines,
+  across the 4 assignments); the comment-punctuation edits were not adopted.
+  Verified in the browser: across the Add and Remove sequences every tag,
+  feedback and snackbar label used colons, with no em dashes and no console errors.
+  The repo's `app-2.js` now matches the candidate's code exactly; only comments differ.
 
 ## Reversed decisions — do not reinstate
 
@@ -83,7 +89,7 @@ Found when checking the original handoff document against the repo on 2026-10-19
 
 - `index.html` (2,574,392 bytes), `slop/index.html` (2,574,295), `assets/app-1.js`
   (565,496) and 46 of the 47 asset files are byte-identical to the old candidate
-  build. `assets/app-2.js` differs; see the audit above. The repo is production.
+  build. `assets/app-2.js` differed; see the audit above. The repo is production.
 - `index-1.html` is **not** in the repo (deleted in `bbb9309` / `c969442`).
 - `social-preview.png` is **not** in the repo (deleted in `a49ce61`). Only
   `social-preview-v2.png` remains, and both pages' `og:image` point at it.
