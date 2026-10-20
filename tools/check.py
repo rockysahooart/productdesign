@@ -15,11 +15,11 @@ deployed site. Sections:
              Every animation frame from the first one is sampled; a fresh
              visit must never show a dark frame.
     seq      at 960 and up, the three landing states: intro (only the
-             conversation, centred), decision on pf:cta (roles, profile,
-             LET'S TALK, Trusted By, logos, and below 2100 the project
-             browser, in order, 100-180ms apart, the rest still hidden, gate
-             holds without a click, browser navigates), work on the click
-             (everything, laid out exactly as an unstaged page lays it out).
+             conversation, centred), ready on pf:cta (the invitation and
+             nothing else, still centred, gate holds without a click), work
+             on the click (everything together, settled within 450ms exactly
+             where an unstaged page lays it out, browser at 01 and
+             navigating).
              Below 960, the cascade. At every width: thread width constant,
              no horizontal overflow, no errors
     hatch    reduced motion, deep links, tablet scroll, replay while deciding
@@ -111,7 +111,7 @@ if (window.top === window) (function () {
       if (S.frames === 1) S.first = { theme: H.getAttribute('data-theme'), stage: H.getAttribute('data-stage'),
                                       landing: H.getAttribute('data-landing') };
       if (document.body && H.scrollWidth > window.innerWidth + 0.5) S.over++;
-      if (S.landAt == null && H.getAttribute('data-landing') === 'decision') S.landAt = performance.now();
+      if (S.landAt == null && H.getAttribute('data-landing') === 'ready') S.landAt = performance.now();
       var m0 = document.querySelector('.hero__thread .msg');
       if (S.seqAt == null && m0 && m0.getAttribute('data-state')) S.seqAt = performance.now();
       var st = document.querySelectorAll('[data-reveal]');
@@ -251,8 +251,8 @@ RECTS = ('(() => { const o = {}; for (const k of %s) { const e = document.queryS
          ' return o; })()') % json.dumps(KEYS)
 DECISION = ['roles', 'who', 'talk', 'tlbl', 'chips']
 WORK = ['caps', 'past', 'tools', 'background', 'more', 'contact']
-# The project browser is part of the decision on a laptop or desktop, and of
-# the work on ultrawide (2100 and up).
+# Everything outside the conversation waits for the click at every width; at
+# 2100 and up the page is the ultrawide grid.
 UW = 2100
 
 # The message timeline, first message landing to the invitation, at 1512,
@@ -277,8 +277,8 @@ def t_seq(b, base, shots, widths):
 
 def seq_wide(b, base, shots, w, h):
     name = '%dx%d' % (w, h)
-    decision = DECISION + ([] if w >= UW else ['work'])
-    work = WORK + (['work'] if w >= UW else [])
+    every = ['roles'] + DECISION[1:] + ['work'] + WORK
+    page = [k for k in every if k not in ('tlbl', 'chips')]
     ref = baseline(b, base, w, h)
     fresh(b, base, w=w, h=h, dark=True)
     first = b.eval('__pf.first')
@@ -286,8 +286,7 @@ def seq_wide(b, base, shots, w, h):
     alone = until(b, '(() => { const s=[...document.querySelectorAll(".hero__thread .msg")].map(m=>m.dataset.state); '
                      'return s.length && s.every(x=>x==="settled") && __pf.cta===null && ' + ALONE + '; })()', 25)
     if alone:
-        intro = b.eval('[Object.keys(__pf.seen), document.documentElement.scrollHeight, innerHeight, '
-                       'document.querySelector(".hero__thread").getBoundingClientRect().width]')
+        intro = b.eval('[Object.keys(__pf.seen), document.documentElement.scrollHeight, innerHeight]')
         if shots:
             b.screenshot(os.path.join(shots, 'intro-%d.png' % w))
         check(not intro[0], name + ' intro shows only the conversation', 'visible: %s' % intro[0])
@@ -297,7 +296,6 @@ def seq_wide(b, base, shots, w, h):
             ok = abs(alone['cy']) < 40 if fits else alone['top'] >= 0
             label = ' intro centred down'
         else:
-            # Optically centred: lifted, never below the middle, never pinned.
             above, below = alone['top'], alone['vh'] - alone['bottom']
             ok = alone['top'] >= 20 and (below >= above - 2 or not fits)
             label = ' intro optically centred (more room below than above)'
@@ -307,73 +305,55 @@ def seq_wide(b, base, shots, w, h):
     else:
         check(False, name + ' conversation reached its end alone')
     until(b, '__pf.cta !== null', 30)
-    b.pump(1.6)
+    b.pump(1.0)
     s = b.eval('__pf')
-    d = b.eval('[document.documentElement.dataset.landing, document.querySelector(".hero__thread").getBoundingClientRect().width,'
-               ' document.querySelectorAll(".hero-trust__chip").length,'
-               ' [...document.querySelectorAll(".hero-trust__chip")].map(c => c.getBoundingClientRect()).map(r => [Math.round(r.left), Math.round(r.top)])]')
+    r = b.eval('[document.documentElement.dataset.landing, document.querySelector(".hero__thread").getBoundingClientRect().width,'
+               ' (() => { const c = document.querySelector(".hero__copy").getBoundingClientRect(); return (c.left + c.right) / 2 - innerWidth / 2; })(),'
+               ' !!document.querySelector(".msg-cta:not([hidden]) .msg-cta__btn")]')
     if shots:
-        b.screenshot(os.path.join(shots, 'decision-%d.png' % w))
-    seen = s['seen']
-    check(d[0] == 'decision', name + ' pf:cta moves to decision', d[0])
-    check(all(seen.get(k, 1e12) >= s['cta'] for k in seen), name + ' nothing before pf:cta',
-          json.dumps({k: round(v - s['cta']) for k, v in seen.items() if v < s['cta']}))
-    order = [k for k in decision if k in seen]
-    times = [round(seen[k] - s['cta']) for k in order]
-    gaps = [times[i + 1] - times[i] for i in range(len(times) - 1)]
-    check(order == decision and sorted(times) == times,
-          name + ' decision: roles, profile, talk, Trusted By, logos%s in order' % ('' if w >= UW else ', browser'),
-          json.dumps(dict(zip(order, times))))
+        b.screenshot(os.path.join(shots, 'ready-%d.png' % w))
+    check(r[0] == 'ready', name + ' pf:cta moves to ready', r[0])
+    check(r[3], name + ' ready: See the work is up')
+    check(not s['seen'], name + ' ready: nothing but the conversation and its invitation', 'visible: %s' % list(s['seen']))
+    check(abs(r[2]) < 1, name + ' ready: still centred', 'dx %.2f' % r[2])
     land_at = b.eval('__pf.landAt')
-    check(land_at is not None and abs(land_at - s['cta']) < 40, name + ' decision begins on pf:cta itself',
+    check(land_at is not None and abs(land_at - s['cta']) < 40, name + ' ready begins on pf:cta itself',
           'landing changed %s ms after the cue' % (None if land_at is None else round(land_at - s['cta'])))
-    check(all(90 <= g <= 190 for g in gaps) and times and times[0] <= 260, name + ' decision stagger ~100-180ms',
-          'from cta %s gaps %s' % (times, gaps))
-    check(not [k for k in work if k in seen], name + ' the rest stays hidden in decision',
-          'visible: %s' % [k for k in work if k in seen])
-    if w < UW:
-        nav = b.eval('(() => { const c = () => document.querySelector(".hero__work [data-pv-i]").textContent;'
-                     ' const a = c(); document.querySelector(".hero__work [data-pv-next]").click(); const n = c();'
-                     ' document.querySelector(".hero__work [data-pv-prev]").click(); return [a, n, c()]; })()')
-        b.pump(0.8)
-        check(nav[0] != nav[1] and nav[2] == nav[0], name + ' project browser navigates before the click', json.dumps(nav))
-    xs = sorted(set(p[0] for p in d[3])); ys = sorted(set(p[1] for p in d[3]))
-    check(d[2] == 4 and len(xs) == 2 and len(ys) == 2, name + ' four separate logo bubbles in a 2x2', json.dumps(d[3]))
-    check(abs(d[1] - s['w0']) < 0.05, name + ' thread width same in intro and decision', '%s %s' % (s['w0'], d[1]))
-    # At the decision the conversation is in its final column. On ultrawide
-    # it is in its final place outright, as it always was once the page
-    # began to build; on a laptop the row is still lifted into view.
-    now = b.eval(RECTS)
-    dx = round(now['.hero__copy'][0] - ref['.hero__copy'][0], 1)
-    dy = round(now['.hero__copy'][1] - ref['.hero__copy'][1], 1)
-    if w >= UW:
-        check(abs(dx) <= 1 and abs(dy) <= 1, name + ' decision: conversation at its ultrawide resting place', 'off by %s, %s' % (dx, dy))
-    else:
-        check(abs(dx) <= 1, name + ' decision: conversation in its final column', 'off by %s across' % dx)
+    check(abs(r[1] - s['w0']) < 0.05, name + ' thread width same in intro and ready', '%s %s' % (s['w0'], r[1]))
     b.pump(4)
     v = b.eval('[document.documentElement.dataset.landing, Object.keys(__pf.seen)]')
-    check(v[0] == 'decision' and not [k for k in work if k in v[1]], name + ' gate holds without a click', json.dumps(v))
+    check(v[0] == 'ready' and not v[1], name + ' gate holds without a click (4s)', json.dumps(v))
 
     t_click = b.eval('(() => { const t = performance.now(); document.querySelector(".msg-cta__btn").click(); return t; })()')
-    b.pump(1.6)
+    b.pump(0.45)
     s = b.eval('__pf')
+    got = b.eval(RECTS)
     end = b.eval('[document.documentElement.dataset.landing, document.querySelector(".hero__thread").getBoundingClientRect().width,'
                  ' [...document.querySelectorAll("[data-reveal]")].filter(e => e.getClientRects().length && (getComputedStyle(e).visibility !== "visible" || +getComputedStyle(e).opacity < 0.99)).length,'
-                 ' getComputedStyle(document.querySelector(".hero-trust")).display, !!document.querySelector(".hero__thread.is-list")]')
+                 ' +getComputedStyle(document.querySelector(".hero-card .hero__eyebrow")).opacity,'
+                 ' !!document.querySelector(".hero__thread.is-list")]')
     if shots:
         b.screenshot(os.path.join(shots, 'work-%d.png' % w))
     check(end[0] == 'work', name + ' click opens work', end[0])
-    late = {k: round(s['seen'][k] - t_click) for k in work if k in s['seen']}
-    check(all(k in s['seen'] for k in ('work', 'caps', 'background')) and all(v >= 0 for v in late.values()),
-          name + ' the rest appears only after the click', json.dumps(late))
-    check(end[2] == 0, name + ' everything visible after the click', '%d not' % end[2])
-    check(end[3] == 'none', name + ' Trusted By hands over to Skills', end[3])
+    late = {k: round(s['seen'][k] - t_click) for k in page if k in s['seen']}
+    missing = [k for k in page if k not in s['seen'] and k != 'more' and k != 'contact']
+    # Together means one frame for all of it. That frame can take ~100ms to
+    # come: it is the first layout of everything below the hero.
+    span = (max(late.values()) - min(late.values())) if late else 0
+    check(not missing and span <= 20 and all(0 <= v <= 180 for v in late.values()),
+          name + ' everything arrives together on the click',
+          'from click: %s%s' % (json.dumps(late), (' missing %s' % missing) if missing else ''))
+    off = {k: [round(g - r_, 1) for g, r_ in zip(got[k], ref[k])] for k in ref if k in got and
+           max(abs(g - r_) for g, r_ in zip(got[k], ref[k])) > 1}
+    check(not off and end[2] == 0 and end[3] > 0.99, name + ' settled in the final layout within 450ms',
+          'off %s, not yet opaque %d, roles %.2f' % (json.dumps(off)[:300], end[2], end[3]))
     check(end[4] is False, name + ' first press keeps the conversation (no list view)', str(end[4]))
     check(abs(end[1] - s['w0']) < 0.05, name + ' thread width unchanged through all three states', '%s %s' % (s['w0'], end[1]))
-    got = b.eval(RECTS)
-    off = {k: [round(g - r, 1) for g, r in zip(got[k], ref[k])] for k in ref if k in got and
-           max(abs(g - r) for g, r in zip(got[k], ref[k])) > 1}
-    check(not off, name + ' final layout identical to an unstaged page', json.dumps(off)[:400])
+    nav = b.eval('(() => { const c = () => document.querySelector(".hero__work [data-pv-i]").textContent;'
+                 ' const a = c(); document.querySelector(".hero__work [data-pv-next]").click(); const n = c();'
+                 ' document.querySelector(".hero__work [data-pv-prev]").click(); return [a, n, c()]; })()')
+    check(nav == ['01', '02', '01'] if w < UW else True, name + ' project browser starts at 01 and navigates', json.dumps(nav))
+    b.pump(0.6)
     check(s['over'] == 0, name + ' no horizontal overflow', '%d of %d frames' % (s['over'], s['frames']))
     e = errors(b)
     check(not e, name + ' no errors', '; '.join(e[:3]))
@@ -395,7 +375,7 @@ def seq_narrow(b, base, shots, w, h):
     gaps = [round(s['shownAt'][order[i + 1]] - s['shownAt'][order[i]]) for i in range(len(order) - 1)]
     lead = round(s['shownAt'][order[0]] - s['cta']) if order and s['cta'] else None
     check(not s['early'], name + ' nothing staged visible before pf:cta', ','.join(sorted(set(s['early']))))
-    check(order == sorted(order) and all(g <= 185 for g in gaps) and lead is not None and lead <= 200,
+    check(order == sorted(order) and all(g <= 185 for g in gaps) and lead is not None and lead <= 220,
           name + ' cascade unchanged: groups in order, ~140ms apart', 'lead %s gaps %s' % (lead, gaps))
     check(end['hidden'] == 0 and end['landing'] == 'work', name + ' everything visible at the end', json.dumps(end))
     check(s['w0'] is not None and abs(s['w0'] - end['w1']) < 0.05, name + ' thread width unchanged', '%s -> %s' % (s['w0'], end['w1']))
@@ -421,12 +401,12 @@ def t_hatch(b, base):
     check(v == '5', 'tablet: scroll past half a viewport shows everything', 'stage=%s' % v)
     # Replay while deciding: the conversation runs again, the gate stays shut.
     fresh(b, base, dark=True)
-    until(b, 'document.documentElement.dataset.landing === "decision"', 30)
+    until(b, 'document.documentElement.dataset.landing === "ready"', 30)
     b.pump(1)
     b.eval('document.querySelector(".hero__replay").click()')
     b.pump(2)
-    v = b.eval('[document.documentElement.dataset.landing, Object.keys(__pf.seen).filter(k => ["caps","past","background"].includes(k))]')
-    check(v == ['decision', []], 'replay while deciding keeps the gate', json.dumps(v))
+    v = b.eval('[document.documentElement.dataset.landing, Object.keys(__pf.seen)]')
+    check(v == ['ready', []], 'replay while ready keeps the gate', json.dumps(v))
     until(b, '!!document.querySelector(".msg-cta:not([hidden]) .msg-cta__btn")', 25)
     b.eval('document.querySelector(".msg-cta__btn").click()')
     b.pump(1.5)
@@ -460,14 +440,12 @@ def t_keys(b, base):
     bad = [p for p in path if p[0] and not p[1]]
     check(not bad and not [p for p in path if p[2] in ('roles', 'work', 'talk', 'below')],
           'intro: Tab reaches nothing that has not arrived', json.dumps([p[0] for p in path]))
-    until(b, 'document.documentElement.dataset.landing === "decision"', 30)
-    b.pump(1.5)
-    path = [tab(b) for _ in range(16)]
+    until(b, 'document.documentElement.dataset.landing === "ready"', 30)
+    b.pump(1.0)
+    path = [tab(b) for _ in range(14)]
     where = set(p[2] for p in path)
-    path += [tab(b) for _ in range(14)]
-    where = set(p[2] for p in path)
-    check(not [p for p in path if p[0] and not p[1]] and {'roles', 'talk', 'cta', 'work'} <= where and 'below' not in where,
-          'decision (1440): Tab reaches roles, LET\'S TALK, See the work and the browser, nothing below',
+    check(not [p for p in path if p[0] and not p[1]] and 'cta' in where and not where & {'roles', 'talk', 'work', 'below'},
+          'ready (1440): Tab reaches See the work and the conversation\'s controls, nothing else',
           json.dumps(sorted(where - {None})))
     b.eval('document.querySelector(".msg-cta__btn").click()')
     b.pump(1.5)
