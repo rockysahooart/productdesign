@@ -107,41 +107,47 @@
     }
   })();
 </script>
-<meta name="theme-color" content="#E9E9E9" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+<!-- THE BROWSER CHROME OPENS LIGHT, BECAUSE THE PAGE DOES.
+
+     There were two of these, scoped to prefers-color-scheme, which was right
+     while the page followed the OS as well. It no longer does: every visit
+     opens light and only the site's own toggle can make it dark, so a
+     media-scoped dark meta would have tinted the status bar and the toolbar
+     #121212 around a light page on any device set to dark. One meta, the
+     light value, and js/theme.js writes the applied theme into it whenever
+     the toggle is pressed. -->
+<meta name="theme-color" content="#E9E9E9">
 
 <script>
   (function () {
-    /* THE THEME, BEFORE FIRST PAINT.
+    /* THE THEME, BEFORE FIRST PAINT, AND IT IS LIGHT.
 
-       A stored choice always wins: somebody who has pressed the toggle has
-       said what they want, on any device, and that survives the reload.
-
-       With nothing stored the page follows the OS, except on a phone, where
-       it opens light. The composition was built and judged on the light
-       ground; on a small screen it is also the first and often only thing
-       somebody sees, and a portfolio that greets a recruiter in a theme its
+       The page opens light. Not light-on-a-phone, not light-unless-the-OS-
+       says-otherwise: light, on every device, in every browser, whatever
+       prefers-color-scheme reports. The composition was built and judged on
+       the light ground, and a portfolio that greets a stranger in a theme its
        author did not design for is the wrong first impression to leave to a
-       system setting. Desktop and ultrawide are untouched and still follow
-       the OS.
+       system setting.
+
+       Dark is still here and it is still the same dark. It is reached by
+       pressing the control in the header, which is the one thing that can ask
+       for it, and the choice is remembered: a stored 'dark' is a sentence
+       somebody said with a click and it survives the reload. Nothing else
+       gets a vote.
 
        It has to happen HERE, in the blocking script before the first paint,
-       because the alternative is a dark page appearing and being corrected
-       in front of the reader. And the localStorage read is in its own try:
-       private mode throws on the read, and the phone default should still
-       apply when it does. */
+       because the alternative on a dark device is a dark page appearing and
+       being corrected in front of the reader. The attribute is written
+       unconditionally for the same reason: every dark rule in the stylesheet
+       is guarded by :not([data-theme="light"]), so the attribute being
+       present IS the guarantee, and leaving it off for one code path is how
+       a flash gets back in. The localStorage read is in its own try because
+       private mode throws on it, and light still has to apply when it does. */
     var stored = null;
     try { stored = localStorage.getItem('pf-theme'); } catch (e) {}
 
-    if (stored === 'dark' || stored === 'light') {
-      document.documentElement.setAttribute('data-theme', stored);
-    } else {
-      try {
-        if (window.matchMedia && matchMedia('(max-width: 719px)').matches) {
-          document.documentElement.setAttribute('data-theme', 'light');
-        }
-      } catch (e) {}
-    }
+    document.documentElement.setAttribute(
+      'data-theme', stored === 'dark' || stored === 'light' ? stored : 'light');
 
     /* ARM THE STAGED ENTRANCE, HERE AND NOWHERE ELSE.
 
@@ -18321,14 +18327,27 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    16. THE PAGE ASSEMBLES AS THE CONVERSATION HAPPENS
 
    The hero opens as almost nothing: the three roles, the conversation, and
-   the two controls that belong to it, theme and replay. Everything else
-   arrives on a cue from the thread.
+   the two controls that belong to it, theme and replay. Nothing else is on
+   the page while somebody is being spoken to, and on desktop the thread is
+   moved to the middle of the composition so that what is there is centred
+   rather than sitting in the column it will eventually share.
 
-     stage 1   he says who he is and where he is        profile, project browser
-     stage 2   he says what he does                     where I've been, tools,
-                                                        worked with
-     stage 3   the invitation appears                   about, and the rest of
-                                                        the page behind it
+   THE WHOLE CONVERSATION HAPPENS FIRST. It used to assemble as the lines were
+   said, a stage on message one and another on message two, which meant the
+   reader's eye was pulled off the sentence twice by furniture arriving beside
+   it. Now one thing ends the introduction, the invitation appearing under the
+   last thing said, and the composition builds behind it in five beats:
+
+     group 1   the portrait card
+     group 2   let's talk
+     group 3   worked with, the logos
+     group 4   the project browser
+     group 5   capabilities, where I've been, the tools, and every remaining
+               section of the page
+
+   A hundred and forty milliseconds apart, which is enough for the eye to read
+   it as an order rather than as one flash, and short enough that the whole
+   composition is settled about half a second after the invitation.
 
    ONE ENTRANCE, AND IT IS ONLY OPACITY.
 
@@ -18365,7 +18384,11 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    ========================================================================== */
 
 :root[data-stage] [data-reveal] {
-  --rv-ms: 1250ms;
+  /* Was 1250ms, which was the right length for one card arriving next to a
+     sentence somebody is reading. Nothing arrives during the conversation any
+     more: five groups land in sequence after it, and at 1250ms each the last
+     of them was still fading up two seconds after the invitation. */
+  --rv-ms: 700ms;
   /* Slow to start, long to finish. See the note above. */
   --rv-ease: cubic-bezier(0.34, 0.03, 0.24, 1);
 
@@ -18390,17 +18413,50 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 :root[data-stage] [data-reveal]:not([data-shown]) { pointer-events: none; }
 
 /* --------------------------------------------------------------------------
-   THE ONE EXCEPTION: THE REST OF THE PAGE
+   THE CONVERSATION STARTS IN THE MIDDLE
 
-   Stage 3 is not two cards beside a sentence, it is every remaining section
-   of the site. A second and a quarter is the right length for something
-   arriving next to what you are reading and too long for a page you have just
-   been invited to scroll. The invitation appears, and the work behind it
-   should be there when you get to it. So the last stage is quicker, and it is
-   still only opacity.
+   While the conversation is the only thing on the page it should be in the
+   middle of the page, and it is not: the thread lives in the centre column of
+   a three column composition whose right hand track (the project browser) is
+   wider than its left (the portrait), so with the other two hidden the
+   messages sit about a hundred pixels left of centre and read as a column
+   waiting for something.
+
+   IT IS A TRANSFORM AND IT IS ONLY A TRANSFORM. This was tried once as a
+   layout change, centring the hero and capping its width for the first stage,
+   and it broke the thread: the player measures the column once and lays every
+   message out against that measure, so changing the measure between stages
+   left the conversation sized for a width it was no longer in, with no resize
+   to re-measure on. A translate moves the painted result and leaves every
+   box exactly where it was. The thread is measured once, in its final
+   measure, and is never told anything about this.
+
+   --solo-x is written by js/reveal.js, which is the only thing that can know
+   it: it is half the difference between the two outer tracks, and those are
+   clamps against the viewport that differ again at the ultrawide layout. It
+   is set to 0px while being measured, so the measurement never reads its own
+   offset back.
+
+   It unwinds on the first group, not the last. The portrait card coming up is
+   the composition starting to exist; that is the moment the conversation
+   should be moving back into the column it shares with it, not four beats
+   later. Phones and tablets are a single column with nothing either side of
+   the thread, so there is nothing to centre and this does not apply.
    -------------------------------------------------------------------------- */
 
-:root[data-stage] [data-reveal="3"] { --rv-ms: 700ms; }
+@media (min-width: 960px) {
+  :root[data-stage="0"] .hero__copy { transform: translateX(var(--solo-x, 0px)); }
+
+  /* THE TRANSITION ARRIVES AFTER THE OFFSET DOES, which is the whole reason
+     for the class. --solo-x is 0 until reveal.js has measured, so a
+     transition declared in the stylesheet would animate the thread sideways
+     into the middle on load, which is the page moving its own furniture
+     before anybody has read anything. reveal.js commits the offset, waits a
+     frame, and then says the element may travel. */
+  :root[data-stage].has-solo .hero__copy {
+    transition: transform 700ms cubic-bezier(0.34, 0.03, 0.24, 1);
+  }
+}
 
 /* --------------------------------------------------------------------------
    REDUCED MOTION
@@ -18413,8 +18469,11 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    -------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
-  :root[data-stage] [data-reveal],
-  :root[data-stage] [data-reveal="3"] { --rv-ms: 200ms; --rv-ease: linear; }
+  :root[data-stage] [data-reveal] { --rv-ms: 200ms; --rv-ease: linear; }
+
+  /* The thread does not travel either. It starts where it ends. */
+  :root[data-stage] .hero__copy,
+  :root[data-stage="0"] .hero__copy { transform: none; transition: none; }
 }
 
 
@@ -31091,7 +31150,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    property, so the compositor moves each shell without repainting it, and
    eighteen of them cost the same as one. */
 .ld__s {
-  animation: ld-sh-d00 5500ms linear forwards;
+  animation: ld-sh-d00 3500ms linear forwards;
 }
 .ld__s--00 { animation-name: ld-sh-d00; }
 .ld__s--01 { animation-name: ld-sh-d01; }
@@ -31217,7 +31276,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   height: 46%;
   background: linear-gradient(to bottom, var(--ld-bg0) 0%, var(--ld-bg) 44%, var(--ld-bg) 100%);
   will-change: opacity;
-  animation: ld-horizon 5500ms linear forwards;
+  animation: ld-horizon 3500ms linear forwards;
 }
 @keyframes ld-horizon {
   0%   { opacity: 1; animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
@@ -31238,7 +31297,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   aspect-ratio: 1;
   border-radius: 50%;
   will-change: transform, opacity;
-  animation: ld-blorb 5500ms linear forwards;
+  animation: ld-blorb 3500ms linear forwards;
 }
 @keyframes ld-blorb {
   /* rising out of the horizon */
@@ -31277,7 +31336,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   opacity: 0;
   transform: scale(0.9);
   will-change: transform, opacity;
-  animation: ld-shell 5500ms linear forwards;
+  animation: ld-shell 3500ms linear forwards;
 }
 @keyframes ld-shell {
   0%, 46% { opacity: 0; transform: scale(0.94);
@@ -31339,7 +31398,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   display: block;
   opacity: 0;
   translate: 0 6px;
-  animation-duration: 5500ms;
+  animation-duration: 3500ms;
   animation-timing-function: linear;
   animation-fill-mode: forwards;
 }
@@ -31382,7 +31441,7 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   transform: scaleX(0);
   transform-origin: left center;
   will-change: transform;
-  animation: ld-bar 5500ms linear forwards;
+  animation: ld-bar 3500ms linear forwards;
 }
 @keyframes ld-bar {
   from { transform: scaleX(0); }
@@ -31941,8 +32000,8 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
      so the two things that are reporting rather than performing keep their
      clock. What they lose is the travel: the copy crossfades on opacity with
      the 6px rise removed, and the bar is a 2px line growing once. */
-  .ld__m { translate: none !important; animation-duration: 5500ms !important; }
-  .ld__fill { animation-duration: 5500ms !important; }
+  .ld__m { translate: none !important; animation-duration: 3500ms !important; }
+  .ld__fill { animation-duration: 3500ms !important; }
 }
 
 /* ==========================================================================
@@ -32084,7 +32143,15 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
     try { seen = sessionStorage.getItem('pf-seen') === '1'; } catch (e) {}
     try { sessionStorage.setItem('pf-seen', '1'); } catch (e) {}
 
-    var MIN = seen ? 0 : 5500;
+    /* FASTER, NOT DIFFERENT. Every stage of the sequence is written as a
+       percentage of one timeline — the shapes, the horizon, the blorb, the
+       shell, the words and the bar all run the same duration — so the whole
+       thing compresses proportionally by changing that one number. 5500 to
+       3500 is 0.636x: no stage was cut, no pause was singled out, and the
+       shape changes keep their relative weight rather than one of them
+       becoming a flicker. This is the floor the sequence plays out over, and
+       the CSS above is the same number. Change one, change both. */
+    var MIN = seen ? 0 : 3500;
     var fill = root.querySelector('[data-ld-fill]');
     var done = false;
 
@@ -32133,7 +32200,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
         fill.style.transform = 'scaleX(' + cur.toFixed(4) + ')';
         fill.style.animation = 'none';
         void fill.offsetWidth;
-        fill.style.transition = 'transform 320ms cubic-bezier(0.33, 0, 0.2, 1)';
+        fill.style.transition = 'transform 220ms cubic-bezier(0.33, 0, 0.2, 1)';
         fill.style.transform = 'scaleX(1)';
       }
 
@@ -32176,7 +32243,12 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
            hero's scripts are already inline) has nothing to wait for. */
         if (!left) requestAnimationFrame(function () { requestAnimationFrame(dissolve); });
         setTimeout(dissolve, 6000);
-      }, 320);
+        /* The same 0.636x as everything else: the bar's last stretch is
+           220ms now, and the handoff waits exactly that rather than the 320
+           it waited for a longer bar. The 6000ms net above is a safety stop
+           for a device that never finishes, not part of the sequence, so it
+           stays where it is. */
+      }, 220);
     }
   }());
 </script>
@@ -32509,9 +32581,9 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 
 
           
-          <div class="hero__identity hero-tile--profile" data-reveal="1">
+          <div class="hero__identity hero-tile--profile">
 
-            <div class="hero-tile hero-id hero-id--who">
+            <div class="hero-tile hero-id hero-id--who" data-reveal="1">
               <span class="avatar hero__portrait">
                 <img src="assets/07fca2cdca50.webp" alt="Sarthak Sahoo"
                      width="860" height="860" decoding="async">
@@ -32527,7 +32599,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
               </p>
             </div>
 
-            <div class="hero-tile hero-id hero-id--talk">
+            <div class="hero-tile hero-id hero-id--talk" data-reveal="2">
               <p class="hero__lbl hero__lbl--block">Let&rsquo;s talk</p>
               <address class="hero__contact">
                 <span class="hero__field">
@@ -32555,7 +32627,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
               </address>
             </div>
 
-            <div class="hero-tile hero-id hero-id--caps">
+            <div class="hero-tile hero-id hero-id--caps" data-reveal="5">
               <details class="hero__caps" open>
               <summary class="hero__caps__sum">10 capabilities <span
                 aria-hidden="true">+</span></summary>
@@ -32684,7 +32756,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 
 
           
-          <div class="hero__clients" data-reveal="2">
+          <div class="hero__clients" data-reveal="3">
             <p class="clients__label">Worked with</p>
             <div class="clients__marquee" data-marquee>
               <ul class="clients__track">
@@ -32713,7 +32785,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
           <!-- display:contents at 960 and up, so on a desktop this wrapper is
                not in the layout and the browser is the grid item it was. -->
           <div class="pv-fit" data-pv-fit>
-          <div class="hero__work hero-tile hero-tile--work" data-pv data-reveal="1">
+          <div class="hero__work hero-tile hero-tile--work" data-pv data-reveal="4">
             <div class="pv__bar">
               <p class="pv__eyebrow">Key industry projects</p>
               <div class="pv__nav">
@@ -34900,7 +34972,7 @@ em,
   function read(){
     var t = host &amp;&amp; host.getAttribute(&#x27;data-theme&#x27;);
     if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = told;
-    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = mq.matches ? &#x27;dark&#x27; : &#x27;light&#x27;;
+    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = &#x27;light&#x27;;   /* never the OS: the host page is always light unless its toggle says otherwise */
     root.setAttribute(&#x27;data-theme&#x27;, t);
   }
   read();
@@ -37804,7 +37876,7 @@ em,
   function read(){
     var t = host &amp;&amp; host.getAttribute(&#x27;data-theme&#x27;);
     if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = told;
-    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = mq.matches ? &#x27;dark&#x27; : &#x27;light&#x27;;
+    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = &#x27;light&#x27;;   /* never the OS: the host page is always light unless its toggle says otherwise */
     root.setAttribute(&#x27;data-theme&#x27;, t);
   }
   read();
@@ -39004,7 +39076,7 @@ body{display:grid;place-items:center;min-height:100vh}
   function read() {
     var t = host &amp;&amp; host.getAttribute(&#x27;data-theme&#x27;);
     if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = told;
-    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = mq.matches ? &#x27;dark&#x27; : &#x27;light&#x27;;
+    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = &#x27;light&#x27;;   /* never the OS: the host page is always light unless its toggle says otherwise */
     root.setAttribute(&#x27;data-theme&#x27;, t);
   }
   read();
@@ -39322,7 +39394,7 @@ body{display:grid;place-items:center;min-height:100vh}
   function read(){
     var t = host &amp;&amp; host.getAttribute(&#x27;data-theme&#x27;);
     if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = told;
-    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = mq.matches ? &#x27;dark&#x27; : &#x27;light&#x27;;
+    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = &#x27;light&#x27;;   /* never the OS: the host page is always light unless its toggle says otherwise */
     root.setAttribute(&#x27;data-theme&#x27;, t);
   }
   read();
@@ -40035,7 +40107,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
           
           
-          <div class="hero__past hero-tile hero-tile--past" data-reveal="2">
+          <div class="hero__past hero-tile hero-tile--past" data-reveal="5">
             <p class="past__label">Where I&rsquo;ve been</p>
 
             <ol class="tl">
@@ -40080,7 +40152,7 @@ body{display:grid;place-items:center;min-height:100vh}
           </div>
 
           
-          <div class="hero__tools hero-tile hero-tile--tools" data-reveal="2">
+          <div class="hero__tools hero-tile hero-tile--tools" data-reveal="5">
             <p class="tools__label" data-tools-label>Tools</p>
             <p class="visually-hidden">Human judgment, design decisions, AI execution.</p>
             <div class="tools__marquee" data-marquee>
@@ -40144,7 +40216,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
   
-  <section class="section" id="background" aria-label="Background" data-reveal="3">
+  <section class="section" id="background" aria-label="Background" data-reveal="5">
     <div class="bento">
   
   <div class="row row--solo row--index otc-card otc-card--desk">
@@ -40241,7 +40313,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
   
-  <section class="section" id="work" aria-labelledby="work-title" data-reveal="3">
+  <section class="section" id="work" aria-labelledby="work-title" data-reveal="5">
     <header class="section__head">
       <h2 class="t-section section__title" id="work-title"><em>key industry</em> projects</h2>
       <p class="t-meta">Healthcare &middot; Biotechnology &middot; Financial Services &middot; Developer Tools &middot; Education</p>
@@ -40996,7 +41068,7 @@ body{display:grid;place-items:center;min-height:100vh}
   function read() {
     var t = host &amp;&amp; host.getAttribute(&#x27;data-theme&#x27;);
     if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = told;
-    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = mq.matches ? &#x27;dark&#x27; : &#x27;light&#x27;;
+    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = &#x27;light&#x27;;   /* never the OS: the host page is always light unless its toggle says otherwise */
     root.setAttribute(&#x27;data-theme&#x27;, t);
   }
   read();
@@ -41438,7 +41510,7 @@ body{display:grid;place-items:center;min-height:100vh}
   function read(){
     var t = host &amp;&amp; host.getAttribute(&#x27;data-theme&#x27;);
     if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = told;
-    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = mq.matches ? &#x27;dark&#x27; : &#x27;light&#x27;;
+    if (t !== &#x27;dark&#x27; &amp;&amp; t !== &#x27;light&#x27;) t = &#x27;light&#x27;;   /* never the OS: the host page is always light unless its toggle says otherwise */
     root.setAttribute(&#x27;data-theme&#x27;, t);
   }
   read();
@@ -41975,7 +42047,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
   
-  <section class="section" id="more" aria-labelledby="more-title" data-reveal="3">
+  <section class="section" id="more" aria-labelledby="more-title" data-reveal="5">
     <header class="section__head">
       <h2 class="t-section section__title" id="more-title">everything <em>else</em></h2>
       <p class="t-meta">Supporting work &middot; background &middot; process</p>
@@ -42086,7 +42158,7 @@ body{display:grid;place-items:center;min-height:100vh}
 
 
   
-  <section class="section" id="contact" aria-labelledby="contact-title" data-reveal="3">
+  <section class="section" id="contact" aria-labelledby="contact-title" data-reveal="5">
     <div class="cell">
       <div class="card card--contact">
         <span class="icon-tile contact__icon">
