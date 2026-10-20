@@ -10,16 +10,15 @@ As of 2026-10-20 on `main`.
   AI-saturated world." with the hands illustration, reaction chips, then the
   "See the work →" invitation.
 - Landing on desktop and ultrawide (≥960): three states. **Intro**: after the loader
-  the conversation plays alone, centred by the grid. **Decision** (on `pf:cta`): the
-  roles, profile, LET'S TALK and Trusted By with four logo bubbles assemble around it,
-  and on laptop/desktop widths (960–2099) the Project Browser too; on ultrawide the
-  browser waits. **Work** (first press on See the work): Skills, Where I've been, Tools
-  and the rest (plus the browser on ultrawide) open in one transition into the
-  existing layout. The message sequence runs at `--msg-pace: 0.7`. See [design-system.md](design-system.md#landing-sequence-jsrevealjs-css16-revealcss).
+  the conversation plays alone, centred by the grid. **Ready** (on `pf:cta`): the
+  same conversation with its See the work; nothing else. **Work** (first press on See
+  the work): the conversation settles into its column and the whole page arrives in
+  one 320ms transition into the existing layout (matching the owner's reference).
+  See [design-system.md](design-system.md#landing-sequence-jsrevealjs-css16-revealcss).
 - Below 960: unchanged. The invitation runs the whole page in on its own,
   180ms lead then 140ms apart.
-- Trusted By (desktop decision state): CVS Health, Natera, PNC, CG Infinity.
-  Worked With (`.hero__clients`, below 960): CVS Health, CG Infinity, PNC, First United.
+- Trusted By (four logo bubbles: CVS Health, Natera, PNC, CG Infinity) is built but
+  not shown since the decision state was retired. Worked With (`.hero__clients`, below 960): CVS Health, CG Infinity, PNC, First United.
 - Natera appears in the *Where I've been* timeline and, at the owner's request
   (2026-10-20), in the Trusted By bubbles.
 - Project order and URLs: see [portfolio-architecture.md](portfolio-architecture.md#pfprojects-display-order-everywhere).
@@ -31,6 +30,10 @@ As of 2026-10-20 on `main`.
 1. No favicon; `/favicon.ico` 404s. Pre-existing.
 
 ## Recently shipped
+
+- **2026-10-20: See the work is the only gate.** The decision state (identity, and on
+  laptops the browser, assembling at the invitation) is replaced by `ready`: the
+  invitation and nothing else. The press opens everything in one 320ms transition.
 
 - **2026-10-20: project order.** Carry, Cryptography, OptiFlow, Specimen Kit, Design
   System Audit lead; Design Governance, PNC, Missing Information, Scale follow. The
@@ -103,6 +106,9 @@ if any doc describes them as current, that doc is wrong.
 5. The `matchMedia` system-theme listener and media-scoped `theme-color` metas.
 6. `transition: opacity 0s linear 86400s` as a one-way illustration hold. Replaced by state-gated `msg-reveal`.
 7. Scaling `.slot` to contain an overflowing embed. Scale `.slot > img`.
+8. Revealing anything on `pf:cta` at ≥960 (the "decision" state: identity, Trusted By,
+   and on laptops the browser, assembling at the invitation). The invitation shows
+   See the work and nothing else; only the press opens the page.
 
 ## Handoff discrepancies (code wins)
 

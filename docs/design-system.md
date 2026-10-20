@@ -141,39 +141,31 @@ failed bundle see the final composition.
 | state | trigger | on the page |
 |---|---|---|
 | `intro` | head script, before first paint | the conversation alone, centred; theme and replay controls |
-| `decision` | `pf:cta` (the thread's `showCta()`) | + roles, profile, LET'S TALK, Trusted By, four logo bubbles, timed by CSS delays 180 / 320 / 460 / 600 / 740ms after the cue; **960–2099 also the Project Browser at 880ms**, with the grid moving to its final tracks on the first beat |
-| `work` | the first press on See the work | Skills, Tools, Where I've been, every lower section (and on ultrawide the Project Browser), one coordinated transition |
+| `ready` | `pf:cta` (the thread's `showCta()`) | the same, plus the thread's own See the work. Nothing else arrives |
+| `work` | the first press on See the work | roles, profile, LET'S TALK, Skills, Project Browser, Where I've been, Tools, everything below: one 320ms transition |
 
-- **The gate.** In `decision`, `reveal.js` takes the press on `.msg-cta__btn` in the
+- **The gate.** In `ready`, `reveal.js` takes the press on `.msg-cta__btn` in the
   capture phase, so the first press opens the page and keeps the conversation (the
   thread's own handler, which swaps in the list of work, only runs on later presses).
-  The ceiling is cleared at `decision`: nothing opens the work except the reader, a
+  The ceiling is cleared at `ready`: nothing opens the page except the reader, a
   deep link or `hashchange`.
-- **Centring is structural.** In `intro`/`decision` the grid's outer tracks are each
-  the mean of the final two (desktop `--hero-l`/`--hero-r`; ultrawide `360px` and
+- **Centring is structural.** In `intro`/`ready` the grid's outer tracks are each the
+  mean of the final two (desktop `--hero-l`/`--hero-r`; ultrawide `360px` and
   `--pv-col`), so the middle track is centred and exactly as wide as in the final
   layout. Identity, browser and tools carry their final widths and `justify-self: end`.
-  The click transitions `grid-template-columns` (560ms); the outer tracks' sum is
-  constant, so the conversation's width never changes. Vertical: the page's
-  `padding-top` centres row 1 on the first screen.
+  The press transitions `grid-template-columns` and the page's `padding-top`; the
+  outer tracks' sum is constant, so the conversation's width never changes.
+- **One movement.** `--land-ms: 320ms` drives the tracks, the padding and every
+  arriving block (`--rv-ms` is set to it at ≥960). No stagger.
+- **Vertical.** Desktop (960–2099): the page's top padding is
+  `max(--page-pad, (100svh − row) × --land-lift)`, `--land-lift: 0.33`, optically
+  centred (1512×945: 65px above, 133 below). Ultrawide: half the free height.
 - **Not on the page until `work`:** Skills, Where I've been, Tools, every later section,
   and on ultrawide the browser, are `display: none` (they arrive via `@starting-style`
-  opacity). On desktop the browser is a staged block in the intro (laid out at its final
-  width, invisible, out of the tab order). The intro is one screen tall; nothing staged
-  can be scrolled to or focused.
-- **Centring tracks.** Both desktop and ultrawide use the averaged outer tracks in
-  `intro` only. At `decision` the grid moves to its final tracks on the first beat
-  (180ms delay, 560ms). On ultrawide the page padding also returns to its final value
-  then, so the conversation lands in its established ultrawide place, as it always did
-  once the page began to build (`6dfd694`: the offset applied only at `data-stage="0"`).
-- **Optical lift (960–2099).** In `intro` and `decision` the page's top padding is
-  `max(--page-pad, (100svh − row) × --land-lift)` with `--land-lift: 0.33`: a third of
-  the free height above the row, two thirds below. Equal margins read as low because
-  the browser card and logo bubbles carry weight at the bottom. 1512×945: 65px above,
-  133 below (was ~99 / 99); 1512×860: 37 / 76.
-- **Trusted By** (`.hero-trust`) exists only in `intro`/`decision` at ≥960, in the
-  third profile slot where Skills goes in `work`. Four `.hero-trust__chip` bubbles
-  (CVS Health, Natera, PNC, CG Infinity) share the clay recipe of the other shells.
+  opacity). On desktop the browser is a staged block (laid out at its final width,
+  invisible, out of the tab order). The intro is one screen tall.
+- **Trusted By** (`.hero-trust`, four clay logo bubbles) is not shown anywhere at
+  present. It belonged to the retired decision state; markup and styles are kept.
 
 ### < 960px: the cascade
 
