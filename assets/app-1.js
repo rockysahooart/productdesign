@@ -70,18 +70,24 @@ window.PF = window.PF || {};
                 'soon'   nothing written yet; never linked, always labelled
      --------------------------------------------------------------------- */
   PF.PROJECTS = [
-    /* FIRST, AND IT IS THE ONE STILL BEING BUILT. The browser opens on it,
-       the list opens on it, and this table agrees with both, which matters
-       because previous/next at the foot of a study is computed from here. It
-       is 'soon', so PF.neighbours skips it and no study gains a Next that
-       lands on a page that does not exist. */
-    { key: 'governance', mode: 'design', name: 'Design Governance',
-      context: 'Design governance \u00b7 AI-generated work',
-      route: '/slop/', status: 'live' },
-
+    /* THE ORDER IS THE OWNER'S, AND IT STARTS WITH THE STRONGEST CLINICAL
+       WORK. Carry, the cryptography explainer, OptiFlow, the specimen kit and
+       the workflow audit lead; everything else follows in the order it already
+       had. This table is the order previous and next walk at the foot of a
+       study. The project browser keeps the same sequence on its slides as
+       data-rank (the carousel, the ultrawide grid and the list under the
+       conversation all read that), so the two are changed together. */
     { key: 'carry', mode: 'design', name: 'Carry',
       context: 'Patient experience · Healthcare',
       route: '/#/carry', status: 'live' },
+
+    { key: 'crypto', mode: 'design', name: 'Cryptography',
+      context: 'Interactive explainer',
+      route: 'https://rockysahooart.github.io/encryption-coffee-shop/', status: 'live' },
+
+    { key: 'optiflow', mode: 'design', name: 'OptiFlow',
+      context: 'AI-assisted operations · Healthcare',
+      route: '/#/optiflow', status: 'live' },
 
     { key: 'specimen', mode: 'design', name: 'Specimen Kit',
       context: 'Physical experience · Healthcare',
@@ -90,14 +96,16 @@ window.PF = window.PF || {};
          and this is simply where the study lives. */
       route: '/#/specimen', status: 'live' },
 
-    /* THIRD. The explainer moved up the table because it is the piece that
-       explains itself fastest: the thumbnail is the lesson. Order in this
-       table is the order everything else reads: the carousel's count, the
-       cards, previous and next at the foot of a study, so moving it here
-       moves it everywhere. */
-    { key: 'crypto', mode: 'design', name: 'Cryptography',
-      context: 'Interactive explainer',
-      route: 'https://rockysahooart.github.io/encryption-coffee-shop/', status: 'live' },
+    /* The audit was a link out to its Figma Make page until it was rebuilt
+       here; the source is untouched and this is simply where the case study
+       lives now. */
+    { key: 'dsa', mode: 'design', name: 'Design System Audit',
+      context: 'Design systems · Healthcare',
+      route: '/#/audit', status: 'live' },
+
+    { key: 'governance', mode: 'design', name: 'Design Governance',
+      context: 'Design governance \u00b7 AI-generated work',
+      route: '/slop/', status: 'live' },
 
     { key: 'pnc', mode: 'design', name: 'PNC Bank',
       context: 'Securities-based lending · Finance',
@@ -108,17 +116,6 @@ window.PF = window.PF || {};
 
     { key: 'scale', mode: 'design', name: 'Scale',
       context: 'Two-sided marketplace \u00b7 Music education', status: 'soon' },
-
-    /* The audit was a link out to its Figma Make page until it was rebuilt
-       here; the source is untouched and this is simply where the case study
-       lives now. */
-    { key: 'dsa', mode: 'design', name: 'Design System Audit',
-      context: 'Design systems · Healthcare',
-      route: '/#/audit', status: 'live' },
-
-    { key: 'optiflow', mode: 'design', name: 'OptiFlow',
-      context: 'AI-assisted operations · Healthcare',
-      route: '/#/optiflow', status: 'live' },
 
     { key: 'fub', mode: 'design', name: 'First United Bank',
       context: 'Banking identity and digital',
@@ -9959,6 +9956,19 @@ window.PF = window.PF || {};
      the ones the current mode owns. */
   var all = [].slice.call(root.querySelectorAll('[data-pv-slide]'));
   if (all.length < 2) return;
+
+  /* IN RANK ORDER, NOT DOCUMENT ORDER. data-rank on the slides is the one
+     sequence the project browser has: the ultrawide grid places the cards by
+     it, and the list under the conversation sorts its rows by it. The
+     carousel used to walk the markup instead, so where the two disagreed the
+     same browser counted the same projects in two orders. Unranked slides
+     (the other modes) keep the order they are written in, after the ranked. */
+  all = all.map(function (el, i) {
+    var r = parseInt(el.getAttribute('data-rank'), 10);
+    return { el: el, rank: r > 0 ? r : Infinity, at: i };
+  }).sort(function (a, b) {
+    return (a.rank - b.rank) || (a.at - b.at);
+  }).map(function (x) { return x.el; });
 
   var MODES = { design: 1, illustration: 1, music: 1 };
   var mode = 'design';
