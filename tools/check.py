@@ -293,8 +293,15 @@ def seq_wide(b, base, shots, w, h):
         check(not intro[0], name + ' intro shows only the conversation', 'visible: %s' % intro[0])
         check(abs(alone['cx']) < 1, name + ' intro centred across', 'dx %.2f' % alone['cx'])
         fits = alone['bottom'] - alone['top'] <= alone['vh']
-        check(abs(alone['cy']) < 40 if fits else alone['top'] >= 0, name + ' intro centred down',
-              'dy %.1f (content %d-%d of %d)' % (alone['cy'], alone['top'], alone['bottom'], alone['vh']))
+        if w >= UW:
+            ok = abs(alone['cy']) < 40 if fits else alone['top'] >= 0
+            label = ' intro centred down'
+        else:
+            # Optically centred: lifted, never below the middle, never pinned.
+            above, below = alone['top'], alone['vh'] - alone['bottom']
+            ok = alone['top'] >= 20 and (below >= above - 2 or not fits)
+            label = ' intro optically centred (more room below than above)'
+        check(ok, name + label, 'dy %.1f (content %d-%d of %d)' % (alone['cy'], alone['top'], alone['bottom'], alone['vh']))
         check(intro[1] <= max(intro[2], alone['bottom'] + 120), name + ' intro is not a long blank page',
               'scrollHeight %d, viewport %d' % (intro[1], intro[2]))
     else:
@@ -333,6 +340,16 @@ def seq_wide(b, base, shots, w, h):
     xs = sorted(set(p[0] for p in d[3])); ys = sorted(set(p[1] for p in d[3]))
     check(d[2] == 4 and len(xs) == 2 and len(ys) == 2, name + ' four separate logo bubbles in a 2x2', json.dumps(d[3]))
     check(abs(d[1] - s['w0']) < 0.05, name + ' thread width same in intro and decision', '%s %s' % (s['w0'], d[1]))
+    # At the decision the conversation is in its final column. On ultrawide
+    # it is in its final place outright, as it always was once the page
+    # began to build; on a laptop the row is still lifted into view.
+    now = b.eval(RECTS)
+    dx = round(now['.hero__copy'][0] - ref['.hero__copy'][0], 1)
+    dy = round(now['.hero__copy'][1] - ref['.hero__copy'][1], 1)
+    if w >= UW:
+        check(abs(dx) <= 1 and abs(dy) <= 1, name + ' decision: conversation at its ultrawide resting place', 'off by %s, %s' % (dx, dy))
+    else:
+        check(abs(dx) <= 1, name + ' decision: conversation in its final column', 'off by %s across' % dx)
     b.pump(4)
     v = b.eval('[document.documentElement.dataset.landing, Object.keys(__pf.seen)]')
     check(v[0] == 'decision' and not [k for k in work if k in v[1]], name + ' gate holds without a click', json.dumps(v))
