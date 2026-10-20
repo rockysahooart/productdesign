@@ -5074,12 +5074,26 @@ window.PF = window.PF || {};
      a second before every message, which on a six-message sequence is eight
      seconds of watching three dots. The anticipation turned into latency. It
      is now just long enough to register as something being written. */
-  var DOTS_MS = 560;
+  /* THE PACE, READ FROM THE STYLESHEET. .hero__thread carries --msg-pace, and
+     every duration below that belongs to the sequence is its designed value
+     times it, the same factor the stylesheet applies to the animations it
+     runs. One number for both halves, so the timeline the script keeps and
+     the motion the stylesheet draws stay in step. Not the hold before the
+     conversation starts over, the fade and blank of that reset, or the list
+     of work: those are not the introduction. */
+  var PACE = (function () {
+    var t = document.querySelector('.hero__thread');
+    var v = t ? parseFloat(window.getComputedStyle(t).getPropertyValue('--msg-pace')) : NaN;
+    return v > 0 ? v : 1;
+  })();
+  function paced(ms) { return ms * PACE; }
+
+  var DOTS_MS = paced(560);
   /* The phone writes its opening rather than posting it whole (see shape()),
      so it needs an indicator brisk enough to read as typing rather than as
      loading, and a gap that is a beat rather than a pause. */
-  var DOTS_FAST = 360;
-  var OPEN_GAP = 440;
+  var DOTS_FAST = paced(360);
+  var OPEN_GAP = paced(440);
   /* AND THE BEAT AFTER THE INTRODUCTION, ON A PHONE.
 
      Every other message is left alone for a beat plus a millisecond per
@@ -5093,7 +5107,7 @@ window.PF = window.PF || {};
      Declared beside the other beats and ABOVE everything that reads it,
      because a `var` read before its assignment is `undefined`, which is what
      cost the first-load measurement a reservation earlier in this file. */
-  var SECOND_HOLD = 320;
+  var SECOND_HOLD = paced(320);
   /* THE ARRIVAL GOT LONGER AND THE CADENCE DID NOT.
 
      The entrance runs 640ms now, so `settled` waits that out rather than
@@ -5101,7 +5115,7 @@ window.PF = window.PF || {};
      which keeps every message arriving on exactly the frame it used to: 640 +
      780 is the same 1420ms per message as 520 + 900 was, so nothing the page
      hangs off the thread (see js/reveal.js) shifts by so much as a frame. */
-  var POP_MS = 640;     /* the bubble's arrival, matched to the CSS */
+  var POP_MS = paced(640);     /* the bubble's arrival, matched to the CSS */
   /* THE PAUSE IS THE MESSAGE'S OWN LENGTH. A one-line greeting and a
      two-hundred-character sentence about six industries are not the same
      thing to read, and giving them the same pause means one of them is always
@@ -5112,17 +5126,17 @@ window.PF = window.PF || {};
 
      The ceiling matters as much as the rate: past about five seconds a pause
      stops reading as a pause and starts reading as a thread that has stopped. */
-  var GAP_MS = 780;         /* the beat every message gets */
-  var READ_MS = 24;         /* per character of it */
-  var GAP_MAX = 4600;       /* however long it is, it moves on */
+  var GAP_MS = paced(780);         /* the beat every message gets */
+  var READ_MS = paced(24);         /* per character of it */
+  var GAP_MAX = paced(4600);       /* however long it is, it moves on */
   /* After the last message has settled, or, when that message is still
      writing itself, after the writing stops. The reactions are a response to
      the line, so they land on the beat it finishes rather than after a pause
      that reads as the thread having nothing else to say. */
-  var REACT_MS = 700;
+  var REACT_MS = paced(700);
   /* And that beat is exactly one: long enough not to be the same frame as the
      last word resolving, short enough that nothing has happened in between. */
-  var TIGHT = 140;
+  var TIGHT = paced(140);
   /* THE LAST MESSAGE GETS THE ROOM IT ASKS FOR. The closing line and the
      reactions under it used to be talked over: the list of work started
      revealing on the same frame the first chip landed, so the one moment the
@@ -5130,7 +5144,7 @@ window.PF = window.PF || {};
      arriving underneath it. Now the chips run their course, and then the
      finished thing (line, reactions and all) simply stands for a couple of
      seconds before the work appears under it. */
-  var PROJECTS_MS = 2400;
+  var PROJECTS_MS = paced(2400);
   var SHIFT_MS = 700;   /* the window opening: matched to the CSS transition */
   /* THE ENDING IS HELD, AND IT IS THE ONLY THING THAT IS. The closing line,
      its reactions and the invitation under them are what the whole sequence
@@ -5140,7 +5154,7 @@ window.PF = window.PF || {};
   var HOLD_MS = 16400;
   var FADE_MS = 340;    /* the whole stack dims out together */
   var BLANK_MS = 640;   /* an empty beat, so the loop is a breath not a cut */
-  var SCRAMBLE_MS = 1800; /* the decode: four words, one after another */
+  var SCRAMBLE_MS = paced(1800); /* the decode: four words, one after another */
   /* The typeface shuffle runs longer than a plain decode, because it has two
      things to show rather than one: the noise resolving, and the type settling
      into the face the thread is set in. */
@@ -5156,8 +5170,8 @@ window.PF = window.PF || {};
     '"Inter", sans-serif',
     '"Be Vietnam Pro", sans-serif'
   ];
-  var WORD_HOLD = 1700;      /* each word stands, and is read, before the next */
-  var WORD_SCRAMBLE = 620;   /* and the change between them is quick */
+  var WORD_HOLD = paced(1700);      /* each word stands, and is read, before the next */
+  var WORD_SCRAMBLE = paced(620);   /* and the change between them is quick */
 
   /* THE INSETS THE BOX PARKS ITS STACK AT, DECLARED HERE, AND HERE FOR A
      REASON.
@@ -6150,14 +6164,14 @@ window.PF = window.PF || {};
        The words are wrapped once and kept. The gradient spans already in the
        line are left exactly where they are, since this walks text nodes and
        replaces them in place rather than rewriting the message. */
-    var SHUFFLE_STEP = 185;    /* how long one face is held */
+    var SHUFFLE_STEP = paced(185);    /* how long one face is held */
     var SHUFFLE_TRIES = 4;     /* how many it tries before the real one */
     /* AND THE BEAT WHEN NOTHING IS BEING PERFORMED. A word hunting for a
        typeface needs as long as the hunt takes; a word that simply arrives
        needs as long as it takes to read. Four faces at 185ms is the wrong
        length for the second kind, and across a line of eight words it is six
        seconds of watching a sentence appear. */
-    var WORD_BEAT = 360;
+    var WORD_BEAT = paced(360);
     /* The face a machine reads out of. The encrypted word does not hunt for a
        typeface at all. It holds this one until it is plaintext. */
     var CIPHER_FACE = '"JetBrains Mono", monospace';
@@ -6435,7 +6449,7 @@ window.PF = window.PF || {};
         sel: words[0].classList.contains('sc') ? '.sc' : '.sh',
         /* The letters resolve on the same clock as the faces, so a word comes
            out of the noise on the beat it stops changing typeface. */
-        ms: oneBeat ? (cycle + 340) : words.length * cycle,
+        ms: oneBeat ? (cycle + paced(340)) : words.length * cycle,
         stop: function () {
           for (var t = 0; t < timers.length; t++) clearTimeout(timers[t]);
           for (var w = 0; w < words.length; w++) {
@@ -7370,13 +7384,13 @@ window.PF = window.PF || {};
              frame. They animate the same property and would fight. */
           if (!first && item[3]) {
             chip.style.setProperty('--rx-peak', item[3]);
-            chip.style.setProperty('--rx-bump-ms', (item[4] || 460) + 'ms');
+            chip.style.setProperty('--rx-bump-ms', paced(item[4] || 460) + 'ms');
             chip.classList.remove('is-bump');
             void chip.offsetWidth;
             chip.classList.add('is-bump');
           }
         }
-        timer = setTimeout(nextRx, item[2]);
+        timer = setTimeout(nextRx, paced(item[2]));
       })();
     }
 
@@ -7578,7 +7592,7 @@ window.PF = window.PF || {};
        around. */
     function dwellOf(i) {
       if (i < 0 || i >= rows.length) return 0;
-      return parseInt(rows[i].getAttribute('data-dwell'), 10) || 0;
+      return paced(parseInt(rows[i].getAttribute('data-dwell'), 10) || 0);
     }
 
     /* How long to leave a message alone once it has landed: a beat, plus its
@@ -7817,11 +7831,12 @@ window.PF = window.PF || {};
      intro      armed by index.html before first paint. The conversation alone,
                 centred by the grid (css/16-reveal.css).
      decision   pf:cta. The roles, the profile, LET'S TALK and the Trusted By
-                bubbles assemble around the finished conversation; the
-                stylesheet times them off this one change. The work is not on
-                the page. See the work is now a gate, not a cue.
-     work       the reader pressed See the work. Everything else, at once,
-                and the composition settles into its final layout.
+                bubbles assemble around the finished conversation, and below
+                ultrawide the project browser after them; the stylesheet times
+                them off this one change. See the work is now a gate.
+     work       the reader pressed See the work. Skills, Tools, Where I've
+                been, everything below (and on ultrawide the browser), at
+                once, and the composition settles into its final layout.
 
    The press that opens the page is taken here, before the button's own
    handler sees it, so the first press opens the page and leaves the
@@ -7934,14 +7949,16 @@ window.PF = window.PF || {};
     show(GROUPS);
   }
 
-  /* STATE 2. The profile and LET'S TALK are staged blocks, groups 1 and 2, so
-     they are marked shown; the roles and the bubbles are keyed to the state
-     itself. The stylesheet spaces all five out. The ceiling goes: the thread
-     has delivered, and from here only the reader opens the page. */
+  /* STATE 2. The profile, LET'S TALK and the project browser are staged
+     blocks (groups 1, 2 and 4; 3 is the phone's logo rail, not on the page
+     here), so they are marked shown; the roles and the bubbles are keyed to
+     the state itself. The stylesheet spaces them out, and on ultrawide keeps
+     the browser off the page until the click. The ceiling goes: the thread
+     has delivered, and from here only the reader opens the rest. */
   function decide() {
     if (done || landing() !== 'intro') return;
     land('decision');
-    show(2);
+    show(4);
     if (ceiling) { clearTimeout(ceiling); ceiling = null; }
   }
 

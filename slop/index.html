@@ -6738,6 +6738,14 @@ a.hero__role { text-decoration: none; }
    -------------------------------------------------------------------------- */
 
 .hero__thread {
+  /* THE PACE OF THE CONVERSATION, ONCE. Every duration the message sequence
+     runs on is written as its original value times this: the bubble's
+     arrival, the pictures, the dots, the words, the reactions, and the roll
+     of the messages already sent. js/thread.js reads this same property and
+     multiplies its own timeline by it, so the stylesheet and the script
+     cannot drift apart. 0.7 is the sequence thirty per cent faster than it
+     was designed at. The loader is not part of it. */
+  --msg-pace: 0.7;
   --hx-1: 8px;
   --hx-2: 16px;
   --hx-3: 24px;
@@ -6855,7 +6863,7 @@ a.hero__role { text-decoration: none; }
 .msg > .msg__from,
 .msg > .msg__bubble {
   opacity: 1;
-  transition: opacity 130ms linear;
+  transition: opacity calc(130ms * var(--msg-pace, 1)) linear;
 }
 
 .msg[data-state="idle"] > .msg__from,
@@ -7507,7 +7515,7 @@ a.hero__role { text-decoration: none; }
   display: inline-block;
   white-space: nowrap;
   transform-origin: 0% 66%;
-  transition: transform 320ms cubic-bezier(.2, .84, .3, 1);
+  transition: transform calc(320ms * var(--msg-pace, 1)) cubic-bezier(.2, .84, .3, 1);
   will-change: transform;
 }
 .msg__text .sc.is-noise { transform: scale(1.17); }
@@ -7518,7 +7526,7 @@ a.hero__role { text-decoration: none; }
    come out of noise: it comes up out of nothing, one run at a time, on the
    same clock. Opacity alone: the word is already boxed at the width and
    height it will keep, so there is nothing here for the line to react to. */
-.msg__text .sc--plain.is-lit { animation: sc-lit 520ms cubic-bezier(.2, .7, .3, 1) both; }
+.msg__text .sc--plain.is-lit { animation: sc-lit calc(520ms * var(--msg-pace, 1)) cubic-bezier(.2, .7, .3, 1) both; }
 @keyframes sc-lit { from { opacity: 0; } to { opacity: 1; } }
 
 /* THE FAULT.
@@ -7748,11 +7756,11 @@ a.hero__role { text-decoration: none; }
   border-radius: 50%;
   background: var(--ink-muted);
   opacity: 0.35;
-  animation: msg-dot 820ms ease-in-out infinite;
+  animation: msg-dot calc(820ms * var(--msg-pace, 1)) ease-in-out infinite;
 }
 
-.msg__dots i:nth-child(2) { animation-delay: 130ms; }
-.msg__dots i:nth-child(3) { animation-delay: 260ms; }
+.msg__dots i:nth-child(2) { animation-delay: calc(130ms * var(--msg-pace, 1)); }
+.msg__dots i:nth-child(3) { animation-delay: calc(260ms * var(--msg-pace, 1)); }
 
 @keyframes msg-dot {
   0%, 100% { opacity: 0.3;  transform: translateY(0); }
@@ -8083,8 +8091,8 @@ a.hero__role { text-decoration: none; }
 .hero__thread.is-playing .rx {
   opacity: 0;
   transform: scale(0.62);
-  transition: opacity 150ms linear,
-              transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity calc(150ms * var(--msg-pace, 1)) linear,
+              transform calc(220ms * var(--msg-pace, 1)) cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .hero__thread.is-playing .rx.is-in {
@@ -18377,12 +18385,14 @@ button.cu-q:hover { background: var(--cu-teal-8); }
                 profile, not the work.
      decision   the conversation has finished and its invitation is up
                 (pf:cta). The identity assembles around it: the roles, the
-                profile, LET'S TALK, and the Trusted By bubbles. The work is
-                still not on the page. This is the first moment the reader
-                has a choice.
-     work       the reader pressed See the work. Everything else arrives at
-                once and the composition settles into the layout it has always
-                had.
+                profile, LET'S TALK, and the Trusted By bubbles, and on a
+                laptop or desktop (960 to 2099) the project browser too. On
+                ultrawide the browser is still not on the page. This is the
+                first moment the reader has a choice.
+     work       the reader pressed See the work. Skills, Tools, Where I've
+                been and every section below arrive at once (and on ultrawide
+                the browser), and the composition settles into the layout it
+                has always had.
 
    CENTRED BY THE GRID, NOT MOVED ON TOP OF IT. This used to be a translate
    on the conversation's column, which left the boxes where the final layout
@@ -18430,7 +18440,6 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
   /* --- not on the page until the work is open ---------------------------- */
 
-  :root[data-landing]:not([data-landing="work"]) .hero-card .hero__work,
   :root[data-landing]:not([data-landing="work"]) .hero-card .hero__past,
   :root[data-landing]:not([data-landing="work"]) .hero-card .hero__tools,
   :root[data-landing]:not([data-landing="work"]) .hero-card .hero-tile--profile > .hero-id--caps,
@@ -18538,12 +18547,28 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   :root[data-landing] .hero-card {
     transition: grid-template-columns var(--land-ms) var(--land-ease);
   }
-  :root[data-landing]:not([data-landing="work"]) .hero-card {
+  :root[data-landing="intro"] .hero-card {
     grid-template-columns:
       calc((var(--hero-l) + var(--hero-r)) / 2)
       minmax(0, 1fr)
       calc((var(--hero-l) + var(--hero-r)) / 2);
+  }
+  :root[data-landing]:not([data-landing="work"]) .hero-card {
     grid-template-rows: minmax(var(--hero-row), auto);
+  }
+
+  /* ON A LAPTOP THE BROWSER IS PART OF THE DECISION. finalpart.jpg: when the
+     invitation is up, the work is already beside the conversation, and See
+     the work opens the rest of the page rather than the work itself. So at
+     the decision the grid goes straight to its final tracks (the
+     conversation moves over on the first beat, its width still untouched)
+     and the browser comes up last of the five, after the logos. In the intro
+     it is a staged block like the profile: laid out at its final width,
+     invisible, out of the tab order. Ultrawide keeps its own sequence below,
+     where the browser waits for the click. */
+  :root[data-landing="decision"] .hero-card { transition-delay: 180ms; }
+  :root[data-landing="decision"] .hero-card .hero__work[data-shown] {
+    transition-delay: 880ms, 880ms;
   }
 
   :root[data-landing] .page[data-view="home"] {
@@ -18557,6 +18582,11 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 /* --- ultrawide: the page is the grid ------------------------------------- */
 
 @media (min-width: 2100px) {
+  /* The browser is the right two thirds of an ultrawide screen: here it
+     waits for See the work, and the decision state is the conversation and
+     the identity, centred. */
+  :root[data-landing]:not([data-landing="work"]) .hero-card .hero-tile--work { display: none; }
+
   .hero-card .hero__identity,
   .hero-card .hero__tools { width: min(360px, 100%); justify-self: end; }
   .hero-card .hero-tile--work { width: var(--pv-col); justify-self: end; }
@@ -26863,12 +26893,12 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .hero__thread .msg[data-state="live"] .msg__art,
 .hero__thread .msg[data-state="live"] .msg__vine,
 .hero__thread .msg[data-state="live"] .msg__hands {
-  animation: msg-reveal 420ms linear both;
+  animation: msg-reveal calc(420ms * var(--msg-pace, 1)) linear both;
 }
 
 /* The heaviest message takes longer to arrive, and its picture takes exactly
    as long: this mirrors the 450ms its reacted bubble is given. */
-.hero__thread .msg[data-state="live"] .msg__hands { animation-duration: 450ms; }
+.hero__thread .msg[data-state="live"] .msg__hands { animation-duration: calc(450ms * var(--msg-pace, 1)); }
 
 .hero__thread .msg[data-state="settled"] .msg__art,
 .hero__thread .msg[data-state="settled"] .msg__vine,
@@ -27224,12 +27254,12 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 .hero__thread .msg[data-together][data-state="live"] > .msg__bubble,
 .hero__thread .msg[data-together][data-state="settled"] > .msg__bubble {
   transform-origin: left top;   /* it swells from the avatar's corner */
-  animation: msg-clay 420ms linear both;
+  animation: msg-clay calc(420ms * var(--msg-pace, 1)) linear both;
 }
 
 /* The heaviest one takes longer to arrive, because it is heavier. */
 .hero__thread .msg[data-state="live"] > .msg__bubble--reacted {
-  animation-duration: 450ms;
+  animation-duration: calc(450ms * var(--msg-pace, 1));
 }
 
 /* --- travelling up: it deflates ---------------------------------------- */
@@ -27240,9 +27270,9 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    itself every time the thread advances: the loop included. */
 .hero__thread .msg > .msg__bubble {
   transition:
-    box-shadow 660ms cubic-bezier(0.2, 0.7, 0.3, 1),
-    transform  660ms cubic-bezier(0.2, 0.7, 0.3, 1),
-    filter     660ms linear;
+    box-shadow calc(660ms * var(--msg-pace, 1)) cubic-bezier(0.2, 0.7, 0.3, 1),
+    transform  calc(660ms * var(--msg-pace, 1)) cubic-bezier(0.2, 0.7, 0.3, 1),
+    filter     calc(660ms * var(--msg-pace, 1)) linear;
 }
 
 .hero__thread .msg:has(~ .msg[data-state="loading"]) > .msg__bubble,
