@@ -27,9 +27,16 @@ As of 2026-10-20 on `main`.
 
 ## Open items
 
-1. No favicon; `/favicon.ico` 404s. Pre-existing.
+1. `social-preview-v2.png` (the og:image) still shows the old "Hello Team :)" greeting.
+2. `PF.PROJECTS` lists Scale as `soon` with no route; its slide links to `/scale-market`.
+3. No favicon; `/favicon.ico` 404s. Pre-existing.
 
 ## Recently shipped
+
+- **2026-10-20: LiveFront challenge as project 01.** "Redesigning Craigslist's iPhone app
+  for clearer used-car search", from the Figma file; a drawn, looping HTML/CSS phone
+  (`css/34-livefront.css`), CTA "view project" to the public deck. The lower Key Industry
+  Projects section is hidden at ≥960. README.md is the repository's portfolio page.
 
 - **2026-10-20: See the work is the only gate.** The decision state (identity, and on
   laptops the browser, assembling at the invitation) is replaced by `ready`: the

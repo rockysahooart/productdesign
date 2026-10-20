@@ -62,12 +62,14 @@ toggles `hidden` from `location.hash`.
 
 - **The Project Browser** reads `data-rank` on its `.pv__slide` articles: the desktop
   carousel (sorted by rank in `js/projects.js`), the ultrawide grid (CSS `order` by
-  rank) and the list under the conversation (`inBrowserOrder`). Ranks 1–9: Carry,
-  Cryptography, OptiFlow, Specimen Kit, Design System Audit, Design Governance, PNC,
-  Missing Information, Scale.
+  rank) and the list under the conversation (`inBrowserOrder`). Ranks 1–10: LiveFront
+  (Craigslist for iOS), Carry, Cryptography, OptiFlow, Specimen Kit, Design System Audit,
+  Design Governance, PNC, Missing Information, Scale. The ultrawide grid also lists the
+  slides by `data-project` (`ALL TEN`) and orders them by rank; a new slide needs both.
 - **`PF.PROJECTS`** below drives previous/next at the foot of a case study.
 - The phone `#work` card order (`#work .cell--* { order }`, ≤719px) repeats the walk.
-  The desktop `#work` bento is a fixed composition and is not reordered.
+  `#work` (the lower Key Industry Projects bento) is hidden from 960px up by one rule in
+  `css/34-livefront.css`; it remains the project list on phones and tablets.
 
 Change all three together.
 
@@ -75,19 +77,20 @@ Change all three together.
 
 | # | key | name | route | status |
 |---|---|---|---|---|
-| 1 | `carry` | Carry | `/#/carry` | live |
-| 2 | `crypto` | Cryptography | `https://rockysahooart.github.io/encryption-coffee-shop/` | live |
-| 3 | `optiflow` | OptiFlow | `/#/optiflow` | live |
-| 4 | `specimen` | Specimen Kit | `/#/specimen` | live |
-| 5 | `dsa` | Design System Audit | `/#/audit` | live |
-| 6 | `governance` | Design Governance | `/slop/` | live |
-| 7 | `pnc` | PNC Bank | `https://spiky-experiences-472785.framer.app/case-study` | live |
-| 8 | `mi` | Missing Information | none | soon |
-| 9 | `scale` | Scale | none | soon |
-| 10 | `fub` | First United Bank | `https://spiky-experiences-472785.framer.app/fub` | live |
-| 11 | `cvs` | CVS Health | Figma prototype (read the full URL from source) | live |
-| 12–14 | `illo-1..3` | Illustration one–three | none | soon |
-| 15–17 | `rel-1..3` | Release one–three | none | soon |
+| 1 | `livefront` | Craigslist for iOS | `https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0` | live |
+| 2 | `carry` | Carry | `/#/carry` | live |
+| 3 | `crypto` | Cryptography | `https://rockysahooart.github.io/encryption-coffee-shop/` | live |
+| 4 | `optiflow` | OptiFlow | `/#/optiflow` | live |
+| 5 | `specimen` | Specimen Kit | `/#/specimen` | live |
+| 6 | `dsa` | Design System Audit | `/#/audit` | live |
+| 7 | `governance` | Design Governance | `/slop/` | live |
+| 8 | `pnc` | PNC Bank | `https://spiky-experiences-472785.framer.app/case-study` | live |
+| 9 | `mi` | Missing Information | none | soon |
+| 10 | `scale` | Scale | none | soon |
+| 11 | `fub` | First United Bank | `https://spiky-experiences-472785.framer.app/fub` | live |
+| 12 | `cvs` | CVS Health | Figma prototype (read the full URL from source) | live |
+| 13–15 | `illo-1..3` | Illustration one–three | none | soon |
+| 16–18 | `rel-1..3` | Release one–three | none | soon |
 
 `PF.liveProjects()` filters `status === 'live'`. `'soon'` entries are never
 linked and are always labelled.
