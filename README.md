@@ -27,7 +27,7 @@ I started off as an artist, drawing obsessively as a kid, and in trying to depic
 In the order the portfolio presents it.
 
 ### 01 · [Redesigning Craigslist for faster used-car discovery](https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0)
-For a paid product design brief with LiveFront, I redesigned Craigslist's native iOS experience around finding and evaluating a used car. I clarified search scope, made listings easier to scan, and surfaced the information buyers need before contacting a seller.
+For a paid product design brief with LiveFront, I redesigned Craigslist's React Native iOS experience and created an implementation-ready handoff for the used-car discovery flow.
 
 Domain: Mobile marketplace · Focus: Paid product design brief · [View project →](https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0)
 
