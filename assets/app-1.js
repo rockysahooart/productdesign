@@ -70,16 +70,16 @@ window.PF = window.PF || {};
                 'soon'   nothing written yet; never linked, always labelled
      --------------------------------------------------------------------- */
   PF.PROJECTS = [
-    /* THE ORDER IS THE OWNER'S. The LiveFront challenge first, then Carry,
+    /* THE ORDER IS THE OWNER'S. The LiveFront brief first, then Carry,
        the cryptography explainer, OptiFlow, the specimen kit and the workflow
        audit; everything else follows in the order it already had. This table is the order previous and next walk at the foot of a
        study. The project browser keeps the same sequence on its slides as
        data-rank (the carousel, the ultrawide grid and the list under the
        conversation all read that), so the two are changed together. */
-    /* The LiveFront challenge: Craigslist for iOS. Its route is the public
+    /* The LiveFront brief: Craigslist for iOS. Its route is the public
        deck, so it is an external project and previous/next skips it. */
     { key: 'livefront', mode: 'design', name: 'Craigslist for iOS',
-      context: 'Mobile marketplace \u00b7 Design challenge',
+      context: 'Mobile marketplace \u00b7 Paid product design brief',
       route: 'https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0', status: 'live' },
 
     { key: 'carry', mode: 'design', name: 'Carry',
