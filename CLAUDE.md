@@ -51,7 +51,7 @@ Pushing to `origin/main` deploys: GitHub Pages rebuilds from `main`. The normal 
 
 1. Inspect the current repo state (`git fetch`, `git status`, read the code).
 2. Make the minimum sufficient change.
-3. If `index.html` changed, regenerate `slop/index.html` from it (rules in the architecture doc; the generator script is not in the repo yet).
+3. If `index.html` changed, regenerate `slop/index.html`: `python3 tools/buildslop.py` (`--check` reports whether it is stale).
 4. Test it, by measurement (see below).
 5. Review `git diff`. **For application changes, show the owner what changed before committing.**
 6. Stage only the intended files, by name. Never `git add -A`; don't touch unrelated files.
@@ -92,15 +92,26 @@ store a credential. Don't produce an upload manifest unless the owner asks for o
 
 ## Testing before committing a site change
 
-There is **no test harness in the repo yet**. Until one exists under `tools/`
-or `tests/`, check at minimum:
+Run the harness. It serves the working tree, drives the local Google Chrome
+headless over CDP (standard library only, no installs), and exits non-zero on
+any failure:
+
+```bash
+python3 tools/check.py
+```
+
+Sections can be run alone (`routes theme seq hatch keys copy`), and
+`--shots DIR` writes screenshots to look at. It covers at minimum:
 
 1. Routes: `/`, `#top`, `#work`, `#contact`, `#/about`, `#/carry`, `#/optiflow`, `#/audit`, `#/specimen`, `/slop/`. Zero console errors, zero 4xx (except `/favicon.ico`).
 2. Theme: dark-OS and light-OS fresh visits, stored dark, stored light, toggle and reload, OS flipped mid-visit. Zero dark frames on any fresh visit.
 3. Sequence: nothing staged is visible before `pf:cta`; groups 1–5 in order; everything visible at the end; thread width identical before and after.
 4. Escape hatches: reduced motion, deep link, `#work`, scroll past half a viewport, replay after the page is whole.
-5. Widths 390, 768, 900, 1024, 1280, 1440, 1512, 1920, 2560: no horizontal overflow at any stage.
-6. Regenerate `/slop/` and confirm no relative reference survives.
+5. Widths 390, 768, 900, 1024, 1280, 1440, 1512, 1920, 2560, plus 960, 1100, 1279, 1366, 2399, 2400: no horizontal overflow at any stage; above 960 the conversation is centred on the first screen while it is alone, and the final layout is untransformed.
+6. Keyboard: Tab never lands inside a staged block before it is shown.
+7. Regenerate `/slop/`; `buildslop.py` refuses to write if a relative reference survives.
+
+Screenshot anything visual and look at it.
 
 Don't leave throwaway scripts in the repo root.
 
@@ -112,10 +123,9 @@ Don't leave throwaway scripts in the repo root.
 
 ## In flight
 
-See [docs/current-state.md](docs/current-state.md#open-items). Summary: `Hello Team.`
-copy change (approved, not built); 2×2 Worked With logo grid (blocked on design
-reference 2); recreate `tools/buildslop.py`; build a test harness.
+See [docs/current-state.md](docs/current-state.md#open-items). Summary: 2×2
+Worked With logo grid (blocked on design reference 2); no favicon.
 
-Recently shipped: `b38798c`, OptiFlow walkthrough labels in `assets/app-2.js`
-use colons to match the static markup (see
-[docs/current-state.md](docs/current-state.md#recently-shipped)).
+Recently shipped (see [docs/current-state.md](docs/current-state.md#recently-shipped)):
+`Hello Team.`, the conversation centred vertically as well as across while it is
+alone, light mode held with scripts off, and the `tools/` generator and harness.

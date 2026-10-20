@@ -8,12 +8,14 @@ A fresh visit always initialises light, whatever the OS or browser reports.
 Dark happens only when the visitor presses the site's theme control; the choice
 is stored in `localStorage['pf-theme']`.
 
-- The blocking head script writes `data-theme` unconditionally (stored value, else `light`).
+- `<html>` is written with `data-theme="light"` in the markup, and the blocking head
+  script rewrites it unconditionally (stored value, else `light`). The markup
+  default is what keeps a page light when scripts are off or blocked.
 - Dark rules are written as
   `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) … }`,
   plus a few unwrapped `:root:not([data-theme="light"])` rules (`#cfRoot`,
-  `#tfRoot`, `.case`). With the attribute always set, none can match. They are the
-  no-JS fallback; don't remove them.
+  `#tfRoot`, `.case`). With the attribute always set, none can match, with or
+  without JS. Keep the pattern; don't strip the blocks.
 - `js/theme.js`: `current()` returns `'dark'` only for an explicit `dark`. There
   is deliberately **no** `matchMedia` color-scheme listener.
 - One unscoped `<meta name="theme-color" content="#E9E9E9">`; `paintChrome()` updates it on toggle.
@@ -138,10 +140,15 @@ Opacity only, ~700ms, `cubic-bezier(0.34, 0.03, 0.24, 1)`. Hidden state is
 `display: none`** (the profile column shares a grid row with the thread). A group
 with no visible elements at the current width doesn't spend its beat.
 
-Stage-1 centring: `--solo-x`, measured from rendered boxes by `reveal.js`, applied
-as `translateX` on `.hero__copy` only at ≥960px and `data-stage="0"`; unwinds on
-group 1. The transition is gated behind `has-solo`, added a frame after first
-measurement. No transform under reduced motion.
+Stage-1 centring: `--solo-x` (across) and `--solo-y` (down), measured by `reveal.js`
+and applied as one `translate()` on `.hero__copy`, only at ≥960px and
+`data-stage="0"`; unwinds on group 1. `--solo-x` is half the difference between
+the outer tracks. `--solo-y` puts the middle of what the conversation shows (roles,
+controls, the thread's reserved box) on the middle of the first screen, never
+upward. Re-measured by a `ResizeObserver` when the thread reserves its height
+(about 3.9s in, under the opaque loader), each reading taken with the transition
+off so a correction never animates. The transition is gated behind `has-solo`.
+No transform under reduced motion. Never a layout change: see the measure rule.
 
 Escape hatches (all go straight to everything-visible, once, one-way): scrolling
 past half a viewport, a third focus step, any deep link or `hashchange`, and

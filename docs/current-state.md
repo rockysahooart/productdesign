@@ -1,15 +1,16 @@
 # Current state
 
-As of 2026-10-19, commit `6dfd694` on `main`.
+As of 2026-10-20 on `main`.
 
 ## What ships today
 
-- Hero: a self-playing chat thread. Message 1 `Hello Team` + pixel smiley SVG;
+- Hero: a self-playing chat thread. Message 1 `Hello Team.` (plain text);
   message 2 "I'm Sarthak Sahoo, a Product Designer based in Austin, TX" with the
   workspace illustration; message 3 "I've designed *human-centered* products in an
   AI-saturated world." with the hands illustration, reaction chips, then the
   "See the work →" invitation.
-- Landing sequence: loader (3500ms first visit) → thread plays alone, centred →
+- Landing sequence: loader (3500ms first visit) → thread plays alone, centred
+  across and down on desktop and ultrawide →
   invitation emits `pf:cta` → profile, LET'S TALK, Worked With, Project Browser,
   rest of page, 180ms lead then 140ms apart. The sequence starts automatically
   when the invitation appears; it doesn't wait for a click. Implemented and verified.
@@ -22,23 +23,22 @@ As of 2026-10-19, commit `6dfd694` on `main`.
 
 ## Open items
 
-1. **`Hello Team.`**: approved, not implemented. Replace `Hello Team&nbsp;` +
-   `<svg class="pxi pxi--face" data-px="smiley-o">…</svg>` with plain `Hello Team.`.
-   Before removing `#px-smiley-o` from the sprite, check nothing else references it.
-   Afterwards re-verify the thread measure and message-1 clipping in the 720–959 band,
-   and regenerate `/slop/`.
-2. **2×2 Worked With logo grid**: blocked. Before starting, ask the owner for
+1. **2×2 Worked With logo grid**: blocked. Before starting, ask the owner for
    design reference 2 (lost in the original handoff), and resolve two conflicts:
    the logos are hidden at ≥960px by design (a desktop grid means reflowing the
    hero bento), and the reference reportedly includes Natera, which is restricted to
    *Where I've been*. Reveal group 3 is already wired for this block.
    Not the old marquee rail.
-3. **Recreate the `/slop/` generator** (e.g. `tools/buildslop.py`) and validate it
-   byte-identically against the published pair. See the architecture doc.
-4. **Test harness**: none in the repo. The checks in `CLAUDE.md` should become a reusable script under `tools/` or `tests/`.
-5. No favicon; `/favicon.ico` 404s. Pre-existing.
+2. No favicon; `/favicon.ico` 404s. Pre-existing.
 
 ## Recently shipped
+
+- **2026-10-20: landing page.** Message 1 is `Hello Team.`; the smiley, its sprite
+  symbol, sizing, bob animation and greeting data (`'Hello Team :)'` in
+  `js/thread.js`) are gone. While the conversation is alone on desktop and
+  ultrawide it is centred down as well as across (`--solo-y`). `<html>` defaults
+  to `data-theme="light"` in the markup, so a dark-OS visit with scripts off is
+  light too. `tools/buildslop.py` and `tools/check.py` added.
 
 - **`b38798c` (2026-10-19): OptiFlow walkthrough labels use colons.** The label
   strings in `assets/app-2.js` changed from `—` to `:` so they match the static

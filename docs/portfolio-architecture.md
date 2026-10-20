@@ -95,10 +95,9 @@ PF.CTA  = { study: 'View Case Study', soon: 'Case study coming soon',
 ## `/slop/` generation
 
 `slop/index.html` is generated from `index.html` so the audit has its own URL
-and social metadata. **The generator script is not in the repository.** It
-needs recreating (e.g. `tools/buildslop.py`) and validating by regenerating the
-published `slop/index.html` from the published `index.html` byte-identically.
-Rules:
+and social metadata. Generate it with `python3 tools/buildslop.py`; `--check`
+exits 1 if it is stale. The script was validated by regenerating the published
+`slop/index.html` from the published `index.html` byte-identically. Rules:
 
 1. Swap nine head elements: `<title>`, `description`, `canonical`
    (`…/slop/`), `og:type` (`website` → `article`), `og:title`,
