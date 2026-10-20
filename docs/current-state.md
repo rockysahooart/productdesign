@@ -32,6 +32,14 @@ As of 2026-10-20 on `main`.
 
 ## Recently shipped
 
+- **2026-10-20: project order.** Carry, Cryptography, OptiFlow, Specimen Kit, Design
+  System Audit lead; Design Governance, PNC, Missing Information, Scale follow. The
+  carousel now sorts by `data-rank`, which fixes it disagreeing with the ultrawide grid
+  (DSA and Cryptography had been swapped between the two).
+- **2026-10-20: optical lift and ultrawide shift.** Desktop intro/decision sit a third
+  of the free height from the top. Ultrawide centres the conversation for the intro
+  only and moves it to its established place as the decision begins.
+
 - **2026-10-20: browser in the desktop decision state; sequence 30% faster.** At
   960–2099 the Project Browser arrives with the decision state (finalpart.jpg) and
   See the work opens the rest. The message sequence is paced by one `--msg-pace: 0.7`

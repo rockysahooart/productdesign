@@ -86,7 +86,7 @@ store a credential. Don't produce an upload manifest unless the owner asks for o
 - The three-column project-browser split and aspect-locked embeds. Never widen the visual column; scale `.slot > img`, never `.slot`.
 - The message pace, `--msg-pace` on `.hero__thread` (0.7), read by both CSS and `js/thread.js`. Change the speed there, never per value.
 - The three landing states (`data-landing`: intro → decision on `pf:cta` → work on the first press of See the work; the browser joins decision below 2100) and their escape hatches, `CEILING_MS = 26000`; loader safety nets `setTimeout(mark, 8000)` / `setTimeout(dissolve, 6000)`.
-- `PF.PROJECTS` order (it drives carousel, cards and prev/next at once).
+- Project order. The browser reads `data-rank` on the slides (carousel, ultrawide grid, the list); `PF.PROJECTS` drives case-study prev/next; the phone `#work` order repeats it. Change them together (see the architecture doc).
 - Canonical external URLs: PNC `https://spiky-experiences-472785.framer.app/case-study`, First United Bank `https://spiky-experiences-472785.framer.app/fub`, identical at every entry point.
 - No external runtime requests: fonts, scripts and images are self-hosted. No CDN, no Google Fonts.
 - Anything on the reversed-decisions list in [docs/current-state.md](docs/current-state.md#reversed-decisions--do-not-reinstate).

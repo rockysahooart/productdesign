@@ -58,19 +58,32 @@ toggles `hidden` from `location.hash`.
   external mark. `PF.isExternal(p)` decides from the URL (`/^https?:/i`).
   Don't add a parallel boolean that can disagree with it.
 
-### `PF.PROJECTS` (display order everywhere)
+### Project order: two sources, kept identical
+
+- **The Project Browser** reads `data-rank` on its `.pv__slide` articles: the desktop
+  carousel (sorted by rank in `js/projects.js`), the ultrawide grid (CSS `order` by
+  rank) and the list under the conversation (`inBrowserOrder`). Ranks 1–9: Carry,
+  Cryptography, OptiFlow, Specimen Kit, Design System Audit, Design Governance, PNC,
+  Missing Information, Scale.
+- **`PF.PROJECTS`** below drives previous/next at the foot of a case study.
+- The phone `#work` card order (`#work .cell--* { order }`, ≤719px) repeats the walk.
+  The desktop `#work` bento is a fixed composition and is not reordered.
+
+Change all three together.
+
+### `PF.PROJECTS`
 
 | # | key | name | route | status |
 |---|---|---|---|---|
-| 1 | `governance` | Design Governance | `/slop/` | live |
-| 2 | `carry` | Carry | `/#/carry` | live |
-| 3 | `specimen` | Specimen Kit | `/#/specimen` | live |
-| 4 | `crypto` | Cryptography | `https://rockysahooart.github.io/encryption-coffee-shop/` | live |
-| 5 | `pnc` | PNC Bank | `https://spiky-experiences-472785.framer.app/case-study` | live |
-| 6 | `mi` | Missing Information | none | soon |
-| 7 | `scale` | Scale | none | soon |
-| 8 | `dsa` | Design System Audit | `/#/audit` | live |
-| 9 | `optiflow` | OptiFlow | `/#/optiflow` | live |
+| 1 | `carry` | Carry | `/#/carry` | live |
+| 2 | `crypto` | Cryptography | `https://rockysahooart.github.io/encryption-coffee-shop/` | live |
+| 3 | `optiflow` | OptiFlow | `/#/optiflow` | live |
+| 4 | `specimen` | Specimen Kit | `/#/specimen` | live |
+| 5 | `dsa` | Design System Audit | `/#/audit` | live |
+| 6 | `governance` | Design Governance | `/slop/` | live |
+| 7 | `pnc` | PNC Bank | `https://spiky-experiences-472785.framer.app/case-study` | live |
+| 8 | `mi` | Missing Information | none | soon |
+| 9 | `scale` | Scale | none | soon |
 | 10 | `fub` | First United Bank | `https://spiky-experiences-472785.framer.app/fub` | live |
 | 11 | `cvs` | CVS Health | Figma prototype (read the full URL from source) | live |
 | 12–14 | `illo-1..3` | Illustration one–three | none | soon |

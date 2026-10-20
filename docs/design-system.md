@@ -161,8 +161,16 @@ failed bundle see the final composition.
   opacity). On desktop the browser is a staged block in the intro (laid out at its final
   width, invisible, out of the tab order). The intro is one screen tall; nothing staged
   can be scrolled to or focused.
-- **Centring tracks, desktop vs ultrawide.** Desktop uses the averaged outer tracks in
-  `intro` only; ultrawide keeps them through `decision`.
+- **Centring tracks.** Both desktop and ultrawide use the averaged outer tracks in
+  `intro` only. At `decision` the grid moves to its final tracks on the first beat
+  (180ms delay, 560ms). On ultrawide the page padding also returns to its final value
+  then, so the conversation lands in its established ultrawide place, as it always did
+  once the page began to build (`6dfd694`: the offset applied only at `data-stage="0"`).
+- **Optical lift (960–2099).** In `intro` and `decision` the page's top padding is
+  `max(--page-pad, (100svh − row) × --land-lift)` with `--land-lift: 0.33`: a third of
+  the free height above the row, two thirds below. Equal margins read as low because
+  the browser card and logo bubbles carry weight at the bottom. 1512×945: 65px above,
+  133 below (was ~99 / 99); 1512×860: 37 / 76.
 - **Trusted By** (`.hero-trust`) exists only in `intro`/`decision` at ≥960, in the
   third profile slot where Skills goes in `work`. Four `.hero-trust__chip` bubbles
   (CVS Health, Natera, PNC, CG Infinity) share the clay recipe of the other shells.
@@ -194,7 +202,7 @@ arrived (`.is-playing .rx:not(.is-in)`), so Tab never reaches an invisible chip.
 
 ## Project browser and cards
 
-`.hero__work` (`data-pv`) is a one-at-a-time carousel driven by `PF.PROJECTS`.
+`.hero__work` (`data-pv`) is a one-at-a-time carousel in `data-rank` order (see the architecture doc).
 
 Two-state cards, gated `@media (min-width: 1440px) and (hover: hover) and (pointer: fine)`,
 on six `card--brief` cards (governance, carry, optiflow, crypto, dsa, specimen):
