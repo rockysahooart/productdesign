@@ -18585,8 +18585,18 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   :root[data-landing] .page[data-view="home"] {
     transition: padding-top var(--land-ms) var(--land-ease);
   }
+  /* OPTICALLY, NOT ARITHMETICALLY, CENTRED. Half the free height above and
+     half below put the composition in the numerical middle, and on a laptop
+     it read as sitting low: the browser card and the logo bubbles carry
+     their weight at the bottom, so equal margins look like a smaller one
+     underneath. A third of the free height goes above and two thirds below,
+     which moves the whole row up together (nothing inside it moves relative
+     to anything else) and still leaves real air above it. --land-lift is
+     that share. */
+  :root[data-landing] .page[data-view="home"] { --land-lift: 0.33; }
   :root[data-landing]:not([data-landing="work"]) .page[data-view="home"] {
-    padding-top: max(var(--page-pad), calc((100svh - clamp(707px, 50vw, 747px)) / 2));
+    padding-top: max(var(--page-pad),
+                     calc((100svh - clamp(707px, 50vw, 747px)) * var(--land-lift)));
   }
 }
 
@@ -18607,13 +18617,22 @@ button.cu-q:hover { background: var(--cu-teal-8); }
       grid-template-columns var(--land-ms) var(--land-ease),
       padding-top var(--land-ms) var(--land-ease);
   }
-  :root[data-landing]:not([data-landing="work"]) .page[data-view="home"] {
+  /* CENTRED FOR THE INTRODUCTION ONLY. This is how the ultrawide page always
+     behaved: the conversation starts in the middle and, on the first beat
+     of the identity arriving, goes to the place the ultrawide grid has
+     always given it, top left of the browser's column, and the page builds
+     round it there. The decision state is the final grid; only the browser
+     and what is below wait for the click. */
+  :root[data-landing="intro"] .page[data-view="home"] {
     grid-template-columns:
       minmax(272px, calc((360px + var(--pv-col)) / 2))
       minmax(560px, 1fr)
       calc((360px + var(--pv-col)) / 2);
-    grid-template-rows: var(--row-1);
     padding-top: max(var(--ux-gutter), calc((100svh - var(--row-1)) / 2));
+  }
+  :root[data-landing="decision"] .page[data-view="home"] { transition-delay: 180ms; }
+  :root[data-landing]:not([data-landing="work"]) .page[data-view="home"] {
+    grid-template-rows: var(--row-1);
   }
 }
 
