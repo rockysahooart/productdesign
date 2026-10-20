@@ -61,7 +61,7 @@ are always paired there, never improvised at the call site.
 |---|---|
 | ≥ 2400px | `.hero-card`, `.row--hero`, `.cell` become `display: contents`; the hero grid resolves on an ancestor (~360 / flexible / 1284 at 2560). `.hero__tools` under identity, `.hero__past` under the conversation, tall `.hero__work`. Intended. |
 | ≥ 1440px + hover + fine pointer | Two-state project cards. |
-| ≥ 960px | Three-column bento `identity / copy / work` over `past past / tools`. `.hero__clients` is `display: none`: the same employers appear in the *Where I've been* timeline, and the page shows one form of that claim, never both. |
+| ≥ 960px | Three-column bento `identity / copy / work` over `past past / tools` (in the `work` state; see the landing states below). `.hero__clients` is `display: none`: the same employers appear in the *Where I've been* timeline, and the page shows one form of that claim, never both. |
 | 720–959px | Single-column hero. `.hero__past` hidden; `.hero__clients` shown as a labelled logo rail. Messages retire upward through the top of the thread. |
 | ≤ 719px | Single column, flat identity block, portrait and name share a row. Player uses `FLAT_PAD`. `.hero__mobile-cta` is the invitation. |
 
@@ -103,7 +103,9 @@ States on `.msg[data-state]`: none → `idle` → `loading` → `live` → `sett
 
 **The measure rule.** The player measures the thread's column once. Anything
 that changes the column's inline size between stages leaves the conversation
-sized wrong with no resize to recover. Move it with a `transform`.
+sized wrong with no resize to recover. The landing states centre it structurally
+without breaking this: the outer grid tracks change, the middle track's width does
+not (see below). Anything that would change the middle track's width is still out.
 
 ### Illustrations
 
@@ -121,11 +123,41 @@ When measuring animations, read `document.getAnimations()` once per frame.
 
 ## Landing sequence (`js/reveal.js`, `css/16-reveal.css`)
 
-Armed by `data-stage="0"` from the head script (never under reduced motion).
-The page is complete without it: crawlers, JS-off and a failed bundle see everything.
+Armed by `data-stage="0"` and `data-landing="intro"` from the head script (never
+under reduced motion). The page is complete without them: crawlers, JS-off and a
+failed bundle see the final composition.
 
-Single cue: the invitation appearing (`showCta()` emits `pf:cta`). Don't
-replace it with a timer. Then `LEAD = 180`ms, five groups `STEP = 140`ms apart:
+### ≥ 960px: three states on `:root[data-landing]`
+
+| state | trigger | on the page |
+|---|---|---|
+| `intro` | head script, before first paint | the conversation alone, centred; theme and replay controls |
+| `decision` | `pf:cta` (the thread's `showCta()`) | + roles, profile, LET'S TALK, Trusted By, four logo bubbles, timed by CSS delays 180 / 320 / 460 / 600 / 740ms after the cue |
+| `work` | the first press on See the work | everything else, one coordinated transition |
+
+- **The gate.** In `decision`, `reveal.js` takes the press on `.msg-cta__btn` in the
+  capture phase, so the first press opens the page and keeps the conversation (the
+  thread's own handler, which swaps in the list of work, only runs on later presses).
+  The ceiling is cleared at `decision`: nothing opens the work except the reader, a
+  deep link or `hashchange`.
+- **Centring is structural.** In `intro`/`decision` the grid's outer tracks are each
+  the mean of the final two (desktop `--hero-l`/`--hero-r`; ultrawide `360px` and
+  `--pv-col`), so the middle track is centred and exactly as wide as in the final
+  layout. Identity, browser and tools carry their final widths and `justify-self: end`.
+  The click transitions `grid-template-columns` (560ms); the outer tracks' sum is
+  constant, so the conversation's width never changes. Vertical: the page's
+  `padding-top` centres row 1 on the first screen.
+- **Not on the page until `work`:** the browser, Skills, Where I've been, Tools and every
+  later section are `display: none` (they arrive via `@starting-style` opacity). The
+  intro is one screen tall; nothing staged can be scrolled to or focused.
+- **Trusted By** (`.hero-trust`) exists only in `intro`/`decision` at ≥960, in the
+  third profile slot where Skills goes in `work`. Four `.hero-trust__chip` bubbles
+  (CVS Health, Natera, PNC, CG Infinity) share the clay recipe of the other shells.
+
+### < 960px: the cascade
+
+Single cue: the invitation appearing (`pf:cta`). Don't replace it with a timer.
+Then `LEAD = 180`ms, five groups `STEP = 140`ms apart:
 
 | `data-reveal` | elements |
 |---|---|
@@ -136,23 +168,16 @@ replace it with a timer. Then `LEAD = 180`ms, five groups `STEP = 140`ms apart:
 | 5 | `.hero-id--caps`, `.hero__past`, `.hero__tools`, `#background`, `#work`, `#more`, `#contact` |
 
 Opacity only, ~700ms, `cubic-bezier(0.34, 0.03, 0.24, 1)`. Hidden state is
-`opacity: 0; visibility: hidden` plus `pointer-events: none`, **never
-`display: none`** (the profile column shares a grid row with the thread). A group
-with no visible elements at the current width doesn't spend its beat.
+`opacity: 0; visibility: hidden` plus `pointer-events: none`. A group with no
+visible elements at the current width doesn't spend its beat.
 
-Stage-1 centring: `--solo-x` (across) and `--solo-y` (down), measured by `reveal.js`
-and applied as one `translate()` on `.hero__copy`, only at ≥960px and
-`data-stage="0"`; unwinds on group 1. `--solo-x` is half the difference between
-the outer tracks. `--solo-y` puts the middle of what the conversation shows (roles,
-controls, the thread's reserved box) on the middle of the first screen, never
-upward. Re-measured by a `ResizeObserver` when the thread reserves its height
-(about 3.9s in, under the opaque loader), each reading taken with the transition
-off so a correction never animates. The transition is gated behind `has-solo`.
-No transform under reduced motion. Never a layout change: see the measure rule.
+Escape hatches (all go straight to everything-visible, once, one-way): any deep
+link or `hashchange` (the skip link is one), and `CEILING_MS = 26000` if the thread
+never reaches `pf:cta`. Below 960 only: scrolling past half a viewport, a third focus
+step.
 
-Escape hatches (all go straight to everything-visible, once, one-way): scrolling
-past half a viewport, a third focus step, any deep link or `hashchange`, and
-`CEILING_MS = 26000`.
+Reaction chips are `visibility: hidden` while the thread plays and they have not
+arrived (`.is-playing .rx:not(.is-in)`), so Tab never reaches an invisible chip.
 
 ## Project browser and cards
 

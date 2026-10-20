@@ -76,15 +76,15 @@ store a credential. Don't produce an upload manifest unless the owner asks for o
   they sit on; when you change a rule, update its comment in the same voice
   (why, and what it replaced). Never strip them as verbose.
 - **Never invent content**: research, metrics, outcomes, quotes, decisions. Ask.
-- **"Natera" appears only in *Where I've been*.** Redact it anywhere else; never substitute another name.
+- **"Natera" appears only in *Where I've been* and the Trusted By bubbles** (the latter at the owner's request, 2026-10-20). Redact it anywhere else; never substitute another name.
 
 ## Do not touch without asking
 
 - The two blocking `<head>` scripts (slop redirect; theme + stage arming). Their position before first paint *is* the feature.
 - **Forced light mode.** A fresh visit is always light; dark only via the site's toggle (`localStorage['pf-theme']`). Keep the `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) … }` pattern, keep the single unscoped `theme-color` meta, and never add a `matchMedia` color-scheme listener.
-- **The thread measure rule.** The hero player measures its column once. Never change the column's inline size between animation stages; move the conversation with a `transform`.
+- **The thread measure rule.** The hero player measures its column once. Never change the column's inline size between states. The landing states centre it by changing the grid's *outer* tracks so the middle one keeps its width; keep it that way.
 - The three-column project-browser split and aspect-locked embeds. Never widen the visual column; scale `.slot > img`, never `.slot`.
-- Reveal escape hatches and `CEILING_MS = 26000`; loader safety nets `setTimeout(mark, 8000)` / `setTimeout(dissolve, 6000)`.
+- The three landing states (`data-landing`: intro → decision on `pf:cta` → work on the first press of See the work) and their escape hatches, `CEILING_MS = 26000`; loader safety nets `setTimeout(mark, 8000)` / `setTimeout(dissolve, 6000)`.
 - `PF.PROJECTS` order (it drives carousel, cards and prev/next at once).
 - Canonical external URLs: PNC `https://spiky-experiences-472785.framer.app/case-study`, First United Bank `https://spiky-experiences-472785.framer.app/fub`, identical at every entry point.
 - No external runtime requests: fonts, scripts and images are self-hosted. No CDN, no Google Fonts.
@@ -105,8 +105,8 @@ Sections can be run alone (`routes theme seq hatch keys copy`), and
 
 1. Routes: `/`, `#top`, `#work`, `#contact`, `#/about`, `#/carry`, `#/optiflow`, `#/audit`, `#/specimen`, `/slop/`. Zero console errors, zero 4xx (except `/favicon.ico`).
 2. Theme: dark-OS and light-OS fresh visits, stored dark, stored light, toggle and reload, OS flipped mid-visit. Zero dark frames on any fresh visit.
-3. Sequence: nothing staged is visible before `pf:cta`; groups 1–5 in order; everything visible at the end; thread width identical before and after.
-4. Escape hatches: reduced motion, deep link, `#work`, scroll past half a viewport, replay after the page is whole.
+3. Sequence at ≥960: intro shows only the conversation, centred; `pf:cta` moves to decision in order with a 100–180ms stagger and the work hidden; the gate holds without a click; the click opens everything, laid out exactly as an unstaged page. Below 960: the cascade. Thread width constant throughout.
+4. Escape hatches: reduced motion, deep links, tablet scroll, replay while deciding and after work, hard refresh.
 5. Widths 390, 768, 900, 1024, 1280, 1440, 1512, 1920, 2560, plus 960, 1100, 1279, 1366, 2399, 2400: no horizontal overflow at any stage; above 960 the conversation is centred on the first screen while it is alone, and the final layout is untransformed.
 6. Keyboard: Tab never lands inside a staged block before it is shown.
 7. Regenerate `/slop/`; `buildslop.py` refuses to write if a relative reference survives.
@@ -123,8 +123,7 @@ Don't leave throwaway scripts in the repo root.
 
 ## In flight
 
-See [docs/current-state.md](docs/current-state.md#open-items). Summary: 2×2
-Worked With logo grid (blocked on design reference 2); no favicon.
+See [docs/current-state.md](docs/current-state.md#open-items). Summary: no favicon.
 
 Recently shipped (see [docs/current-state.md](docs/current-state.md#recently-shipped)):
 `Hello Team.`, the conversation centred vertically as well as across while it is

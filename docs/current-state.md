@@ -9,34 +9,38 @@ As of 2026-10-20 on `main`.
   workspace illustration; message 3 "I've designed *human-centered* products in an
   AI-saturated world." with the hands illustration, reaction chips, then the
   "See the work →" invitation.
-- Landing sequence: loader (3500ms first visit) → thread plays alone, centred
-  across and down on desktop and ultrawide →
-  invitation emits `pf:cta` → profile, LET'S TALK, Worked With, Project Browser,
-  rest of page, 180ms lead then 140ms apart. The sequence starts automatically
-  when the invitation appears; it doesn't wait for a click. Implemented and verified.
-- Worked With (`.hero__clients`): CVS Health, CG Infinity, PNC, First United.
-  Shown only at 720–959px (and below); hidden at ≥960px, where *Where I've been* carries the same claim.
-- Natera appears only in the *Where I've been* timeline.
+- Landing on desktop and ultrawide (≥960): three states. **Intro**: after the loader
+  the conversation plays alone, centred by the grid. **Decision** (on `pf:cta`): the
+  roles, profile, LET'S TALK and Trusted By with four logo bubbles assemble around it;
+  the work is not on the page. **Work** (first press on See the work): the Project
+  Browser, Skills, Where I've been, Tools and the rest open in one transition into the
+  existing layout. See [design-system.md](design-system.md#landing-sequence-jsrevealjs-css16-revealcss).
+- Below 960: unchanged. The invitation runs the whole page in on its own,
+  180ms lead then 140ms apart.
+- Trusted By (desktop decision state): CVS Health, Natera, PNC, CG Infinity.
+  Worked With (`.hero__clients`, below 960): CVS Health, CG Infinity, PNC, First United.
+- Natera appears in the *Where I've been* timeline and, at the owner's request
+  (2026-10-20), in the Trusted By bubbles.
 - Project order and URLs: see [portfolio-architecture.md](portfolio-architecture.md#pfprojects-display-order-everywhere).
 - `/slop/` is published and consistent with the rules (og:type `article`,
   canonical `…/slop/`, PDF at `/slop-audit.pdf`, zero relative `assets/` references).
 
 ## Open items
 
-1. **2×2 Worked With logo grid**: blocked. Before starting, ask the owner for
-   design reference 2 (lost in the original handoff), and resolve two conflicts:
-   the logos are hidden at ≥960px by design (a desktop grid means reflowing the
-   hero bento), and the reference reportedly includes Natera, which is restricted to
-   *Where I've been*. Reveal group 3 is already wired for this block.
-   Not the old marquee rail.
-2. No favicon; `/favicon.ico` 404s. Pre-existing.
+1. No favicon; `/favicon.ico` 404s. Pre-existing.
 
 ## Recently shipped
+
+- **2026-10-20: three landing states.** Implemented from `finalpart.jpg` (decision)
+  and `finalstate.jpg` (work). Structural centring replaced the `--solo-x`/`--solo-y`
+  transforms; See the work became a real gate; the Trusted By 2×2 bubbles were added;
+  the unused `px-smiley` sprite went too.
 
 - **2026-10-20: landing page.** Message 1 is `Hello Team.`; the smiley, its sprite
   symbol, sizing, bob animation and greeting data (`'Hello Team :)'` in
   `js/thread.js`) are gone. While the conversation is alone on desktop and
-  ultrawide it is centred down as well as across (`--solo-y`). `<html>` defaults
+  ultrawide it is centred down as well as across (later replaced by the structural
+  landing states above). `<html>` defaults
   to `data-theme="light"` in the markup, so a dark-OS visit with scripts off is
   light too. `tools/buildslop.py` and `tools/check.py` added.
 
@@ -77,7 +81,10 @@ if any doc describes them as current, that doc is wrong.
 
 1. The broad copy-simplification pass across the Project Browser and bento cards. The brief copy in the design-system doc is what survives.
 2. The earlier desktop/ultrawide progressive-reveal staging (`html:not(.pf-work)` plus a single-column `.hero-card`). The current sequence is a later, different design. (Its First United Bank URL was kept.)
-3. Centring or width-capping the stage-1 hero as a layout change. Centring is a transform.
+3. Centring or width-capping the stage-1 hero by changing the conversation column's
+   width. Superseded in part: the intro is now centred by changing the *outer* tracks,
+   which keeps the middle track's width exactly; anything that changes that width is
+   still out.
 4. Revealing on messages 1 and 2. Replaced by the single `pf:cta` cue.
 5. The `matchMedia` system-theme listener and media-scoped `theme-color` metas.
 6. `transition: opacity 0s linear 86400s` as a one-way illustration hold. Replaced by state-gated `msg-reveal`.
