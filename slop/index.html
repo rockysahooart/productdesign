@@ -26114,6 +26114,18 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   56%, 100% { opacity: 0; transform: scale(1.3); }
 }
 
+/* --- the lower Key Industry Projects section, set aside -------------------
+
+   On a laptop or a desktop the same projects are already the Project
+   Browser in the hero, so the bento of cards further down the page is a
+   second copy of them. It is taken out of the layout entirely (no box, no
+   gap; what follows it moves up). Ultrawide already did this. Below 960 the
+   hero has no browser and this section is the only list of the work, so it
+   stays. To bring it back, delete this one rule. */
+@media (min-width: 960px) {
+  .page[data-view="home"] > #work { display: none; }
+}
+
 /* ===== css/33-hero-ultrawide.css ===== */
 /* ==========================================================================
    33. THE PROJECT BROWSER AS FOUR CARDS, ON A SCREEN THAT HAS THE ROOM
