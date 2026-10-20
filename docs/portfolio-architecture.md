@@ -19,8 +19,8 @@ social-preview-v2.png   og:image for both pages.
 CNAME, .nojekyll, .gitignore, README.md
 ```
 
-Not in the repo (exist only in the local candidate build at
-`~/Documents/Claude outputs/candidate-build/`): `robots.txt`, `sitemap.xml`.
+Not in the repo, so not deployed: `robots.txt`, `sitemap.xml`. Copies exist in
+the retired build folder `~/Documents/Claude outputs/candidate-build/`.
 
 `app-1.js` modules, in order: routes, theme, stepper, media, carry, carry-ui,
 optiflow, tagging, thread, reveal, dsa, ap-fit, audit-proto, px-emerge, pp-conf,
@@ -115,7 +115,9 @@ The PDF is a plain static asset; don't route it through JavaScript.
 
 ## Deployment
 
-Manual through the GitHub web UI; GitHub Pages rebuilds. No CI. After any
-site change, hand the owner an upload manifest with exact paths and byte sizes.
-Claude may push documentation with the owner's local credentials but never
-pushes site files for deployment.
+GitHub Pages serves `main`; a push to `origin/main` is the deploy. No CI and no
+build step. Workflow: inspect the repo, make the minimum sufficient change,
+regenerate `/slop/` if `index.html` changed, test, review `git diff` (and show
+the owner application changes before committing), stage only the intended files,
+commit, push. Pushes use the owner's existing local git credentials. No upload
+manifest unless the owner asks for one. See `CLAUDE.md`.

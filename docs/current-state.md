@@ -36,9 +36,33 @@ As of 2026-10-19, commit `6dfd694` on `main`.
 3. **Recreate the `/slop/` generator** (e.g. `tools/buildslop.py`) and validate it
    byte-identically against the published pair. See the architecture doc.
 4. **Test harness**: none in the repo. The checks in `CLAUDE.md` should become a reusable script under `tools/` or `tests/`.
-5. **`assets/app-2.js` is behind the local candidate build.** See discrepancies below.
+5. **OptiFlow walkthrough labels: punctuation fix awaiting approval.** The
+   repository's `assets/app-2.js` is production and stays as is until the owner
+   approves a change. See [the app-2.js audit](#assetsapp-2js-audit-2026-10-19) below.
 6. No favicon; `/favicon.ico` 404s. Pre-existing.
-7. Deployment is manual. Moving to committed files on `main` is worth discussing, only with the owner's agreement.
+
+## `assets/app-2.js` audit (2026-10-19)
+
+The repo copy (40,826 bytes) was compared with the copy in the retired
+`candidate-build` folder (40,709 bytes, last modified 2026-09-17 02:07, about
+three hours after the repo version was committed in `e460fa8`). Both are 1,000 lines.
+
+- **With comments stripped, the only differences are four string literals in
+  `ofw.js`** (the OptiFlow walkthrough), where `—` becomes `:`:
+  `197 — Authorization Missing` / `PR — Patient Responsibility` in the feedback
+  panel (`[data-fbtag]`), the snackbar (`[data-snacktext]`, `Removed: …` /
+  `Added: …`), and the two `.ofw-t` tag chips the add sequence writes. No logic,
+  timing, selector or control-flow change.
+- Every other difference is comment punctuation in `ofw.js`, `peek.js` and
+  `bim.js`. That pass also introduced a few comment blemishes (two trailing
+  spaces, a lost indent before `(4, 2, 1)`, `bim.js.` for `bim.js —`). Harmless.
+- **Visible consequence today:** `index.html` already uses the colon style in the
+  walkthrough's static markup (`PR: Patient Responsibility`, `197: Authorization Mis…`,
+  `M62: Missing Auth Co…`). The production `app-2.js` overwrites those labels with
+  the em-dash form once the walkthrough runs, so the same tag switches punctuation
+  mid-sequence. Adopting the colon strings would make them consistent.
+- Decision: **left untouched** pending owner approval. If approved, the minimum
+  change is the four string literals; the comment edits are optional.
 
 ## Reversed decisions — do not reinstate
 
@@ -57,24 +81,28 @@ if any doc describes them as current, that doc is wrong.
 
 Found when checking the original handoff document against the repo on 2026-10-19:
 
-- **`assets/app-2.js` differs** from `~/Documents/Claude outputs/candidate-build/`
-  (repo 40,826 bytes, candidate 40,709). The candidate replaces em dashes with
-  colons and parentheses, in comments and also in visible OptiFlow walkthrough
-  labels (e.g. `197 — Authorization Missing` → `197: Authorization Missing`).
-  `index.html` (2,574,392), `slop/index.html` (2,574,295), `assets/app-1.js`
-  (565,496) and the other 46 asset files are byte-identical to the candidate.
-  Treat the candidate's `app-2.js` as newer until the owner confirms the upload.
+- `index.html` (2,574,392 bytes), `slop/index.html` (2,574,295), `assets/app-1.js`
+  (565,496) and 46 of the 47 asset files are byte-identical to the old candidate
+  build. `assets/app-2.js` differs; see the audit above. The repo is production.
 - `index-1.html` is **not** in the repo (deleted in `bbb9309` / `c969442`).
 - `social-preview.png` is **not** in the repo (deleted in `a49ce61`). Only
   `social-preview-v2.png` remains, and both pages' `og:image` point at it.
-- `robots.txt` and `sitemap.xml` are **not** in the repo; they exist only in the candidate build.
+- `robots.txt` and `sitemap.xml` are **not** in the repo (so not deployed); copies exist only in the old candidate build.
 - `README.md` and a commented `.gitignore` exist; the handoff didn't mention them.
 - Besides Be Vietnam Pro and Cormorant Garamond, the file self-hosts Fraunces,
   a Playfair Display subset, Sora and Inter (case-study/embeds).
 - The spacing scale runs to `--s-7` (144px), not `--s-6`.
 - Theme resolution and stage arming are one head script, not two; the loader sits at the top of `<body>`, not in `<head>`.
 - `msg-clay` keyframes animate transform and box-shadow as well as opacity.
-- The stale clone at `~/Downloads/GitHub/productdesign` is now 1 ahead /
-  127 behind with a modified `index.html` and untracked `social-preview-v2.png`.
-  It was left untouched. This work was done in a separate clean clone at
-  `~/Documents/productdesign-claude`, level with `origin/main`.
+- The handoff described deployment as manual uploads through the GitHub web UI
+  with an upload manifest. **Superseded:** the owner now pushes from this
+  checkout, and a push to `origin/main` deploys.
+
+## Local copies that are not part of the workflow
+
+- **Canonical:** `~/Documents/productdesign-claude`, a clean clone tracking `origin/main`.
+- `~/Downloads/GitHub/productdesign` is a **stale clone** (1 ahead / 127 behind
+  as of 2026-10-19, modified `index.html`, untracked `social-preview-v2.png`).
+  It is not used, not reconciled and not a source of truth. Don't commit from it.
+- `~/Documents/Claude outputs/candidate-build/` is the **retired build folder**
+  from the manual-upload era. It's only a reference for the `app-2.js` audit above.

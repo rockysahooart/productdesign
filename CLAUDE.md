@@ -35,19 +35,30 @@ python3 -m http.server 8000
 
 Then open `http://localhost:8000/`. A known, pre-existing 404 is `/favicon.ico`.
 
+## Canonical environment
+
+This checkout (`~/Documents/productdesign-claude`) and the GitHub repository are
+the canonical project environment. There is no other source of project context.
+
+**Not part of the workflow:** the stale clone at `~/Downloads/GitHub/productdesign`
+(far behind `origin/main`, with old local edits) and the old local build folder
+`~/Documents/Claude outputs/candidate-build/`. Don't read from them, edit them or
+commit from them, except to resolve a specific discrepancy the owner names.
+
 ## Deployment
 
-The owner deploys **by hand through the GitHub web UI** (drag-and-drop). Change flow:
+Pushing to `origin/main` deploys: GitHub Pages rebuilds from `main`. The normal flow:
 
-1. Edit the source build.
-2. Regenerate `slop/index.html` from `index.html` (rules in the architecture doc; the generator script is not in the repo yet).
-3. Verify locally, by measurement.
-4. Give the owner an **upload manifest**: exact paths and byte sizes.
-5. The owner uploads. Never push site files or handle deployment credentials.
+1. Inspect the current repo state (`git fetch`, `git status`, read the code).
+2. Make the minimum sufficient change.
+3. If `index.html` changed, regenerate `slop/index.html` from it (rules in the architecture doc; the generator script is not in the repo yet).
+4. Test it, by measurement (see below).
+5. Review `git diff`. **For application changes, show the owner what changed before committing.**
+6. Stage only the intended files, by name. Never `git add -A`; don't touch unrelated files.
+7. Commit, then push to `origin/main`. GitHub Pages deploys.
 
-Documentation commits may be pushed with the owner's existing local git
-credentials. Never enter, request or store a credential. Moving deployment to
-committed files on `main` is open for discussion; don't change it unilaterally.
+Push with the owner's existing local git credentials. Never enter, request or
+store a credential. Don't produce an upload manifest unless the owner asks for one.
 
 ## How to work here
 
@@ -79,7 +90,7 @@ committed files on `main` is open for discussion; don't change it unilaterally.
 - No external runtime requests: fonts, scripts and images are self-hosted. No CDN, no Google Fonts.
 - Anything on the reversed-decisions list in [docs/current-state.md](docs/current-state.md#reversed-decisions--do-not-reinstate).
 
-## Testing before handing over a build
+## Testing before committing a site change
 
 There is **no test harness in the repo yet**. Until one exists under `tools/`
 or `tests/`, check at minimum:
@@ -95,7 +106,7 @@ Don't leave throwaway scripts in the repo root.
 
 ## Git
 
-- Commit and push only when asked. Branch for anything non-trivial; don't commit straight to `main` without asking.
+- Commit and push only when asked. A push to `main` is a production deploy.
 - One logical change per commit; docs commits separate from behaviour commits.
 - Never commit secrets or anything from outside the repo.
 
@@ -103,5 +114,5 @@ Don't leave throwaway scripts in the repo root.
 
 See [docs/current-state.md](docs/current-state.md#open-items). Summary: `Hello Team.`
 copy change (approved, not built); 2×2 Worked With logo grid (blocked on design
-reference 2); recreate `tools/buildslop.py`; `assets/app-2.js` in the repo is older
-than the local candidate build.
+reference 2); recreate `tools/buildslop.py`; a proposed punctuation fix to the
+OptiFlow walkthrough labels in `assets/app-2.js`, waiting for the owner's approval.
