@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <!-- Social metadata first: see the note under it. -->
@@ -130,7 +130,9 @@
        unconditionally for the same reason: every dark rule in the stylesheet
        is guarded by :not([data-theme="light"]), so the attribute being
        present IS the guarantee, and leaving it off for one code path is how
-       a flash gets back in. The localStorage read is in its own try because
+       a flash gets back in. The markup carries data-theme="light" on <html>
+       as well, so a page whose script never runs (scripts off, blocked) is
+       light too rather than following the OS. The localStorage read is in its own try because
        private mode throws on it, and light still has to apply when it does. */
     var stored = null;
     try { stored = localStorage.getItem('pf-theme'); } catch (e) {}
@@ -674,7 +676,12 @@
                  rgba(255, 255, 255, 0.02) 100%);
 }
 
-/* System preference wins until the visitor makes a choice. */
+/* NOT THE SYSTEM PREFERENCE. This used to say the system wins until the
+   visitor chooses; it does not. <html> is written with data-theme="light" in
+   the markup and the head script replaces it only with a choice made on the
+   toggle, so this guard never matches: not on a dark OS, not with scripts
+   off. It stays because every dark rule in this file is written the same
+   way, and the pattern is what the stylesheet relies on. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     color-scheme: dark;
@@ -7426,7 +7433,6 @@ a.hero__role { text-decoration: none; }
 /* Two icons side by side are two words, not one: they get the same interval
    between them that a space would give. */
 .pxi[data-px="smiley"] { aspect-ratio: 16 / 13; }
-.pxi[data-px="smiley-o"] { aspect-ratio: 18 / 17; }
 .pxi[data-px="phone"] { aspect-ratio: 6 / 13; }
 .pxi[data-px="laptop"] { aspect-ratio: 14 / 11; }
 .pxi[data-px="pin"] { aspect-ratio: 10 / 12; }
@@ -7439,58 +7445,6 @@ a.hero__role { text-decoration: none; }
 .pxi[data-px="sparkle"] { aspect-ratio: 13 / 13; }
 
 .pxi + .pxi { margin-left: 0.24em; }
-
-/* THE COMPANION MARK AFTER THE GREETING.
-
-   The face is drawn on an eighteen-by-seventeen grid as flat rectangles, one
-   run of colour per row, rather than carried as a picture. A raster set at
-   fifteen pixels has to be downsampled to get there and a downsample of a
-   pixel sprite is a blurred pixel sprite; rectangles are resolution
-   independent, so it is exactly as sharp at 15px on a phone as at 25px on an
-   ultrawide, and it costs the repository no new file to upload.
-
-   `crispEdges` on the parent is what keeps the rect boundaries from landing
-   half on a device pixel when the em height works out fractional.
-
-   It carries its own four colours now — the yellow, the near-black of the
-   features, the cream of the three highlight blocks at the upper left, and
-   two pure white pixels, one in each pupil. Those two are the sparkle, and
-   there are exactly two of them: the quantiser only found the left one in
-   the reference, and a face with one lit eye is winking, not smiling.
-
-   None of it inherits the sentence's ink the way the drawn-in-line version
-   did. That is the point of it: a small bright thing beside the words, not a
-   mark made of them.
-
-   `vertical-align: middle` puts its own centre on the baseline plus half the
-   x-height, which is the optical centre of the line. A face has a centre, not
-   a foot, so it should not stand on the baseline. */
-.pxi--face {
-  height: 0.80em;
-  vertical-align: middle;
-  margin-inline: -0.04em 0.02em;
-  animation: pxi-bob 900ms steps(1, end) infinite;
-}
-
-/* IDLE, THE WAY A SPRITE IDLES.
-
-   Two positions and nothing between them. `steps(1, end)` holds each value
-   for its whole interval and then snaps, which is how a two-frame sprite has
-   always waited in place: no easing, no overshoot, no interpolation to soften
-   it. The lower position is held slightly longer than the upper one, so the
-   loop has a downbeat instead of reading as a metronome.
-
-   Travel is whole pixels, not a fraction of an em, because half a pixel of
-   vertical offset is the one thing that would make a pixel drawing look
-   soft. Nothing scales, rotates or distorts: `translate` moves the box and
-   leaves the drawing alone, and it is not a layout property, so the line it
-   sits in never reflows.
-
-   The site's reduced-motion rule already reaches this and stops it. */
-@keyframes pxi-bob {
-  0%   { translate: 0 0; }
-  55%  { translate: 0 var(--pxi-bob, -2px); }
-}
 
 /* An icon and the punctuation after it are one unit: a comma stranded at the
    start of a line is the kind of thing that makes a careful page look careless. */
@@ -18426,6 +18380,14 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    is set to 0px while being measured, so the measurement never reads its own
    offset back.
 
+   --solo-y does the same thing downward. The row is as tall as its tallest
+   column and the conversation sits at the top of it, so with the columns
+   either side hidden the messages read as a strip across the top of an empty
+   screen. reveal.js measures what the conversation shows and moves its middle
+   to the middle of the first screen; never upward, so a screen too short to
+   hold it keeps it where it was. Same reasoning as above for it being a
+   transform: the row, the hero's height and the thread's box are never told.
+
    It unwinds on the first group, not the last. The portrait card coming up is
    the composition starting to exist; that is the moment the conversation
    should be moving back into the column it shares with it, not four beats
@@ -18434,10 +18396,12 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    -------------------------------------------------------------------------- */
 
 @media (min-width: 960px) {
-  :root[data-stage="0"] .hero__copy { transform: translateX(var(--solo-x, 0px)); }
+  :root[data-stage="0"] .hero__copy {
+    transform: translate(var(--solo-x, 0px), var(--solo-y, 0px));
+  }
 
   /* THE TRANSITION ARRIVES AFTER THE OFFSET DOES, which is the whole reason
-     for the class. --solo-x is 0 until reveal.js has measured, so a
+     for the class. --solo-x and --solo-y are 0 until reveal.js has measured, so a
      transition declared in the stylesheet would animate the thread sideways
      into the middle on load, which is the page moving its own furniture
      before anybody has read anything. reveal.js commits the offset, waits a
@@ -24415,8 +24379,8 @@ button.cu-q:hover { background: var(--cu-teal-8); }
    type down and the relationship between them is exactly what it was.
 
    One declaration, because one is all it needs. The pixel devices that used
-   to be sized in here are gone from the copy, and the face after `Hello Team`
-   is in em, so it rides this down without being told to.
+   to be sized in here are gone from the copy, and so is the face that used to
+   follow the greeting: it is plain `Hello Team.` now, words and a full stop.
 
    Scoped to 719 so the tablet band above keeps what it had.
    -------------------------------------------------------------------------- */
@@ -24424,40 +24388,6 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   .hero__thread {
     font-size: calc(clamp(20px, 2.2vw + 11px, 31px) * var(--fs-disp-k) - 5px);
   }
-
-  /* THE FACE JOINS THE PHRASE.
-
-     Three small things were keeping it at arm's length, and none of them was
-     the drawing. It sat a full word space away, which is the interval between
-     two words and not the interval between a word and the mark that ends it.
-     It sat exactly on the baseline, which is correct for a box and slightly
-     high for a face, because the eye reads the middle of a glyph, not its
-     foot. And it was square, which is the proportion of an icon; a character
-     is taller than it is wide.
-
-     So: the space closes to a fraction of a word space, the glyph centres on
-     the phrase rather than standing on its floor, and it comes down to 0.70em
-     against 18px type. The drawing is narrower to match — five columns
-     instead of six — which takes a quarter off its width without touching a
-     single pixel of the face.
-
-     Mobile only, as asked. Above 720 the rule above this one does not apply
-     and the face keeps the size it had. */
-  /* Larger on a phone, where 0.80em of 18px type is small enough that the
-     glint in the eye starts to close up. The travel stays at two whole
-     pixels: the sprite is about 0.9px per cell here, so two pixels is a
-     little over two cells, which reads at arm's length without becoming a
-     distraction beside a sentence somebody is trying to read. */
-  .hero__thread .pxi--face {
-    height: 0.86em;
-    --pxi-bob: -2px;
-  }
-}
-
-@media (min-width: 720px) {
-  /* One more pixel of travel, because the sprite itself is half again as
-     tall here and two pixels would read as a twitch rather than a bob. */
-  .hero__thread .pxi--face { --pxi-bob: -3px; }
 }
 
 @media (min-width: 960px) and (max-width: 1279px) {
@@ -32310,7 +32240,6 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
     </symbol>
     
 
-    <symbol id="px-smiley-o" viewBox="0 0 18 17"><path fill="#FDD536" d="M6 0h6v1H6zM4 1h10v1H4zM3 2h2v1H3zM7 2h8v1H7zM2 3h2v1H2zM5 3h11v1H5zM2 4h1v1H2zM4 4h12v1H4zM1 5h4v1H1zM6 5h6v1H6zM13 5h4v1H13zM1 6h3v1H1zM7 6h4v1H7zM14 6h3v1H14zM0 7h4v1H0zM7 7h4v1H7zM14 7h4v1H14zM0 8h4v1H0zM7 8h4v1H7zM14 8h4v1H14zM0 9h5v1H0zM6 9h6v1H6zM13 9h5v1H13zM0 10h3v1H0zM4 10h10v1H4zM15 10h3v1H15zM1 11h2v1H1zM5 11h8v1H5zM15 11h2v1H15zM1 12h4v1H1zM6 12h6v1H6zM13 12h4v1H13zM2 13h4v1H2zM12 13h4v1H12zM3 14h4v1H3zM11 14h4v1H11zM4 15h10v1H4zM6 16h6v1H6z"/><path fill="#181818" d="M5 5h1v1H5zM12 5h1v1H12zM4 6h1v1H4zM6 6h1v1H6zM11 6h1v1H11zM13 6h1v1H13zM4 7h3v1H4zM11 7h3v1H11zM4 8h3v1H4zM11 8h3v1H11zM5 9h1v1H5zM12 9h1v1H12zM3 10h1v1H3zM14 10h1v1H14zM3 11h2v1H3zM13 11h2v1H13zM5 12h1v1H5zM12 12h1v1H12zM6 13h6v1H6zM7 14h4v1H7z"/><path fill="#F6F0D6" d="M5 2h2v1H5zM4 3h1v1H4zM3 4h1v1H3z"/><path fill="#FFFFFF" d="M5 6h1v1H5zM12 6h1v1H12z"/></symbol>
     <symbol id="px-smiley" viewBox="0 1 16 13"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM3 2h10v1h-10zM2 3h12v1h-12zM1 4h4v1h-4zM7 4h2v1h-2zM11 4h4v1h-4zM1 5h4v1h-4zM7 5h2v1h-2zM11 5h4v1h-4zM0 6h16v1h-16zM0 7h16v1h-16zM0 8h16v1h-16zM1 9h2v1h-2zM4 9h8v1h-8zM13 9h2v1h-2zM1 10h3v1h-3zM6 10h4v1h-4zM12 10h3v1h-3zM2 11h4v1h-4zM10 11h4v1h-4zM3 12h10v1h-10zM5 13h6v1h-6z"/><path fill="var(--pxi-bg)" d="M5 4h2v1h-2zM9 4h2v1h-2zM5 5h2v1h-2zM9 5h2v1h-2zM3 9h1v1h-1zM12 9h1v1h-1zM4 10h2v1h-2zM10 10h2v1h-2zM6 11h4v1h-4z"/></symbol>
     <symbol id="px-phone" viewBox="5 1 6 13"><path fill="var(--pxi-fg)" d="M5 1h6v1h-6zM5 2h6v1h-6zM5 3h1v1h-1zM10 3h1v1h-1zM5 4h1v1h-1zM10 4h1v1h-1zM5 5h1v1h-1zM10 5h1v1h-1zM5 6h1v1h-1zM10 6h1v1h-1zM5 7h1v1h-1zM10 7h1v1h-1zM5 8h1v1h-1zM10 8h1v1h-1zM5 9h1v1h-1zM10 9h1v1h-1zM5 10h1v1h-1zM10 10h1v1h-1zM5 11h6v1h-6zM5 12h2v1h-2zM9 12h2v1h-2zM5 13h6v1h-6z"/><path fill="var(--pxi-bg)" d="M6 3h4v1h-4zM6 4h4v1h-4zM6 5h4v1h-4zM6 6h4v1h-4zM6 7h4v1h-4zM6 8h4v1h-4zM6 9h4v1h-4zM6 10h4v1h-4zM7 12h2v1h-2z"/></symbol>
     <symbol id="px-laptop" viewBox="1 2 14 11"><path fill="var(--pxi-fg)" d="M3 2h10v1h-10zM3 3h1v1h-1zM12 3h1v1h-1zM3 4h1v1h-1zM12 4h1v1h-1zM3 5h1v1h-1zM12 5h1v1h-1zM3 6h1v1h-1zM12 6h1v1h-1zM3 7h1v1h-1zM12 7h1v1h-1zM3 8h10v1h-10zM1 10h14v1h-14zM1 11h5v1h-5zM10 11h5v1h-5zM1 12h14v1h-14z"/><path fill="var(--pxi-bg)" d="M4 3h8v1h-8zM4 4h8v1h-8zM4 5h8v1h-8zM4 6h8v1h-8zM4 7h8v1h-8zM6 11h4v1h-4z"/></symbol>
@@ -32720,7 +32649,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
               <span class="msg-track" data-track>
               <span class="msg" data-msg data-cluster>
                 <span class="msg__from" aria-hidden="true">SS</span>
-                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">Hello Team&nbsp;<svg class="pxi pxi--face" data-px="smiley-o" role="img" aria-label="smiling face"><use href="#px-smiley-o"/></svg></span></span>
+                <span class="msg__bubble"><span class="msg__dots" aria-hidden="true"><i></i><i></i><i></i></span><span class="msg__text">Hello Team.</span></span>
               </span>
               <span class="msg msg--art" data-msg>
                 <span class="msg__art" aria-hidden="true"><img class="msg__scene" src="/assets/1071501dfe1e.webp" alt="" width="960" height="448" decoding="async"></span>

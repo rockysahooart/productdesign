@@ -4922,7 +4922,7 @@ window.PF = window.PF || {};
 
   var ROLES = {
     design: [
-      [{ t: 'Hello Team :)' }],
+      [{ t: 'Hello Team.' }],
       [{ t: 'I\u2019m ' }, { t: 'Sarthak Sahoo', em: true },
        { t: ', a Product Designer ' },
        { ic: 'phone', lbl: 'product' }, { ic: 'laptop', lbl: 'design' },
@@ -5527,7 +5527,7 @@ window.PF = window.PF || {};
         if (opt.shuffle) row.setAttribute('data-shuffle', '');
         else row.removeAttribute('data-shuffle');
 
-        /* THE OPENING TWO ARE ONE BREATH. "Hello :)" and the line that says
+        /* THE OPENING TWO ARE ONE BREATH. "Hello Team." and the line that says
            who is saying it are not two turns of a conversation, nobody types
            a greeting, waits, and then types their own name. So the second row
            arrives on the first one's frame: one indicator before them, both
@@ -6094,7 +6094,7 @@ window.PF = window.PF || {};
        "sent" before it. The indicator earns its place from the message after
        the opening, where it is anticipation rather than preamble.
 
-       HOW MUCH IS THE OPENING. "Hello :)" and the line that says who is
+       HOW MUCH IS THE OPENING. "Hello Team." and the line that says who is
        saying it are one breath, not two turns: nobody types a greeting, waits
        for the reply that is not coming, and then types their own name. So
        every row marked to arrive with the one before it lands on that same
@@ -7928,6 +7928,7 @@ window.PF = window.PF || {};
        page that has finished arriving. */
     window.removeEventListener('scroll', onScroll);
     window.removeEventListener('resize', onResize);
+    if (sized) sized.disconnect();
     document.removeEventListener('focusin', onFocus, true);
     document.removeEventListener('pf:cta', run);
     if (ceiling) clearTimeout(ceiling);
@@ -7952,21 +7953,65 @@ window.PF = window.PF || {};
      The offset is zeroed before reading, so a measurement never includes the
      offset it is about to replace. css/16-reveal.css applies it, only above
      960 and only while nothing else has arrived yet.
+
+     AND IN THE MIDDLE OF THE SCREEN, NOT AT THE TOP OF IT. Centring across
+     was only half of it. The hero's row is as tall as its tallest column, and
+     the two outer ones are hidden but still there, so the conversation sat at
+     the top of a row with nothing visible under it: at 2560 by 1440 the
+     messages ended a little past a third of the way down and the rest of the
+     screen was empty. --solo-y puts the middle of what the conversation
+     actually shows (the roles, the two controls, and the thread's reserved
+     box, which already holds room for the invitation) on the middle of the
+     first screen. Never upward: when that is taller than the screen it starts
+     where it always did.
+
+     Also a transform, for the same reason as the sideways one. Moving the row
+     or giving the hero a viewport height would be a layout change in the one
+     place the thread measures, which is what broke it twice before.
+
+     The thread reserves its height when the conversation starts, after this
+     file has run, so a change in the thread's size measures again. Each
+     reading is taken with the transition switched off and committed before
+     it is switched back on: a transition in flight reports where the box is
+     on its way, not where it rests, and a re-measure is a correction, not a
+     journey.
      ---------------------------------------------------------------------- */
   var home = document.querySelector('.page[data-view="home"]') || document;
   var elLeft  = home.querySelector('.hero__identity');
   var elMid   = home.querySelector('.hero__copy');
   var elRight = home.querySelector('.hero__work');
+  var elThread = elMid && elMid.querySelector('.hero__thread');
 
   function centre() {
     if (at > 0 || !elLeft || !elMid || !elRight) return;
+    var was = elMid.style.transition;
+    elMid.style.transition = 'none';
     root.style.setProperty('--solo-x', '0px');
+    root.style.setProperty('--solo-y', '0px');
     var a = elLeft.getBoundingClientRect();
     var b = elMid.getBoundingClientRect();
     var c = elRight.getBoundingClientRect();
-    if (!a.width || !b.width || !c.width) return;
-    var dx = (a.left + c.right) / 2 - (b.left + b.width / 2);
-    root.style.setProperty('--solo-x', dx.toFixed(2) + 'px');
+    if (a.width && b.width && c.width) {
+      var dx = (a.left + c.right) / 2 - (b.left + b.width / 2);
+      root.style.setProperty('--solo-x', dx.toFixed(2) + 'px');
+
+      /* What is on screen, not the box: the column can be stretched to the
+         row's height, and the mobile invitation inside it is display:none. */
+      var top = Infinity, bottom = -Infinity, kids = elMid.children, r, i;
+      for (i = 0; i < kids.length; i++) {
+        r = kids[i].getBoundingClientRect();
+        if (!r.width || !r.height) continue;
+        if (r.top < top) top = r.top;
+        if (r.bottom > bottom) bottom = r.bottom;
+      }
+      if (bottom > top) {
+        var y = window.scrollY || 0;
+        var dy = window.innerHeight / 2 - (top + bottom) / 2 - y;
+        root.style.setProperty('--solo-y', Math.max(0, dy).toFixed(2) + 'px');
+      }
+    }
+    elMid.getBoundingClientRect();   /* commit the new offset untransitioned */
+    elMid.style.transition = was;
   }
 
   var framed = false;
@@ -7974,6 +8019,11 @@ window.PF = window.PF || {};
     if (framed || at > 0) return;
     framed = true;
     requestAnimationFrame(function () { framed = false; centre(); });
+  }
+
+  if (elThread && window.ResizeObserver) {
+    var sized = new ResizeObserver(onResize);
+    sized.observe(elThread);
   }
 
   centre();
