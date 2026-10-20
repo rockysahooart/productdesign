@@ -25670,27 +25670,32 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 
 /* ===== css/34-livefront.css ===== */
 /* ==========================================================================
-   34. THE LIVEFRONT CARD: CRAIGSLIST FOR iOS, DRAWN, NOT PICTURED
+   34. THE LIVEFRONT CARD: THE REAL SCREENS, IN A PHONE
 
-   The redesign's one journey, abstracted from the Figma file (LiveFront
-   Challenge, "START HERE · Final submission"): results for Volkswagen Golf
-   in Cars & trucks, the Price sheet setting a maximum of $10,000, the new
-   "Up to $10,000" chip joining the search scope as five results become four,
-   and the 2016 VW Golf opening on its details with Contact seller. The
-   screens, the copy, the sample listings and the colours are the file's
-   own (handoff F4: brand purple #8610A8, price green #008400, text #000 /
-   #636366, surface #FAFAFA); the photos are drawn as tinted tiles rather than
-   shipped as pictures.
+   The redesign's own frames from the Figma file (LiveFront Challenge, "START
+   HERE · Final submission"), exported and stacked inside one static iPhone,
+   played in the file's wired order with two steps left out for time (the
+   category picker and the search-entry keyboard):
 
-   EVERYTHING IS IN THE FRAME'S OWN POINTS. --u is one Figma point at the size
-   the card gives the phone (430 × 932 plus an 11pt bezel), the same trick
-   the Scale card uses, so the drawing is the file's geometry at any card size
-   and on the ultrawide grid's cards too.
+     S01 Home  ->  S03 Cars & trucks  ->  S06 Volkswagen Golf, 5 results
+     ->  S08 the Price sheet, $10,000 (its own layers, sliding up)
+     ->  S09 Up to $10,000, 4 results  ->  S12 Item details
 
-   ONE LOOP, ELEVEN SECONDS, TRANSFORM AND OPACITY ONLY. Every moving part
-   runs the same duration with its own keyframes, so they stay in step with
-   no script. The base styles are the filtered-results frame, which is what
-   reduced motion gets: the chip applied, four results, nothing moving.
+   Nothing of the interface is drawn here. The CSS is the device (a rim, a
+   bezel, the camera island and a little glass), the mask, the taps and the
+   timing. Each export had Figma's 4pt outline cropped off, so a screen is
+   exactly 430 x 932, the frame's own size, and is never stretched.
+
+   THE DEVICE DOES NOT MOVE. Every Figma frame draws its own Dynamic Island in
+   its status bar; the static island here sits exactly over it, so during a
+   push the screens' islands pass underneath and the camera stays put.
+
+   EVERYTHING IS IN THE FRAME'S POINTS. --u is one Figma point at the size the
+   card gives the phone, bounded by both axes so the device keeps its
+   proportions on the laptop carousel and the ultrawide cards alike.
+
+   ONE LOOP, 6.6 SECONDS, TRANSFORM AND OPACITY ONLY. The base styles are the
+   reduced-motion state: the same phone, held on S09, the filtered results.
    ========================================================================== */
 
 .pv__embed--livefront {
@@ -25700,429 +25705,160 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   overflow: visible;
 }
 
-.lf-phone {
-  --u: calc(100cqh / 954);
-  --lf-purple: #8610A8;
-  --lf-green: #008400;
-  --lf-ink: #000000;
-  --lf-ink-2: #636366;
-  --lf-t: 11s;
-  height: calc(954 * var(--u));
-  width: calc(452 * var(--u));
-  max-width: 100cqw;
-  box-sizing: border-box;
-  padding: calc(11 * var(--u));
-  border-radius: calc(62 * var(--u));
-  background: #101114;
-  box-shadow:
-    0 calc(2 * var(--u)) calc(3 * var(--u)) rgba(0, 0, 0, 0.30),
-    0 calc(16 * var(--u)) calc(34 * var(--u)) rgba(0, 0, 0, 0.18);
-  font-family: "Inter", "Be Vietnam Pro", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  color: var(--lf-ink);
-  line-height: 1.2;
-}
-.lf-phone p { margin: 0; }
-
-.lf-screen {
+.lfx {
+  --u: min(calc(100cqh / 960), calc(100cqw / 458));
+  --lfx-t: 6.6s;
   position: relative;
+  width: calc(458 * var(--u));
+  height: calc(960 * var(--u));
+  box-sizing: border-box;
+  border: calc(2 * var(--u)) solid transparent;
+  border-radius: calc(70 * var(--u));
+  /* The rim: a chamfer lit from the top left, on a near-black body. */
+  background:
+    linear-gradient(#202125, #121315) padding-box,
+    linear-gradient(155deg, #7A7C82 0%, #3A3B40 22%, #18191C 55%, #4B4D52 100%) border-box;
+  box-shadow:
+    inset 0 0 0 calc(1 * var(--u)) rgba(255, 255, 255, 0.07),
+    0 calc(2 * var(--u)) calc(3 * var(--u)) rgba(0, 0, 0, 0.28),
+    0 calc(16 * var(--u)) calc(34 * var(--u)) rgba(0, 0, 0, 0.16);
+}
+
+.lfx-screen {
+  position: absolute;
+  inset: calc(12 * var(--u));
+  border-radius: calc(56 * var(--u));
+  overflow: hidden;
+  background: #FAFAFA;
+  box-shadow: 0 0 0 calc(1 * var(--u)) #000;
+  /* Its own compositing layer, so the corners clip the moving screens cleanly. */
+  isolation: isolate;
+}
+
+.lfx-s {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  border-radius: calc(52 * var(--u));
-  overflow: hidden;
-  background: #FAFAFA;
-}
-
-/* The map the search sits on: muted, illustrative, with the 25-mile ring. */
-.lf-map {
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: calc(220 * var(--u));
-  background:
-    radial-gradient(circle at 52% 70%, transparent calc(74 * var(--u)), rgba(134, 16, 168, 0.28) calc(75 * var(--u)), transparent calc(77 * var(--u))),
-    repeating-linear-gradient(28deg, transparent 0 calc(38 * var(--u)), rgba(255, 255, 255, 0.7) calc(38 * var(--u)) calc(41 * var(--u))),
-    repeating-linear-gradient(-62deg, transparent 0 calc(52 * var(--u)), rgba(255, 255, 255, 0.6) calc(52 * var(--u)) calc(55 * var(--u))),
-    #E4E3EA;
-}
-.lf-status {
-  position: absolute;
-  top: calc(16 * var(--u));
-  left: calc(36 * var(--u));
-  right: calc(30 * var(--u));
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: calc(16 * var(--u));
-}
-.lf-status i {
-  width: calc(56 * var(--u));
-  height: calc(11 * var(--u));
-  border-radius: calc(3 * var(--u));
-  background: linear-gradient(90deg, #000 0 52%, transparent 52% 62%, #000 62%);
-}
-
-.lf-chips {
-  position: absolute;
-  top: calc(60 * var(--u));
-  left: calc(20 * var(--u));
-  display: flex;
-  gap: calc(8 * var(--u));
-  white-space: nowrap;
-}
-.lf-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: calc(6 * var(--u));
-  height: calc(34 * var(--u));
-  padding: 0 calc(12 * var(--u));
-  border: calc(1.5 * var(--u)) solid var(--lf-purple);
-  border-radius: calc(17 * var(--u));
-  background: rgba(255, 255, 255, 0.9);
-  color: var(--lf-purple);
-  font-size: calc(14 * var(--u));
-  font-weight: 500;
-}
-.lf-x { font-size: calc(18 * var(--u)); line-height: 1; }
-
-/* --- the results sheet --------------------------------------------------- */
-
-.lf-sheet {
-  position: absolute;
-  top: calc(147 * var(--u));
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: calc(14 * var(--u)) calc(20 * var(--u)) 0;
-  border-radius: calc(14 * var(--u)) calc(14 * var(--u)) 0 0;
-  background: #FAFAFA;
-  box-shadow: 0 calc(-2 * var(--u)) calc(24 * var(--u)) rgba(0, 0, 0, 0.08);
-}
-.lf-grab {
-  width: calc(36 * var(--u));
-  height: calc(5 * var(--u));
-  margin: 0 auto calc(12 * var(--u));
-  border-radius: calc(3 * var(--u));
-  background: #C7C7CC;
-}
-.lf-head { display: flex; justify-content: space-between; align-items: center; }
-.lf-h { font-size: calc(15 * var(--u)); font-weight: 600; }
-.lf-h2 { font-size: calc(20 * var(--u)); font-weight: 600; }
-.lf-s { font-size: calc(13 * var(--u)); color: var(--lf-ink-2); margin-top: calc(3 * var(--u)) !important; }
-.lf-link { font-size: calc(13 * var(--u)); color: var(--lf-ink); font-weight: 500; }
-.lf-field {
-  display: flex;
-  align-items: center;
-  gap: calc(10 * var(--u));
-  height: calc(40 * var(--u));
-  margin-top: calc(14 * var(--u));
-  padding: 0 calc(12 * var(--u));
-  border-radius: calc(10 * var(--u));
-  background: #FFFFFF;
-  font-size: calc(16 * var(--u));
-}
-.lf-field svg {
-  width: calc(18 * var(--u));
-  height: calc(18 * var(--u));
-  fill: none;
-  stroke: var(--lf-ink-2);
-  stroke-width: 2.2;
-  stroke-linecap: round;
-}
-.lf-field span { flex: 1; }
-.lf-clear {
-  width: calc(16 * var(--u));
-  height: calc(16 * var(--u));
-  border-radius: 50%;
-  background: #8E8E93;
-}
-.lf-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: calc(14 * var(--u));
-  font-size: calc(13 * var(--u));
-}
-.lf-row--count { font-size: calc(15 * var(--u)); }
-.lf-row .lf-s { margin-top: 0 !important; }
-
-/* Two labels in one slot: the unfiltered and the filtered. */
-.lf-swap { display: inline-grid; }
-.lf-swap > span { grid-area: 1 / 1; }
-.lf-off { opacity: 0; }
-
-.lf-grid {
-  position: absolute;
-  top: calc(206 * var(--u));
-  left: calc(20 * var(--u));
-  right: calc(20 * var(--u));
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: calc(14 * var(--u)) calc(14 * var(--u));
-}
-.lf-grid--before { opacity: 0; }
-.lf-card { min-width: 0; }
-.lf-photo {
-  position: relative;
-  height: calc(128 * var(--u));
-  border-radius: calc(8 * var(--u));
-  overflow: hidden;
-  background: var(--lf-tile, #D9DCE2);
-}
-/* A tile tinted the colour of the car in the file's listing photo, with the
-   car reduced to a body and two wheels. */
-.lf-photo--blue   { --lf-tile: linear-gradient(180deg, #CFD9C4 0 48%, #A9ADB1 48%); --lf-body: #3E6FB0; }
-.lf-photo--silver { --lf-tile: linear-gradient(180deg, #D9D3C8 0 48%, #8E8C88 48%); --lf-body: #B8BDC3; }
-.lf-photo--white  { --lf-tile: linear-gradient(180deg, #CBD5DE 0 48%, #7D8186 48%); --lf-body: #F4F5F6; }
-.lf-photo--gray   { --lf-tile: linear-gradient(180deg, #C7B9A8 0 48%, #6E6E6E 48%); --lf-body: #4A4D52; }
-.lf-photo--none   { --lf-tile: #E5E5EA; }
-.lf-car {
-  position: absolute;
-  left: 16%;
-  right: 16%;
-  bottom: 22%;
-  height: 34%;
-  border-radius: 38% 46% 12% 12% / 60% 70% 18% 18%;
-  background: var(--lf-body);
-  box-shadow: inset 0 calc(-6 * var(--u)) 0 rgba(0, 0, 0, 0.18);
-}
-.lf-car::before,
-.lf-car::after {
-  content: "";
-  position: absolute;
-  bottom: -18%;
-  width: 22%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #1C1C1E;
-}
-.lf-car::before { left: 12%; }
-.lf-car::after { right: 12%; }
-.lf-nophoto {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-size: calc(12 * var(--u));
-  color: var(--lf-ink-2);
-}
-.lf-price {
-  position: absolute;
-  left: calc(8 * var(--u));
-  bottom: calc(8 * var(--u));
-  padding: calc(4 * var(--u)) calc(9 * var(--u));
-  border-radius: calc(12 * var(--u));
-  background: var(--lf-green);
-  color: #FFFFFF;
-  font-size: calc(13 * var(--u));
-  font-weight: 600;
-}
-.lf-t { margin-top: calc(8 * var(--u)) !important; font-size: calc(15 * var(--u)); font-weight: 600; }
-.lf-m { margin-top: calc(3 * var(--u)) !important; font-size: calc(13 * var(--u)); color: var(--lf-ink-2); }
-
-.lf-bar {
-  position: absolute;
-  left: calc(16 * var(--u));
-  right: calc(16 * var(--u));
-  bottom: calc(21 * var(--u));
-  height: calc(62 * var(--u));
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  border-radius: calc(31 * var(--u));
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 calc(2 * var(--u)) calc(10 * var(--u)) rgba(0, 0, 0, 0.06);
-  font-size: calc(10 * var(--u));
-  color: var(--lf-ink);
-}
-.lf-tab { padding: calc(8 * var(--u)) calc(10 * var(--u)); border-radius: calc(18 * var(--u)); }
-.lf-tab--on { background: rgba(134, 16, 168, 0.12); color: var(--lf-purple); font-weight: 600; }
-
-/* --- the price sheet, and what sits over the results while it is up ----- */
-
-.lf-dim {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.2);
+  display: block;
   opacity: 0;
 }
-.lf-price-sheet {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: calc(440 * var(--u));
-  padding: calc(14 * var(--u)) calc(20 * var(--u)) 0;
-  border-radius: calc(14 * var(--u)) calc(14 * var(--u)) 0 0;
-  background: #FAFAFA;
-  transform: translateY(101%);
-}
-.lf-close {
-  display: grid;
-  place-items: center;
-  width: calc(32 * var(--u));
-  height: calc(32 * var(--u));
-  border-radius: 50%;
-  background: #FFFFFF;
-  box-shadow: 0 calc(2 * var(--u)) calc(10 * var(--u)) rgba(0, 0, 0, 0.08);
-  color: var(--lf-purple);
-  font-size: calc(18 * var(--u));
-}
-.lf-price-sheet > .lf-s { margin-top: calc(12 * var(--u)) !important; }
-.lf-pair { display: grid; grid-template-columns: 1fr 1fr; gap: calc(14 * var(--u)); margin-top: calc(18 * var(--u)); }
-.lf-lbl { font-size: calc(13 * var(--u)); color: var(--lf-ink-2); }
-.lf-input {
-  margin-top: calc(8 * var(--u)) !important;
-  height: calc(44 * var(--u));
-  display: flex;
-  align-items: center;
-  padding: 0 calc(12 * var(--u));
-  border: calc(1 * var(--u)) solid #BFBABF;
-  border-radius: calc(8 * var(--u));
-  background: #FFFFFF;
-  font-size: calc(15 * var(--u));
-  color: var(--lf-ink-2);
-}
-.lf-input--on { border: calc(2 * var(--u)) solid var(--lf-purple); color: var(--lf-ink); }
-.lf-clearp { margin-top: calc(22 * var(--u)) !important; color: var(--lf-purple); font-size: calc(15 * var(--u)); font-weight: 400; }
-.lf-btn {
-  margin-top: calc(22 * var(--u)) !important;
-  height: calc(50 * var(--u));
-  display: grid;
-  place-items: center;
-  border-radius: calc(25 * var(--u));
-  background: var(--lf-purple);
-  color: #FFFFFF;
-  font-size: calc(17 * var(--u));
-  font-weight: 600;
-}
+.lfx-s09 { opacity: 1; }
+.lfx-s03,
+.lfx-s12 { transform: translateX(101%); }
 
-/* --- item details --------------------------------------------------------- */
-
-.lf-details {
+.lfx-dim {
   position: absolute;
   inset: 0;
-  padding: calc(60 * var(--u)) calc(20 * var(--u)) 0;
-  background: #FFFFFF;
+  background: rgba(0, 0, 0, 0.28);
+  opacity: 0;
+}
+.lfx-sheet {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: calc(581 / 932 * 100%);
+  display: block;
   transform: translateY(101%);
 }
-.lf-dtop { display: flex; justify-content: space-between; }
-.lf-photo--big { height: calc(260 * var(--u)); margin-top: calc(16 * var(--u)); border-radius: calc(12 * var(--u)); }
-.lf-photo--big .lf-price { left: calc(12 * var(--u)); bottom: calc(12 * var(--u)); font-size: calc(15 * var(--u)); }
-.lf-count {
-  position: absolute;
-  right: calc(12 * var(--u));
-  bottom: calc(12 * var(--u));
-  padding: calc(4 * var(--u)) calc(9 * var(--u));
-  border-radius: calc(12 * var(--u));
-  background: rgba(0, 0, 0, 0.6);
-  color: #FFFFFF;
-  font-size: calc(12 * var(--u));
-}
-.lf-dt { margin-top: calc(22 * var(--u)) !important; font-size: calc(24 * var(--u)); font-weight: 700; }
-.lf-facts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: calc(16 * var(--u)) calc(14 * var(--u));
-  margin-top: calc(22 * var(--u));
-  font-size: calc(17 * var(--u));
-  font-weight: 600;
-}
-.lf-facts span { display: block; font-size: calc(12 * var(--u)); font-weight: 400; color: var(--lf-ink-2); margin-bottom: calc(3 * var(--u)); }
-.lf-btn--contact { position: absolute; left: calc(20 * var(--u)); right: calc(20 * var(--u)); bottom: calc(40 * var(--u)); }
 
-/* The press, shown as a soft purple ring where a thumb would land. */
-.lf-tap {
+.lfx-island {
+  position: absolute;
+  left: 50%;
+  top: calc(23 * var(--u));
+  width: calc(126 * var(--u));
+  height: calc(37 * var(--u));
+  margin-left: calc(-63 * var(--u));
+  border-radius: calc(19 * var(--u));
+  background: #000;
+}
+.lfx-glass {
+  position: absolute;
+  inset: calc(12 * var(--u));
+  border-radius: calc(56 * var(--u));
+  pointer-events: none;
+  box-shadow: inset 0 0 0 calc(1 * var(--u)) rgba(255, 255, 255, 0.10);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 28%);
+}
+
+/* Where a thumb lands, in the frame's own coordinates. */
+.lfx-tap {
   position: absolute;
   width: calc(44 * var(--u));
   height: calc(44 * var(--u));
   margin: calc(-22 * var(--u)) 0 0 calc(-22 * var(--u));
   border-radius: 50%;
-  background: rgba(134, 16, 168, 0.22);
+  background: rgba(134, 16, 168, 0.24);
   opacity: 0;
 }
-.lf-tap--apply { left: 50%; top: calc(746 * var(--u)); }
-.lf-tap--card  { left: 28%; top: calc(420 * var(--u)); }
+.lfx-tap--1 { left: calc(346 / 430 * 100%); top: calc(81 / 932 * 100%); }   /* All categories */
+.lfx-tap--2 { left: calc(150 / 430 * 100%); top: calc(256 / 932 * 100%); }  /* the search field */
+.lfx-tap--3 { left: calc(418 / 430 * 100%); top: calc(81 / 932 * 100%); }   /* the price chip, at the edge */
+.lfx-tap--4 { left: calc(215 / 430 * 100%); top: calc(634 / 932 * 100%); }  /* Apply */
+.lfx-tap--5 { left: calc(117 / 430 * 100%); top: calc(450 / 932 * 100%); }  /* the 2016 VW Golf */
 
-/* --- the loop --------------------------------------------------------------
+/* --- the loop ----------------------------------------------------------------
 
-   0-10%   five results, unfiltered
-   10-15%  the Price sheet rises; Maximum $10,000
-   24-28%  Apply is pressed
-   28-33%  the sheet goes; the chip lands, the labels and count change and the
-           $13,900 listing leaves; the grid settles on four
-   52-56%  the 2016 VW Golf is pressed
-   57-63%  its details rise
-   88-95%  they fade, and the search resets under them for the next pass
+   0.00  Home                       0.75  tap All categories
+   0.90  Cars & trucks pushes in    1.65  tap the search field
+   1.80  Volkswagen Golf, 5 results 2.45  tap the price chip
+   2.60  the Price sheet rises      3.55  tap Apply
+   3.85  the sheet goes; 4 results  4.75  tap the 2016 VW Golf
+   5.00  Item details pushes in
+   6.30  back to Home
    -------------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: no-preference) {
-  .lf-price-sheet         { animation: lf-sheet  var(--lf-t) linear infinite; }
-  .lf-dim                 { animation: lf-dim    var(--lf-t) linear infinite; }
-  .lf-chip--new           { animation: lf-chip   var(--lf-t) linear infinite; }
-  .lf-on                  { animation: lf-on     var(--lf-t) linear infinite; }
-  .lf-off                 { animation: lf-off    var(--lf-t) linear infinite; }
-  .lf-l02                 { animation: lf-l02    var(--lf-t) linear infinite; }
-  .lf-grid--before        { animation: lf-before var(--lf-t) linear infinite; }
-  .lf-grid--after         { animation: lf-after  var(--lf-t) linear infinite; }
-  .lf-details             { animation: lf-detail var(--lf-t) linear infinite; }
-  .lf-tap--apply          { animation: lf-tapA   var(--lf-t) linear infinite; }
-  .lf-tap--card           { animation: lf-tapB   var(--lf-t) linear infinite; }
+  .lfx-s01   { opacity: 1; }
+  .lfx-s03   { animation: lfx-s03   var(--lfx-t) linear infinite; }
+  .lfx-s06   { animation: lfx-s06   var(--lfx-t) linear infinite; }
+  .lfx-s09   { animation: lfx-s09   var(--lfx-t) linear infinite; }
+  .lfx-dim   { animation: lfx-dim   var(--lfx-t) linear infinite; }
+  .lfx-sheet { animation: lfx-sheet var(--lfx-t) linear infinite; }
+  .lfx-s12   { animation: lfx-s12   var(--lfx-t) linear infinite; }
+  .lfx-tap   { animation: lfx-tap   var(--lfx-t) linear infinite; }
+  .lfx-tap--1 { animation-delay: 0.75s; }
+  .lfx-tap--2 { animation-delay: 1.65s; }
+  .lfx-tap--3 { animation-delay: 2.45s; }
+  .lfx-tap--4 { animation-delay: 3.55s; }
+  .lfx-tap--5 { animation-delay: 4.75s; }
 }
 
-@keyframes lf-sheet {
-  0%, 10%  { transform: translateY(101%); animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
-  15%, 28% { transform: translateY(0);    animation-timing-function: cubic-bezier(0.4, 0, 1, 1); }
-  33%, 100% { transform: translateY(101%); }
+@keyframes lfx-s03 {
+  0%, 13.64% { transform: translateX(101%); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+  18.94%, 95.45% { transform: none; opacity: 1; }
+  100% { transform: none; opacity: 0; }
 }
-@keyframes lf-dim {
-  0%, 10% { opacity: 0; }
-  15%, 28% { opacity: 1; }
-  33%, 100% { opacity: 0; }
+@keyframes lfx-s06 {
+  0%, 27.27% { opacity: 0; }
+  31.06%, 95.45% { opacity: 1; }
+  100% { opacity: 0; }
 }
-@keyframes lf-chip {
-  0%, 30% { opacity: 0; transform: translateX(calc(-8 * var(--u))); }
-  34%, 90% { opacity: 1; transform: none; }
-  93%, 100% { opacity: 0; transform: none; }
+@keyframes lfx-dim {
+  0%, 39.39% { opacity: 0; }
+  44.7%, 58.33% { opacity: 1; }
+  63.64%, 100% { opacity: 0; }
 }
-@keyframes lf-on {
-  0%, 30% { opacity: 0; }
-  32%, 90% { opacity: 1; }
-  92%, 100% { opacity: 0; }
+@keyframes lfx-sheet {
+  0%, 39.39% { transform: translateY(101%); animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+  44.7%, 58.33% { transform: none; animation-timing-function: cubic-bezier(0.4, 0, 1, 1); }
+  63.64%, 100% { transform: translateY(101%); }
 }
-@keyframes lf-off {
-  0%, 30% { opacity: 1; }
-  32%, 90% { opacity: 0; }
-  92%, 100% { opacity: 1; }
+@keyframes lfx-s09 {
+  0%, 58.33% { opacity: 0; }
+  62.12%, 95.45% { opacity: 1; }
+  100% { opacity: 0; }
 }
-@keyframes lf-l02 {
-  0%, 29% { opacity: 1; }
-  32%, 90% { opacity: 0; }
-  92%, 100% { opacity: 1; }
+@keyframes lfx-s12 {
+  0%, 75.76% { transform: translateX(101%); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+  81.06%, 95.45% { transform: none; opacity: 1; }
+  100% { transform: none; opacity: 0; }
 }
-@keyframes lf-before {
-  0%, 32% { opacity: 1; }
-  36%, 90% { opacity: 0; }
-  92%, 100% { opacity: 1; }
-}
-@keyframes lf-after {
-  0%, 32% { opacity: 0; transform: translateY(calc(6 * var(--u))); }
-  36%, 90% { opacity: 1; transform: none; }
-  92%, 100% { opacity: 0; transform: none; }
-}
-@keyframes lf-detail {
-  0%, 57% { transform: translateY(101%); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
-  63%, 88% { transform: translateY(0); opacity: 1; }
-  94% { transform: translateY(0); opacity: 0; }
-  95%, 100% { transform: translateY(101%); opacity: 0; }
-}
-@keyframes lf-tapA {
-  0%, 23% { opacity: 0; transform: scale(0.6); }
-  25% { opacity: 1; transform: scale(1); }
-  28%, 100% { opacity: 0; transform: scale(1.3); }
-}
-@keyframes lf-tapB {
-  0%, 51% { opacity: 0; transform: scale(0.6); }
-  53% { opacity: 1; transform: scale(1); }
-  56%, 100% { opacity: 0; transform: scale(1.3); }
+@keyframes lfx-tap {
+  0% { opacity: 0; transform: scale(0.6); }
+  2.5% { opacity: 1; transform: scale(1); }
+  6%, 100% { opacity: 0; transform: scale(1.35); }
 }
 
 /* --- the lower Key Industry Projects section, set aside -------------------
@@ -33403,42 +33139,23 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
                   <p class="pv__sub">For a LiveFront design challenge, I redesigned Craigslist&rsquo;s iPhone app around finding a used car, adding clearer hierarchy and readable listing cards. Search scope stays visible as chips, and item details lead with what a buyer checks before contacting the seller. <a class="pv__go" href="https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0" target="_blank" rel="noopener noreferrer">view project <span class="pv__go-a" aria-hidden="true">&rarr;</span></a></p>
                 </div>
                 <div class="pv__vis"><div class="pv__embed pv__embed--livefront" role="img"
-                     aria-label="The redesigned Craigslist iPhone app. Results for Volkswagen Golf in Cars and trucks, Minneapolis, 25 miles; a Price sheet sets a maximum of $10,000; an Up to $10,000 chip joins the search scope and five results become four; then the 2016 VW Golf opens on its details, with mileage, condition and a purple Contact seller button.">
-                <div class="lf-phone" aria-hidden="true"><div class="lf-screen">
-                  <div class="lf-map"></div>
-                  <div class="lf-status"><b>9:41</b><i></i></div>
-                  <div class="lf-chips">
-                    <span class="lf-chip">Cars &amp; trucks</span><span class="lf-chip">25 miles</span><span class="lf-chip lf-chip--new">Up to $10,000 <span class="lf-x">&times;</span></span>
+                     aria-label="The redesigned Craigslist iPhone app, in its real Figma screens: Home in Minneapolis, Cars and trucks browsing, results for Volkswagen Golf, the Price sheet set to a maximum of $10,000, the four results up to $10,000, and the 2016 Volkswagen Golf&rsquo;s item details.">
+                <!-- The real screens from the Figma file, exported and stacked
+                     inside one static iPhone. Only the screens move. -->
+                <div class="lfx" aria-hidden="true">
+                  <div class="lfx-screen">
+                    <img class="lfx-s lfx-s01" src="assets/12d471814688.webp" width="430" height="932" alt="" loading="lazy" decoding="async">
+                    <img class="lfx-s lfx-s03" src="assets/99e70b62d143.webp" width="430" height="932" alt="" loading="lazy" decoding="async">
+                    <img class="lfx-s lfx-s06" src="assets/f009f85f2577.webp" width="430" height="932" alt="" loading="lazy" decoding="async">
+                    <img class="lfx-s lfx-s09" src="assets/1579b4e217c7.webp" width="430" height="932" alt="" loading="lazy" decoding="async">
+                    <div class="lfx-dim"></div>
+                    <img class="lfx-sheet" src="assets/95c516214a6b.webp" width="430" height="581" alt="" loading="lazy" decoding="async">
+                    <img class="lfx-s lfx-s12" src="assets/47888859f3ab.webp" width="430" height="932" alt="" loading="lazy" decoding="async">
+                    <i class="lfx-tap lfx-tap--1"></i><i class="lfx-tap lfx-tap--2"></i><i class="lfx-tap lfx-tap--3"></i><i class="lfx-tap lfx-tap--4"></i><i class="lfx-tap lfx-tap--5"></i>
                   </div>
-                  <div class="lf-sheet">
-                    <div class="lf-grab"></div>
-                    <div class="lf-head"><div><p class="lf-h">Cars &amp; trucks</p><p class="lf-s">Minneapolis &middot; 25 miles</p></div><span class="lf-link">Expand map</span></div>
-                    <div class="lf-field"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><span>Volkswagen Golf</span><i class="lf-clear"></i></div>
-                    <div class="lf-row"><span class="lf-swap"><span class="lf-off">Filters</span><span class="lf-on">Filters (1)</span></span><span class="lf-link">Save search</span></div>
-                    <div class="lf-row lf-row--count"><b class="lf-swap"><span class="lf-off">5 results</span><span class="lf-on">4 results</span></b><span class="lf-s">Newest</span></div>
-                    <div class="lf-grid lf-grid--before"><div class="lf-card"><div class="lf-photo lf-photo--blue"><i class="lf-car"></i><span class="lf-price">$8,900</span></div><p class="lf-t">2016 VW Golf</p><p class="lf-m">92,000 miles &middot; Owner</p></div><div class="lf-card lf-l02"><div class="lf-photo lf-photo--none"><span class="lf-nophoto">No photo</span><span class="lf-price">$13,900</span></div><p class="lf-t">2019 VW Golf SE</p><p class="lf-m">41,000 miles &middot; Dealer</p></div><div class="lf-card"><div class="lf-photo lf-photo--silver"><i class="lf-car"></i><span class="lf-price">$7,500</span></div><p class="lf-t">2015 VW Golf</p><p class="lf-m">112,000 miles &middot; Owner</p></div><div class="lf-card"><div class="lf-photo lf-photo--white"><i class="lf-car"></i><span class="lf-price">$9,600</span></div><p class="lf-t">2017 VW Golf</p><p class="lf-m">98,000 miles &middot; Dealer</p></div></div>
-                    <div class="lf-grid lf-grid--after"><div class="lf-card lf-card--pick"><div class="lf-photo lf-photo--blue"><i class="lf-car"></i><span class="lf-price">$8,900</span></div><p class="lf-t">2016 VW Golf</p><p class="lf-m">92,000 miles &middot; Owner</p></div><div class="lf-card"><div class="lf-photo lf-photo--silver"><i class="lf-car"></i><span class="lf-price">$7,500</span></div><p class="lf-t">2015 VW Golf</p><p class="lf-m">112,000 miles &middot; Owner</p></div><div class="lf-card"><div class="lf-photo lf-photo--white"><i class="lf-car"></i><span class="lf-price">$9,600</span></div><p class="lf-t">2017 VW Golf</p><p class="lf-m">98,000 miles &middot; Dealer</p></div><div class="lf-card"><div class="lf-photo lf-photo--gray"><i class="lf-car"></i><span class="lf-price">$6,800</span></div><p class="lf-t">2014 VW Golf</p><p class="lf-m">128,000 miles &middot; Owner</p></div></div>
-                  </div>
-                  <div class="lf-bar"><span class="lf-tab lf-tab--on">Search</span><span class="lf-tab">Favorites</span><span class="lf-tab">Post</span><span class="lf-tab">Account</span><span class="lf-tab">Chat</span></div>
-                  <div class="lf-dim"></div>
-                  <div class="lf-price-sheet">
-                    <div class="lf-grab"></div>
-                    <div class="lf-head"><p class="lf-h2">Price</p><span class="lf-close">&times;</span></div>
-                    <p class="lf-s">Volkswagen Golf &middot; Cars &amp; trucks &middot; Minneapolis &middot; 25 miles</p>
-                    <div class="lf-pair"><div><p class="lf-lbl">Minimum</p><p class="lf-input">No min</p></div><div><p class="lf-lbl">Maximum</p><p class="lf-input lf-input--on">$ 10,000</p></div></div>
-                    <p class="lf-link lf-clearp">Clear price</p>
-                    <p class="lf-btn">Apply</p>
-                  </div>
-                  <div class="lf-details">
-                    <div class="lf-dtop"><span class="lf-close">&times;</span><span class="lf-close">&#9734;</span></div>
-                    <div class="lf-photo lf-photo--blue lf-photo--big"><i class="lf-car"></i><span class="lf-price">$8,900</span><span class="lf-count">Photo 1 of 2</span></div>
-                    <p class="lf-dt">2016 Volkswagen Golf</p>
-                    <p class="lf-s">Posted 1 hr ago &bull; By owner</p>
-                    <div class="lf-facts"><p><span>Mileage</span>92,000 miles</p><p><span>Condition</span>Good</p><p><span>Transmission</span>Automatic</p><p><span>Fuel</span>Gas</p><p><span>Title status</span>Clean</p><p><span>Body type</span>Hatchback</p></div>
-                    <p class="lf-btn lf-btn--contact">Contact seller</p>
-                  </div>
-                  <i class="lf-tap lf-tap--apply"></i><i class="lf-tap lf-tap--card"></i>
-                </div></div>
+                  <div class="lfx-island"></div>
+                  <div class="lfx-glass"></div>
+                </div>
                 </div></div>
                   <span class="card__launch pv__launch" aria-hidden="true">
                     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
