@@ -141,12 +141,12 @@ window.PF = window.PF || {};
       other.style.display = mode === 'remove' ? 'none' : '';
       screen.querySelector('[data-fbverb]').textContent = mode === 'remove' ? 'Removed:' : 'Added:';
       screen.querySelector('[data-fbtag]').innerHTML =
-        mode === 'remove' ? '197 — Authorization Missing' : 'PR — Patient Responsibility';
+        mode === 'remove' ? '197: Authorization Missing' : 'PR: Patient Responsibility';
       screen.querySelector('[data-fbq]').textContent =
         mode === 'remove' ? 'Why did you remove this tag?' : 'Why did you make this change?';
       screen.querySelector('[data-snacktext]').innerHTML =
-        mode === 'remove' ? 'Removed: 197 — Authorization Missing'
-                          : 'Added: PR — Patient Responsibility';
+        mode === 'remove' ? 'Removed: 197: Authorization Missing'
+                          : 'Added: PR: Patient Responsibility';
       val.classList.remove('is-press');
       [].forEach.call(screen.querySelectorAll('.ofw-menu__o'), function (o) {
         o.classList.remove('is-hl');
@@ -202,7 +202,7 @@ window.PF = window.PF || {};
             screen.querySelector('[data-t="opt-pr"]').classList.remove('is-hl');
             root.setAttribute('data-menu', '0');
             slot.innerHTML = '<span class="ofw-tag ofw-tag--mine ofw-tag--new" data-t="pr">' +
-              '<span class="ofw-t">PR — Patient Responsibility</span>' +
+              '<span class="ofw-t">PR: Patient Responsibility</span>' +
               '<span class="ofw-x">×</span></span>';
           } },
         { hold: 260, after: 1500, act: function () {
@@ -219,7 +219,7 @@ window.PF = window.PF || {};
             timers.push(setTimeout(function () {
               root.setAttribute('data-fb', '0');
               slot.innerHTML = '<span class="ofw-tag" data-t="pr"><span class="ofw-t">' +
-                'PR — Patient Responsibility</span>' + BOT + '<span class="ofw-x">×</span></span>';
+                'PR: Patient Responsibility</span>' + BOT + '<span class="ofw-x">×</span></span>';
             }, 420));
           } }
       ];
