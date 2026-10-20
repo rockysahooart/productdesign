@@ -14,16 +14,18 @@ deployed site. Sections:
              dark OS, toggle round-trip with reloads, OS flipped mid-visit.
              Every animation frame from the first one is sampled; a fresh
              visit must never show a dark frame.
-    seq      the landing sequence at each width: nothing staged is visible
-             before pf:cta, groups 1-5 in order, everything visible at the
-             end, the thread's width identical before and after, no
-             horizontal overflow at any frame, and above 960 the conversation
-             centred on the first screen while it is alone
-    hatch    reduced motion, deep link, #work, scroll, replay after whole
-    keys     Tab before the reveal never lands inside a staged block, and
-             reaches the staged blocks once they are shown
+    seq      at 960 and up, the three landing states: intro (only the
+             conversation, centred), decision on pf:cta (roles, profile,
+             LET'S TALK, Trusted By, logos, in order, 100-180ms apart, work
+             still hidden, gate holds without a click), work on the click
+             (everything, laid out exactly as an unstaged page lays it out).
+             Below 960, the cascade. At every width: thread width constant,
+             no horizontal overflow, no errors
+    hatch    reduced motion, deep links, tablet scroll, replay while deciding
+             and after work, hard refresh
+    keys     Tab in each state reaches only what that state shows
     copy     message one reads "Hello Team." with no icon, before and after
-             a role switch
+             a role switch, and no smiley anywhere in the source
 
 Exit status is the number of failures.
 """
@@ -68,17 +70,29 @@ def serve():
 # documents of their own and have nothing to report.
 SAMPLER = r"""
 if (window.top === window) (function () {
-  var S = window.__pf = { f: [], cta: null, dark: 0, frames: 0, over: 0,
-                          early: [], shownAt: {}, w0: null, w1: null, alone: null };
+  var S = window.__pf = { cta: null, dark: 0, frames: 0, over: 0,
+                          early: [], shownAt: {}, seen: {}, w0: null };
+  /* What each landing state is made of, by name, so a test can ask when each
+     first became visible. */
+  var WATCH = { roles: '.hero-card .hero__eyebrow', who: '.hero-id--who', talk: '.hero-id--talk',
+                tlbl: '.hero-trust__lbl', chips: '.hero-trust__chip', work: '.hero-card .hero__work',
+                caps: '.hero-id--caps', past: '.hero__past', tools: '.hero__tools',
+                background: '#background', more: '#more', contact: '#contact' };
   function lum(c) {
     var m = /rgba?\(([\d.]+), ([\d.]+), ([\d.]+)(?:, ([\d.]+))?/.exec(c || '');
     if (!m || (m[4] !== undefined && +m[4] < 0.5)) return null;
     return (0.2126 * m[1] + 0.7152 * m[2] + 0.0722 * m[3]) / 255;
   }
+  function visible(el) {
+    if (!el.getClientRects().length) return false;
+    var cs = getComputedStyle(el);
+    if (cs.visibility !== 'visible' || +cs.opacity <= 0.01) return false;
+    return el.checkVisibility ? el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }) : true;
+  }
   document.addEventListener('pf:cta', function () {
-    S.cta = performance.now();
+    if (S.cta === null) S.cta = performance.now();
     var t = document.querySelector('.hero__thread');
-    if (t) S.w0 = t.getBoundingClientRect().width;
+    if (t && S.w0 === null) S.w0 = t.getBoundingClientRect().width;
   }, true);
   function tick() {
     var H = document.documentElement;
@@ -91,15 +105,19 @@ if (window.top === window) (function () {
         if (l !== null && l < 0.35) dark = true;
       }
       if (dark || H.getAttribute('data-theme') === 'dark') S.dark++;
-      if (S.frames === 1) S.first = { theme: H.getAttribute('data-theme'), stage: H.getAttribute('data-stage') };
+      if (S.frames === 1) S.first = { theme: H.getAttribute('data-theme'), stage: H.getAttribute('data-stage'),
+                                      landing: H.getAttribute('data-landing') };
       if (document.body && H.scrollWidth > window.innerWidth + 0.5) S.over++;
       var st = document.querySelectorAll('[data-reveal]');
       for (i = 0; i < st.length; i++) {
-        var cs = getComputedStyle(st[i]);
-        var vis = cs.visibility === 'visible' && +cs.opacity > 0.01;
         var g = st[i].getAttribute('data-reveal');
-        if (vis && S.cta === null) S.early.push(g);
+        if (S.cta === null && visible(st[i])) S.early.push(g);
         if (st[i].hasAttribute('data-shown') && !(g in S.shownAt)) S.shownAt[g] = performance.now();
+      }
+      for (var k in WATCH) {
+        if (k in S.seen) continue;
+        var el = document.querySelector(WATCH[k]);
+        if (el && visible(el)) S.seen[k] = performance.now();
       }
     }
     requestAnimationFrame(tick);
@@ -219,100 +237,197 @@ def t_theme(b, base, shots):
           json.dumps([before, after]))
 
 
+KEYS = ['.hero__identity', '.hero__copy', '.hero__thread', '.hero-card .hero__work', '.hero__past',
+        '.hero__tools', '.hero-id--who', '.hero-id--talk', '.hero-id--caps', '#background', '#more', '#contact']
+RECTS = ('(() => { const o = {}; for (const k of %s) { const e = document.querySelector(k);'
+         ' if (!e) continue; const r = e.getBoundingClientRect();'
+         ' o[k] = [r.left + scrollX, r.top + scrollY, r.width, r.height].map(v => Math.round(v * 10) / 10); }'
+         ' return o; })()') % json.dumps(KEYS)
+DECISION = ['roles', 'who', 'talk', 'tlbl', 'chips']
+WORK = ['work', 'caps', 'past', 'tools', 'background', 'more', 'contact']
+
+
+def baseline(b, base, w, h):
+    """The final layout as a page that was never staged lays it out."""
+    fresh(b, base, w=w, h=h, dark=True, reduced=True, wait=6)
+    return b.eval(RECTS)
+
+
 def t_seq(b, base, shots, widths):
     for (w, h) in widths:
-        fresh(b, base, w=w, h=h, dark=True)
-        alone = None
         if w >= 960:
-            # The last moment the conversation is alone: all three settled, no cue yet.
-            alone = until(b, '(() => { const s=[...document.querySelectorAll(".hero__thread .msg")].map(m=>m.dataset.state); '
-                             'return s.length && s.every(x=>x==="settled") && window.__pf.cta===null && ' + ALONE + '; })()', 25)
-            if shots and alone:
-                b.screenshot(os.path.join(shots, 'alone-%d.png' % w))
-        until(b, '__pf.cta !== null', 30)
-        until(b, '"5" in __pf.shownAt', 5)
-        b.pump(1.0)   # let the last fade finish
-        s = b.eval('__pf')
-        end = b.eval('(() => { const t=document.querySelector(".hero__thread"); const st=[...document.querySelectorAll("[data-reveal]")];'
-                     'return { w1: t.getBoundingClientRect().width, hidden: st.filter(e=>getComputedStyle(e).visibility!=="visible"||+getComputedStyle(e).opacity<0.99).length,'
-                     ' xf: getComputedStyle(document.querySelector(".hero__copy")).transform }; })()')
+            seq_wide(b, base, shots, w, h)
+        else:
+            seq_narrow(b, base, shots, w, h)
+
+
+def seq_wide(b, base, shots, w, h):
+    name = '%dx%d' % (w, h)
+    ref = baseline(b, base, w, h)
+    fresh(b, base, w=w, h=h, dark=True)
+    first = b.eval('__pf.first')
+    check(first['landing'] == 'intro', name + ' starts in intro', json.dumps(first))
+    alone = until(b, '(() => { const s=[...document.querySelectorAll(".hero__thread .msg")].map(m=>m.dataset.state); '
+                     'return s.length && s.every(x=>x==="settled") && __pf.cta===null && ' + ALONE + '; })()', 25)
+    if alone:
+        intro = b.eval('[Object.keys(__pf.seen), document.documentElement.scrollHeight, innerHeight, '
+                       'document.querySelector(".hero__thread").getBoundingClientRect().width]')
         if shots:
-            b.screenshot(os.path.join(shots, 'whole-%d.png' % w))
-        name = '%dx%d' % (w, h)
-        order = sorted(s['shownAt'], key=lambda g: s['shownAt'][g])
-        gaps = [round(s['shownAt'][order[i + 1]] - s['shownAt'][order[i]]) for i in range(len(order) - 1)]
-        lead = round(s['shownAt'][order[0]] - s['cta']) if order and s['cta'] else None
-        check(not s['early'], name + ' nothing staged visible before pf:cta', ','.join(sorted(set(s['early']))))
-        check(order == sorted(order), name + ' groups in order', 'order %s lead %sms gaps %s' % (order, lead, gaps))
-        check(all(g <= 185 for g in gaps) and lead is not None and lead <= 200, name + ' stagger within 100-180ms band',
-              'lead %s gaps %s' % (lead, gaps))
-        check(end['hidden'] == 0, name + ' everything visible at the end', '%d still hidden' % end['hidden'])
-        check(s['w0'] is not None and abs(s['w0'] - end['w1']) < 0.01, name + ' thread width unchanged',
-              '%s -> %s' % (s['w0'], end['w1']))
-        check(s['over'] == 0, name + ' no horizontal overflow', '%d of %d frames' % (s['over'], s['frames']))
-        check(end['xf'] in ('none', 'matrix(1, 0, 0, 1, 0, 0)'), name + ' final layout untransformed', end['xf'])
-        if alone:
-            fits = alone['bottom'] - alone['top'] <= alone['vh']
-            okx = abs(alone['cx']) < 1
-            oky = abs(alone['cy']) < 1 if fits else alone['top'] >= 0
-            check(okx and oky, name + ' conversation centred while alone',
-                  'dx %.2f dy %.2f (content %d-%d of %d)' % (alone['cx'], alone['cy'], alone['top'], alone['bottom'], alone['vh']))
-        e = errors(b)
-        check(not e, name + ' no errors', '; '.join(e[:3]))
+            b.screenshot(os.path.join(shots, 'intro-%d.png' % w))
+        check(not intro[0], name + ' intro shows only the conversation', 'visible: %s' % intro[0])
+        check(abs(alone['cx']) < 1, name + ' intro centred across', 'dx %.2f' % alone['cx'])
+        fits = alone['bottom'] - alone['top'] <= alone['vh']
+        check(abs(alone['cy']) < 40 if fits else alone['top'] >= 0, name + ' intro centred down',
+              'dy %.1f (content %d-%d of %d)' % (alone['cy'], alone['top'], alone['bottom'], alone['vh']))
+        check(intro[1] <= max(intro[2], alone['bottom'] + 120), name + ' intro is not a long blank page',
+              'scrollHeight %d, viewport %d' % (intro[1], intro[2]))
+    else:
+        check(False, name + ' conversation reached its end alone')
+    until(b, '__pf.cta !== null', 30)
+    b.pump(1.6)
+    s = b.eval('__pf')
+    d = b.eval('[document.documentElement.dataset.landing, document.querySelector(".hero__thread").getBoundingClientRect().width,'
+               ' document.querySelectorAll(".hero-trust__chip").length,'
+               ' [...document.querySelectorAll(".hero-trust__chip")].map(c => c.getBoundingClientRect()).map(r => [Math.round(r.left), Math.round(r.top)])]')
+    if shots:
+        b.screenshot(os.path.join(shots, 'decision-%d.png' % w))
+    seen = s['seen']
+    check(d[0] == 'decision', name + ' pf:cta moves to decision', d[0])
+    check(all(seen.get(k, 1e12) >= s['cta'] for k in seen), name + ' nothing before pf:cta',
+          json.dumps({k: round(v - s['cta']) for k, v in seen.items() if v < s['cta']}))
+    order = [k for k in DECISION if k in seen]
+    times = [round(seen[k] - s['cta']) for k in order]
+    gaps = [times[i + 1] - times[i] for i in range(len(times) - 1)]
+    check(order == DECISION and sorted(times) == times, name + ' decision: roles, profile, talk, Trusted By, logos in order',
+          json.dumps(dict(zip(order, times))))
+    check(all(90 <= g <= 190 for g in gaps) and times and times[0] <= 260, name + ' decision stagger ~100-180ms',
+          'from cta %s gaps %s' % (times, gaps))
+    check(not [k for k in WORK if k in seen], name + ' work stays hidden in decision',
+          'visible: %s' % [k for k in WORK if k in seen])
+    xs = sorted(set(p[0] for p in d[3])); ys = sorted(set(p[1] for p in d[3]))
+    check(d[2] == 4 and len(xs) == 2 and len(ys) == 2, name + ' four separate logo bubbles in a 2x2', json.dumps(d[3]))
+    check(abs(d[1] - s['w0']) < 0.05, name + ' thread width same in intro and decision', '%s %s' % (s['w0'], d[1]))
+    b.pump(4)
+    v = b.eval('[document.documentElement.dataset.landing, Object.keys(__pf.seen)]')
+    check(v[0] == 'decision' and not [k for k in WORK if k in v[1]], name + ' gate holds without a click', json.dumps(v))
+
+    t_click = b.eval('(() => { const t = performance.now(); document.querySelector(".msg-cta__btn").click(); return t; })()')
+    b.pump(1.6)
+    s = b.eval('__pf')
+    end = b.eval('[document.documentElement.dataset.landing, document.querySelector(".hero__thread").getBoundingClientRect().width,'
+                 ' [...document.querySelectorAll("[data-reveal]")].filter(e => e.getClientRects().length && (getComputedStyle(e).visibility !== "visible" || +getComputedStyle(e).opacity < 0.99)).length,'
+                 ' getComputedStyle(document.querySelector(".hero-trust")).display, !!document.querySelector(".hero__thread.is-list")]')
+    if shots:
+        b.screenshot(os.path.join(shots, 'work-%d.png' % w))
+    check(end[0] == 'work', name + ' click opens work', end[0])
+    late = {k: round(s['seen'][k] - t_click) for k in WORK if k in s['seen']}
+    check(all(k in s['seen'] for k in ('work', 'caps', 'background')) and all(v >= 0 for v in late.values()),
+          name + ' work appears only after the click', json.dumps(late))
+    check(end[2] == 0, name + ' everything visible after the click', '%d not' % end[2])
+    check(end[3] == 'none', name + ' Trusted By hands over to Skills', end[3])
+    check(end[4] is False, name + ' first press keeps the conversation (no list view)', str(end[4]))
+    check(abs(end[1] - s['w0']) < 0.05, name + ' thread width unchanged through all three states', '%s %s' % (s['w0'], end[1]))
+    got = b.eval(RECTS)
+    off = {k: [round(g - r, 1) for g, r in zip(got[k], ref[k])] for k in ref if k in got and
+           max(abs(g - r) for g, r in zip(got[k], ref[k])) > 1}
+    check(not off, name + ' final layout identical to an unstaged page', json.dumps(off)[:400])
+    check(s['over'] == 0, name + ' no horizontal overflow', '%d of %d frames' % (s['over'], s['frames']))
+    e = errors(b)
+    check(not e, name + ' no errors', '; '.join(e[:3]))
+
+
+def seq_narrow(b, base, shots, w, h):
+    fresh(b, base, w=w, h=h, dark=True)
+    until(b, '__pf.cta !== null', 30)
+    until(b, '"5" in __pf.shownAt', 5)
+    b.pump(1.0)
+    s = b.eval('__pf')
+    end = b.eval('(() => { const t=document.querySelector(".hero__thread"); const st=[...document.querySelectorAll("[data-reveal]")];'
+                 'return { w1: t.getBoundingClientRect().width, hidden: st.filter(e=>getComputedStyle(e).visibility!=="visible"||+getComputedStyle(e).opacity<0.99).length,'
+                 ' landing: document.documentElement.dataset.landing }; })()')
+    if shots:
+        b.screenshot(os.path.join(shots, 'whole-%d.png' % w))
+    name = '%dx%d' % (w, h)
+    order = sorted(s['shownAt'], key=lambda g: s['shownAt'][g])
+    gaps = [round(s['shownAt'][order[i + 1]] - s['shownAt'][order[i]]) for i in range(len(order) - 1)]
+    lead = round(s['shownAt'][order[0]] - s['cta']) if order and s['cta'] else None
+    check(not s['early'], name + ' nothing staged visible before pf:cta', ','.join(sorted(set(s['early']))))
+    check(order == sorted(order) and all(g <= 185 for g in gaps) and lead is not None and lead <= 200,
+          name + ' cascade unchanged: groups in order, ~140ms apart', 'lead %s gaps %s' % (lead, gaps))
+    check(end['hidden'] == 0 and end['landing'] == 'work', name + ' everything visible at the end', json.dumps(end))
+    check(s['w0'] is not None and abs(s['w0'] - end['w1']) < 0.05, name + ' thread width unchanged', '%s -> %s' % (s['w0'], end['w1']))
+    check(s['over'] == 0, name + ' no horizontal overflow', '%d of %d frames' % (s['over'], s['frames']))
+    e = errors(b)
+    check(not e, name + ' no errors', '; '.join(e[:3]))
 
 
 def t_hatch(b, base):
     fresh(b, base, dark=True, reduced=True, wait=6)
-    v = b.eval('[document.documentElement.hasAttribute("data-stage"), [...document.querySelectorAll("[data-reveal]")].filter(e=>getComputedStyle(e).visibility!=="visible").length, getComputedStyle(document.querySelector(".hero__copy")).transform]')
-    check(v[0] is False and v[1] == 0 and v[2] == 'none', 'reduced motion: never staged, whole, no offset', json.dumps(v))
+    v = b.eval('[document.documentElement.hasAttribute("data-stage"), document.documentElement.hasAttribute("data-landing"),'
+               ' [...document.querySelectorAll("[data-reveal]")].filter(e=>e.getClientRects().length && getComputedStyle(e).visibility!=="visible").length,'
+               ' getComputedStyle(document.querySelector(".hero-trust")).display]')
+    check(v == [False, False, 0, 'none'], 'reduced motion: never staged, whole, final composition', json.dumps(v))
     for path in ('/#work', '/#/carry'):
         fresh(b, base, path, dark=True, wait=6)
-        v = b.eval('document.documentElement.dataset.stage')
-        check(v == '5', 'deep link %s skips the sequence' % path, 'stage=%s' % v)
-    fresh(b, base, dark=True, wait=5)
+        v = b.eval('[document.documentElement.dataset.stage, document.documentElement.dataset.landing]')
+        check(v == ['5', 'work'], 'deep link %s skips the sequence' % path, json.dumps(v))
+    fresh(b, base, w=768, h=1024, dark=True, wait=5)
     b.eval('window.scrollTo(0, innerHeight * 0.6)')
     b.pump(0.5)
     v = b.eval('document.documentElement.dataset.stage')
-    check(v == '5', 'scroll past half a viewport shows everything', 'stage=%s' % v)
+    check(v == '5', 'tablet: scroll past half a viewport shows everything', 'stage=%s' % v)
+    # Replay while deciding: the conversation runs again, the gate stays shut.
     fresh(b, base, dark=True)
-    until(b, 'document.documentElement.dataset.stage === "5"', 30)
+    until(b, 'document.documentElement.dataset.landing === "decision"', 30)
+    b.pump(1)
+    b.eval('document.querySelector(".hero__replay").click()')
+    b.pump(2)
+    v = b.eval('[document.documentElement.dataset.landing, Object.keys(__pf.seen).filter(k => ["work","caps","past","background"].includes(k))]')
+    check(v == ['decision', []], 'replay while deciding keeps the gate', json.dumps(v))
+    until(b, '!!document.querySelector(".msg-cta:not([hidden]) .msg-cta__btn")', 25)
+    b.eval('document.querySelector(".msg-cta__btn").click()')
+    b.pump(1.5)
+    check(b.eval('document.documentElement.dataset.landing') == 'work', 'See the work after a replay opens the page')
     b.eval('document.querySelector(".hero__replay").click()')
     b.pump(3)
-    v = b.eval('[document.documentElement.dataset.stage, [...document.querySelectorAll("[data-reveal]")].filter(e=>getComputedStyle(e).visibility!=="visible").length]')
-    check(v == ['5', 0], 'replay after whole keeps the page whole', json.dumps(v))
-    until(b, '[...document.querySelectorAll(".hero__thread .msg")].every(m=>m.dataset.state==="settled")', 20)
-    check(not errors(b), 'replay: no errors', '; '.join(errors(b)[:3]))
+    v = b.eval('[document.documentElement.dataset.landing, [...document.querySelectorAll("[data-reveal]")].filter(e=>e.getClientRects().length && getComputedStyle(e).visibility!=="visible").length]')
+    check(v == ['work', 0], 'replay after work keeps the page whole', json.dumps(v))
+    # Hard refresh puts it back at the start.
+    b.call('Page.reload', ignoreCache=True)
+    b.pump(2)
+    v = b.eval('[__pf.first.landing, document.documentElement.dataset.landing]')
+    check(v[0] == 'intro', 'hard refresh starts at intro again', json.dumps(v))
+    check(not errors(b), 'replay and refresh: no errors', '; '.join(errors(b)[:3]))
 
 
 def tab(b):
     for t in ('keyDown', 'keyUp'):
         b.call('Input.dispatchKeyEvent', type=t, key='Tab', code='Tab', windowsVirtualKeyCode=9)
     b.pump(0.05)
-    return b.eval('(() => { const a=document.activeElement; const s=a && a.closest("[data-reveal]");'
-                  'return [a ? (a.tagName + "." + (a.className||"")).slice(0,50) : null, s ? s.getAttribute("data-reveal") : null,'
-                  ' s ? s.hasAttribute("data-shown") : null, document.documentElement.dataset.stage]; })()')
+    return b.eval('(() => { const a = document.activeElement; if (!a || a === document.body) return [null, true, null];'
+                  ' const vis = a.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });'
+                  ' const where = a.closest(".hero__eyebrow") ? "roles" : a.closest(".hero-card .hero__work") ? "work" :'
+                  ' a.closest(".hero-id--talk") ? "talk" : a.closest(".msg-cta") ? "cta" : a.closest("#background,#work,#more,#contact") ? "below" : "other";'
+                  ' return [(a.tagName + "." + (a.className || "")).slice(0, 40), vis, where]; })()')
 
 
 def t_keys(b, base):
-    fresh(b, base, dark=True, wait=5)
-    bad, seen = [], []
-    for _ in range(2):   # the third step is the escape hatch; before it, nothing staged
-        a = tab(b)
-        seen.append(a[0])
-        if a[1] is not None and not a[2]:
-            bad.append(a)
-    check(not bad, 'Tab before reveal never lands on a staged block', json.dumps(seen))
-    fresh(b, base, dark=True)
-    until(b, 'document.documentElement.dataset.stage === "5"', 30)
-    b.pump(1)
-    hit = set()
-    for _ in range(14):
-        a = tab(b)
-        if a[1]:
-            hit.add(a[1])
-    # The portrait card (group 1) has nothing focusable in it; LET'S TALK and
-    # the project browser do.
-    check({'2', '4'} <= hit, 'Tab reaches staged blocks after reveal', 'groups reached %s' % sorted(hit))
+    fresh(b, base, dark=True, wait=6)
+    path = [tab(b) for _ in range(12)]
+    bad = [p for p in path if p[0] and not p[1]]
+    check(not bad and not [p for p in path if p[2] in ('roles', 'work', 'talk', 'below')],
+          'intro: Tab reaches nothing that has not arrived', json.dumps([p[0] for p in path]))
+    until(b, 'document.documentElement.dataset.landing === "decision"', 30)
+    b.pump(1.5)
+    path = [tab(b) for _ in range(16)]
+    where = set(p[2] for p in path)
+    check(not [p for p in path if p[0] and not p[1]] and {'roles', 'talk', 'cta'} <= where and not where & {'work', 'below'},
+          'decision: Tab reaches roles, LET\'S TALK and See the work, not the work', json.dumps(sorted(where - {None})))
+    b.eval('document.querySelector(".msg-cta__btn").click()')
+    b.pump(1.5)
+    path = [tab(b) for _ in range(30)]
+    where = set(p[2] for p in path)
+    check('work' in where, 'work: Tab reaches the project browser', json.dumps(sorted(where - {None})))
 
 
 def t_copy(b, base):
@@ -323,6 +438,12 @@ def t_copy(b, base):
     b.pump(1)
     v = b.eval('document.querySelector(".hero__thread .msg .msg__text").textContent')
     check(v == 'Hello Team.', 'still "Hello Team." after a role switch', json.dumps(v))
+    left = {}
+    for f in ('index.html', 'slop/index.html', 'assets/app-1.js', 'assets/app-2.js'):
+        n = open(os.path.join(ROOT, f), encoding='utf-8').read().lower().count('smiley')
+        if n:
+            left[f] = n
+    check(not left, 'no smiley in markup, CSS or JS', json.dumps(left))
 
 
 def main():
