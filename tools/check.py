@@ -16,14 +16,17 @@ deployed site. Sections:
              visit must never show a dark frame.
     seq      at 960 and up, the three landing states: intro (only the
              conversation, centred), decision on pf:cta (roles, profile,
-             LET'S TALK, Trusted By, logos, in order, 100-180ms apart, work
-             still hidden, gate holds without a click), work on the click
+             LET'S TALK, Trusted By, logos, and below 2100 the project
+             browser, in order, 100-180ms apart, the rest still hidden, gate
+             holds without a click, browser navigates), work on the click
              (everything, laid out exactly as an unstaged page lays it out).
              Below 960, the cascade. At every width: thread width constant,
              no horizontal overflow, no errors
     hatch    reduced motion, deep links, tablet scroll, replay while deciding
              and after work, hard refresh
     keys     Tab in each state reaches only what that state shows
+    pace     the message sequence takes 0.7 of the length it was measured at
+             before it was sped up (SEQ_BASE_MS)
     copy     message one reads "Hello Team." with no icon, before and after
              a role switch, and no smiley anywhere in the source
 
@@ -108,6 +111,9 @@ if (window.top === window) (function () {
       if (S.frames === 1) S.first = { theme: H.getAttribute('data-theme'), stage: H.getAttribute('data-stage'),
                                       landing: H.getAttribute('data-landing') };
       if (document.body && H.scrollWidth > window.innerWidth + 0.5) S.over++;
+      if (S.landAt == null && H.getAttribute('data-landing') === 'decision') S.landAt = performance.now();
+      var m0 = document.querySelector('.hero__thread .msg');
+      if (S.seqAt == null && m0 && m0.getAttribute('data-state')) S.seqAt = performance.now();
       var st = document.querySelectorAll('[data-reveal]');
       for (i = 0; i < st.length; i++) {
         var g = st[i].getAttribute('data-reveal');
@@ -244,7 +250,15 @@ RECTS = ('(() => { const o = {}; for (const k of %s) { const e = document.queryS
          ' o[k] = [r.left + scrollX, r.top + scrollY, r.width, r.height].map(v => Math.round(v * 10) / 10); }'
          ' return o; })()') % json.dumps(KEYS)
 DECISION = ['roles', 'who', 'talk', 'tlbl', 'chips']
-WORK = ['work', 'caps', 'past', 'tools', 'background', 'more', 'contact']
+WORK = ['caps', 'past', 'tools', 'background', 'more', 'contact']
+# The project browser is part of the decision on a laptop or desktop, and of
+# the work on ultrawide (2100 and up).
+UW = 2100
+
+# The message timeline, first message landing to the invitation, at 1512,
+# measured before it was paced to 0.7 on 2026-10-20.
+SEQ_BASE_MS = 11955
+PACE = 0.7
 
 
 def baseline(b, base, w, h):
@@ -263,6 +277,8 @@ def t_seq(b, base, shots, widths):
 
 def seq_wide(b, base, shots, w, h):
     name = '%dx%d' % (w, h)
+    decision = DECISION + ([] if w >= UW else ['work'])
+    work = WORK + (['work'] if w >= UW else [])
     ref = baseline(b, base, w, h)
     fresh(b, base, w=w, h=h, dark=True)
     first = b.eval('__pf.first')
@@ -295,21 +311,31 @@ def seq_wide(b, base, shots, w, h):
     check(d[0] == 'decision', name + ' pf:cta moves to decision', d[0])
     check(all(seen.get(k, 1e12) >= s['cta'] for k in seen), name + ' nothing before pf:cta',
           json.dumps({k: round(v - s['cta']) for k, v in seen.items() if v < s['cta']}))
-    order = [k for k in DECISION if k in seen]
+    order = [k for k in decision if k in seen]
     times = [round(seen[k] - s['cta']) for k in order]
     gaps = [times[i + 1] - times[i] for i in range(len(times) - 1)]
-    check(order == DECISION and sorted(times) == times, name + ' decision: roles, profile, talk, Trusted By, logos in order',
+    check(order == decision and sorted(times) == times,
+          name + ' decision: roles, profile, talk, Trusted By, logos%s in order' % ('' if w >= UW else ', browser'),
           json.dumps(dict(zip(order, times))))
+    land_at = b.eval('__pf.landAt')
+    check(land_at is not None and abs(land_at - s['cta']) < 40, name + ' decision begins on pf:cta itself',
+          'landing changed %s ms after the cue' % (None if land_at is None else round(land_at - s['cta'])))
     check(all(90 <= g <= 190 for g in gaps) and times and times[0] <= 260, name + ' decision stagger ~100-180ms',
           'from cta %s gaps %s' % (times, gaps))
-    check(not [k for k in WORK if k in seen], name + ' work stays hidden in decision',
-          'visible: %s' % [k for k in WORK if k in seen])
+    check(not [k for k in work if k in seen], name + ' the rest stays hidden in decision',
+          'visible: %s' % [k for k in work if k in seen])
+    if w < UW:
+        nav = b.eval('(() => { const c = () => document.querySelector(".hero__work [data-pv-i]").textContent;'
+                     ' const a = c(); document.querySelector(".hero__work [data-pv-next]").click(); const n = c();'
+                     ' document.querySelector(".hero__work [data-pv-prev]").click(); return [a, n, c()]; })()')
+        b.pump(0.8)
+        check(nav[0] != nav[1] and nav[2] == nav[0], name + ' project browser navigates before the click', json.dumps(nav))
     xs = sorted(set(p[0] for p in d[3])); ys = sorted(set(p[1] for p in d[3]))
     check(d[2] == 4 and len(xs) == 2 and len(ys) == 2, name + ' four separate logo bubbles in a 2x2', json.dumps(d[3]))
     check(abs(d[1] - s['w0']) < 0.05, name + ' thread width same in intro and decision', '%s %s' % (s['w0'], d[1]))
     b.pump(4)
     v = b.eval('[document.documentElement.dataset.landing, Object.keys(__pf.seen)]')
-    check(v[0] == 'decision' and not [k for k in WORK if k in v[1]], name + ' gate holds without a click', json.dumps(v))
+    check(v[0] == 'decision' and not [k for k in work if k in v[1]], name + ' gate holds without a click', json.dumps(v))
 
     t_click = b.eval('(() => { const t = performance.now(); document.querySelector(".msg-cta__btn").click(); return t; })()')
     b.pump(1.6)
@@ -320,9 +346,9 @@ def seq_wide(b, base, shots, w, h):
     if shots:
         b.screenshot(os.path.join(shots, 'work-%d.png' % w))
     check(end[0] == 'work', name + ' click opens work', end[0])
-    late = {k: round(s['seen'][k] - t_click) for k in WORK if k in s['seen']}
+    late = {k: round(s['seen'][k] - t_click) for k in work if k in s['seen']}
     check(all(k in s['seen'] for k in ('work', 'caps', 'background')) and all(v >= 0 for v in late.values()),
-          name + ' work appears only after the click', json.dumps(late))
+          name + ' the rest appears only after the click', json.dumps(late))
     check(end[2] == 0, name + ' everything visible after the click', '%d not' % end[2])
     check(end[3] == 'none', name + ' Trusted By hands over to Skills', end[3])
     check(end[4] is False, name + ' first press keeps the conversation (no list view)', str(end[4]))
@@ -382,7 +408,7 @@ def t_hatch(b, base):
     b.pump(1)
     b.eval('document.querySelector(".hero__replay").click()')
     b.pump(2)
-    v = b.eval('[document.documentElement.dataset.landing, Object.keys(__pf.seen).filter(k => ["work","caps","past","background"].includes(k))]')
+    v = b.eval('[document.documentElement.dataset.landing, Object.keys(__pf.seen).filter(k => ["caps","past","background"].includes(k))]')
     check(v == ['decision', []], 'replay while deciding keeps the gate', json.dumps(v))
     until(b, '!!document.querySelector(".msg-cta:not([hidden]) .msg-cta__btn")', 25)
     b.eval('document.querySelector(".msg-cta__btn").click()')
@@ -421,13 +447,28 @@ def t_keys(b, base):
     b.pump(1.5)
     path = [tab(b) for _ in range(16)]
     where = set(p[2] for p in path)
-    check(not [p for p in path if p[0] and not p[1]] and {'roles', 'talk', 'cta'} <= where and not where & {'work', 'below'},
-          'decision: Tab reaches roles, LET\'S TALK and See the work, not the work', json.dumps(sorted(where - {None})))
+    path += [tab(b) for _ in range(14)]
+    where = set(p[2] for p in path)
+    check(not [p for p in path if p[0] and not p[1]] and {'roles', 'talk', 'cta', 'work'} <= where and 'below' not in where,
+          'decision (1440): Tab reaches roles, LET\'S TALK, See the work and the browser, nothing below',
+          json.dumps(sorted(where - {None})))
     b.eval('document.querySelector(".msg-cta__btn").click()')
     b.pump(1.5)
     path = [tab(b) for _ in range(30)]
     where = set(p[2] for p in path)
     check('work' in where, 'work: Tab reaches the project browser', json.dumps(sorted(where - {None})))
+
+
+def t_pace(b, base):
+    runs = []
+    for _ in range(2):
+        fresh(b, base, w=1512, h=982, dark=False)
+        until(b, '__pf.cta !== null', 30)
+        s = b.eval('__pf')
+        runs.append(s['cta'] - s['seqAt'])
+    r = [x / SEQ_BASE_MS for x in runs]
+    check(all(abs(x - PACE) < 0.03 for x in r), 'message sequence runs at 0.7 of its old length',
+          'first message to invitation %s ms vs %d (ratio %s)' % ([round(x) for x in runs], SEQ_BASE_MS, [round(x, 3) for x in r]))
 
 
 def t_copy(b, base):
@@ -453,13 +494,15 @@ def main():
         shots = sys.argv[sys.argv.index('--shots') + 1]
         args = [a for a in args if a != shots]
         os.makedirs(shots, exist_ok=True)
-    want = set(args) or {'routes', 'theme', 'seq', 'hatch', 'keys', 'copy'}
+    want = set(args) or {'routes', 'theme', 'seq', 'hatch', 'keys', 'copy', 'pace'}
     base = serve()
     b = Browser()
     b.preload(SAMPLER)
     try:
         if 'copy' in want:
             t_copy(b, base)
+        if 'pace' in want:
+            t_pace(b, base)
         if 'theme' in want:
             t_theme(b, base, shots)
         if 'routes' in want:
