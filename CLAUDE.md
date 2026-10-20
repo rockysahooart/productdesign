@@ -84,7 +84,8 @@ store a credential. Don't produce an upload manifest unless the owner asks for o
 - **Forced light mode.** A fresh visit is always light; dark only via the site's toggle (`localStorage['pf-theme']`). Keep the `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) … }` pattern, keep the single unscoped `theme-color` meta, and never add a `matchMedia` color-scheme listener.
 - **The thread measure rule.** The hero player measures its column once. Never change the column's inline size between states. The landing states centre it by changing the grid's *outer* tracks so the middle one keeps its width; keep it that way.
 - The three-column project-browser split and aspect-locked embeds. Never widen the visual column; scale `.slot > img`, never `.slot`.
-- The three landing states (`data-landing`: intro → decision on `pf:cta` → work on the first press of See the work) and their escape hatches, `CEILING_MS = 26000`; loader safety nets `setTimeout(mark, 8000)` / `setTimeout(dissolve, 6000)`.
+- The message pace, `--msg-pace` on `.hero__thread` (0.7), read by both CSS and `js/thread.js`. Change the speed there, never per value.
+- The three landing states (`data-landing`: intro → decision on `pf:cta` → work on the first press of See the work; the browser joins decision below 2100) and their escape hatches, `CEILING_MS = 26000`; loader safety nets `setTimeout(mark, 8000)` / `setTimeout(dissolve, 6000)`.
 - `PF.PROJECTS` order (it drives carousel, cards and prev/next at once).
 - Canonical external URLs: PNC `https://spiky-experiences-472785.framer.app/case-study`, First United Bank `https://spiky-experiences-472785.framer.app/fub`, identical at every entry point.
 - No external runtime requests: fonts, scripts and images are self-hosted. No CDN, no Google Fonts.

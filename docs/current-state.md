@@ -11,10 +11,11 @@ As of 2026-10-20 on `main`.
   "See the work →" invitation.
 - Landing on desktop and ultrawide (≥960): three states. **Intro**: after the loader
   the conversation plays alone, centred by the grid. **Decision** (on `pf:cta`): the
-  roles, profile, LET'S TALK and Trusted By with four logo bubbles assemble around it;
-  the work is not on the page. **Work** (first press on See the work): the Project
-  Browser, Skills, Where I've been, Tools and the rest open in one transition into the
-  existing layout. See [design-system.md](design-system.md#landing-sequence-jsrevealjs-css16-revealcss).
+  roles, profile, LET'S TALK and Trusted By with four logo bubbles assemble around it,
+  and on laptop/desktop widths (960–2099) the Project Browser too; on ultrawide the
+  browser waits. **Work** (first press on See the work): Skills, Where I've been, Tools
+  and the rest (plus the browser on ultrawide) open in one transition into the
+  existing layout. The message sequence runs at `--msg-pace: 0.7`. See [design-system.md](design-system.md#landing-sequence-jsrevealjs-css16-revealcss).
 - Below 960: unchanged. The invitation runs the whole page in on its own,
   180ms lead then 140ms apart.
 - Trusted By (desktop decision state): CVS Health, Natera, PNC, CG Infinity.
@@ -30,6 +31,11 @@ As of 2026-10-20 on `main`.
 1. No favicon; `/favicon.ico` 404s. Pre-existing.
 
 ## Recently shipped
+
+- **2026-10-20: browser in the desktop decision state; sequence 30% faster.** At
+  960–2099 the Project Browser arrives with the decision state (finalpart.jpg) and
+  See the work opens the rest. The message sequence is paced by one `--msg-pace: 0.7`
+  read by both CSS and `thread.js`.
 
 - **2026-10-20: three landing states.** Implemented from `finalpart.jpg` (decision)
   and `finalstate.jpg` (work). Structural centring replaced the `--solo-x`/`--solo-y`

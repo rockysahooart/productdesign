@@ -101,6 +101,15 @@ States on `.msg[data-state]`: none → `idle` → `loading` → `live` → `sett
   `ANCHOR = 0.845`, `CTA_FLOOR = 0.98`, `FLAT_PAD = 60`, `FLAT_TAIL = 6`,
   `STILL_PAD = 46`, `STILL_TAIL = 14`.
 
+**The pace.** `.hero__thread { --msg-pace: 0.7 }` is the one speed control for the
+message sequence. Every sequence duration in CSS is `calc(<designed ms> * var(--msg-pace, 1))`,
+and `js/thread.js` reads the same property into `PACE` and passes its timeline constants
+(`DOTS_MS`, `POP_MS`, `GAP_MS`, `READ_MS`, `GAP_MAX`, `REACT_MS`, `TIGHT`, `PROJECTS_MS`,
+`SCRAMBLE_MS`, `WORD_HOLD`, `WORD_SCRAMBLE`, `SHUFFLE_STEP`, `WORD_BEAT`, the reaction
+plan, dwell) through `paced()`. Not paced: the loader, the 16.4s hold before the loop
+restarts, its fade/blank, the list of work, the window slide (unused with three messages).
+At 0.7, first message to invitation is ~8.37s at 1512 (was 11.96s).
+
 **The measure rule.** The player measures the thread's column once. Anything
 that changes the column's inline size between stages leaves the conversation
 sized wrong with no resize to recover. The landing states centre it structurally
@@ -132,8 +141,8 @@ failed bundle see the final composition.
 | state | trigger | on the page |
 |---|---|---|
 | `intro` | head script, before first paint | the conversation alone, centred; theme and replay controls |
-| `decision` | `pf:cta` (the thread's `showCta()`) | + roles, profile, LET'S TALK, Trusted By, four logo bubbles, timed by CSS delays 180 / 320 / 460 / 600 / 740ms after the cue |
-| `work` | the first press on See the work | everything else, one coordinated transition |
+| `decision` | `pf:cta` (the thread's `showCta()`) | + roles, profile, LET'S TALK, Trusted By, four logo bubbles, timed by CSS delays 180 / 320 / 460 / 600 / 740ms after the cue; **960–2099 also the Project Browser at 880ms**, with the grid moving to its final tracks on the first beat |
+| `work` | the first press on See the work | Skills, Tools, Where I've been, every lower section (and on ultrawide the Project Browser), one coordinated transition |
 
 - **The gate.** In `decision`, `reveal.js` takes the press on `.msg-cta__btn` in the
   capture phase, so the first press opens the page and keeps the conversation (the
@@ -147,9 +156,13 @@ failed bundle see the final composition.
   The click transitions `grid-template-columns` (560ms); the outer tracks' sum is
   constant, so the conversation's width never changes. Vertical: the page's
   `padding-top` centres row 1 on the first screen.
-- **Not on the page until `work`:** the browser, Skills, Where I've been, Tools and every
-  later section are `display: none` (they arrive via `@starting-style` opacity). The
-  intro is one screen tall; nothing staged can be scrolled to or focused.
+- **Not on the page until `work`:** Skills, Where I've been, Tools, every later section,
+  and on ultrawide the browser, are `display: none` (they arrive via `@starting-style`
+  opacity). On desktop the browser is a staged block in the intro (laid out at its final
+  width, invisible, out of the tab order). The intro is one screen tall; nothing staged
+  can be scrolled to or focused.
+- **Centring tracks, desktop vs ultrawide.** Desktop uses the averaged outer tracks in
+  `intro` only; ultrawide keeps them through `decision`.
 - **Trusted By** (`.hero-trust`) exists only in `intro`/`decision` at ≥960, in the
   third profile slot where Skills goes in `work`. Four `.hero-trust__chip` bubbles
   (CVS Health, Natera, PNC, CG Infinity) share the clay recipe of the other shells.
