@@ -26,10 +26,10 @@ I started off as an artist, drawing obsessively as a kid, and in trying to depic
 
 In the order the portfolio presents it.
 
-### 01 · [Redesigning Craigslist's iPhone app for clearer used-car search](https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0)
-For a LiveFront design challenge, I redesigned Craigslist's iPhone app around finding a used car, adding clearer hierarchy and readable listing cards. Search scope stays visible as chips, and item details lead with what a buyer checks before contacting the seller.
+### 01 · [Redesigning Craigslist for faster used-car discovery](https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0)
+For a paid product design brief with LiveFront, I redesigned Craigslist's native iOS experience around finding and evaluating a used car. I clarified search scope, made listings easier to scan, and surfaced the information buyers need before contacting a seller.
 
-Domain: Mobile marketplace · Focus: Design challenge · [View project →](https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0)
+Domain: Mobile marketplace · Focus: Paid product design brief · [View project →](https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0)
 
 ### 02 · [Improving patient recall after oncology visits](https://www.rockysahoo.space/#/carry)
 I designed a patient flow that captures questions before an appointment and connects them back to answers afterward.
