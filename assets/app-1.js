@@ -12062,13 +12062,17 @@ window.PF = window.PF || {};
          the obvious reason, and data-external puts the ↗ on it, which is the
          one thing that makes "View Case Study" honest when the case study is
          on another domain. The mark goes on whatever carries the words, since
-         the overlay anchor on a card has no visible text of its own. */
+         the overlay anchor on a card has no visible text of its own. With no
+         label it falls back to the element only when that is a link (a 'more
+         work' row is its own words). A Project Browser slide is an <article>
+         with no label inside it; marking it drew a stray ↗ as the last item
+         of the slide, under the visual. */
       if (PF.isExternal(p)) {
         if (el.tagName === 'A') {
           el.setAttribute('target', '_blank');
           el.setAttribute('rel', 'noopener noreferrer');
         }
-        (label || el).setAttribute('data-external', '1');
+        if (label || el.tagName === 'A') (label || el).setAttribute('data-external', '1');
         el.setAttribute('data-offsite', '1');
       }
 
