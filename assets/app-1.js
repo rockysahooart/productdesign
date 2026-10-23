@@ -8383,7 +8383,13 @@ window.PF = window.PF || {};
         text = c.textContent.replace(/\s+/g, ' ').trim();
       }
       var label = go ? go.textContent.replace(/[→↗]/g, '').replace(/\s+/g, ' ').trim() : 'View case study';
-      var context = String(p.context || '').split('·')[0].trim();
+      /* The first part of the context that is not just the name again
+         (Design Governance's context opens with "Design governance"). */
+      var parts = String(p.context || '').split('\u00b7'), context = '';
+      for (var ci = 0; ci < parts.length && !context; ci++) {
+        var part = parts[ci].trim();
+        if (part && part.toLowerCase() !== String(p.name).toLowerCase()) context = part;
+      }
       return {
         key: key,
         name: p.name,
