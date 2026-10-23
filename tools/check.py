@@ -495,7 +495,7 @@ ASK_STATE = r"""(() => { const a = document.querySelector('.ask'); if (!a) retur
   return {
     q: [...a.querySelectorAll('.ask__choices:not(.is-leaving) .ask-q')].filter(b => !b.disabled).map(b => b.dataset.q),
     ev: [...a.querySelectorAll('.ask-ev')].map(e => ({ k: e.dataset.askProject, compact: e.classList.contains('is-compact'),
-          title: txt(e.querySelector('.ask-ev__title')), href: e.querySelector('.ask-ev__go').getAttribute('href'),
+          title: txt(e.querySelector('.ask-ev__title')), eyebrow: txt(e.querySelector('.ask-ev__eyebrow')), href: e.querySelector('.ask-ev__go').getAttribute('href'),
           target: e.querySelector('.ask-ev__go').getAttribute('target'),
           preview: !!e.querySelector('.ask-ev__vis > *'), shown: +getComputedStyle(e).opacity })),
     you: [...a.querySelectorAll('.ask-you')].map(e => txt(e).replace(/^You asked: /, '')),
@@ -554,6 +554,9 @@ def ask_flow(b, base, shots, w, h):
     until(b, '(() => { const e = document.querySelectorAll(".ask-ev"); return e.length === 2 && +getComputedStyle(e[1]).opacity > 0.99; })()', 10)
     until(b, ASK_IDLE, 10)
     s = b.eval(ASK_STATE)
+    eb = [x['eyebrow'] for x in s['ev']]
+    check(all(len(set(p.strip().lower() for p in e.split('\u00b7'))) == len(e.split('\u00b7')) for e in eb),
+          name + ' no evidence eyebrow repeats itself', json.dumps(eb))
     check(len(s['ev']) == 2 and s['ev'][0]['compact'] and not s['ev'][0]['preview'] and not s['ev'][1]['compact'] and s['ev'][1]['preview'],
           name + ' the earlier evidence folds and gives its preview back', json.dumps(s['ev']))
     check(s['again'], name + ' Ask something else is offered after an answer')
@@ -598,6 +601,17 @@ def t_ask(b, base, shots):
           'ask: every live design project can be reached', json.dumps(shown))
     for w, h in [(1512, 982), (2560, 1440), (1280, 800), (1024, 768), (390, 844)]:
         ask_flow(b, base, shots, w, h)
+    # The governance card is the one whose context opens with its own name.
+    fresh(b, base, w=1512, h=982, dark=False)
+    until(b, ASK_IDLE, 40)
+    b.eval('document.querySelector(\'.ask-q[data-q="ai"]\').click()')
+    until(b, ASK_IDLE, 12)
+    b.eval('document.querySelector(\'.ask-q[data-q="governance"]\').click()')
+    until(b, '(() => { const e = document.querySelectorAll(".ask-ev"); return e.length === 2; })()', 10)
+    until(b, ASK_IDLE, 12)
+    s = b.eval(ASK_STATE)
+    check(bool(s) and s['ev'][-1]['k'] == 'governance' and s['ev'][-1]['eyebrow'].lower().count('design governance') == 1,
+          'ask: the governance eyebrow names the project once', json.dumps(s['ev'][-1]['eyebrow'] if s and s['ev'] else None))
     # Reduced motion: no performance, the question and its choices are there.
     fresh(b, base, w=1512, h=982, dark=False, reduced=True, wait=0.5)
     until(b, ASK_IDLE, 15)
