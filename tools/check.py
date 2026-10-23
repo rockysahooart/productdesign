@@ -29,6 +29,14 @@ deployed site. Sections:
              before it was sped up (SEQ_BASE_MS)
     copy     message one reads "Hello Team." with no icon, before and after
              a role switch, and no smiley anywhere in the source
+    ask      the conversation after the introduction (js/ask.js): every
+             authored question maps to a live project whose title and link
+             are the slide's own; at five widths the question, three
+             choices, an answer with its evidence and three follow-ups, the
+             earlier evidence folding, a change of subject, focus following
+             the answer, Browse everything opening work through the gate
+             (wide) or linking to #work (narrow); reduced motion; replay
+             clearing it; no overflow and no errors
 
 Exit status is the number of failures.
 """
@@ -482,6 +490,143 @@ def t_copy(b, base):
     check(not left, 'no smiley in markup, CSS or JS', json.dumps(left))
 
 
+ASK_STATE = r"""(() => { const a = document.querySelector('.ask'); if (!a) return null;
+  const txt = n => n ? n.textContent.replace(/\s+/g, ' ').trim() : null;
+  return {
+    q: [...a.querySelectorAll('.ask__choices:not(.is-leaving) .ask-q')].filter(b => !b.disabled).map(b => b.dataset.q),
+    ev: [...a.querySelectorAll('.ask-ev')].map(e => ({ k: e.dataset.askProject, compact: e.classList.contains('is-compact'),
+          title: txt(e.querySelector('.ask-ev__title')), href: e.querySelector('.ask-ev__go').getAttribute('href'),
+          target: e.querySelector('.ask-ev__go').getAttribute('target'),
+          preview: !!e.querySelector('.ask-ev__vis > *'), shown: +getComputedStyle(e).opacity })),
+    you: [...a.querySelectorAll('.ask-you')].map(e => txt(e).replace(/^You asked: /, '')),
+    says: [...a.querySelectorAll('.ask__say')].map(r => [r.dataset.state, txt(r.querySelector('.msg__text'))]),
+    browse: (() => { const c = a.querySelector('.ask__browse .msg-cta__btn'); return c ? [c.tagName, c.getAttribute('href'), c.getClientRects().length > 0] : null; })(),
+    again: (() => { const g = a.querySelector('.ask__again'); return !!g && g.getClientRects().length > 0; })(),
+    turns: a.querySelectorAll('.ask__turn').length,
+    focus: document.activeElement && document.activeElement.closest ? !!document.activeElement.closest('.ask__say') : false,
+    box: (() => { const t = document.querySelector('.hero__thread'); return [t.scrollHeight, t.clientHeight, Math.round(t.scrollTop), t.getBoundingClientRect().width]; })()
+  }; })()"""
+
+# Ready to be answered: no line still arriving and choices on screen.
+ASK_IDLE = ('(() => { const a = document.querySelector(".ask"); if (!a) return false;'
+            ' const s = [...a.querySelectorAll(".ask__say")]; if (!s.length) return false;'
+            ' if (s.some(r => r.dataset.state === "loading")) return false;'
+            ' const q = a.querySelectorAll(".ask__choices.is-in:not(.is-leaving) .ask-q:not(:disabled)");'
+            ' return q.length > 0 && !!a.querySelector(".ask__bar.is-in"); })()')
+
+SLIDE = ('(k => { const s = document.querySelector(\'.pv__slide[data-mode="design"][data-project="\' + k + \'"]\');'
+         ' return s ? [s.querySelector(".pv__title").textContent.replace(/\\s+/g, " ").trim(), s.getAttribute("data-href")] : null; })')
+
+
+def ask_flow(b, base, shots, w, h):
+    name = 'ask %dx%d' % (w, h)
+    fresh(b, base, w=w, h=h, dark=False)
+    ok = until(b, ASK_IDLE, 40)
+    s = b.eval(ASK_STATE)
+    if not ok or not s:
+        check(False, name + ' the question arrives after the introduction', json.dumps(s)[:200])
+        return
+    land = b.eval('document.documentElement.dataset.landing')
+    check(s['says'][0][1] == 'What would you like to know?' and s['q'] == ['strongest', 'complex', 'ai'],
+          name + ' asks, with three questions', json.dumps([s['says'], s['q']]))
+    check(s['browse'] and s['browse'][2] and (s['browse'][0] == 'BUTTON' if w >= 960 else s['browse'][1] == '#work'),
+          name + ' Browse everything is there (the gate above 960, a link to #work below)', json.dumps(s['browse']))
+    check(land == ('ready' if w >= 960 else 'work'), name + ' the page is in its ' + ('ready' if w >= 960 else 'cascaded') + ' state', land)
+    if shots:
+        b.screenshot(os.path.join(shots, 'ask-open-%d.png' % w))
+    w0 = s['box'][3]
+    b.eval('document.querySelector(\'.ask-q[data-q="ai"]\').click()')
+    until(b, '(() => { const e = document.querySelectorAll(".ask-ev"); return e.length === 1 && +getComputedStyle(e[0]).opacity > 0.99; })()', 10)
+    until(b, ASK_IDLE, 10)
+    s = b.eval(ASK_STATE)
+    sl = b.eval(SLIDE + '("optiflow")')
+    ev = s['ev'][0] if s['ev'] else {}
+    check(s['you'] == ['How do you work with AI?'], name + ' the choice becomes the visitor\'s note', json.dumps(s['you']))
+    check(ev.get('k') == 'optiflow' and sl and ev.get('title') == sl[0] and ev.get('href') == sl[1] and ev.get('preview'),
+          name + ' the answer sends OptiFlow, with the slide\'s own title, link and preview', json.dumps([ev, sl]))
+    check(len(s['q']) == 3 and 'ai' not in s['q'] and s['q'][0] == 'validate', name + ' three follow-ups, chosen by the path',
+          json.dumps(s['q']))
+    check(s['focus'], name + ' focus moves to the answer')
+    if shots:
+        b.screenshot(os.path.join(shots, 'ask-answer-%d.png' % w))
+    first = s['q'][0]
+    b.eval('document.querySelector(\'.ask-q[data-q="%s"]\').click()' % first)
+    until(b, '(() => { const e = document.querySelectorAll(".ask-ev"); return e.length === 2 && +getComputedStyle(e[1]).opacity > 0.99; })()', 10)
+    until(b, ASK_IDLE, 10)
+    s = b.eval(ASK_STATE)
+    check(len(s['ev']) == 2 and s['ev'][0]['compact'] and not s['ev'][0]['preview'] and not s['ev'][1]['compact'] and s['ev'][1]['preview'],
+          name + ' the earlier evidence folds and gives its preview back', json.dumps(s['ev']))
+    check(s['again'], name + ' Ask something else is offered after an answer')
+    if w >= 960:
+        check(s['box'][0] > s['box'][1] and s['box'][2] > 0, name + ' the box scrolls to the newest turn', json.dumps(s['box']))
+    if shots:
+        b.screenshot(os.path.join(shots, 'ask-second-%d.png' % w))
+    b.eval('document.querySelector(".ask__again").click()')
+    until(b, '(() => { const t = document.querySelectorAll(".ask__turn"); const l = t[t.length - 1]; return l && !!l.querySelector(".ask__choices--open.is-in"); })()', 10)
+    until(b, ASK_IDLE, 10)
+    s = b.eval(ASK_STATE)
+    check(len(s['q']) == 3 and 'ai' not in s['q'] and first not in s['q'] and s['q'][:2] == ['strongest', 'complex'],
+          name + ' a change of subject offers what has not been asked', json.dumps(s['q']))
+    if w >= 960:
+        t0 = b.eval('(() => { const t = performance.now(); document.querySelector(".ask__browse .msg-cta__btn").click(); return t; })()')
+        b.pump(0.5)
+        v = b.eval('[document.documentElement.dataset.landing, document.querySelector(".hero__thread").getBoundingClientRect().width,'
+                   ' !!document.querySelector(".hero__thread.is-list"), document.querySelector(".ask__browse").getClientRects().length,'
+                   ' [...document.querySelectorAll("[data-reveal]")].filter(e => e.getClientRects().length && getComputedStyle(e).visibility !== "visible").length]')
+        check(v[0] == 'work' and not v[2] and v[4] == 0, name + ' Browse everything opens the whole page, conversation kept', json.dumps(v))
+        check(abs(v[1] - w0) < 0.05, name + ' thread width unchanged into work', '%s %s' % (w0, v[1]))
+        check(v[3] == 0, name + ' Browse everything is put away once the page is open', json.dumps(v))
+        if shots:
+            b.pump(0.6)
+            b.screenshot(os.path.join(shots, 'ask-work-%d.png' % w))
+    check(b.eval('__pf.over') == 0, name + ' no horizontal overflow', '%d of %d frames' % (b.eval('__pf.over'), b.eval('__pf.frames')))
+    e = errors(b)
+    check(not e, name + ' no errors', '; '.join(e[:3]))
+
+
+def t_ask(b, base, shots):
+    # Every authored answer points at a live project the page actually has.
+    fresh(b, base, '/#top', w=1512, h=982, dark=False, wait=4)
+    bad = b.eval('(() => { const A = PF.ASK, out = []; for (const id in A.q) { const q = A.q[id], p = PF.project(q.show);'
+                 ' const s = document.querySelector(\'.pv__slide[data-mode="design"][data-project="\' + q.show + \'"]\');'
+                 ' if (!p || p.status !== "live" || !s || !s.getAttribute("data-href")) out.push(id + ":" + q.show);'
+                 ' for (const n of (q.next || [])) if (!A.q[n]) out.push(id + "->" + n); }'
+                 ' for (const n of A.open.next) if (!A.q[n]) out.push("open->" + n); return out; })()')
+    check(not bad, 'ask: every question maps to a live project and every follow-up exists', json.dumps(bad))
+    shown = b.eval('Object.keys(PF.ASK.q).map(id => PF.ASK.q[id].show).filter((v, i, a) => a.indexOf(v) === i).sort()')
+    check(shown == sorted(['carry', 'crypto', 'dsa', 'governance', 'livefront', 'optiflow', 'pnc', 'specimen']),
+          'ask: every live design project can be reached', json.dumps(shown))
+    for w, h in [(1512, 982), (2560, 1440), (1280, 800), (1024, 768), (390, 844)]:
+        ask_flow(b, base, shots, w, h)
+    # Reduced motion: no performance, the question and its choices are there.
+    fresh(b, base, w=1512, h=982, dark=False, reduced=True, wait=0.5)
+    until(b, ASK_IDLE, 15)
+    s = b.eval(ASK_STATE)
+    check(bool(s) and len(s['q']) == 3 and s['says'][0][0] == 'settled', 'ask: reduced motion asks at once, nothing animated',
+          json.dumps(s)[:200] if s else 'no conversation')
+    if s:
+        b.eval('document.querySelector(\'.ask-q[data-q="complex"]\').click()')
+        b.pump(0.3)
+        s = b.eval(ASK_STATE)
+        check(len(s['ev']) == 1 and s['ev'][0]['k'] == 'dsa' and len(s['q']) == 3, 'ask: reduced motion answers at once', json.dumps(s['ev']))
+    # Replay is a clean start: the conversation goes and comes back with the
+    # introduction.
+    fresh(b, base, w=1512, h=982, dark=False)
+    until(b, ASK_IDLE, 40)
+    b.eval('document.querySelector(\'.ask-q[data-q="strongest"]\').click()')
+    until(b, ASK_IDLE, 10)
+    b.eval('document.querySelector(".hero__replay").click()')
+    b.pump(1.2)
+    v = b.eval('[!!document.querySelector(".ask"), document.querySelector(".hero__thread").classList.contains("is-asking")]')
+    check(v == [False, False], 'ask: replay clears the conversation', json.dumps(v))
+    ok = until(b, ASK_IDLE, 40)
+    s = b.eval(ASK_STATE)
+    check(bool(ok) and s['q'] == ['strongest', 'complex', 'ai'] and not s['you'], 'ask: after replay it asks again from the start',
+          json.dumps(s)[:200] if s else 'none')
+    e = errors(b)
+    check(not e, 'ask: replay, no errors', '; '.join(e[:3]))
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     shots = None
@@ -489,7 +634,7 @@ def main():
         shots = sys.argv[sys.argv.index('--shots') + 1]
         args = [a for a in args if a != shots]
         os.makedirs(shots, exist_ok=True)
-    want = set(args) or {'routes', 'theme', 'seq', 'hatch', 'keys', 'copy', 'pace'}
+    want = set(args) or {'routes', 'theme', 'seq', 'hatch', 'keys', 'copy', 'pace', 'ask'}
     base = serve()
     b = Browser()
     b.preload(SAMPLER)
@@ -508,6 +653,8 @@ def main():
             t_keys(b, base)
         if 'seq' in want:
             t_seq(b, base, shots, WIDTHS + NEAR)
+        if 'ask' in want:
+            t_ask(b, base, shots)
     finally:
         b.close()
     print('\n%d failure(s)%s' % (len(FAILS), (': ' + ', '.join(FAILS)) if FAILS else ''))
