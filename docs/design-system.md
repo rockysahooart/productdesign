@@ -141,8 +141,8 @@ failed bundle see the final composition.
 | state | trigger | on the page |
 |---|---|---|
 | `intro` | head script, before first paint | the conversation alone, centred; theme and replay controls |
-| `ready` | `pf:cta` (the thread's `showCta()`) | the same, plus the thread's own See the work. Nothing else arrives |
-| `work` | the first press on See the work | roles, profile, LET'S TALK, Skills, Project Browser, Where I've been, Tools, everything below: one 320ms transition |
+| `ready` | `pf:cta` (the thread's `showCta()`) | the same, plus the conversation that follows it (js/ask.js): the question, three choices and Browse everything, which is the thread's own See the work button relabelled. Nothing else arrives, however far the conversation goes |
+| `work` | the first press on Browse everything (formerly See the work) | roles, profile, LET'S TALK, Skills, Project Browser, Where I've been, Tools, everything below: one 320ms transition |
 
 - **The gate.** In `ready`, `reveal.js` takes the press on `.msg-cta__btn` in the
   capture phase, so the first press opens the page and keeps the conversation (the
@@ -191,6 +191,68 @@ step.
 
 Reaction chips are `visibility: hidden` while the thread plays and they have not
 arrived (`.is-playing .rx:not(.is-in)`), so Tab never reaches an invisible chip.
+
+## The conversation after the introduction (`js/ask.js`, `css/35-ask.css`)
+
+The introduction no longer ends on a passive invitation. On `pf:cta` the thread
+asks "What would you like to know?", offers three authored questions, and answers
+each one with a line in its own bubble plus the project that answers it. Browse
+everything is always there. Authored and deterministic: no model, no network, no
+free text. The Figma source is *Portfolio Assistant — Wireflows & Interaction*,
+section 07.
+
+**Hand-over.** `js/thread.js` exposes `PF.thread` (`el`, `track`, `still`,
+`enter()`, `row(text, first)`, `cta()`, `ended()`, `onReset(fn)`) and fires
+`pf:thread`. `enter()` stops the sequence (phase `ask`: no loop, no `place()`, no
+list view), turns the track's `translateY` into `padding-top` so nothing moves, and
+adds `.is-asking`. Replay, a role change and a crossing of 720 call the reset hooks:
+the conversation is removed and the introduction plays again, then asks again.
+
+**Three voices.**
+
+| role | shape | type |
+|---|---|---|
+| assistant | the thread's own `.msg` row (dots, `msg-clay`, clay bubble), cloned from its template | the thread's face at `0.86em` (1em below 720) |
+| question | `.ask-q`: soft card, 48px (follow-ups 40px), radius 16 (14), 1px `rgba(38,34,28,.07)`, `linear-gradient(135deg, #FFFEFB 0, #FFFEFB 18%, tint 100%)`, three tints #FBF1E6 / #EEF3EA / #F1EFF7 | Be Vietnam 500 `--fs-body` |
+| visitor | `.ask-you`: right-aligned note in the tint of the question taken, flat, radius 18/18/6/18 | Be Vietnam 500 `--fs-body` |
+| evidence | `.ask-ev`, which carries `.card`, so it is the page's own clay card: preview 216×184 beside the copy, or stacked (preview 128 tall, description clamped to 3 lines) in columns under 520 (a container query on `.ask`) | eyebrow Label Caps, title +2px 500, description −1px, CTA `--link-go` |
+
+Hover is more light: a separate `::before` layer carrying the lift shadow fades in
+(no shadow is animated), the card rises 1px and the arrow moves 3px. Focus-visible
+is the site's 2px `--focus` ring at 3px. Pressed is `scale(.985)`. Dark-theme tints
+are paired in the same block, under both dark selectors.
+
+**Previews are the slide's own.** The evidence copies the project browser slide's
+`.pv__vis` child: a framed preview is a second live document fitted by its own
+`--pv-w`/`--pv-h` and `--pv-scale` (and answers its frame's `pfScaleRequest`), the
+audit's walk is started with `PF.initAudit`, LiveFront's phone is plain CSS. Only the
+newest answer keeps a live preview; an earlier one folds to one line (`.is-compact`)
+and its copy is removed. At most five turns are kept.
+
+**The box.** At 960 and up the thread box keeps its measured height and scrolls
+(`.is-scroll`); the dissolve appears at the top only when scrolled, and a 40px one at
+the foot when there is more below. While an answer arrives the view follows its
+first line; once the follow-ups and actions have landed, and after a reading beat
+(900ms × pace), it moves just far enough to show them, never past the top of the
+evidence. Below 960 the box gives up its height (`.is-grow`) and the page scrolls.
+
+**Browse everything** is the thread's own See the work button, moved into the
+conversation and relabelled, so `js/reveal.js`'s capture-phase gate still takes its
+first press (ready → work, one 320ms movement). The conversation stays where it is;
+once `data-landing="work"` (or the page was never staged) the stylesheet hides the
+button. Below 960 it is a link to `#work`. The project browser follows the
+conversation (`pf:project`), so the page opens on the last project shown.
+
+**Timing** is the thread's: dots `560 × pace`, landing `640 × pace`, a beat of
+`520 × pace` before the question, `140 × pace` between the parts of an answer, 160ms
+for the questions not taken to go, prompts 280ms on the cascade curve 60ms apart.
+Reduced motion: every step is immediate and nothing animates.
+
+**Accessibility.** The heading is named by its introduction text
+(`aria-labelledby`), so the conversation inside it is not part of the heading. Each
+answer is announced through a polite live region and focus moves to it. Questions
+are buttons in a labelled group; the evidence card is one link named by its CTA and
+title.
 
 ## Project browser and cards
 

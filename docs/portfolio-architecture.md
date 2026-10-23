@@ -23,13 +23,13 @@ Not in the repo, so not deployed: `robots.txt`, `sitemap.xml`. Copies exist in
 the retired build folder `~/Documents/Claude outputs/candidate-build/`.
 
 `app-1.js` modules, in order: routes, theme, stepper, media, carry, carry-ui,
-optiflow, tagging, thread, reveal, dsa, ap-fit, audit-proto, px-emerge, pp-conf,
+optiflow, tagging, thread, reveal, ask, dsa, ap-fit, audit-proto, px-emerge, pp-conf,
 au-personas, pv-fit, projects, encryption, clients, tools, musicmenu, case, wire,
 dsseq, main, peek, bim.
 
 CSS sections in `index.html` include `00-fonts`, `01-tokens`, `02-base`,
 `03-layout`, `04-components`, `06-responsive`, `07-clients`, `09-case`,
-`16-reveal`, `33-hero-ultrawide`, plus per-study sheets (carry, optiflow,
+`16-reveal`, `33-hero-ultrawide`, `35-ask`, plus per-study sheets (carry, optiflow,
 encryption, dsa, audit, specimen, personas…).
 
 ## Blocking scripts
@@ -98,6 +98,32 @@ linked and are always labelled.
 PNC and First United Bank URLs are canonical. When changing either, grep the
 whole repo for the old value and confirm zero remaining references (route
 table, carousel `pv__go`, card links, mobile variants).
+
+### The conversation: `PF.ASK` (js/ask.js)
+
+Authored, deterministic, and the only place its words live:
+
+```
+PF.ASK = {
+  open:  { say, next: [3 ids] },        // asked after the introduction
+  again: { say: [lines] },               // a change of subject
+  done:  { say },                        // nothing left to offer
+  q: { <id>: { label, say, after: { <previous id>: say }, show: <PF.PROJECTS key>,
+               ev: <optional line from the same case study>, next: [ids] } },
+  pool: [ids]                            // fills a turn whose follow-ups were all asked
+}
+```
+
+`show` is a `PF.PROJECTS` key and nothing else: the evidence card reads the
+project's title, sentence, CTA label, link and preview off its design slide
+(`.pv__slide[data-mode="design"][data-project]`), its name and context from
+`PF.PROJECTS`, and external links through `PF.isExternal`. A project that is not
+`live` or has no slide is never offered. To add a question: one entry in `q`, its id
+in somebody's `next` (or in `pool`), and nothing else; `tools/check.py ask` checks
+every mapping.
+
+The thread lends the assistant its box through `PF.thread` (see the design-system
+doc). The ask module renders inside the thread's track, after the three messages.
 
 ### Labels
 

@@ -17,6 +17,10 @@ As of 2026-10-20 on `main`.
   See [design-system.md](design-system.md#landing-sequence-jsrevealjs-css16-revealcss).
 - Below 960: unchanged. The invitation runs the whole page in on its own,
   180ms lead then 140ms apart.
+- After the introduction the thread asks "What would you like to know?" (js/ask.js):
+  three authored questions, an answer in the thread's own bubble, the project as
+  evidence with its live preview and CTA, three follow-ups chosen by the path, Ask
+  something else, and Browse everything (the old See the work button, still the gate).
 - Trusted By (four logo bubbles: CVS Health, Natera, PNC, CG Infinity) is built but
   not shown since the decision state was retired. Worked With (`.hero__clients`, below 960): CVS Health, CG Infinity, PNC, First United.
 - Natera appears in the *Where I've been* timeline and, at the owner's request
@@ -30,8 +34,24 @@ As of 2026-10-20 on `main`.
 1. `social-preview-v2.png` (the og:image) still shows the old "Hello Team :)" greeting.
 2. `PF.PROJECTS` lists Scale as `soon` with no route; its slide links to `/scale-market`.
 3. No favicon; `/favicon.ico` 404s. Pre-existing.
+4. The assistant's answers (`PF.ASK` in js/ask.js) are drafted from text already on the
+   site, sourced line by line in Figma 06.9 / 07. They are the owner's to rewrite in
+   their own words. "Show me your strongest work" opens LiveFront (rank 01).
+5. Ultrawide: the Figma ideation's evidence shelf (cards beside the conversation that
+   fly into the grid) was not built; ultrawide uses the inline evidence card.
 
 ## Recently shipped
+
+- **2026-10-23: the conversation after the introduction.** The passive See the work
+  ending became an authored assistant (`js/ask.js`, `css/35-ask.css`, `PF.ASK`): the
+  question, low-saturation gradient prompts, the visitor's choice as a tinted note,
+  answers that acknowledge the question, evidence cards that reuse each project's
+  slide (title, copy, link and live preview), path-dependent follow-ups, folding
+  history, Browse everything through the existing gate. Desktop and ultrawide scroll
+  inside the thread box; below 960 the conversation grows with the page. Reduced
+  motion answers at once. `tools/check.py ask` covers it. Figma: *Portfolio Assistant —
+  Wireflows & Interaction*, section 07. All copy is drawn from site text; the owner
+  should still read every line (open item 4).
 
 - **2026-10-20: LiveFront copy.** Title "Redesigning Craigslist for faster used-car
   discovery"; the description frames it as a paid product design brief with LiveFront
