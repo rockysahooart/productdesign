@@ -5458,6 +5458,12 @@ window.PF = window.PF || {};
        again. */
     var ctaRow, view, backRow;
 
+    /* THE CONVERSATION THAT FOLLOWS (js/ask.js). Once the introduction has
+       asked its question the thread stops being a sequence: nothing loops,
+       nothing is placed by transform, and the box belongs to js/ask.js.
+       Declared here for the same hoisting reason as the three above. */
+    var askMode, askResets, ended;
+
     /* ---- the rows come from the data, not from the markup ---------------
 
        THE VIEWPORT IS A MESSAGE SYSTEM, NOT A SET OF SLOTS. The markup holds
@@ -5778,7 +5784,11 @@ window.PF = window.PF || {};
            carries its own optical margin in a way a line of type does not. */
         boxH += phone() ? FLAT_PAD + FLAT_TAIL : STILL_PAD + STILL_TAIL;
 
-        var cta = ctaEl();
+        /* In the conversation the invitation lives inside it (js/ask.js), at
+           no margin of its own, so measuring it there would give the box a
+           different height from every other visit. A copy is measured where
+           it was designed to sit instead, invisibly and for one read. */
+        var cta = askMode ? null : ctaEl();
         if (cta) {
           var was = cta.hasAttribute('hidden');
           if (was) cta.removeAttribute('hidden');
@@ -5800,6 +5810,21 @@ window.PF = window.PF || {};
                overhang's room. Counting both put thirty pixels of nothing at
                the foot of the box. */
             rxAllow = Math.max(0, rxAllow - Math.ceil(cm));
+          }
+        }
+        else if (askMode && !phone() && track) {
+          var probe = document.createElement('span');
+          probe.className = 'msg-cta';
+          probe.setAttribute('aria-hidden', 'true');
+          probe.style.cssText = 'display:block;visibility:hidden;position:absolute;left:0;right:0';
+          probe.innerHTML = '<button type="button" class="msg-cta__btn" tabindex="-1">See the work</button>';
+          track.appendChild(probe);
+          var ph = probe.getBoundingClientRect().height;
+          var pm = parseFloat(window.getComputedStyle(probe).marginTop) || 0;
+          track.removeChild(probe);
+          if (ph) {
+            boxH += Math.ceil(ph + pm);
+            rxAllow = Math.max(0, rxAllow - Math.ceil(pm));
           }
         }
       }
@@ -6678,7 +6703,7 @@ window.PF = window.PF || {};
     }
 
     function place(instant) {
-      if (!track) return;
+      if (!track || askMode) return;
       var s = liveSpan();
       if (!s) return;
       var H = thread.clientHeight;
@@ -7042,6 +7067,7 @@ window.PF = window.PF || {};
 
     function showCta() {
       var el = ctaEl();
+      ended = true;
       emit('pf:cta', idx);
       el.removeAttribute('hidden');
       /* One more thing in the flow, so the canvas answers for it. */
@@ -7090,6 +7116,9 @@ window.PF = window.PF || {};
     }
 
     function openList() {
+      /* Browse everything is the button this used to answer. In the
+         conversation the page itself is the work, so there is no list. */
+      if (askMode) return;
       var v = buildView();
       if (!v) return;
 
@@ -7179,6 +7208,8 @@ window.PF = window.PF || {};
          left: stop it before shape() replaces the list it was reading, or the
          old timer keeps dissolving a sentence that is no longer there. */
       stopCycle();
+      /* And the conversation that followed the old introduction. */
+      askExit();
       /* The old discipline's work goes with it, view and all. */
       exitList();
       hideCta();
@@ -7507,6 +7538,7 @@ window.PF = window.PF || {};
        waits to be driven, and nothing survives a reload. A visit always opens
        on Hello. Everything is autoplay. */
     function settle() {
+      if (askMode) return;   /* the conversation is not on a loop */
       phase = 'hold';
       clearTimeout(timer);
       running = false;
@@ -7542,6 +7574,7 @@ window.PF = window.PF || {};
            cutting them off on the way out is the same fault as cutting them
            off on the way in. */
         thread.classList.remove('is-open');
+        askExit();
         exitList();
         hideCta();
         /* Back to the first hello, so every cycle opens the way the first
@@ -7579,7 +7612,7 @@ window.PF = window.PF || {};
       clearTimeout(timer);
       /* The list is a place the reader chose to be. Nothing takes them out
          of it but their own hand on Back or Replay. */
-      if (phase === 'list') return;
+      if (phase === 'list' || phase === 'ask') return;
       if (phase === 'hold') timer = setTimeout(restart, HOLD_MS);
       else if (phase === 'reset') restart();
       /* The burst sets absolute states, so replaying it from the top is
@@ -7658,6 +7691,81 @@ window.PF = window.PF || {};
       stopCycle();
     }
 
+    /* ---- the conversation that follows ---------------------------------
+
+       js/ask.js is handed four things: the box, a fresh copy of the message
+       row (so its lines are this thread's lines, dots and landing included),
+       the gate button, and a way to hear about a reset. Entering stops the
+       sequence where it stands and turns the track's offset into ordinary
+       layout, so the box can scroll instead of being placed by a transform. */
+    askMode = false;
+    askResets = [];
+    ended = !!ended;
+
+    function askEnter() {
+      if (askMode) return;
+      askMode = true;
+      phase = 'ask';
+      clearTimeout(timer);
+      running = false;
+      stopCycle();
+      if (cancelScramble) { cancelScramble(); cancelScramble = null; }
+      thread.classList.add('is-asking');
+      if (track) {
+        track.style.transition = 'none';
+        track.style.transform = 'none';
+        track.style.paddingTop = Math.max(0, offsetY) + 'px';
+        void track.offsetWidth;
+        track.style.transition = '';
+      }
+    }
+
+    function askExit() {
+      if (!askMode) return;
+      askMode = false;
+      thread.classList.remove('is-asking');
+      thread.scrollTop = 0;
+      if (track) track.style.paddingTop = '';
+      for (var a = 0; a < askResets.length; a++) {
+        try { askResets[a](); } catch (err) { /* one listener cannot stop the reset */ }
+      }
+    }
+
+    function askRow(text, first) {
+      var r = TEMPLATE.cloneNode(true);
+      r.removeAttribute('data-msg');
+      r.removeAttribute('aria-hidden');
+      r.removeAttribute('data-scramble');
+      r.removeAttribute('data-shuffle');
+      r.removeAttribute('data-dwell');
+      r.removeAttribute('data-together');
+      var t = r.querySelector('.msg__text');
+      if (t) t.textContent = text;
+      var badge = r.querySelector('.msg__from');
+      if (first) {
+        r.setAttribute('data-cluster', '');
+      } else {
+        r.removeAttribute('data-cluster');
+        if (badge && badge.parentNode) badge.parentNode.removeChild(badge);
+      }
+      r.setAttribute('data-state', 'idle');
+      return r;
+    }
+
+    window.PF = window.PF || {};
+    window.PF.thread = {
+      el: thread,
+      track: track,
+      still: still,
+      enter: askEnter,
+      row: askRow,
+      cta: function () { return buildCta(); },
+      ended: function () { return !!ended; },
+      onReset: function (fn) { askResets.push(fn); }
+    };
+    try { document.dispatchEvent(new CustomEvent('pf:thread')); }
+    catch (err) { /* js/ask.js also looks for PF.thread when it loads */ }
+
     /* Reduced motion stops here, and it stops on the ENDING rather than on the
        beginning: the last four messages, the closing line and its reactions,
        already settled. Somebody who has asked the operating system not to
@@ -7673,7 +7781,7 @@ window.PF = window.PF || {};
       /* The same content-aware rule, run once: the end of the conversation,
          parked on the anchor with whatever came before it above the edge. */
       place(true);
-      phase = 'hold';
+      if (!askMode) phase = 'hold';
       thread.setAttribute('data-reactions', 'on');
       for (q = 0; q < RX_PLAN.length; q++) {
         var c = thread.querySelector('.rx[data-rx="' + RX_PLAN[q][0] + '"]');
@@ -8027,6 +8135,798 @@ window.PF = window.PF || {};
 
   /* For the console, and for anything that later needs to say "stop this". */
   PF.revealAll = all;
+
+})(window.PF);
+
+/* ===== js/ask.js ===== */
+/* ==========================================================================
+   ask.js. THE CONVERSATION KEEPS GOING
+
+   The introduction used to end on one invitation, See the work. It ends on a
+   question now: the thread asks what the visitor wants to know, offers three
+   authored answers to that, and each one is answered the way the thread talks
+   (a line in the thread's own bubble) and then shown: the project the answer
+   is about arrives under it, with its real preview, its real title and its
+   real link. Then three more questions, chosen by where the visitor has just
+   been. Browse everything is always there, and it is the same button See the
+   work was, so the first press still opens the page through js/reveal.js.
+
+   NOTHING HERE IS GENERATED. Every question, every line and every pairing of
+   a question with a project is written below, in ASK. What is not written
+   below is read off the page: a project's title, its sentence, its link and
+   its preview all come from its slide in the project browser, and its name
+   and context from PF.PROJECTS, so a project renamed or relinked there is
+   renamed and relinked here without anybody touching this file.
+
+   IT IS THE THREAD'S CONVERSATION, NOT A SECOND ONE. The assistant's lines
+   are the thread's own message rows (js/thread.js lends a template), so the
+   dots, the landing and the bubble are the ones the introduction used. The
+   questions and the visitor's choice are the only new shapes, and they are
+   deliberately not bubbles: a question is a prompt you can take, the choice
+   is a note in the margin, and the voice stays in the clay.
+
+   THE BOX. Above 960 the thread is a fixed-height box in a composition that
+   must not move, so the conversation scrolls inside it: older turns leave
+   through the top, under the same dissolve the introduction uses, and can be
+   scrolled back to. Below 960 the page is already all there by the time the
+   question is asked (the cascade has run), so the conversation simply grows
+   and the page scrolls with it.
+
+   HISTORY IS KEPT SHORT ON PURPOSE. A turn that is no longer the newest gives
+   up its preview and folds to one line naming the project, and only the last
+   few turns are kept at all. The page never becomes a chat log.
+   ========================================================================== */
+
+window.PF = window.PF || {};
+
+(function (PF) {
+  'use strict';
+
+  /* ---- the conversation, as data ----------------------------------------
+
+     open    the first thing asked, after the introduction
+     again   asked when the visitor wants a different subject
+     q       every question. `say` is the line the thread answers with;
+             `after` replaces it when the visitor arrives from a particular
+             question (the conversation remembers where it just was);
+             `show` is a PF.PROJECTS key; `ev` replaces the evidence sentence
+             with a different line from the same project's own case study;
+             `next` is the follow-ups, in order of preference.
+     pool    the order questions are borrowed in when a turn's own follow-ups
+             have all been asked already.
+
+     Every line below is drawn from text already on the site: the project
+     cards, the case studies, the About page and the README. */
+  var ASK = {
+    open: { say: 'What would you like to know?',
+            next: ['strongest', 'complex', 'ai'] },
+    again: { say: ['Of course. What else would you like to know?',
+                   'Sure. Where would you like to go next?'] },
+    done: { say: 'That covers most of the ground. The rest is in the full portfolio.' },
+
+    q: {
+      strongest: {
+        label: 'Show me your strongest work',
+        say: 'A good place to start. I’d begin with the newest: Craigslist’s used-car search, redesigned for iOS and handed off ready to build.',
+        show: 'livefront',
+        next: ['handoff', 'health', 'visual'] },
+
+      complex: {
+        label: 'How do you solve complex problems?',
+        say: 'I start by finding where the flow breaks for the people relying on it. The clearest example is an audit of four clinical workflows.',
+        show: 'dsa',
+        next: ['auditfound', 'simplified', 'engineers'] },
+
+      ai: {
+        label: 'How do you work with AI?',
+        say: 'Human judgment, design decisions, AI execution. OptiFlow shows what that looks like in practice.',
+        show: 'optiflow',
+        next: ['validate', 'governance', 'noai'] },
+
+      handoff: {
+        label: 'What have you handed off?',
+        say: 'For a handoff, look at OptiFlow: the review flow was delivered as design and handed to engineering.',
+        after: { strongest: 'Beyond Craigslist, OptiFlow is the one to see: the review flow went to engineering as a finished design.' },
+        show: 'optiflow',
+        ev: 'Turned each reviewer decision into structured feedback, suggestion, evidence, correction and reason, tied together so engineering had a signal it could act on.',
+        next: ['engineers', 'validate', 'interactive'] },
+
+      health: {
+        label: 'Show me healthcare work',
+        say: 'For healthcare, I’d show you Carry. It connects what patients want to ask before a visit with what they need to remember after it.',
+        show: 'carry',
+        next: ['responsibly', 'clinical', 'noai'] },
+
+      visual: {
+        label: 'What demonstrates visual design?',
+        say: 'For visual hierarchy, the Specimen Kit is the clearest case. I reordered the instruction lid so the rejection criteria read first.',
+        show: 'specimen',
+        ev: 'I rewrote the sheet in the lid so the preparation requirements and rejection criteria read first, and I specified a one-piece die-cut foam insert for the empty base.',
+        next: ['interactive', 'health', 'complex'] },
+
+      auditfound: {
+        label: 'What did the audit find?',
+        say: 'The same required action was a button in one row, a link in the next and a menu item in a third. So the fix became one shared pattern.',
+        show: 'dsa',
+        ev: 'Statuses named what the system was doing, not who had to act.',
+        next: ['clinical', 'simplified', 'engineers'] },
+
+      simplified: {
+        label: 'Show me a system you simplified',
+        say: 'For that, PNC: a fragmented lending process turned into one guided origination experience.',
+        show: 'pnc',
+        next: ['engineers', 'health', 'ai'] },
+
+      engineers: {
+        label: 'Can you work with engineers?',
+        say: 'In OptiFlow, every reviewer decision became a signal engineering could act on, and they shipped changes roughly every two weeks.',
+        after: { handoff: 'Same project, closer up: engineering shipped changes roughly every two weeks off that feedback.',
+                 validate: 'Closely. The feedback was built for them: engineering shipped changes roughly every two weeks off it.' },
+        show: 'optiflow',
+        ev: 'Model confidence rose by about 2 percentage points a week during the tuning cycle, with engineering shipping changes roughly every two weeks.',
+        next: ['interactive', 'handoff', 'validate'] },
+
+      validate: {
+        label: 'How did you validate the output?',
+        say: 'Every correction needed a reason, so it became structured feedback rather than just an edit.',
+        after: { ai: 'That’s the question to ask of any AI system. Every correction needed a reason, so it became structured feedback rather than just an edit.' },
+        show: 'optiflow',
+        ev: 'A correction retrains nothing on its own. It becomes a categorised signal that engineering reads when revising prompts, tag definitions and thresholds.',
+        next: ['governance', 'responsibly', 'noai'] },
+
+      governance: {
+        label: 'Show me the governance work',
+        say: 'When AI generates the work, I build the standards that catch its gaps. This is the guide I’m writing for that.',
+        show: 'governance',
+        next: ['responsibly', 'noai', 'complex'] },
+
+      noai: {
+        label: 'Show me something without AI',
+        say: 'Here’s one you can hold: an oncology specimen kit, redesigned for safer shipping and handling.',
+        show: 'specimen',
+        next: ['health', 'visual', 'complex'] },
+
+      responsibly: {
+        label: 'How do you use AI responsibly?',
+        say: 'Partly by knowing when not to. In Carry I ruled out generated answers and quoted the clinician instead.',
+        show: 'carry',
+        ev: 'Ruled out generated answers, and designed the quotation pattern that took their place.',
+        next: ['governance', 'clinical', 'complex'] },
+
+      clinical: {
+        label: 'Show me clinical work',
+        say: 'For clinical teams: one row pattern across four provider workflows, so a provider can see whose move it is.',
+        show: 'dsa',
+        ev: 'Each row states one required action in the same column every time, and the status names an owner and whether the provider has to act.',
+        next: ['auditfound', 'health', 'noai'] },
+
+      interactive: {
+        label: 'Show me something interactive',
+        say: 'This one you can play with: an explainer for a developer library, showing how ECDH and AES-GCM work together.',
+        show: 'crypto',
+        next: ['engineers', 'visual', 'ai'] }
+    },
+
+    pool: ['strongest', 'complex', 'ai', 'health', 'engineers', 'visual',
+           'interactive', 'governance', 'handoff', 'simplified', 'noai',
+           'responsibly', 'clinical', 'auditfound', 'validate']
+  };
+
+  PF.ASK = ASK;
+
+  /* The thread lends its box, its template row and its gate when it starts.
+     Whichever of the two files runs first, this waits for that. */
+  function run(T) {
+    if (!T || !T.el || T.el._ask) return;
+    T.el._ask = true;
+
+    var thread = T.el;
+    var wide = window.matchMedia('(min-width: 960px)');
+    var still = !!T.still;
+
+    /* The rhythm, on the thread's own clock: the same pace property the
+       introduction reads, so the conversation is exactly as quick as it was. */
+    var PACE = parseFloat(window.getComputedStyle(thread).getPropertyValue('--msg-pace')) || 1;
+    function paced(ms) { return still ? 0 : Math.round(ms * PACE); }
+    var BEAT = 520;     /* between the introduction ending and the question */
+    var DOTS = 560;     /* the indicator, as long as the introduction's */
+    var LAND = 640;     /* a bubble landing (msg-clay, matched to the CSS) */
+    var STEP = 140;     /* between one part of an answer and the next */
+    var LEAVE = 160;    /* the questions not taken, going */
+    var KEEP = 5;       /* turns kept; older ones are removed */
+
+    var box = null;     /* the conversation, once it has begun */
+    var bar = null;     /* Browse everything (and Ask something else) */
+    var live = null;    /* what a screen reader hears when an answer lands */
+    var asked = {};
+    var prev = null;
+    var busy = false;
+    var timers = [];
+    var againAt = 0;
+    var tint = 0;
+
+    function later(fn, ms) {
+      var id = setTimeout(fn, ms);
+      timers.push(id);
+      return id;
+    }
+    function clearTimers() {
+      for (var i = 0; i < timers.length; i++) clearTimeout(timers[i]);
+      timers = [];
+    }
+
+    function el(tag, cls, text) {
+      var n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (text != null) n.textContent = text;
+      return n;
+    }
+
+    /* ---- the project, read off the page --------------------------------- */
+
+    function slideOf(key) {
+      return document.querySelector('.pv__slide[data-mode="design"][data-project="' + key + '"]');
+    }
+
+    function project(key) {
+      var p = PF.project ? PF.project(key) : null;
+      var s = slideOf(key);
+      if (!p || !s || p.status !== 'live') return null;
+      var t = s.querySelector('.pv__title');
+      var sub = s.querySelector('.pv__sub');
+      var go = s.querySelector('.pv__go');
+      var text = '';
+      if (sub) {
+        var c = sub.cloneNode(true);
+        var g = c.querySelector('.pv__go');
+        if (g) g.parentNode.removeChild(g);
+        text = c.textContent.replace(/\s+/g, ' ').trim();
+      }
+      var label = go ? go.textContent.replace(/[→↗]/g, '').replace(/\s+/g, ' ').trim() : 'View case study';
+      var context = String(p.context || '').split('·')[0].trim();
+      return {
+        key: key,
+        name: p.name,
+        context: context,
+        title: t ? t.textContent.replace(/\s+/g, ' ').trim() : p.name,
+        text: text,
+        label: label,
+        href: s.getAttribute('data-href') || p.route,
+        external: PF.isExternal ? PF.isExternal(p) : /^https?:/i.test(p.route),
+        slide: s
+      };
+    }
+
+    /* ---- the preview: the slide's own, running ---------------------------
+
+       The same element the browser shows, copied. A framed preview is its own
+       document, so a copy is a second live instance rather than a picture of
+       one, fitted the way js/projects.js fits the original: authored size,
+       scaled to contain. The audit's walk is started by its own module. Only
+       the newest answer keeps a live copy; an older one gives it back. */
+
+    var fitted = [];
+
+    function fitFrame(f) {
+      var r = f.stage.getBoundingClientRect();
+      if (!r.width || !f.w || !f.h) return;
+      var s = Math.min(r.width / f.w, r.height / f.h, 1);
+      f.frame.style.setProperty('--pv-scale', s.toFixed(4));
+      f.embed.setAttribute('data-fit', '1');
+      try { f.frame.contentWindow.postMessage({ pfScale: +s.toFixed(4) }, '*'); }
+      catch (err) { /* not loaded yet: it asks, see below */ }
+    }
+
+    window.addEventListener('message', function (e) {
+      if (!e || !e.data || !e.data.pfScaleRequest) return;
+      for (var i = 0; i < fitted.length; i++) {
+        if (fitted[i].frame.contentWindow === e.source) fitFrame(fitted[i]);
+      }
+    });
+
+    var refit = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(refit);
+      refit = setTimeout(function () {
+        for (var i = 0; i < fitted.length; i++) fitFrame(fitted[i]);
+      }, 120);
+    });
+
+    function preview(p, stage) {
+      var src = p.slide.querySelector('.pv__vis');
+      var first = src && src.firstElementChild;
+      if (!first) return;
+      var copy = first.cloneNode(true);
+      /* Ids belong to the original. */
+      var ided = copy.querySelectorAll('[id]');
+      for (var i = 0; i < ided.length; i++) ided[i].removeAttribute('id');
+      copy.removeAttribute('id');
+      copy.setAttribute('aria-hidden', 'true');
+      stage.appendChild(copy);
+
+      var frame = copy.querySelector('iframe');
+      if (frame) {
+        var of = first.querySelector('iframe');
+        var cs = window.getComputedStyle(of || frame);
+        var f = { embed: copy, frame: frame, stage: stage,
+                  w: parseFloat(cs.getPropertyValue('--pv-w')) || 0,
+                  h: parseFloat(cs.getPropertyValue('--pv-h')) || 0 };
+        frame.setAttribute('tabindex', '-1');
+        frame.style.setProperty('--pv-w', f.w + 'px');
+        frame.style.setProperty('--pv-h', f.h + 'px');
+        copy.removeAttribute('data-fit');
+        fitted.push(f);
+        frame.addEventListener('load', function () { fitFrame(f); });
+        requestAnimationFrame(function () { fitFrame(f); });
+      }
+      var built = copy.querySelectorAll('[data-ds-built]');
+      for (i = 0; i < built.length; i++) built[i].removeAttribute('data-ds-built');
+      if (copy.hasAttribute('data-ds-built')) copy.removeAttribute('data-ds-built');
+      if (PF.initAudit && copy.querySelector('[data-ds-cyc]')) PF.initAudit(copy);
+    }
+
+    function release(ev) {
+      var stage = ev.querySelector('.ask-ev__vis');
+      if (!stage) return;
+      for (var i = fitted.length - 1; i >= 0; i--) {
+        if (stage.contains(fitted[i].frame)) fitted.splice(i, 1);
+      }
+      stage.parentNode.removeChild(stage);
+    }
+
+    /* ---- the evidence ---------------------------------------------------- */
+
+    function evidence(p, line) {
+      var ev = el('span', 'ask-ev card');
+      /* Not data-project: js/wire.js and the peek both select on that. */
+      ev.setAttribute('data-ask-project', p.key);
+
+      var stage = el('span', 'ask-ev__vis');
+      preview(p, stage);
+      ev.appendChild(stage);
+
+      var copy = el('span', 'ask-ev__copy');
+      var eb = el('span', 'ask-ev__eyebrow');
+      eb.appendChild(el('span', 'ask-ev__name', p.name));
+      if (p.context) eb.appendChild(el('span', 'ask-ev__ctx', ' \u00b7 ' + p.context));
+      copy.appendChild(eb);
+      copy.appendChild(el('span', 'ask-ev__title', p.title));
+      copy.appendChild(el('span', 'ask-ev__text', line || p.text));
+
+      var go = el('a', 'ask-ev__go');
+      go.setAttribute('href', p.href);
+      if (p.external) {
+        go.setAttribute('target', '_blank');
+        go.setAttribute('rel', 'noopener noreferrer');
+      }
+      var lab = el('span', 'ask-ev__go-label', p.label);
+      if (p.external) lab.setAttribute('data-external', '1');
+      go.appendChild(lab);
+      if (!p.external) {
+        var ar = el('span', 'ask-ev__go-a', '→');
+        ar.setAttribute('aria-hidden', 'true');
+        go.appendChild(ar);
+      }
+      go.setAttribute('aria-label', p.label + ': ' + p.title);
+      copy.appendChild(go);
+      ev.appendChild(copy);
+      return ev;
+    }
+
+    /* The browser beside the conversation follows it: whatever was shown last
+       is the slide the browser is on when the page opens. js/projects.js
+       answers this event already. */
+    function point(p) {
+      try {
+        document.dispatchEvent(new CustomEvent('pf:project', { detail: { name: p.title } }));
+      } catch (err) { /* no CustomEvent: nothing follows, nothing breaks */ }
+    }
+
+    /* ---- the turn, and the lines in it ------------------------------------ */
+
+    function turn() {
+      var t = el('span', 'ask__turn');
+      box.appendChild(t);
+      var turns = box.querySelectorAll('.ask__turn');
+      /* Only the last few are kept. What goes is above what the visitor is
+         looking at, so the scroll is moved by exactly what was taken away. */
+      while (turns.length > KEEP) {
+        var old = turns[0];
+        var h = old.getBoundingClientRect().height +
+                (parseFloat(window.getComputedStyle(turns[1]).marginTop) || 0);
+        var evs = old.querySelectorAll('.ask-ev');
+        for (var i = 0; i < evs.length; i++) release(evs[i]);
+        old.parentNode.removeChild(old);
+        if (wide.matches) thread.scrollTop = Math.max(0, thread.scrollTop - h);
+        else window.scrollBy(0, -h);
+        turns = box.querySelectorAll('.ask__turn');
+      }
+      return t;
+    }
+
+    /* One of the thread's own rows, saying one line. */
+    function say(into, text, first, done) {
+      var row = T.row(text, first);
+      row.classList.add('ask__say');
+      into.appendChild(row);
+      follow();
+      if (still) {
+        row.setAttribute('data-state', 'settled');
+        if (done) done(row);
+        return row;
+      }
+      row.setAttribute('data-state', 'loading');
+      later(function () {
+        row.setAttribute('data-state', 'live');
+        follow();
+        later(function () { row.setAttribute('data-state', 'settled'); }, paced(LAND));
+        if (done) done(row);
+      }, paced(DOTS));
+      return row;
+    }
+
+    function arrive(node, ms, done) {
+      if (still) { node.classList.add('is-in'); if (done) done(); return; }
+      later(function () {
+        requestAnimationFrame(function () {
+          node.classList.add('is-in');
+          follow();
+          if (done) done();
+        });
+      }, ms || 0);
+    }
+
+    /* ---- the questions --------------------------------------------------- */
+
+    function candidates(ids) {
+      var out = [], seen = {}, i, k;
+      function take(id) {
+        if (out.length >= 3 || seen[id] || asked[id] || !ASK.q[id]) return;
+        if (!project(ASK.q[id].show)) return;   /* never offer a project that is not live */
+        seen[id] = true;
+        out.push(id);
+      }
+      for (i = 0; ids && i < ids.length; i++) take(ids[i]);
+      for (k = 0; k < ASK.pool.length; k++) take(ASK.pool[k]);
+      return out;
+    }
+
+    function choices(into, ids, kind) {
+      var wrap = el('span', 'ask__choices ask__choices--' + kind);
+      wrap.setAttribute('role', 'group');
+      wrap.setAttribute('aria-label', kind === 'next' ? 'Ask next' : 'Questions you can ask');
+      if (kind === 'next') {
+        var head = el('span', 'ask__head');
+        head.appendChild(el('span', 'ask__label', 'Ask next'));
+        wrap.appendChild(head);
+      }
+      var list = el('span', 'ask__list');
+      for (var i = 0; i < ids.length; i++) {
+        var q = ASK.q[ids[i]];
+        var b = el('button', 'ask-q');
+        b.type = 'button';
+        b.setAttribute('data-q', ids[i]);
+        b.setAttribute('data-tint', String(((tint + i) % 3) + 1));
+        b.style.setProperty('--i', i);
+        b.appendChild(el('span', 'ask-q__t', q.label));
+        var a = el('span', 'ask-q__go', '→');
+        a.setAttribute('aria-hidden', 'true');
+        b.appendChild(a);
+        b.addEventListener('click', choose);
+        list.appendChild(b);
+      }
+      tint = (tint + 1) % 3;
+      wrap.appendChild(list);
+      into.appendChild(wrap);
+      return wrap;
+    }
+
+    /* ---- Browse everything, and a way to change the subject --------------
+
+       Above 960 Browse everything IS the thread's See the work button, moved
+       here and relabelled: js/reveal.js takes its first press and opens the
+       page, exactly as it always has. Once the page is open there is nothing
+       left for it to do and the stylesheet puts it away. Below 960 the page is
+       already open, so it is a link to the work further down. */
+    function buildBar() {
+      if (bar) return bar;
+      bar = el('span', 'ask__bar');
+      var go;
+      if (wide.matches) {
+        var row = T.cta();
+        if (row) {
+          row.classList.add('ask__browse');
+          var btn = row.querySelector('.msg-cta__btn');
+          if (btn) btn.innerHTML = 'Browse everything <span aria-hidden="true">→</span>';
+          row.removeAttribute('hidden');
+          row.classList.add('is-in');
+          go = row;
+        }
+      }
+      if (!go) {
+        go = el('span', 'msg-cta ask__browse is-in');
+        var a = el('a', 'msg-cta__btn');
+        a.setAttribute('href', '#work');
+        a.innerHTML = 'Browse everything <span aria-hidden="true">↓</span>';
+        go.appendChild(a);
+      }
+      bar.appendChild(go);
+      var again = el('button', 'ask__again', 'Ask something else');
+      again.type = 'button';
+      again.addEventListener('click', changeSubject);
+      bar.appendChild(again);
+      return bar;
+    }
+
+    function placeBar(into, offerAgain) {
+      buildBar();
+      bar.classList.toggle('has-again', !!offerAgain);
+      into.appendChild(bar);
+    }
+
+    /* ---- keeping the newest thing in view --------------------------------
+
+       The newest turn is brought into view as it grows: its first line no
+       higher than just under the dissolve, and as much of the rest as fits.
+       A conversation shorter than the box does not move at all. */
+    var clear = 0;
+    function follow() {
+      var t = box && box.lastElementChild;
+      if (!t) return;
+      var smooth = still ? 'auto' : 'smooth';
+      if (wide.matches) {
+        var tr = thread.getBoundingClientRect();
+        var top = t.getBoundingClientRect().top - tr.top + thread.scrollTop;
+        var max = thread.scrollHeight - thread.clientHeight;
+        var want = Math.min(top - clear, max);
+        if (want > thread.scrollTop + 1) thread.scrollTo({ top: want, behavior: smooth });
+      } else {
+        var r = t.getBoundingClientRect();
+        var vh = window.innerHeight;
+        if (r.bottom <= vh - 16) return;
+        var by = Math.min(r.top - 72, r.bottom - vh + 24);
+        if (by > 1) window.scrollBy({ top: by, behavior: smooth });
+      }
+    }
+
+    /* AND ONCE THE TURN IS COMPLETE, ITS WAY ONWARD IS ON SCREEN. While an
+       answer arrives the view follows its first line; when the follow-ups
+       and Browse everything have landed (and the answer has had a moment to be
+       read), the view moves just far enough to show them, and never so far
+       that the evidence it is offering leaves the top. */
+    function settleView(t, row) {
+      if (!t || !row) return;
+      var smooth = still ? 'auto' : 'smooth';
+      if (wide.matches) {
+        var tr = thread.getBoundingClientRect();
+        var base = thread.scrollTop - tr.top;
+        var floor = (t.querySelector('.ask-ev') || row).getBoundingClientRect().top + base - clear;
+        var end = t.getBoundingClientRect().bottom + base - thread.clientHeight + 13;
+        var max = thread.scrollHeight - thread.clientHeight;
+        var want = Math.max(0, Math.min(end, floor, max));
+        if (want > thread.scrollTop + 1) thread.scrollTo({ top: want, behavior: smooth });
+      } else {
+        var r = t.getBoundingClientRect(), a = (t.querySelector('.ask-ev') || row).getBoundingClientRect();
+        var by = Math.min(r.bottom - window.innerHeight + 24, a.top - 72);
+        if (by > 1) window.scrollBy({ top: by, behavior: smooth });
+      }
+    }
+
+    var ticking = false;
+    function edges() {
+      ticking = false;
+      var top = thread.scrollTop;
+      thread.classList.toggle('is-scrolled', top > 2);
+      thread.classList.toggle('is-more', top + thread.clientHeight < thread.scrollHeight - 2);
+    }
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(edges);
+    }
+
+    function mode() {
+      thread.classList.toggle('is-grow', !wide.matches);
+      thread.classList.toggle('is-scroll', wide.matches);
+      var stop = parseFloat(window.getComputedStyle(thread).getPropertyValue('--fade-stop')) || 9;
+      clear = Math.ceil(thread.clientHeight * stop / 100) + 8;
+      edges();
+    }
+
+    /* ---- the conversation ------------------------------------------------- */
+
+    function announce(text) {
+      if (!live) return;
+      live.textContent = '';
+      later(function () { live.textContent = text; }, 60);
+    }
+
+    function begin() {
+      if (box) return;
+      T.enter();
+
+      /* The heading is the introduction. The conversation under it is inside
+         the same element (it scrolls in the same box), so the heading is named
+         by its own text rather than by everything inside it. */
+      var named = thread.querySelector('.visually-hidden');
+      if (named) {
+        if (!named.id) named.id = 'hero-name-text';
+        thread.setAttribute('aria-labelledby', named.id);
+      }
+      if (!live) {
+        live = el('p', 'visually-hidden');
+        live.setAttribute('aria-live', 'polite');
+        live.id = 'ask-live';
+        document.body.appendChild(live);
+      }
+
+      box = el('span', 'ask');
+      box.setAttribute('data-ask', '');
+      T.track.appendChild(box);
+      thread.addEventListener('scroll', onScroll, { passive: true });
+      mode();
+
+      var t = turn();
+      later(function () {
+        say(t, ASK.open.say, true, function () {
+          var c = choices(t, candidates(ASK.open.next), 'open');
+          placeBar(t, false);
+          arrive(c, paced(STEP));
+          arrive(bar, paced(STEP * 2));
+        });
+      }, paced(BEAT));
+    }
+
+    function choose(e) {
+      var btn = e.currentTarget;
+      if (busy || !box) return;
+      var id = btn.getAttribute('data-q');
+      var q = ASK.q[id];
+      if (!q) return;
+      busy = true;
+
+      var group = btn.closest('.ask__choices');
+      var hue = btn.getAttribute('data-tint');
+      btn.setAttribute('data-chosen', '');
+      var all = group.querySelectorAll('.ask-q');
+      for (var i = 0; i < all.length; i++) all[i].disabled = true;
+      group.classList.add('is-leaving');
+
+      later(function () {
+        if (group.parentNode) group.parentNode.removeChild(group);
+        if (bar && bar.parentNode) bar.parentNode.removeChild(bar);
+
+        /* The turn before this one folds: its preview goes, one line stays. */
+        var evs = box.querySelectorAll('.ask-ev:not(.is-compact)');
+        for (var j = 0; j < evs.length; j++) {
+          release(evs[j]);
+          evs[j].classList.add('is-compact');
+        }
+
+        var t = turn();
+        var you = el('span', 'ask-you');
+        you.setAttribute('data-tint', hue || '1');
+        you.appendChild(el('span', 'visually-hidden', 'You asked: '));
+        you.appendChild(document.createTextNode(q.label));
+        t.appendChild(you);
+        arrive(you, 0);
+
+        asked[id] = true;
+        var from = prev;
+        prev = id;
+        var p = project(q.show);
+
+        later(function () {
+          say(t, (q.after && from && q.after[from]) || q.say, true, function (row) {
+            var ev = p ? evidence(p, q.ev) : null;
+            if (ev) { t.appendChild(ev); arrive(ev, paced(STEP)); point(p); }
+            var ids = candidates(q.next);
+            var after = function () {
+              if (ids.length) {
+                var c = choices(t, ids, 'next');
+                arrive(c, paced(STEP));
+              } else {
+                say(t, ASK.done.say, false);
+              }
+              placeBar(t, true);
+              arrive(bar, paced(STEP), function () {
+                later(function () { settleView(t, row); }, paced(900));
+              });
+              busy = false;
+              var bub = row.querySelector('.msg__bubble');
+              if (bub) {
+                bub.setAttribute('tabindex', '-1');
+                try { bub.focus({ preventScroll: true }); } catch (err) { bub.focus(); }
+              }
+              announce(row.querySelector('.msg__text').textContent.replace(/\s+/g, ' ').trim() +
+                       (p ? ' Evidence: ' + p.title + '.' : ''));
+            };
+            if (still) after(); else later(after, paced(STEP * 2));
+          });
+        }, paced(STEP));
+      }, still ? 0 : LEAVE);
+    }
+
+    function changeSubject() {
+      if (busy || !box) return;
+      busy = true;
+      var open = box.querySelector('.ask__choices');
+      if (open) open.classList.add('is-leaving');
+      later(function () {
+        if (open && open.parentNode) open.parentNode.removeChild(open);
+        if (bar && bar.parentNode) bar.parentNode.removeChild(bar);
+        var t = turn();
+        var lines = ASK.again.say;
+        var line = lines[againAt % lines.length];
+        againAt++;
+        say(t, line, true, function () {
+          var ids = candidates(ASK.open.next);
+          if (ids.length) arrive(choices(t, ids, 'open'), paced(STEP));
+          placeBar(t, false);
+          arrive(bar, paced(STEP * 2));
+          busy = false;
+          var first = t.querySelector('.ask-q');
+          if (first) first.focus({ preventScroll: true });
+        });
+      }, still ? 0 : LEAVE);
+    }
+
+    /* Replay, a role change and a width that changes what the thread is: the
+       conversation goes back to the start with the introduction. */
+    function reset() {
+      clearTimers();
+      busy = false;
+      asked = {};
+      prev = null;
+      tint = 0;
+      againAt = 0;
+      fitted = [];
+      if (bar) {
+        var row = bar.querySelector('.msg-cta');
+        if (row && row.classList.contains('ask__browse') && T.track) {
+          row.classList.remove('ask__browse', 'is-in');
+          var btn = row.querySelector('.msg-cta__btn');
+          if (btn) btn.innerHTML = 'See the work <span aria-hidden="true">→</span>';
+          row.setAttribute('hidden', '');
+          T.track.appendChild(row);
+        }
+        bar = null;
+      }
+      if (box && box.parentNode) box.parentNode.removeChild(box);
+      box = null;
+      thread.removeEventListener('scroll', onScroll);
+      thread.classList.remove('is-grow', 'is-scroll', 'is-scrolled', 'is-more');
+      thread.removeAttribute('aria-labelledby');
+    }
+
+    T.onReset(reset);
+
+    function onWidth() {
+      if (!box) return;
+      mode();
+      /* The browse control is a different thing either side of 960. */
+      if (bar) {
+        var host = bar.parentNode;
+        var row = bar.querySelector('.msg-cta');
+        if (row && row.classList.contains('ask__browse') && T.track && T.cta && row === T.cta()) {
+          row.classList.remove('ask__browse');
+          row.setAttribute('hidden', '');
+          T.track.appendChild(row);
+        }
+        if (bar.parentNode) bar.parentNode.removeChild(bar);
+        bar = null;
+        if (host) { placeBar(host, !!box.querySelector('.ask-ev')); bar.classList.add('is-in'); }
+      }
+    }
+    if (wide.addEventListener) wide.addEventListener('change', onWidth);
+    window.addEventListener('resize', function () { if (box) mode(); });
+
+    document.addEventListener('pf:cta', begin);
+    if (T.ended()) begin();
+  }
+
+  if (PF.thread) run(PF.thread);
+  else document.addEventListener('pf:thread', function () { run(PF.thread); });
 
 })(window.PF);
 

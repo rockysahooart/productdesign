@@ -32361,6 +32361,473 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
   border: 0;
   background: none;
 }
+
+/* ===== css/35-ask.css ===== */
+/* ==========================================================================
+   35-ask.css. THE CONVERSATION THAT FOLLOWS THE INTRODUCTION (js/ask.js)
+
+   Three voices, three shapes, and none of them is a chat bubble in blue:
+
+     the thread    the assistant's lines are the introduction's own message
+                   rows, clay bubble and display face, a step smaller so an
+                   answer reads as a reply rather than as a fourth headline.
+     a question    a prompt you can take: a soft card in Be Vietnam, lit from
+                   the top left and washed toward one of three warm tints.
+                   The only gradients on the page are here, and they are
+                   about four values deep.
+     the visitor   the question they took, kept as a note against the right
+                   margin in the same tint, flat: no shadow, no lift. It was
+                   chosen, it is no longer something to press.
+
+   Evidence is the page's own clay card (it carries the .card class, so the
+   material, the dark theme and the wash are the cards' own), holding the
+   project's own preview.
+
+   Every gap is a spacing token: 8, 13, 21 and 34.
+   ========================================================================== */
+
+.hero__thread {
+  --ask-indent: calc(var(--hx-avatar) + 10px);   /* the bubbles' own column */
+  /* The prompts' wash: from a near-white lit corner into one of three
+     tints, each about four values off the card behind it. Low saturation by
+     construction: these are warm off-whites with a breath of hue, not
+     colours. Ink on the deepest of them is 13.4:1. */
+  --ask-q-from: #FFFEFB;
+  --ask-tint-1: #FBF1E6;    /* apricot */
+  --ask-tint-2: #EEF3EA;    /* sage */
+  --ask-tint-3: #F1EFF7;    /* lilac grey */
+  --ask-q-line: rgba(38, 34, 28, 0.07);
+  /* At rest a prompt sits just proud of the page; pointed at, it takes more
+     light (a deeper, softer cast), never a tint. The lift is a separate layer
+     whose opacity moves, so no shadow is ever animated. */
+  --ask-q-rest: inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 1px 2px -1px rgba(38, 34, 28, 0.14),
+                0 4px 10px -6px rgba(38, 34, 28, 0.16);
+  --ask-q-lift: 0 2px 4px -2px rgba(38, 34, 28, 0.16),
+                0 12px 24px -14px rgba(38, 34, 28, 0.26);
+  --ask-ease: cubic-bezier(0.2, 0.75, 0.25, 1);   /* the CTA arrow's own */
+  --ask-in: cubic-bezier(0.34, 0.03, 0.24, 1);    /* the cascade's own */
+  --ask-fade: 48px;
+}
+
+[data-theme="dark"] .hero__thread {
+  --ask-q-from: #2C2C2F;
+  --ask-tint-1: #35302A;
+  --ask-tint-2: #2D332D;
+  --ask-tint-3: #312F37;
+  --ask-q-line: rgba(255, 255, 255, 0.08);
+  --ask-q-rest: inset 0 1px 0 rgba(255, 255, 255, 0.05),
+                0 1px 2px -1px rgba(0, 0, 0, 0.5),
+                0 4px 10px -6px rgba(0, 0, 0, 0.5);
+  --ask-q-lift: 0 2px 4px -2px rgba(0, 0, 0, 0.5),
+                0 12px 24px -14px rgba(0, 0, 0, 0.6);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .hero__thread {
+    --ask-q-from: #2C2C2F;
+    --ask-tint-1: #35302A;
+    --ask-tint-2: #2D332D;
+    --ask-tint-3: #312F37;
+    --ask-q-line: rgba(255, 255, 255, 0.08);
+    --ask-q-rest: inset 0 1px 0 rgba(255, 255, 255, 0.05),
+                  0 1px 2px -1px rgba(0, 0, 0, 0.5),
+                  0 4px 10px -6px rgba(0, 0, 0, 0.5);
+    --ask-q-lift: 0 2px 4px -2px rgba(0, 0, 0, 0.5),
+                  0 12px 24px -14px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* ---- the box -------------------------------------------------------------
+
+   ABOVE 960 IT SCROLLS. The thread's box is a fixed height in a composition
+   that must not move, and the conversation outgrows it after one answer. So
+   it scrolls inside it, and the dissolve that used to sit permanently at the
+   top now appears only when there is something above to dissolve, with a
+   shorter one at the foot when there is more below.
+
+   BELOW 960 IT GROWS. The page has already arrived by the time the question
+   is asked, so the box gives up its fixed height and the page scrolls. */
+.hero__thread.is-windowed.is-asking.is-scroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(38, 34, 28, 0.16) transparent;
+  -webkit-mask-image: none;
+          mask-image: none;
+}
+.hero__thread.is-windowed.is-asking.is-scroll.is-scrolled {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--ask-fade), #000 100%);
+          mask-image: linear-gradient(to bottom, transparent 0, #000 var(--ask-fade), #000 100%);
+}
+.hero__thread.is-windowed.is-asking.is-scroll.is-more {
+  -webkit-mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 40px), transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 0, #000 calc(100% - 40px), transparent 100%);
+}
+.hero__thread.is-windowed.is-asking.is-scroll.is-scrolled.is-more {
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 var(--ask-fade), #000 calc(100% - 40px), transparent 100%);
+          mask-image: linear-gradient(to bottom, transparent 0, #000 var(--ask-fade), #000 calc(100% - 40px), transparent 100%);
+}
+.hero__thread.is-windowed.is-asking.is-grow {
+  height: auto !important;
+  overflow: visible;
+  -webkit-mask-image: none;
+          mask-image: none;
+}
+/* The invitation the introduction ends on is parked until the conversation
+   takes it (as Browse everything): it would otherwise show for a moment under
+   the thread before it moves. */
+.hero__thread.is-asking .msg-track > .msg-cta:not(.ask__browse) { display: none; }
+/* On a phone the thread's own question replaces the page's View Work link. */
+.hero__thread.is-asking ~ .hero__mobile-cta { display: none; }
+
+/* ---- the conversation ------------------------------------------------------ */
+
+.ask {
+  display: block;
+  /* Container, so the evidence and the questions lay themselves out by the
+     width the column actually gives them (361 at 1024, 740 at 2560). */
+  container-type: inline-size;
+  margin-top: 1.05em;   /* the thread's own interval */
+}
+.ask__turn { display: block; }
+.ask__turn + .ask__turn { margin-top: 34px; }
+
+/* The assistant, a step quieter than the introduction. */
+.ask .msg.ask__say { font-size: 0.86em; }
+.ask .ask-you + .msg { margin-top: 21px; }
+.ask .msg + .msg { margin-top: 13px; }
+
+/* ---- a question ------------------------------------------------------------- */
+
+.ask__choices { display: block; margin: 21px 0 0 var(--ask-indent); }
+.ask__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 13px;
+}
+.ask__label {
+  font-family: var(--font-body);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-medium);
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.ask__list {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 13px;
+}
+.ask__choices--next .ask__list {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ask-q {
+  --q-tint: var(--ask-tint-1);
+  appearance: none;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 48px;
+  max-width: 100%;
+  padding: 12px 16px 12px 20px;
+  border: 1px solid var(--ask-q-line);
+  border-radius: 16px;
+  background-color: var(--ask-q-from);
+  background-image: linear-gradient(135deg, var(--ask-q-from) 0%, var(--ask-q-from) 18%, var(--q-tint) 100%);
+  box-shadow: var(--ask-q-rest);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-medium);
+  line-height: 1.42;
+  letter-spacing: 0;
+  text-align: left;
+  text-transform: none;
+  color: var(--ink);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 180ms var(--ask-ease), opacity 160ms linear;
+}
+.ask-q[data-tint="2"] { --q-tint: var(--ask-tint-2); }
+.ask-q[data-tint="3"] { --q-tint: var(--ask-tint-3); }
+/* The extra light, as its own layer: only its opacity ever changes. */
+.ask-q::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  box-shadow: var(--ask-q-lift);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms var(--ask-ease);
+}
+.ask-q__go {
+  flex: none;
+  color: var(--ink-muted);
+  transition: transform 180ms var(--ask-ease), color 180ms var(--ask-ease);
+}
+.ask__choices--next .ask-q {
+  min-height: 40px;
+  padding: 8px 14px 8px 16px;
+  border-radius: 14px;
+  gap: 10px;
+  font-size: calc(var(--fs-body) - 1px);
+}
+
+@media (hover: hover) {
+  .ask-q:hover:not(:disabled) { transform: translateY(-1px); }
+  .ask-q:hover:not(:disabled)::before { opacity: 1; }
+  .ask-q:hover:not(:disabled) .ask-q__go { transform: translateX(3px); color: var(--ink); }
+}
+.ask-q:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.ask-q:active:not(:disabled) { transform: scale(0.985); transition-duration: 90ms; }
+.ask-q:disabled { cursor: default; }
+
+/* Arriving: one after another, on the cascade's curve. An animation rather
+   than a transition so the stagger does not delay the hover afterwards. */
+.ask__choices:not(.is-in) .ask-q { opacity: 0; }
+.ask__choices.is-in .ask-q {
+  animation: ask-rise 280ms var(--ask-in) backwards;
+  animation-delay: calc(var(--i, 0) * 60ms);
+}
+@keyframes ask-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Taken: the one chosen stays where it is for a beat; the others go. */
+.ask-q[data-chosen] { transform: scale(0.985); }
+.ask__choices.is-leaving .ask-q:not([data-chosen]) { opacity: 0; }
+.ask__choices.is-leaving .ask__label { opacity: 0; transition: opacity 160ms linear; }
+
+/* ---- the visitor's choice --------------------------------------------------- */
+
+.ask-you {
+  --q-tint: var(--ask-tint-1);
+  display: block;
+  width: fit-content;
+  max-width: min(78%, 30rem);
+  margin: 0 0 0 auto;
+  padding: 11px 18px;
+  border: 1px solid var(--ask-q-line);
+  border-radius: 18px 18px 6px 18px;
+  background-color: var(--ask-q-from);
+  background-image: linear-gradient(135deg, var(--ask-q-from) 0%, var(--q-tint) 100%);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-medium);
+  line-height: 1.45;
+  letter-spacing: 0;
+  color: var(--ink);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 240ms var(--ask-in), transform 240ms var(--ask-in);
+}
+.ask-you[data-tint="2"] { --q-tint: var(--ask-tint-2); }
+.ask-you[data-tint="3"] { --q-tint: var(--ask-tint-3); }
+.ask-you.is-in { opacity: 1; transform: none; }
+
+/* ---- the evidence ----------------------------------------------------------- */
+
+.page[data-view="home"] .hero__thread .ask-ev {
+  position: relative;
+  display: grid;
+  grid-template-columns: 216px minmax(0, 1fr);
+  align-items: center;
+  gap: 21px;
+  height: auto;
+  min-height: 0;
+  margin: 13px 0 0 var(--ask-indent);
+  padding: 18px 21px 18px 18px;
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0;
+  color: var(--ink-secondary);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 320ms var(--ask-in), transform 320ms var(--ask-in);
+}
+.page[data-view="home"] .hero__thread .ask-ev.is-in { opacity: 1; transform: none; }
+
+.ask-ev__vis {
+  position: relative;
+  display: block;
+  width: 216px;
+  height: 184px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(38, 34, 28, 0.035);
+}
+.ask-ev__vis > * {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  border-radius: 0;
+}
+.ask-ev__vis img { object-fit: contain; }
+.ask-ev__vis .pv__frame { pointer-events: none; }
+
+.ask-ev__copy { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.ask-ev__eyebrow {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-medium);
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.ask-ev__title {
+  font-size: calc(var(--fs-body) + 2px);
+  font-weight: var(--fw-medium);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.ask-ev__text { font-size: calc(var(--fs-body) - 1px); line-height: 1.5; color: var(--ink-secondary); }
+.ask-ev__go {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+  font-size: calc(var(--fs-body) - 1px);
+  font-weight: var(--fw-medium);
+  line-height: 1.4;
+  color: var(--link-go);
+  text-decoration: none;
+}
+/* The whole card is the link, the way the project cards are. */
+.ask-ev__go::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.ask-ev__go:focus-visible { outline: none; }
+.ask-ev:has(.ask-ev__go:focus-visible) { outline: 2px solid var(--focus); outline-offset: 3px; }
+.ask-ev__go-a { transition: transform 180ms var(--ask-ease); }
+@media (hover: hover) {
+  .ask-ev:hover .ask-ev__go-a { transform: translateX(4px); }
+}
+
+/* An earlier answer: its preview given back, one line left. */
+.page[data-view="home"] .hero__thread .ask-ev.is-compact {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  padding: 12px 18px;
+}
+.ask-ev.is-compact .ask-ev__copy { flex-direction: row; align-items: baseline; gap: 13px; }
+.ask-ev.is-compact .ask-ev__text { display: none; }
+.ask-ev.is-compact .ask-ev__eyebrow { flex: none; }
+.ask-ev.is-compact .ask-ev__ctx { display: none; }
+.ask-ev.is-compact .ask-ev__title {
+  flex: 1;
+  min-width: 0;
+  font-size: calc(var(--fs-body) - 1px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ask-ev.is-compact .ask-ev__go { margin-top: 0; flex: none; }
+
+/* ---- browse everything, and a change of subject ---------------------------- */
+
+.ask__bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 21px;
+  margin: 13px 0 0 var(--ask-indent);
+  opacity: 0;
+  transition: opacity 280ms var(--ask-in);
+}
+.ask__bar.is-in { opacity: 1; }
+.ask__bar .msg-cta { margin: 0; padding: 0; opacity: 1; transform: none; }
+.ask__again {
+  appearance: none;
+  display: none;
+  align-items: center;
+  min-height: 42px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-body);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease);
+}
+.ask__bar.has-again .ask__again { display: inline-flex; }
+.ask__again:hover { color: var(--ink); }
+.ask__again:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+/* Once the page is open, Browse everything has done its job. */
+@media (min-width: 960px) {
+  :root[data-landing="work"] .ask__bar .ask__browse,
+  :root:not([data-landing]) .ask__bar .ask__browse { display: none; }
+}
+
+/* ---- narrow columns ---------------------------------------------------------
+
+   By the width the conversation is given, not the viewport: the column is
+   361 wide at 1024 and 294 on a phone. The preview goes on top, the
+   questions take the full width as 48px targets, and nothing is indented. */
+@container (max-width: 520px) {
+  .page[data-view="home"] .hero__thread .ask-ev { grid-template-columns: minmax(0, 1fr); gap: 13px; padding: 13px 13px 16px; }
+  .ask-ev__vis { width: 100%; height: 128px; }
+  /* A narrow column gets the sentence's first three lines; the case study
+     has the rest. */
+  .ask-ev__text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+  .ask__choices--next .ask__list { flex-direction: column; align-items: stretch; }
+  .ask__list { align-items: stretch; }
+  .ask-q { width: 100%; justify-content: space-between; min-height: 48px; }
+  .ask__choices--next .ask-q { min-height: 44px; }
+}
+@container (max-width: 420px) {
+  .ask__choices,
+  .page[data-view="home"] .hero__thread .ask-ev,
+  .ask__bar { margin-left: 0; }
+  .ask-you { max-width: 86%; }
+}
+
+/* A phone reads the assistant at the thread's own size: a step smaller than
+   18px Cormorant is a step too small. */
+@media (max-width: 719px) {
+  .ask .msg.ask__say { font-size: 1em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ask-q,
+  .ask-q::before,
+  .ask-q__go,
+  .ask-you,
+  .page[data-view="home"] .hero__thread .ask-ev,
+  .ask-ev__go-a,
+  .ask__bar { transition: none; }
+  .ask__choices.is-in .ask-q { animation: none; }
+  .ask-q:hover:not(:disabled),
+  .ask-q:active:not(:disabled),
+  .ask-q[data-chosen] { transform: none; }
+}
 </style>
 </head>
 
