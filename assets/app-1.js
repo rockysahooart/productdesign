@@ -7922,67 +7922,40 @@ window.PF = window.PF || {};
 
 /* ===== js/reveal.js ===== */
 /* ==========================================================================
-   reveal.js. THE PAGE ARRIVES WHEN THE CONVERSATION IS OVER, AND OPENS WHEN
-   THE READER ASKS
+   reveal.js. THE PORTFOLIO OPENS WHEN THE VISITOR ASKS FOR IT
 
-   ONE CUE FROM THE THREAD. This used to assemble as the lines were said: a
-   stage on the first message, another on the second, the rest on the
-   invitation. Three cues meant the reader's eye was taken off the sentence
-   twice by furniture arriving beside it, and the sentence is the thing. So the
-   whole conversation plays out alone, every message, every illustration, the
-   reactions and the pause after them, and nothing happens until the one moment
-   that means the introduction is finished: the invitation appearing under the
-   last thing said. That moment is pf:cta, which js/thread.js emits from
-   showCta(). It is the thread's own clock, not a copy of it: there is no timer
-   here that could drift away from what is on screen.
+   THREE STATES, AT EVERY WIDTH, on :root[data-landing]:
 
-   ON DESKTOP AND ULTRAWIDE, THREE STATES. :root[data-landing]:
+     intro   armed by index.html before first paint. The message animation,
+             alone. Nothing else on the page is laid out.
+     ready   pf:cta: the introduction is over and act two, the conversation
+             (js/ask.js), happens in the same place. Still nothing else: the
+             guided exchanges, their pictures, flows and previews all live
+             inside the conversation's own box.
+     work    the visitor chose to leave: Browse more inside the conversation,
+             or a destination in the navigation (Projects, About, any anchor).
+             Everything at once, in the layout it was always going to have.
 
-     intro      armed by index.html before first paint. The conversation alone,
-                centred by the grid (css/16-reveal.css).
-     ready      pf:cta. The conversation is finished and its invitation is up,
-                and that is all: nothing else arrives. See the work is the
-                gate, not a cue.
-     work       the reader pressed See the work. Everything else at once, and
-                the conversation settles into its column of the final layout.
+   ONLY AN EXPLICIT CHOICE OPENS THE PAGE. Not the introduction finishing,
+   not the first question, not a project preview inside an answer, not a
+   number of turns, not scrolling, not tabbing. The ways into work are:
 
-   The press that opens the page is taken here, before the button's own
-   handler sees it, so the first press opens the page and leaves the
-   conversation where it is; from then on the button does what it always has.
+     · the press of Browse more (the thread's own invitation button, taken
+       here in the capture phase so the thread's list view never sees it);
+     · a hash change or a deep link: somebody asking for a place on the page
+       (the navigation's Projects and About are both of these);
+     · PF.revealAll(), for anything else that needs to say "open";
+     · and one safety net: if the introduction never reaches its end (a
+       thread that stalls), CEILING_MS opens the page rather than stranding
+       anybody. Once the conversation has begun it is cleared.
 
-   BELOW 960, THE CASCADE. A phone or a tablet has no composition to centre and
-   no column to assemble beside, so there the invitation still runs the whole
-   page in on its own, a beat then five groups a hundred and forty milliseconds
-   apart:
+   It used to cascade the page in by itself below 960 the moment the
+   introduction ended, with scroll and focus escape hatches to match; that
+   is what this replaces. Below 960 the staged blocks are out of the layout
+   until work (css/16-reveal.css), so nothing reserves blank space for them.
 
-     group 1   the portrait card
-     group 2   let's talk
-     group 3   worked with, the logos
-     group 4   the project browser
-     group 5   capabilities, where I've been, the tools, and every remaining
-               section of the page
-
-   A group with nothing in it at the current width does not spend its beat.
-
-   IT IS ONE-WAY AND IT IS ONCE. Nothing here ever hides anything. Switching
-   role restarts the conversation and replay runs it again; neither takes the
-   page back apart.
-
-   THE ESCAPE HATCHES:
-
-     · the whole thing is off unless index.html armed it before first paint,
-       which it does not do without JS or under reduced motion;
-     · a deep link to a case study, or to any anchor (the skip link is one),
-       opens everything at once;
-     · a hard ceiling opens everything if the thread never reaches its
-       invitation, so a conversation that stalls cannot strand anybody. Once
-       the invitation is up it is cleared: from then on the reader decides;
-     · below 960 only, where the cascade runs by itself anyway: scrolling past
-       half a viewport, or a third focus step, also opens everything. On a
-       desktop there is nothing staged to scroll to or focus, because what has
-       not arrived is not on the page.
-
-   Every one of those lands on all(): one frame, everything visible.
+   IT IS ONE-WAY. Replay and a role change restart the conversation; neither
+   takes the page back apart.
    ========================================================================== */
 
 window.PF = window.PF || {};
@@ -7995,85 +7968,39 @@ window.PF = window.PF || {};
 
   var GROUPS = 5;
 
-  /* The gap between groups. The brief asked for roughly 100 to 180ms; this is
-     the middle of it, and at five groups it is the difference between a page
-     that deals itself out and a page that blinks. */
-  var STEP = 140;
-
-  /* And a beat before the first group, so the invitation is a moment of its
-     own rather than the first frame of the page arriving. */
-  var LEAD = 180;
-
-  /* Nothing may wait longer than this for the invitation. Read from the moment
-     the page is interactive rather than from the first message, because a
-     thread that never starts is exactly the case this is for. */
+  /* Nothing may wait longer than this for the conversation. Read from the
+     moment the page is interactive rather than from the first message,
+     because a thread that never starts is exactly the case this is for. */
   var CEILING_MS = 26000;
 
-  /* The width at which the composition has three states rather than a
-     cascade. The same 960 css/16-reveal.css is written against. */
-  var wide = window.matchMedia('(min-width: 960px)');
-
-  var at = 0;
   var done = false;
-  var pending = null;
 
   function land(state) { root.setAttribute('data-landing', state); }
   function landing() { return root.getAttribute('data-landing'); }
 
-  function group(i) {
-    return document.querySelectorAll('[data-reveal="' + i + '"]:not([data-shown])');
-  }
-
-  function show(upto) {
-    if (upto <= at) return;
-    for (var i = at + 1; i <= upto; i++) {
-      var els = group(i);
-      for (var j = 0; j < els.length; j++) els[j].setAttribute('data-shown', '');
-    }
-    at = upto;
-    root.setAttribute('data-stage', String(at));
-    if (at >= GROUPS) { land('work'); finish(); }
-  }
-
-  /* THE CASCADE, below 960. A beat after the invitation, then one group a
-     beat, and a beat is only spent on a group that has something in it. */
-  function run() {
-    if (done || pending) return;
-    function next() {
-      pending = null;
-      if (at >= GROUPS) return;
-      var had = group(at + 1).length > 0;
-      show(at + 1);
-      if (at >= GROUPS) return;
-      pending = setTimeout(next, had ? STEP : 0);
-    }
-    pending = setTimeout(next, LEAD);
-  }
-
-  /* Everything, now. Every escape hatch and the press on See the work land
-     here, so there is one way for the page to become whole. */
+  /* WORK. Every way out lands here, so there is one way for the page to
+     become whole: every group at once, on one frame. */
   function all() {
-    if (pending) { clearTimeout(pending); pending = null; }
-    show(GROUPS);
+    if (done) return;
+    var els = document.querySelectorAll('[data-reveal]:not([data-shown])');
+    for (var j = 0; j < els.length; j++) els[j].setAttribute('data-shown', '');
+    root.setAttribute('data-stage', String(GROUPS));
+    land('work');
+    finish();
   }
 
-  /* STATE 2. The thread has put its own invitation up; this only records
-     that it has, and shows nothing. The ceiling goes: the thread has
-     delivered, and from here only the reader opens the page. */
+  /* READY. The thread has finished its introduction; this records it and
+     shows nothing. The ceiling goes: from here only the visitor opens the
+     page. */
   function ready() {
     if (done || landing() !== 'intro') return;
     land('ready');
     if (ceiling) { clearTimeout(ceiling); ceiling = null; }
   }
 
-  function onCta() {
-    if (wide.matches) ready();
-    else run();
-  }
-
-  /* STATE 3. Captured on the way down, so the thread's own handler (which
-     would swap the conversation for the list of work) never sees the press
-     that opens the page. */
+  /* Captured on the way down, so the thread's own handler (which would swap
+     the conversation for the list of work) never sees the press that opens
+     the page. */
   function onPress(e) {
     if (landing() !== 'ready') return;
     var t = e.target;
@@ -8083,59 +8010,35 @@ window.PF = window.PF || {};
     all();
   }
 
-  /* A window dragged under 960 while ready has no state 2 to be in. */
-  function onWidth() {
-    if (!wide.matches && landing() === 'ready') all();
-  }
-
   function finish() {
-    if (done) return;
     done = true;
-    if (pending) { clearTimeout(pending); pending = null; }
-    /* The attributes stay on the elements. They are already shown, and the
-       rules that hid them no longer match anything. What goes is the
-       listening: nothing left running behind a page that has finished
-       arriving. */
-    window.removeEventListener('scroll', onScroll);
-    document.removeEventListener('focusin', onFocus, true);
-    document.removeEventListener('pf:cta', onCta);
+    document.removeEventListener('pf:cta', ready);
     document.removeEventListener('click', onPress, true);
-    if (wide.removeEventListener) wide.removeEventListener('change', onWidth);
-    if (ceiling) clearTimeout(ceiling);
+    window.removeEventListener('hashchange', all);
+    if (ceiling) { clearTimeout(ceiling); ceiling = null; }
   }
 
-  /* PAST THE HERO IS A REQUEST TO SEE THE PAGE, on a phone or a tablet. */
-  function onScroll() {
-    if (wide.matches) return;
-    if (window.scrollY > window.innerHeight * 0.5) all();
-  }
-
-  /* Tab is the other way in, below 960. Focus cannot land inside a staged
-     block (they are visibility:hidden until shown), so this catches somebody
-     starting to move through the page at all and gets out of the way. */
-  var steps = 0;
-  function onFocus() {
-    if (wide.matches) return;
-    if (++steps > 2) all();
-  }
-
-  document.addEventListener('pf:cta', onCta);
+  document.addEventListener('pf:cta', ready);
   document.addEventListener('click', onPress, true);
-  window.addEventListener('scroll', onScroll, { passive: true });
-  document.addEventListener('focusin', onFocus, true);
-  if (wide.addEventListener) wide.addEventListener('change', onWidth);
+  /* The thread can finish before this file runs: under reduced motion it
+     has nothing to play, so its ending (and pf:cta) happens as it starts. */
+  if (PF.thread && PF.thread.ended && PF.thread.ended()) ready();
+  else document.addEventListener('pf:thread', function () {
+    if (PF.thread && PF.thread.ended && PF.thread.ended()) ready();
+  });
 
-  /* A DEEP LINK IS NOT AN ARRIVAL. Someone who opened a case study, or a link
-     to a section (#work most of all, since that is the one people send)
-     asked for a place on this page, not for a performance in front of it. */
+  /* A DEEP LINK IS NOT AN ARRIVAL. Someone who opened a case study, or a
+     link to a section (#work most of all, since that is the one people
+     send), asked for a place on this page, not for a conversation in front
+     of it. */
   if (location.hash && location.hash !== '#') all();
   window.addEventListener('hashchange', all);
 
-  var ceiling = setTimeout(all, CEILING_MS);
+  var ceiling = setTimeout(function () { if (landing() === 'intro') all(); }, CEILING_MS);
 
-  /* For the console, and for anything that later needs to say "stop this". */
+  /* For the navigation (js/sitenav.js), and anything else that needs to
+     say "open". */
   PF.revealAll = all;
-
 })(window.PF);
 
 /* ===== js/ask.js ===== */
@@ -8202,39 +8105,72 @@ window.PF = window.PF || {};
              question; `kind` is how it is shown (project when absent);
              `show` is a PF.PROJECTS key; `ev` replaces the project's own
              sentence with another line from the same project's case study;
-             `steps` are a flow's thoughts, in order; `next` is the follow-ups,
-             in order of preference.
+             `steps` are a flow's thoughts, in order; `tag` is said beside the
+             project's name (work in progress says so); `next` is the
+             follow-ups, in order of preference.
      pool    the order questions are borrowed in when a turn's own follow-ups
              have all been asked already.
 
      Every line below is drawn from text already on the site: the project
-     cards, the case studies, the About page, Off the clock and the README.
-     The four steps of `approach` are the owner's own words. */
+     cards, the case studies, the About page, Off the clock and the README,
+     and the cryptography explainer's own description of itself. The four
+     steps of `approach`, and the current-work description (ECDH, a shared
+     secret, key derivation, AES-GCM), are the owner's own words. */
   var ASK = {
     open: { say: ['I believe design is how we make decisions visible, understandable, and easier to act on.',
                   'Where would you like to start?'],
             next: ['now', 'best', 'approach'] },
-    again: { say: ['Sure. What else would you like to know?',
-                   'Of course. Where to next?'],
-             next: ['where', 'outside', 'ai'] },
+    again: { say: ['Where would you like to go next?'],
+             next: ['now', 'best', 'approach', 'where', 'outside', 'ai'] },
     done: { say: 'That covers most of the ground. The rest is in the full portfolio.' },
 
     q: {
       now: {
         label: 'What are you currently working on?',
-        say: 'Mostly one thing: standards for catching the gaps in AI-generated work, written to be dropped straight into an agent chat.',
-        show: 'governance',
-        next: ['govcheck', 'ai', 'best'] },
+        say: 'Something in progress: making cryptography easier to understand inside a developer library.',
+        show: 'crypto',
+        tag: 'In progress',
+        ev: 'How ECDH, a shared secret, key derivation and AES-GCM relate, shown before developers use the encryption APIs in code.',
+        next: ['cryptwhat', 'cryptshow', 'cryptwhy'] },
+
+      cryptwhat: {
+        label: 'What are you trying to make easier to understand?',
+        say: 'How the pieces depend on each other, in the order they happen.',
+        kind: 'flow',
+        steps: ['Each side keeps a private value and sends a public one (ECDH).',
+                'Both arrive at the same shared secret, which the network never sees.',
+                'A key is derived from that secret.',
+                'AES-GCM uses it to encrypt the message before it crosses the wire.'],
+        show: 'crypto',
+        tag: 'In progress',
+        ev: 'An interactive explainer, being built: ECDH and AES-GCM shown working together before developers use the encryption APIs in code.',
+        next: ['cryptshow', 'cryptwhy', 'best'] },
+
+      cryptshow: {
+        label: 'How does the interaction explain encryption?',
+        say: 'It plays the exchange out between people.',
+        show: 'crypto',
+        tag: 'In progress',
+        ev: 'Maya and Leo each keep a private number and send a public one across a network Evan is watching. Both arrive at the same shared secret; the copy Evan takes is unreadable.',
+        next: ['cryptwhy', 'cryptwhat', 'approach'] },
+
+      cryptwhy: {
+        label: 'Why make this interactive?',
+        say: 'So developers can see how the parts fit together before they meet them in code.',
+        show: 'crypto',
+        tag: 'In progress',
+        ev: 'Each step of the exchange is something to watch rather than something to read: who holds what, what crosses the wire, and what an eavesdropper ends up with.',
+        next: ['cryptwhat', 'engineers', 'best'] },
 
       best: {
         label: 'Which project best represents your work?',
-        say: 'Probably the Craigslist redesign. One flow, used-car discovery on iOS, taken all the way to an implementation-ready handoff.',
+        say: 'Probably the Craigslist redesign: one iOS flow, taken all the way to an implementation-ready handoff.',
         show: 'livefront',
         next: ['healthcare', 'approach', 'where'] },
 
       approach: {
         label: 'How do you approach complicated problems?',
-        say: 'I work backwards from the decision. Here’s the order, and where it led in a clinical audit.',
+        say: 'I work backwards from the decision. Here’s the order.',
         kind: 'flow',
         steps: ['I start by identifying the decision the user is struggling to make.',
                 'What information does that decision depend on?',
@@ -8246,7 +8182,7 @@ window.PF = window.PF || {};
 
       ai: {
         label: 'How do you use AI in your process?',
-        say: 'Human judgment, design decisions, AI execution. In OptiFlow that meant the model does the first pass and a person makes the call.',
+        say: 'The model does the first pass; a person makes the call. In OptiFlow:',
         kind: 'flow',
         steps: ['The model extracts the billing data and suggests a tag.',
                 'A reviewer accepts it or corrects it.',
@@ -8257,7 +8193,7 @@ window.PF = window.PF || {};
 
       stop: {
         label: 'Where should AI stop and a person take over?',
-        say: 'Where a wrong answer costs the person relying on it. Carry is the clearest case.',
+        say: 'Where a wrong answer costs the person relying on it. In Carry:',
         after: { ai: 'That depends on what a wrong answer costs. In Carry it cost the patient, so the line was easy to draw.' },
         kind: 'flow',
         steps: ['Generated answers came up in product scope.',
@@ -8270,7 +8206,7 @@ window.PF = window.PF || {};
 
       testing: {
         label: 'What changed after testing?',
-        say: 'In Carry, the order of the screen. The checklist wasn’t the problem. Where it sat was.',
+        say: 'In Carry, the order of the screen. The checklist wasn’t the problem; where it sat was.',
         kind: 'flow',
         steps: ['Going in: the preparation checklist, then my questions, then suggestions.',
                 'Around a quarter of patients hesitated, backtracked or skipped the checklist.',
@@ -8282,7 +8218,7 @@ window.PF = window.PF || {};
 
       engineers: {
         label: 'How do you work with engineers?',
-        say: 'Early, and in their terms. In Carry I took the tradeoffs to engineering while they were still drawings.',
+        say: 'Early, while the tradeoffs are still drawings. In Carry:',
         kind: 'flow',
         steps: ['Could the question row reuse the existing list component?',
                 'Can an excerpt point at a moment in the audio?',
@@ -8290,7 +8226,7 @@ window.PF = window.PF || {};
                 'The open questions went into Jira, with whose they were to answer.'],
         show: 'carry',
         ev: 'Designed the upload, transcription and matching states, and what each one does when it fails.',
-        next: ['testing', 'interactive', 'approach'] },
+        next: ['testing', 'now', 'approach'] },
 
       where: {
         label: 'Where have you worked?',
@@ -8319,7 +8255,7 @@ window.PF = window.PF || {};
 
       healthcare: {
         label: 'Have you worked in healthcare?',
-        say: 'A lot of my work is in healthcare. Carry is the one I’d show first: it connects what patients want to ask before a visit with what they need to remember after it.',
+        say: 'A lot of it. Carry is the one I’d show first.',
         show: 'carry',
         next: ['stop', 'testing', 'noai'] },
 
@@ -8327,20 +8263,14 @@ window.PF = window.PF || {};
         label: 'What have you designed without AI?',
         say: 'Something you can hold: an oncology specimen kit, redesigned for safer shipping and handling.',
         show: 'specimen',
-        next: ['visual', 'healthcare', 'interactive'] },
+        next: ['visual', 'healthcare', 'now'] },
 
       visual: {
         label: 'How do you handle visual hierarchy?',
         say: 'By deciding what has to be read first. On the specimen kit, that was the rejection criteria.',
         show: 'specimen',
         ev: 'I rewrote the sheet in the lid so the preparation requirements and rejection criteria read first, and I specified a one-piece die-cut foam insert for the empty base.',
-        next: ['interactive', 'art', 'noai'] },
-
-      interactive: {
-        label: 'Is there something I can try?',
-        say: 'This one you can play with: an explainer for a developer library, showing how ECDH and AES-GCM work together.',
-        show: 'crypto',
-        next: ['engineers', 'visual', 'best'] },
+        next: ['now', 'art', 'noai'] },
 
       simplified: {
         label: 'Have you simplified a large system?',
@@ -8350,7 +8280,7 @@ window.PF = window.PF || {};
 
       auditfound: {
         label: 'What did the audit find?',
-        say: 'The same required action was a button in one row, a link in the next and a menu item in a third. So the fix became one shared pattern.',
+        say: 'The same action was a button in one row, a link in the next, a menu item in a third. The fix was one shared pattern.',
         show: 'dsa',
         ev: 'Statuses named what the system was doing, not who had to act.',
         next: ['approach', 'simplified', 'healthcare'] },
@@ -8364,7 +8294,7 @@ window.PF = window.PF || {};
 
     pool: ['now', 'best', 'approach', 'where', 'outside', 'ai', 'healthcare',
            'stop', 'testing', 'engineers', 'art', 'music', 'noai', 'visual',
-           'interactive', 'simplified', 'auditfound', 'govcheck']
+           'cryptwhat', 'cryptshow', 'cryptwhy', 'simplified', 'auditfound', 'govcheck']
   };
 
   PF.ASK = ASK;
@@ -8404,7 +8334,7 @@ window.PF = window.PF || {};
     var KEEP = 4;       /* turns kept; older ones are removed */
 
     var box = null;     /* the conversation, once it has begun */
-    var bar = null;     /* Browse everything (and Ask something else) */
+    var bar = null;     /* Browse more */
     var live = null;    /* what a screen reader hears when an answer lands */
     var asked = {};
     var prev = null;
@@ -8637,7 +8567,7 @@ window.PF = window.PF || {};
 
     /* ---- a project: the film still, and its caption ----------------------- */
 
-    function evidence(p, line) {
+    function evidence(p, line, tag) {
       var ev = el('span', 'ask-ev card');
       /* Not data-project: js/wire.js and the peek both select on that. */
       ev.setAttribute('data-ask-project', p.key);
@@ -8650,6 +8580,7 @@ window.PF = window.PF || {};
       var eb = el('span', 'ask-ev__eyebrow');
       eb.appendChild(el('span', 'ask-ev__name', p.name));
       if (p.context) eb.appendChild(el('span', 'ask-ev__ctx', ' · ' + p.context));
+      if (tag) eb.appendChild(el('span', 'ask-ev__tag', ' · ' + tag));
       copy.appendChild(eb);
       copy.appendChild(el('span', 'ask-ev__title', p.title));
       copy.appendChild(el('span', 'ask-ev__text', line || p.text));
@@ -8959,12 +8890,9 @@ window.PF = window.PF || {};
     function choices(into, ids, kind) {
       var wrap = el('span', 'ask__choices ask__choices--' + kind);
       wrap.setAttribute('role', 'group');
+      /* Named for a screen reader; nothing is printed over them. Three
+         questions under an answer explain themselves. */
       wrap.setAttribute('aria-label', kind === 'next' ? 'Ask next' : 'Start here');
-      if (kind === 'next') {
-        var head = el('span', 'ask__head');
-        head.appendChild(el('span', 'ask__label', 'Ask next'));
-        wrap.appendChild(head);
-      }
       var list = el('span', 'ask__list');
       for (var i = 0; i < ids.length; i++) {
         var q = ASK.q[ids[i]];
@@ -8986,46 +8914,35 @@ window.PF = window.PF || {};
       return wrap;
     }
 
-    /* ---- Browse everything, and a way to change the subject --------------
+    /* ---- Browse more ---------------------------------------------------
 
-       Above 960 Browse everything IS the thread's See the work button, moved
-       here and relabelled: js/reveal.js takes its first press and opens the
-       page, exactly as it always has. Once the page is open there is nothing
-       left for it to do and the stylesheet puts it away. Below 960 the page is
-       already open, so it is a link to the work further down. */
+       The one way out written into the conversation. It IS the thread's own
+       See the work button, moved here and relabelled at every width:
+       js/reveal.js takes its first press and opens the portfolio, so the
+       press that leaves the conversation is an explicit state change, not a
+       link that scrolls past it. Once the portfolio is open there is nothing
+       left for it to do and the stylesheet puts it away.
+
+       There used to be an Ask something else beside it; Start here (the
+       quick links, the menu) does that job now, from where the visitor
+       already looks for a way round. */
     function buildBar() {
       if (bar) return bar;
       bar = el('span', 'ask__bar');
-      var go;
-      if (wide.matches) {
-        var row = T.cta();
-        if (row) {
-          row.classList.add('ask__browse');
-          var btn = row.querySelector('.msg-cta__btn');
-          if (btn) btn.innerHTML = 'Browse everything <span aria-hidden="true">→</span>';
-          row.removeAttribute('hidden');
-          row.classList.add('is-in');
-          go = row;
-        }
+      var row = T.cta();
+      if (row) {
+        row.classList.add('ask__browse');
+        var btn = row.querySelector('.msg-cta__btn');
+        if (btn) btn.innerHTML = 'Browse more <span aria-hidden="true">→</span>';
+        row.removeAttribute('hidden');
+        row.classList.add('is-in');
+        bar.appendChild(row);
       }
-      if (!go) {
-        go = el('span', 'msg-cta ask__browse is-in');
-        var a = el('a', 'msg-cta__btn');
-        a.setAttribute('href', '#work');
-        a.innerHTML = 'Browse everything <span aria-hidden="true">↓</span>';
-        go.appendChild(a);
-      }
-      bar.appendChild(go);
-      var again = el('button', 'ask__again', 'Ask something else');
-      again.type = 'button';
-      again.addEventListener('click', changeSubject);
-      bar.appendChild(again);
       return bar;
     }
 
-    function placeBar(into, offerAgain) {
+    function placeBar(into) {
       buildBar();
-      bar.classList.toggle('has-again', !!offerAgain);
       into.appendChild(bar);
     }
 
@@ -9073,7 +8990,7 @@ window.PF = window.PF || {};
 
     /* AND ONCE THE TURN IS COMPLETE, ITS WAY ONWARD IS ON SCREEN. While an
        answer arrives the view follows its first line; when the follow-ups
-       and Browse everything have landed (and the answer has had a moment to be
+       and Browse more have landed (and the answer has had a moment to be
        read), the view moves just far enough to show them, and never so far
        that the thing it is showing leaves the top. */
     function settleView(t, row) {
@@ -9115,7 +9032,7 @@ window.PF = window.PF || {};
     }
 
     /* The room a visual may take: what the box leaves once a caption, the
-       follow-ups and Browse everything have theirs. Above 960 that is the
+       follow-ups and Browse more have theirs. Above 960 that is the
        box; below it, the screen. The stylesheet clamps it. */
     function mode() {
       thread.classList.toggle('is-grow', !wide.matches);
@@ -9143,7 +9060,6 @@ window.PF = window.PF || {};
       var probe = el('span', 'ask__turn');
       probe.setAttribute('aria-hidden', 'true');
       probe.style.cssText = 'visibility:hidden;position:absolute;left:0;right:0;top:0';
-      probe.appendChild(el('span', 'ask__label ask__start', 'Start here'));
       for (var i = 0; i < ASK.open.say.length; i++) {
         var r = T.row(ASK.open.say[i], i === 0);
         r.classList.add('ask__say');
@@ -9162,7 +9078,7 @@ window.PF = window.PF || {};
       c.appendChild(l);
       probe.appendChild(c);
       var fake = el('span', 'ask__bar is-in');
-      fake.appendChild(el('span', 'msg-cta__btn', 'Browse everything'));
+      fake.appendChild(el('span', 'msg-cta__btn', 'Browse more'));
       probe.appendChild(fake);
       box.appendChild(probe);
       var h = probe.getBoundingClientRect().height +
@@ -9174,14 +9090,11 @@ window.PF = window.PF || {};
 
     function opening() {
       var t = turn();
-      var start = el('span', 'ask__label ask__start', 'Start here');
-      t.appendChild(start);
-      arrive(start, 0);
       say(t, ASK.open.say[0], true, function () {
         later(function () {
           say(t, ASK.open.say[1], false, function () {
             var c = choices(t, candidates(ASK.open.next), 'open');
-            placeBar(t, false);
+            placeBar(t);
             arrive(c, paced(STEP));
             arrive(bar, paced(STEP * 3));
           });
@@ -9252,7 +9165,7 @@ window.PF = window.PF || {};
     function show(t, q, p, row) {
       var k = q.kind || 'project';
       var node = null;
-      if (k === 'project' && p) { node = evidence(p, q.ev); point(p); }
+      if (k === 'project' && p) { node = evidence(p, q.ev, q.tag); point(p); }
       else if (k === 'logos') node = logos();
       else if (k === 'art') node = art();
       else if (k === 'music') node = music();
@@ -9329,7 +9242,7 @@ window.PF = window.PF || {};
               } else {
                 say(t, ASK.done.say, false);
               }
-              placeBar(t, true);
+              placeBar(t);
               arrive(bar, paced(STEP * 2), function () {
                 later(function () { settleView(t, row); }, paced(900));
               });
@@ -9347,7 +9260,7 @@ window.PF = window.PF || {};
             if (kind === 'flow' && p) {
               var f = flowOf(q, row);
               t.appendChild(f.wrap);
-              var ev = evidence(p, q.ev);
+              var ev = evidence(p, q.ev, q.tag);
               ev.classList.add('ask-ev--end');
               t.appendChild(ev);
               f.ev = ev;
@@ -9373,8 +9286,11 @@ window.PF = window.PF || {};
       }, still ? 0 : LEAVE);
     }
 
+    /* START HERE, from the quick links or the menu (js/sitenav.js): back to
+       the opening questions, as a new turn, without leaving the
+       conversation. What has been asked is not offered again. */
     function changeSubject() {
-      if (busy || !box) return;
+      if (busy || !box || !box.querySelector('.ask__turn')) return;
       busy = true;
       var open = box.querySelector('.ask__choices');
       if (open) open.classList.add('is-leaving');
@@ -9388,7 +9304,7 @@ window.PF = window.PF || {};
         say(t, line, true, function () {
           var ids = candidates(ASK.again.next);
           if (ids.length) arrive(choices(t, ids, 'open'), paced(STEP));
-          placeBar(t, false);
+          placeBar(t);
           arrive(bar, paced(STEP * 2));
           busy = false;
           var first = t.querySelector('.ask-q');
@@ -9435,24 +9351,12 @@ window.PF = window.PF || {};
       if (!box) return;
       thread.style.minHeight = '';
       mode();
-      /* The browse control is a different thing either side of 960. */
-      if (bar) {
-        var host = bar.parentNode;
-        var row = bar.querySelector('.msg-cta');
-        if (row && row.classList.contains('ask__browse') && T.track && T.cta && row === T.cta()) {
-          row.classList.remove('ask__browse');
-          row.setAttribute('hidden', '');
-          T.track.appendChild(row);
-        }
-        if (bar.parentNode) bar.parentNode.removeChild(bar);
-        bar = null;
-        if (host) { placeBar(host, !!box.querySelector('.ask-you')); bar.classList.add('is-in'); }
-      }
     }
     if (wide.addEventListener) wide.addEventListener('change', onWidth);
     window.addEventListener('resize', function () { if (box) mode(); });
 
     document.addEventListener('pf:cta', begin);
+    document.addEventListener('pf:ask-start', changeSubject);
     if (T.ended()) begin();
   }
 
@@ -13952,23 +13856,30 @@ window.PF = window.PF || {};
 /* ==========================================================================
    sitenav.js. QUICK LINKS AND THE MENU
 
-   The markup is in index.html and does its job without this file: every
-   entry is an ordinary link to an anchor or a route that already exists. This
-   adds the two things markup cannot do:
+   The markup is in index.html and works without this file: every entry is an
+   ordinary link to an anchor, a route or a destination the page already
+   links to. This adds what markup cannot:
 
-     the menu   opens and closes. A disclosure, not a dialog: the button says
-                whether it is open, the list follows it in the reading order,
-                focus goes to the first entry, and Escape, a tap on the scrim,
-                a choice, or focus leaving the menu all close it (Escape and
-                the scrim hand focus back to the button). Crossing 960 closes it.
-     the links  the quick link for the part of the page the reader is in is
-                marked as the current location, quietly.
+     the menu        opens and closes. A disclosure, not a dialog: the button
+                     says whether it is open, the list follows it in reading
+                     order, focus goes to its first entry, and Escape, a tap
+                     on the scrim, a choice, or focus leaving it all close it
+                     (Escape and the scrim hand focus back to the button).
+                     Crossing 960 closes it.
+     Start here      in the conversation, goes back to its opening questions
+                     (js/ask.js answers pf:ask-start) rather than opening the
+                     page; once the portfolio is open it is the top of it.
+     Projects        an explicit choice to leave the conversation: the
+                     portfolio opens (PF.revealAll, js/reveal.js) and the
+                     visitor lands on the project collection, #work.
    ========================================================================== */
 
 window.PF = window.PF || {};
 
-(function () {
+(function (PF) {
   'use strict';
+
+  var still = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   function menu() {
     var btn = document.querySelector('[data-gmenu]');
@@ -13976,7 +13887,6 @@ window.PF = window.PF || {};
     var scrim = document.querySelector('[data-gmenu-scrim]');
     if (!btn || !nav || !scrim) return;
     var wide = window.matchMedia('(min-width: 960px)');
-    var still = window.matchMedia('(prefers-reduced-motion: reduce)');
     var timer = null;
 
     function isOpen() { return btn.getAttribute('aria-expanded') === 'true'; }
@@ -14023,41 +13933,43 @@ window.PF = window.PF || {};
     if (wide.addEventListener) wide.addEventListener('change', function () { close(false); });
   }
 
-  function current() {
-    var links = document.querySelectorAll('.snav__link[data-snav]');
-    if (!links.length) return;
-    var targets = [];
-    for (var i = 0; i < links.length; i++) {
-      var t = document.getElementById(links[i].getAttribute('data-snav'));
-      if (t) targets.push([t, links[i]]);
+  function landing() { return document.documentElement.getAttribute('data-landing'); }
+
+  function go(e) {
+    var a = e.target && e.target.closest ? e.target.closest('[data-go]') : null;
+    if (!a) return;
+    var kind = a.getAttribute('data-go');
+    var open = !landing() || landing() === 'work';
+    if (kind === 'start') {
+      if (open) return;   /* the portfolio is open: #top, as written */
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: still.matches ? 'auto' : 'smooth' });
+      try { document.dispatchEvent(new CustomEvent('pf:ask-start')); } catch (err) { /* nothing to restart */ }
+    } else if (kind === 'work') {
+      e.preventDefault();
+      if (PF.revealAll) PF.revealAll();
+      /* Two frames: the page has to be laid out before there is a #work to
+         scroll to. The address follows without a hashchange, which would
+         only ask js/reveal.js for what has just happened. */
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          var t = document.getElementById('work');
+          if (location.hash !== '#work') {
+            try { history.pushState(null, '', '#work'); } catch (err) { /* the scroll still happens */ }
+          }
+          if (t) t.scrollIntoView({ behavior: still.matches ? 'auto' : 'smooth', block: 'start' });
+        });
+      });
     }
-    var ticking = false;
-    function mark() {
-      ticking = false;
-      /* The last section whose top has passed the upper third of the screen.
-         A section that is not laid out (not yet revealed) is not a place. */
-      var line = window.innerHeight * 0.34, on = null;
-      for (var j = 0; j < targets.length; j++) {
-        var r = targets[j][0].getBoundingClientRect();
-        if (!r.height) continue;
-        if (r.top <= line) on = targets[j][1];
-      }
-      for (j = 0; j < targets.length; j++) {
-        if (targets[j][1] === on) targets[j][1].setAttribute('aria-current', 'location');
-        else targets[j][1].removeAttribute('aria-current');
-      }
-    }
-    function ask() { if (!ticking) { ticking = true; requestAnimationFrame(mark); } }
-    window.addEventListener('scroll', ask, { passive: true });
-    window.addEventListener('resize', ask);
-    window.addEventListener('hashchange', ask);
-    mark();
   }
 
-  function boot() { menu(); current(); }
+  function boot() {
+    menu();
+    document.addEventListener('click', go);
+  }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
-})();
+})(window.PF);
 
 /* ===== js/main.js ===== */
 /* ==========================================================================

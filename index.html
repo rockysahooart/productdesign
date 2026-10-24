@@ -162,20 +162,19 @@
        DOMContentLoaded, because the alternative is showing the finished page
        and then taking it apart in front of somebody.
 
-       Reduced motion opts out of the staging as well as the movement. The
-       sequence is a performance; somebody who has turned performances off
-       should get the page, not a slower one.
+       Reduced motion used to opt out of the staging as well as the movement,
+       when the staging was a performance. It is a state now (the visitor is
+       in a conversation until they choose to leave it), so it applies to
+       everybody; reduced motion takes the movement out of it, not the state.
 
-       data-landing is the state the desktop composition is in: intro (the
-       conversation, alone and centred), ready (it has finished and its
-       invitation is up, nothing else), work (the reader pressed See the
-       work). It starts at intro here for the same reason data-stage does,
-       and js/reveal.js moves it on. Below 960 nothing reads it. */
+       data-landing is the state the page is in, at every width: intro (the
+       message animation, alone), ready (the conversation, still alone),
+       work (the visitor chose Browse more or a destination: the portfolio).
+       It starts at intro here for the same reason data-stage does, and
+       js/reveal.js moves it on. */
     try {
-      if (!window.matchMedia || !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        document.documentElement.setAttribute('data-stage', '0');
-        document.documentElement.setAttribute('data-landing', 'intro');
-      }
+      document.documentElement.setAttribute('data-stage', '0');
+      document.documentElement.setAttribute('data-landing', 'intro');
     } catch (e) {}
   })();
 </script>
@@ -18386,6 +18385,24 @@ button.cu-q:hover { background: var(--cu-teal-8); }
 /* A staged block must not be reachable before it is visible. */
 :root[data-stage] [data-reveal]:not([data-shown]) { pointer-events: none; }
 
+/* BELOW 960, THE CONVERSATION IS THE PAGE UNTIL THE VISITOR LEAVES IT.
+   The staged blocks used to be laid out and invisible here (the cascade ran
+   them in by itself as soon as the introduction ended), which reserved a
+   page of blank space under the conversation. In intro and ready they are
+   out of the layout now, with the roles bar and the profile column, so the
+   conversation occupies the screen on its own; work brings everything back
+   at once. Out of the layout is also out of the tab order and the
+   accessibility tree. */
+@media (max-width: 959px) {
+  :root[data-landing]:not([data-landing="work"]) [data-reveal]:not([data-shown]),
+  :root[data-landing]:not([data-landing="work"]) .hero-card .hero__eyebrow,
+  :root[data-landing]:not([data-landing="work"]) .hero-card .hero__identity,
+  /* The skills disclosure is moved out of its staged tile below 960
+     (js/thread.js credentials()), so it is named here as well. */
+  :root[data-landing]:not([data-landing="work"]) .hero__caps,
+  :root[data-landing]:not([data-landing="work"]) .section--capsslot { display: none; }
+}
+
 /* --------------------------------------------------------------------------
    THREE STATES ON DESKTOP AND ULTRAWIDE: INTRO, READY, WORK
 
@@ -32474,7 +32491,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
           mask-image: none;
 }
 /* The invitation the introduction ends on is parked until the conversation
-   takes it (as Browse everything): it would otherwise show for a moment under
+   takes it (as Browse more): it would otherwise show for a moment under
    the thread before it moves. */
 .hero__thread.is-asking .msg-track > .msg-cta:not(.ask__browse) { display: none; }
 /* On a phone the thread's own question replaces the page's View Work link. */
@@ -32494,13 +32511,6 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 }
 .hero__thread.is-act2 .msg-track > .msg[data-msg] { display: none; }
 .hero__thread.is-act2 .ask { margin-top: 0; }
-.ask__start {
-  display: block;
-  margin: 0 0 13px var(--ask-indent);
-  opacity: 0;
-  transition: opacity 420ms var(--ask-in);
-}
-.ask__start.is-in { opacity: 1; }
 
 /* ---- the conversation ------------------------------------------------------ */
 
@@ -32522,21 +32532,6 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 /* ---- a question ------------------------------------------------------------- */
 
 .ask__choices { display: block; margin: 21px 0 0 var(--ask-indent); }
-.ask__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 13px;
-}
-.ask__label {
-  font-family: var(--font-body);
-  font-size: var(--fs-micro);
-  font-weight: var(--fw-medium);
-  line-height: 1.4;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-}
 .ask__list {
   display: flex;
   flex-direction: column;
@@ -32626,7 +32621,6 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 /* Taken: the one chosen stays where it is for a beat; the others go. */
 .ask-q[data-chosen] { transform: scale(0.985); }
 .ask__choices.is-leaving .ask-q:not([data-chosen]) { opacity: 0; }
-.ask__choices.is-leaving .ask__label { opacity: 0; transition: opacity 160ms linear; }
 
 /* ---- the visitor's choice --------------------------------------------------- */
 
@@ -32660,7 +32654,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
    THE WORK IS THE PICTURE, AND THE WORDS ARE ITS CAPTION. The preview takes
    the whole width of the column and as much of the box's height as the turn
    can spare (--ask-room is the box above 960, the screen below it; the
-   caption, the follow-ups and Browse everything are what it is spared for),
+   caption, the follow-ups and Browse more are what it is spared for),
    and the title and the way in sit under it the way a caption sits under a
    film still. It used to be a 216px thumbnail beside a paragraph, which made
    every project look like a search result.
@@ -32730,6 +32724,8 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
   text-transform: uppercase;
   color: var(--ink-muted);
 }
+/* Work in progress says so, in the portfolio's blue, beside the name. */
+.ask-ev__tag { color: var(--link-go); }
 .ask-ev__title {
   font-size: calc(var(--fs-body) + 2px);
   font-weight: var(--fw-medium);
@@ -33007,7 +33003,7 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 .ask__turn.is-past:hover,
 .ask__turn.is-past:focus-within { opacity: 1; }
 
-/* ---- browse everything, and a change of subject ---------------------------- */
+/* ---- browse more ------------------------------------------------------------- */
 
 .ask__bar {
   display: flex;
@@ -33020,33 +33016,10 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 }
 .ask__bar.is-in { opacity: 1; }
 .ask__bar .msg-cta { margin: 0; padding: 0; opacity: 1; transform: none; }
-.ask__again {
-  appearance: none;
-  display: none;
-  align-items: center;
-  min-height: 42px;
-  padding: 0;
-  border: 0;
-  background: none;
-  font-family: var(--font-body);
-  font-size: var(--fs-label);
-  font-weight: var(--fw-medium);
-  line-height: 1;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-  cursor: pointer;
-  transition: color var(--dur-fast) var(--ease);
-}
-.ask__bar.has-again .ask__again { display: inline-flex; }
-.ask__again:hover { color: var(--ink); }
-.ask__again:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
 
-/* Once the page is open, Browse everything has done its job. */
-@media (min-width: 960px) {
-  :root[data-landing="work"] .ask__bar .ask__browse,
-  :root:not([data-landing]) .ask__bar .ask__browse { display: none; }
-}
+/* Once the portfolio is open, Browse more has done its job. */
+:root[data-landing="work"] .ask__bar,
+:root:not([data-landing]) .ask__bar { display: none; }
 
 /* ---- narrow columns ---------------------------------------------------------
 
@@ -33084,7 +33057,6 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
   .ask-flow,
   .ask-logos,
   .ask-media,
-  .ask__start,
   .ask__bar { margin-left: 0; }
   .ask-you { max-width: 86%; }
 }
@@ -33120,7 +33092,6 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
   .ask-shot__img,
   .ask-wave i,
   .ask__turn,
-  .ask__start,
   .ask__bar { transition: none; }
   .ask__choices.is-in .ask-q,
   .ask-media.is-in .ask-wave i { animation: none; }
@@ -33135,21 +33106,23 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 /* ==========================================================================
    36-nav.css. QUICK LINKS AND THE MENU (js/sitenav.js)
 
-   Two escape routes from the conversation, neither of which competes with it.
+   A quiet companion to the conversation, never a second interface.
 
-   ON A DESKTOP, A COLUMN OF WORDS. Six plain links in the left margin: no
-   container, no pills, no icons, a hairline under the one pointed at and ink
-   rather than grey for the section the reader is in. Absent while the
-   introduction plays (there is nothing to escape from yet), there from the
-   moment the conversation begins. Once the whole page is open it stays only
-   where the margin is wide enough to hold it without touching the cards
-   (1800 to 2399); elsewhere the page itself is the navigation.
+   AT 960 AND UP, A ROW OF WORDS IN THE CONVERSATION'S OWN BOX. Five plain
+   links at the top of .hero__copy, on the line Replay and the theme switch
+   sit on, at the conversation's left edge: Start here, Projects,
+   Illustration, Music, About. No container, pill, icon or card; grey, with a
+   hairline underline when pointed at or focused. Absent while the
+   introduction plays, there for the whole conversation, gone once the
+   portfolio is open. It used to be a column in the far left margin of the
+   screen, which put the way out a whole screen away from where the visitor
+   was looking.
 
-   ON A PHONE OR A TABLET, A MENU BESIDE THE THEME SWITCH. The two controls
-   leave the card and sit together in the top corner of the screen, fixed,
-   so the way out is one tap away wherever the conversation has got to. The
-   switch keeps its own job; the menu opens a short list just under them, on a
-   light scrim, and closes on a tap outside, on Escape, or on the choice.
+   BELOW 960, THE SAME LINKS ARE A MENU BESIDE THE THEME SWITCH. The two
+   controls leave the card and sit together in the top corner of the screen,
+   fixed, so the way out is one tap away wherever the conversation has got
+   to. The menu opens a short list just under them, on a light scrim, and
+   closes on a tap outside, on Escape, or on the choice.
    ========================================================================== */
 
 .snav,
@@ -33165,12 +33138,13 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 
 @media (min-width: 960px) {
   .snav {
-    display: block;
-    position: fixed;
-    left: clamp(24px, 2.4vw, 48px);
-    top: 50%;
-    z-index: 30;
-    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    position: absolute;
+    top: clamp(var(--s-2), 2vw, var(--s-3));
+    left: clamp(var(--s-2), 2vw, var(--s-3));
+    height: 38px;
+    z-index: 2;
     opacity: 1;
     transition: opacity 420ms cubic-bezier(0.34, 0.03, 0.24, 1), visibility 0s;
   }
@@ -33182,24 +33156,19 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
   :root[data-landing="work"] .snav,
   :root:not([data-landing]) .snav { display: none; }
 }
-/* The ultrawide composition (2400 and up) runs edge to edge once it is
-   open, so there the margin is gone again. */
-@media (min-width: 1800px) and (max-width: 2399px) {
-  :root[data-landing="work"] .snav,
-  :root:not([data-landing]) .snav { display: block; }
-}
 
 .snav__list {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 22px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .snav__link {
-  display: inline-block;
-  padding: 3px 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: var(--fw-medium);
@@ -33215,7 +33184,6 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 .snav__link:hover,
 .snav__link:focus-visible { color: var(--ink); text-decoration-color: currentColor; }
 .snav__link:focus-visible { outline: 2px solid var(--focus); outline-offset: 4px; border-radius: 2px; }
-.snav__link[aria-current] { color: var(--ink); }
 
 /* ---- below 960: the pair, and the menu ------------------------------------ */
 
@@ -33553,24 +33521,14 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 <div class="pf-beam"  aria-hidden="true"></div>
 <a class="skip-link" href="#work">Skip to key industry projects</a>
 
-<!-- QUICK LINKS, AND THE MENU. Two ways off the conversation that are always
-     there: on a desktop a column of plain text links in the left margin, on a
-     phone or a tablet a menu control paired with the theme switch, fixed to
-     the top corner so it is never scrolled away. Both point at anchors the
-     page already has, so neither duplicates any navigation logic, and a hash
-     change opens the whole page (js/reveal.js), which is what a reader asking
-     for a section means. See css/36-nav.css and js/sitenav.js. -->
-<nav class="snav" aria-label="Quick links">
-  <ul class="snav__list">
-    <li><a class="snav__link" href="#top" data-snav="top">Start here</a></li>
-    <li><a class="snav__link" href="#work" data-snav="work">Projects</a></li>
-    <li><a class="snav__link" href="#experience" data-snav="experience">Experience</a></li>
-    <li><a class="snav__link" href="#tools" data-snav="tools">Tools</a></li>
-    <li><a class="snav__link" href="#/about">About</a></li>
-    <li><a class="snav__link" href="#contact" data-snav="contact">Contact</a></li>
-  </ul>
-</nav>
-
+<!-- THE MENU, below 960: the compact form of the quick links that sit beside
+     the conversation on wider screens (in .hero__copy). The theme switch and
+     the menu control leave the card and sit together in the top corner,
+     fixed, so the way out is one tap away wherever the conversation has got
+     to. Every entry is an ordinary link: an anchor or route the page already
+     has, or a destination it already links to. js/sitenav.js opens and
+     closes it, and turns Start here and Projects into the conversation's
+     and the portfolio's own moves (see css/36-nav.css). -->
 <div class="gutil">
   <button class="theme-toggle gutil__theme" type="button" data-theme-toggle
           aria-label="Switch to dark theme" aria-pressed="false">
@@ -33585,15 +33543,13 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 <div class="gmenu__scrim" data-gmenu-scrim hidden></div>
 <nav class="gmenu" id="site-menu" aria-label="Site" hidden>
   <ul class="gmenu__list">
-    <li><a class="gmenu__row" href="#top">Start here</a></li>
-    <li><a class="gmenu__row" href="#work">Projects</a></li>
+    <li><a class="gmenu__row" href="#top" data-go="start">Start here</a></li>
+    <li><a class="gmenu__row" href="#work" data-go="work">Projects</a></li>
     <li><a class="gmenu__row" href="https://rockysahooart.framer.website/"
            target="_blank" rel="noopener noreferrer"><span data-external="1">Illustration</span></a></li>
     <li><a class="gmenu__row" href="https://soundcloud.com/rocky-sahoo?utm_source=clipboard&amp;utm_medium=text&amp;utm_campaign=social_sharing"
            target="_blank" rel="noopener noreferrer"><span data-external="1">Music</span></a></li>
-    <li><a class="gmenu__row" href="#experience">Experience</a></li>
-    <li><a class="gmenu__row" href="#/about">About me</a></li>
-    <li><a class="gmenu__row" href="#contact">Contact</a></li>
+    <li><a class="gmenu__row" href="#/about">About</a></li>
   </ul>
 </nav>
 
@@ -34013,7 +33969,25 @@ html.ld-lock, html.ld-lock body { overflow: hidden; }
 
           
           <div class="hero__copy">
-            
+
+            <!-- QUICK LINKS, beside the conversation (960 and up): a quiet row
+                 of words at the top of the conversation's own box, opposite
+                 Replay and the theme switch. Absent while the introduction
+                 plays, there for the whole conversation, gone once the
+                 portfolio is open (it has its own way round). Below 960 the
+                 same links are the menu by the theme switch. -->
+            <nav class="snav" aria-label="Quick links">
+              <ul class="snav__list">
+                <li><a class="snav__link" href="#top" data-go="start">Start here</a></li>
+                <li><a class="snav__link" href="#work" data-go="work">Projects</a></li>
+                <li><a class="snav__link" href="https://rockysahooart.framer.website/"
+                       target="_blank" rel="noopener noreferrer"><span data-external="1">Illustration</span></a></li>
+                <li><a class="snav__link" href="https://soundcloud.com/rocky-sahoo?utm_source=clipboard&amp;utm_medium=text&amp;utm_campaign=social_sharing"
+                       target="_blank" rel="noopener noreferrer"><span data-external="1">Music</span></a></li>
+                <li><a class="snav__link" href="#/about">About</a></li>
+              </ul>
+            </nav>
+
             <button class="theme-toggle" type="button" data-theme-toggle
                     aria-label="Switch to dark theme" aria-pressed="false">
               <svg class="icon theme-toggle__moon" aria-hidden="true"><use href="#i-moon"/></svg>
