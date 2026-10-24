@@ -8140,41 +8140,51 @@ window.PF = window.PF || {};
 
 /* ===== js/ask.js ===== */
 /* ==========================================================================
-   ask.js. THE CONVERSATION KEEPS GOING
+   ask.js. ACT TWO, IN THE SAME PLACE
 
-   The introduction used to end on one invitation, See the work. It ends on a
-   question now: the thread asks what the visitor wants to know, offers three
-   authored answers to that, and each one is answered the way the thread talks
-   (a line in the thread's own bubble) and then shown: the project the answer
-   is about arrives under it, with its real preview, its real title and its
-   real link. Then three more questions, chosen by where the visitor has just
-   been. Browse everything is always there, and it is the same button See the
-   work was, so the first press still opens the page through js/reveal.js.
+   The introduction is act one: Hello, the name, the sentence about the work,
+   its reactions, and a moment for all of that to be read. Then it clears.
+   The whole stack dims out in one movement, the box stands empty for a
+   breath, and the conversation begins in the same box, on the same spot of
+   the screen: one line on what design is for, a question, and three things
+   the visitor can ask. Nothing moves the reader anywhere. The change of mode
+   is a change of what is in the room, not of the room.
 
-   NOTHING HERE IS GENERATED. Every question, every line and every pairing of
-   a question with a project is written below, in ASK. What is not written
-   below is read off the page: a project's title, its sentence, its link and
-   its preview all come from its slide in the project browser, and its name
-   and context from PF.PROJECTS, so a project renamed or relinked there is
-   renamed and relinked here without anybody touching this file.
+   WHAT IS ASKED IS WRITTEN, AND WHAT IS SHOWN IS THE SITE'S OWN. Every
+   question, every line and every pairing of a question with what answers it
+   is written below, in ASK. Everything an answer shows is read off the page:
+   a project's title, sentence, link and running preview from its slide in
+   the project browser; the employers from the timeline in Where I've been;
+   the artwork, the photographs and the music links from Off the clock and the
+   Music menu. Rename or relink any of those and the conversation follows.
 
-   IT IS THE THREAD'S CONVERSATION, NOT A SECOND ONE. The assistant's lines
-   are the thread's own message rows (js/thread.js lends a template), so the
-   dots, the landing and the bubble are the ones the introduction used. The
-   questions and the visitor's choice are the only new shapes, and they are
-   deliberately not bubbles: a question is a prompt you can take, the choice
-   is a note in the margin, and the voice stays in the clay.
+   ANSWERS LOOK LIKE WHAT THEY ARE ABOUT. Five kinds:
+     project   the work, large: its own preview as a film still, with the
+               title and the way in as the caption under it
+     flow      how something was thought through: the reply branches into a
+               short chain of connected thoughts, drawn one link at a time,
+               ending on the project it happened in
+     logos     where: the employers arrive one by one and line up
+     art       the illustration, given the room
+     music     the decks, a waveform, and where to listen
+   (and `outside`, the illustration and the decks side by side, which is the
+   way into the last two). If it can be shown, it is shown larger than it is
+   explained.
+
+   ONE THING HAPPENS AT A TIME. The question taken becomes the visitor's note,
+   the thread acknowledges it, the visual arrives and is left alone for a
+   beat, then its caption, then what to ask next. Older turns step back so the
+   newest owns the box.
+
+   IT IS THE THREAD'S CONVERSATION, NOT A SECOND ONE. The lines are the
+   thread's own message rows (js/thread.js lends a template), so the dots, the
+   landing and the bubble are the ones the introduction used. Browse
+   everything is the thread's own See the work button, relabelled, so the
+   first press still opens the page through js/reveal.js.
 
    THE BOX. Above 960 the thread is a fixed-height box in a composition that
-   must not move, so the conversation scrolls inside it: older turns leave
-   through the top, under the same dissolve the introduction uses, and can be
-   scrolled back to. Below 960 the page is already all there by the time the
-   question is asked (the cascade has run), so the conversation simply grows
-   and the page scrolls with it.
-
-   HISTORY IS KEPT SHORT ON PURPOSE. A turn that is no longer the newest gives
-   up its preview and folds to one line naming the project, and only the last
-   few turns are kept at all. The page never becomes a chat log.
+   must not move, so the conversation scrolls inside it. Below 960 the page is
+   already all there, so the conversation grows and the page scrolls with it.
    ========================================================================== */
 
 window.PF = window.PF || {};
@@ -8184,132 +8194,177 @@ window.PF = window.PF || {};
 
   /* ---- the conversation, as data ----------------------------------------
 
-     open    the first thing asked, after the introduction
-     again   asked when the visitor wants a different subject
-     q       every question. `say` is the line the thread answers with;
+     open    act two's first lines, and its first three questions
+     again   said when the visitor wants a different subject
+     q       every question. `label` is what the visitor asks, written to
+             read after "I want to know…"; `say` is the thread's reply;
              `after` replaces it when the visitor arrives from a particular
-             question (the conversation remembers where it just was);
-             `show` is a PF.PROJECTS key; `ev` replaces the evidence sentence
-             with a different line from the same project's own case study;
-             `next` is the follow-ups, in order of preference.
+             question; `kind` is how it is shown (project when absent);
+             `show` is a PF.PROJECTS key; `ev` replaces the project's own
+             sentence with another line from the same project's case study;
+             `steps` are a flow's thoughts, in order; `next` is the follow-ups,
+             in order of preference.
      pool    the order questions are borrowed in when a turn's own follow-ups
              have all been asked already.
 
      Every line below is drawn from text already on the site: the project
-     cards, the case studies, the About page and the README. */
+     cards, the case studies, the About page, Off the clock and the README.
+     The four steps of `approach` are the owner's own words. */
   var ASK = {
-    open: { say: 'What would you like to know?',
-            next: ['strongest', 'complex', 'ai'] },
-    again: { say: ['Of course. What else would you like to know?',
-                   'Sure. Where would you like to go next?'] },
+    open: { say: ['I believe design is how we make decisions visible, understandable, and easier to act on.',
+                  'Where would you like to start?'],
+            next: ['now', 'best', 'approach'] },
+    again: { say: ['Sure. What else would you like to know?',
+                   'Of course. Where to next?'],
+             next: ['where', 'outside', 'ai'] },
     done: { say: 'That covers most of the ground. The rest is in the full portfolio.' },
 
     q: {
-      strongest: {
-        label: 'Show me your strongest work',
-        say: 'A good place to start. I’d begin with the newest: Craigslist’s used-car search, redesigned for iOS and handed off ready to build.',
-        show: 'livefront',
-        next: ['handoff', 'health', 'visual'] },
+      now: {
+        label: 'What are you currently working on?',
+        say: 'Mostly one thing: standards for catching the gaps in AI-generated work, written to be dropped straight into an agent chat.',
+        show: 'governance',
+        next: ['govcheck', 'ai', 'best'] },
 
-      complex: {
-        label: 'How do you solve complex problems?',
-        say: 'I start by finding where the flow breaks for the people relying on it. The clearest example is an audit of four clinical workflows.',
+      best: {
+        label: 'Which project best represents your work?',
+        say: 'Probably the Craigslist redesign. One flow, used-car discovery on iOS, taken all the way to an implementation-ready handoff.',
+        show: 'livefront',
+        next: ['healthcare', 'approach', 'where'] },
+
+      approach: {
+        label: 'How do you approach complicated problems?',
+        say: 'I work backwards from the decision. Here’s the order, and where it led in a clinical audit.',
+        kind: 'flow',
+        steps: ['I start by identifying the decision the user is struggling to make.',
+                'What information does that decision depend on?',
+                'Where is that information fragmented or unclear?',
+                'What is the smallest change that makes the decision easier?'],
         show: 'dsa',
-        next: ['auditfound', 'simplified', 'engineers'] },
+        ev: 'Each row states one required action in the same column every time, and the status names an owner and whether the provider has to act.',
+        next: ['auditfound', 'testing', 'engineers'] },
 
       ai: {
-        label: 'How do you work with AI?',
-        say: 'Human judgment, design decisions, AI execution. OptiFlow shows what that looks like in practice.',
+        label: 'How do you use AI in your process?',
+        say: 'Human judgment, design decisions, AI execution. In OptiFlow that meant the model does the first pass and a person makes the call.',
+        kind: 'flow',
+        steps: ['The model extracts the billing data and suggests a tag.',
+                'A reviewer accepts it or corrects it.',
+                'Every correction needs a reason.',
+                'Engineering reads those reasons when revising prompts, tag definitions and thresholds.'],
         show: 'optiflow',
-        next: ['validate', 'governance', 'noai'] },
+        next: ['stop', 'govcheck', 'noai'] },
 
-      handoff: {
-        label: 'What have you handed off?',
-        say: 'For a handoff, look at OptiFlow: the review flow was delivered as design and handed to engineering.',
-        after: { strongest: 'Beyond Craigslist, OptiFlow is the one to see: the review flow went to engineering as a finished design.' },
-        show: 'optiflow',
-        ev: 'Turned each reviewer decision into structured feedback, suggestion, evidence, correction and reason, tied together so engineering had a signal it could act on.',
-        next: ['engineers', 'validate', 'interactive'] },
-
-      health: {
-        label: 'Show me healthcare work',
-        say: 'For healthcare, I’d show you Carry. It connects what patients want to ask before a visit with what they need to remember after it.',
+      stop: {
+        label: 'Where should AI stop and a person take over?',
+        say: 'Where a wrong answer costs the person relying on it. Carry is the clearest case.',
+        after: { ai: 'That depends on what a wrong answer costs. In Carry it cost the patient, so the line was easy to draw.' },
+        kind: 'flow',
+        steps: ['Generated answers came up in product scope.',
+                'A wrong summary of a result costs the patient.',
+                'So Carry quotes what the clinician actually said.',
+                'And when nothing in the recording answers clearly, it says so.'],
         show: 'carry',
-        next: ['responsibly', 'clinical', 'noai'] },
+        ev: 'Ruled out generated answers, and designed the quotation pattern that took their place.',
+        next: ['testing', 'healthcare', 'govcheck'] },
+
+      testing: {
+        label: 'What changed after testing?',
+        say: 'In Carry, the order of the screen. The checklist wasn’t the problem. Where it sat was.',
+        kind: 'flow',
+        steps: ['Going in: the preparation checklist, then my questions, then suggestions.',
+                'Around a quarter of patients hesitated, backtracked or skipped the checklist.',
+                'It sat in front of the task they had opened the screen to do.',
+                'Coming out: my questions first, the checklist last.'],
+        show: 'carry',
+        ev: 'About 20–35% faster to begin building a question list after the sequence changed (ranges reconstructed from onsite and Maze pilot testing).',
+        next: ['engineers', 'stop', 'best'] },
+
+      engineers: {
+        label: 'How do you work with engineers?',
+        say: 'Early, and in their terms. In Carry I took the tradeoffs to engineering while they were still drawings.',
+        kind: 'flow',
+        steps: ['Could the question row reuse the existing list component?',
+                'Can an excerpt point at a moment in the audio?',
+                'I drew it as if it could, and flagged it as a question for engineering.',
+                'The open questions went into Jira, with whose they were to answer.'],
+        show: 'carry',
+        ev: 'Designed the upload, transcription and matching states, and what each one does when it fails.',
+        next: ['testing', 'interactive', 'approach'] },
+
+      where: {
+        label: 'Where have you worked?',
+        say: 'Healthcare, consulting, finance and biotech, in that order.',
+        kind: 'logos',
+        next: ['simplified', 'healthcare', 'outside'] },
+
+      outside: {
+        label: 'What do you make outside of product design?',
+        say: 'I draw, and I make and play music. Same instincts: repetition, depth, and clarity inside complexity.',
+        kind: 'outside',
+        next: ['art', 'music', 'best'] },
+
+      art: {
+        label: 'Can I see your illustration?',
+        say: 'Here’s one. Pen and ink, dense on purpose.',
+        after: { outside: 'Gladly. This one is pen and ink, dense on purpose.' },
+        kind: 'art',
+        next: ['music', 'where', 'best'] },
+
+      music: {
+        label: 'What kind of music do you make?',
+        say: 'House, indie, Sufi ghazals, rock and old Bollywood, all mixed together. Originals, remixes and DJ sets.',
+        kind: 'music',
+        next: ['art', 'where', 'now'] },
+
+      healthcare: {
+        label: 'Have you worked in healthcare?',
+        say: 'A lot of my work is in healthcare. Carry is the one I’d show first: it connects what patients want to ask before a visit with what they need to remember after it.',
+        show: 'carry',
+        next: ['stop', 'testing', 'noai'] },
+
+      noai: {
+        label: 'What have you designed without AI?',
+        say: 'Something you can hold: an oncology specimen kit, redesigned for safer shipping and handling.',
+        show: 'specimen',
+        next: ['visual', 'healthcare', 'interactive'] },
 
       visual: {
-        label: 'What demonstrates visual design?',
-        say: 'For visual hierarchy, the Specimen Kit is the clearest case. I reordered the instruction lid so the rejection criteria read first.',
+        label: 'How do you handle visual hierarchy?',
+        say: 'By deciding what has to be read first. On the specimen kit, that was the rejection criteria.',
         show: 'specimen',
         ev: 'I rewrote the sheet in the lid so the preparation requirements and rejection criteria read first, and I specified a one-piece die-cut foam insert for the empty base.',
-        next: ['interactive', 'health', 'complex'] },
+        next: ['interactive', 'art', 'noai'] },
+
+      interactive: {
+        label: 'Is there something I can try?',
+        say: 'This one you can play with: an explainer for a developer library, showing how ECDH and AES-GCM work together.',
+        show: 'crypto',
+        next: ['engineers', 'visual', 'best'] },
+
+      simplified: {
+        label: 'Have you simplified a large system?',
+        say: 'At PNC: a fragmented lending process turned into one guided origination experience.',
+        show: 'pnc',
+        next: ['approach', 'where', 'healthcare'] },
 
       auditfound: {
         label: 'What did the audit find?',
         say: 'The same required action was a button in one row, a link in the next and a menu item in a third. So the fix became one shared pattern.',
         show: 'dsa',
         ev: 'Statuses named what the system was doing, not who had to act.',
-        next: ['clinical', 'simplified', 'engineers'] },
+        next: ['approach', 'simplified', 'healthcare'] },
 
-      simplified: {
-        label: 'Show me a system you simplified',
-        say: 'For that, PNC: a fragmented lending process turned into one guided origination experience.',
-        show: 'pnc',
-        next: ['engineers', 'health', 'ai'] },
-
-      engineers: {
-        label: 'Can you work with engineers?',
-        say: 'In OptiFlow, every reviewer decision became a signal engineering could act on, and they shipped changes roughly every two weeks.',
-        after: { handoff: 'Same project, closer up: engineering shipped changes roughly every two weeks off that feedback.',
-                 validate: 'Closely. The feedback was built for them: engineering shipped changes roughly every two weeks off it.' },
-        show: 'optiflow',
-        ev: 'Model confidence rose by about 2 percentage points a week during the tuning cycle, with engineering shipping changes roughly every two weeks.',
-        next: ['interactive', 'handoff', 'validate'] },
-
-      validate: {
-        label: 'How did you validate the output?',
-        say: 'Every correction needed a reason, so it became structured feedback rather than just an edit.',
-        after: { ai: 'That’s the question to ask of any AI system. Every correction needed a reason, so it became structured feedback rather than just an edit.' },
-        show: 'optiflow',
-        ev: 'A correction retrains nothing on its own. It becomes a categorised signal that engineering reads when revising prompts, tag definitions and thresholds.',
-        next: ['governance', 'responsibly', 'noai'] },
-
-      governance: {
-        label: 'Show me the governance work',
-        say: 'When AI generates the work, I build the standards that catch its gaps. This is the guide I’m writing for that.',
+      govcheck: {
+        label: 'What does the guide check for?',
+        say: 'Weak logic, missing states, unsupported decisions: the gaps generated work tends to ship with.',
         show: 'governance',
-        next: ['responsibly', 'noai', 'complex'] },
-
-      noai: {
-        label: 'Show me something without AI',
-        say: 'Here’s one you can hold: an oncology specimen kit, redesigned for safer shipping and handling.',
-        show: 'specimen',
-        next: ['health', 'visual', 'complex'] },
-
-      responsibly: {
-        label: 'How do you use AI responsibly?',
-        say: 'Partly by knowing when not to. In Carry I ruled out generated answers and quoted the clinician instead.',
-        show: 'carry',
-        ev: 'Ruled out generated answers, and designed the quotation pattern that took their place.',
-        next: ['governance', 'clinical', 'complex'] },
-
-      clinical: {
-        label: 'Show me clinical work',
-        say: 'For clinical teams: one row pattern across four provider workflows, so a provider can see whose move it is.',
-        show: 'dsa',
-        ev: 'Each row states one required action in the same column every time, and the status names an owner and whether the provider has to act.',
-        next: ['auditfound', 'health', 'noai'] },
-
-      interactive: {
-        label: 'Show me something interactive',
-        say: 'This one you can play with: an explainer for a developer library, showing how ECDH and AES-GCM work together.',
-        show: 'crypto',
-        next: ['engineers', 'visual', 'ai'] }
+        next: ['ai', 'stop', 'now'] }
     },
 
-    pool: ['strongest', 'complex', 'ai', 'health', 'engineers', 'visual',
-           'interactive', 'governance', 'handoff', 'simplified', 'noai',
-           'responsibly', 'clinical', 'auditfound', 'validate']
+    pool: ['now', 'best', 'approach', 'where', 'outside', 'ai', 'healthcare',
+           'stop', 'testing', 'engineers', 'art', 'music', 'noai', 'visual',
+           'interactive', 'simplified', 'auditfound', 'govcheck']
   };
 
   PF.ASK = ASK;
@@ -8328,12 +8383,25 @@ window.PF = window.PF || {};
        introduction reads, so the conversation is exactly as quick as it was. */
     var PACE = parseFloat(window.getComputedStyle(thread).getPropertyValue('--msg-pace')) || 1;
     function paced(ms) { return still ? 0 : Math.round(ms * PACE); }
-    var BEAT = 520;     /* between the introduction ending and the question */
+    /* THE CHANGE OF ACT. Not paced: these are the room, not the talk. The
+       introduction dims out in one movement (the loop's own reset, a little
+       slower because this one is not coming back), the box is empty for a
+       breath, and then the first dots. Long enough to read as a change of
+       mode, short enough that it is not a second loading screen. */
+    var CLEAR = 480;    /* the introduction, out (matched to the CSS) */
+    var BLANK = 720;    /* the empty box */
+    /* On a phone the introduction's ending arrives with its reactions in one
+       frame, and pf:cta with it, so the last line has not been read yet. It
+       is held here instead: the decode, and then a reading. */
+    var HOLD = 4400;
     var DOTS = 560;     /* the indicator, as long as the introduction's */
     var LAND = 640;     /* a bubble landing (msg-clay, matched to the CSS) */
     var STEP = 140;     /* between one part of an answer and the next */
+    var STILL = 700;    /* a visual left alone before its caption */
+    var NODE = 360;     /* a thought arriving (matched to the CSS) */
+    var DRAW = 460;     /* a connector drawing (matched to the CSS) */
     var LEAVE = 160;    /* the questions not taken, going */
-    var KEEP = 5;       /* turns kept; older ones are removed */
+    var KEEP = 4;       /* turns kept; older ones are removed */
 
     var box = null;     /* the conversation, once it has begun */
     var bar = null;     /* Browse everything (and Ask something else) */
@@ -8361,6 +8429,7 @@ window.PF = window.PF || {};
       if (text != null) n.textContent = text;
       return n;
     }
+    function clean(s) { return String(s || '').replace(/\s+/g, ' ').trim(); }
 
     /* ---- the project, read off the page --------------------------------- */
 
@@ -8380,12 +8449,12 @@ window.PF = window.PF || {};
         var c = sub.cloneNode(true);
         var g = c.querySelector('.pv__go');
         if (g) g.parentNode.removeChild(g);
-        text = c.textContent.replace(/\s+/g, ' ').trim();
+        text = clean(c.textContent);
       }
-      var label = go ? go.textContent.replace(/[→↗]/g, '').replace(/\s+/g, ' ').trim() : 'View case study';
+      var label = go ? clean(go.textContent.replace(/[→↗]/g, '')) : 'View case study';
       /* The first part of the context that is not just the name again
          (Design Governance's context opens with "Design governance"). */
-      var parts = String(p.context || '').split('\u00b7'), context = '';
+      var parts = String(p.context || '').split('·'), context = '';
       for (var ci = 0; ci < parts.length && !context; ci++) {
         var part = parts[ci].trim();
         if (part && part.toLowerCase() !== String(p.name).toLowerCase()) context = part;
@@ -8394,13 +8463,77 @@ window.PF = window.PF || {};
         key: key,
         name: p.name,
         context: context,
-        title: t ? t.textContent.replace(/\s+/g, ' ').trim() : p.name,
+        title: t ? clean(t.textContent) : p.name,
         text: text,
         label: label,
         href: s.getAttribute('data-href') || p.route,
         external: PF.isExternal ? PF.isExternal(p) : /^https?:/i.test(p.route),
         slide: s
       };
+    }
+
+    /* ---- the rest of the page, read off it --------------------------------
+
+       Where I've been is the source for where: the same four stops, the same
+       marks, the same years and roles, in the same order. Off the clock is the
+       source for what is made outside the work: the picture each tile shows
+       (a token on :root), what its label says it is, and where it goes. The
+       Music menu is the source for where to listen. */
+    function employers() {
+      var out = [];
+      var stops = document.querySelectorAll('.hero__past .tl__stop');
+      for (var i = 0; i < stops.length; i++) {
+        var s = stops[i], mark = s.querySelector('.tl__mark-logo');
+        var name = s.querySelector('.tl__name');
+        if (!mark || !name) continue;
+        var logo = '';
+        for (var k = 0; k < mark.classList.length; k++) {
+          if (/^clients__logo--/.test(mark.classList[k])) logo = mark.classList[k];
+        }
+        out.push({ logo: logo, name: clean(name.textContent),
+                   years: clean((s.querySelector('.tl__years') || {}).textContent),
+                   role: clean((s.querySelector('.tl__role') || {}).textContent),
+                   field: clean((s.querySelector('.tl__field') || {}).textContent) });
+      }
+      return out;
+    }
+
+    function work(kind) {
+      var tile = document.querySelector('.media--otc[data-placeholder="' + kind + '.jpg"]');
+      if (!tile) return null;
+      var v = window.getComputedStyle(document.documentElement).getPropertyValue('--otc-' + kind);
+      var m = /url\(\s*["']?([^"')]+)["']?\s*\)/.exec(v || '');
+      if (!m) return null;
+      /* "Illustration, A dense pen-and-ink collage… Opens … in a new tab." */
+      var said = clean(tile.getAttribute('aria-label'));
+      var alt = said.replace(/^[^,.]+[,.]\s*/, '').replace(/\s*Opens .*$/, '');
+      var lab = document.querySelector('.creative__link[href="' + tile.getAttribute('href') + '"]');
+      return { src: m[1], alt: alt, href: tile.getAttribute('href'),
+               label: lab ? clean(lab.textContent) : kind };
+    }
+
+    function listens() {
+      var out = [];
+      var rows = document.querySelectorAll('#music-menu .rolemenu__row');
+      for (var i = 0; i < rows.length; i++) {
+        var mk = rows[i].querySelector('.rolemenu__mark');
+        out.push({ href: rows[i].getAttribute('href'),
+                   label: clean((rows[i].querySelector('.rolemenu__label') || rows[i]).textContent),
+                   mark: mk ? mk.innerHTML : '' });
+      }
+      return out;
+    }
+
+    /* Whether a question can be answered on this page at all. A project that
+       is not live, or a section that is not on the page, is never offered. */
+    function answerable(q) {
+      var k = q.kind || 'project';
+      if (k === 'project' || k === 'flow') return !!project(q.show);
+      if (k === 'logos') return employers().length > 0;
+      if (k === 'art') return !!work('illustration');
+      if (k === 'music') return !!work('djing') && listens().length > 0;
+      if (k === 'outside') return !!work('illustration') && !!work('djing');
+      return false;
     }
 
     /* ---- the preview: the slide's own, running ---------------------------
@@ -8448,6 +8581,10 @@ window.PF = window.PF || {};
       for (var i = 0; i < ided.length; i++) ided[i].removeAttribute('id');
       copy.removeAttribute('id');
       copy.setAttribute('aria-hidden', 'true');
+      /* Eager: a lazy image in a copy that arrives already on screen is a
+         blank frame for as long as the browser takes to notice it. */
+      var lazy = copy.querySelectorAll('img[loading="lazy"]');
+      for (i = 0; i < lazy.length; i++) lazy[i].removeAttribute('loading');
       stage.appendChild(copy);
 
       var frame = copy.querySelector('iframe');
@@ -8480,7 +8617,25 @@ window.PF = window.PF || {};
       stage.parentNode.removeChild(stage);
     }
 
-    /* ---- the evidence ---------------------------------------------------- */
+    function link(href, label, external, cls) {
+      var a = el('a', cls);
+      a.setAttribute('href', href);
+      if (external) {
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer');
+      }
+      var lab = el('span', cls + '-label', label);
+      if (external) lab.setAttribute('data-external', '1');
+      a.appendChild(lab);
+      if (!external) {
+        var ar = el('span', cls + '-a', '→');
+        ar.setAttribute('aria-hidden', 'true');
+        a.appendChild(ar);
+      }
+      return a;
+    }
+
+    /* ---- a project: the film still, and its caption ----------------------- */
 
     function evidence(p, line) {
       var ev = el('span', 'ask-ev card');
@@ -8494,43 +8649,245 @@ window.PF = window.PF || {};
       var copy = el('span', 'ask-ev__copy');
       var eb = el('span', 'ask-ev__eyebrow');
       eb.appendChild(el('span', 'ask-ev__name', p.name));
-      if (p.context) eb.appendChild(el('span', 'ask-ev__ctx', ' \u00b7 ' + p.context));
+      if (p.context) eb.appendChild(el('span', 'ask-ev__ctx', ' · ' + p.context));
       copy.appendChild(eb);
       copy.appendChild(el('span', 'ask-ev__title', p.title));
       copy.appendChild(el('span', 'ask-ev__text', line || p.text));
-
-      var go = el('a', 'ask-ev__go');
-      go.setAttribute('href', p.href);
-      if (p.external) {
-        go.setAttribute('target', '_blank');
-        go.setAttribute('rel', 'noopener noreferrer');
-      }
-      var lab = el('span', 'ask-ev__go-label', p.label);
-      if (p.external) lab.setAttribute('data-external', '1');
-      go.appendChild(lab);
-      if (!p.external) {
-        var ar = el('span', 'ask-ev__go-a', '→');
-        ar.setAttribute('aria-hidden', 'true');
-        go.appendChild(ar);
-      }
+      var go = link(p.href, p.label, p.external, 'ask-ev__go');
       go.setAttribute('aria-label', p.label + ': ' + p.title);
       copy.appendChild(go);
       ev.appendChild(copy);
       return ev;
     }
 
-    /* The browser beside the conversation follows it: whatever was shown last
-       is the slide the browser is on when the page opens. js/projects.js
-       answers this event already. */
-    function point(p) {
-      try {
-        document.dispatchEvent(new CustomEvent('pf:project', { detail: { name: p.title } }));
-      } catch (err) { /* no CustomEvent: nothing follows, nothing breaks */ }
+    /* ---- where: the employers, arriving one at a time --------------------- */
+
+    var FROM = ['-18px, 0', '0, 14px', '18px, 0', '0, -14px'];
+
+    function logos() {
+      var list = employers();
+      var wrap = el('span', 'ask-logos');
+      wrap.setAttribute('role', 'list');
+      wrap.setAttribute('aria-label', 'Where I’ve worked');
+      for (var i = 0; i < list.length; i++) {
+        var e = list[i];
+        var tile = el('span', 'ask-logo');
+        tile.setAttribute('role', 'listitem');
+        tile.style.setProperty('--from', FROM[i % FROM.length]);
+        var mark = el('span', 'ask-logo__mark clients__logo ' + e.logo);
+        mark.setAttribute('aria-hidden', 'true');
+        tile.appendChild(mark);
+        tile.appendChild(el('span', 'ask-logo__name', e.name));
+        if (e.years) tile.appendChild(el('span', 'ask-logo__meta ask-logo__years', e.years));
+        if (e.role) tile.appendChild(el('span', 'ask-logo__meta', e.role));
+        wrap.appendChild(tile);
+      }
+      return wrap;
+    }
+
+    /* ---- what is made outside the work ------------------------------------ */
+
+    function figure(w, cls) {
+      var f = el('a', 'ask-shot ' + (cls || ''));
+      f.setAttribute('href', w.href);
+      f.setAttribute('target', '_blank');
+      f.setAttribute('rel', 'noopener noreferrer');
+      var img = el('img', 'ask-shot__img');
+      img.setAttribute('src', w.src);
+      img.setAttribute('alt', w.alt);
+      img.setAttribute('decoding', 'async');
+      f.appendChild(img);
+      var cap = el('span', 'ask-shot__cap');
+      var lab = el('span', 'ask-shot__label', w.label);
+      lab.setAttribute('data-external', '1');
+      cap.appendChild(lab);
+      f.appendChild(cap);
+      f.setAttribute('aria-label', w.label + ': ' + w.alt + ' Opens in a new tab.');
+      return f;
+    }
+
+    function art() {
+      var w = work('illustration');
+      var wrap = el('span', 'ask-media ask-media--art');
+      var shot = figure(w, 'ask-shot--art');
+      wrap.appendChild(shot);
+      var copy = el('span', 'ask-ev__copy ask-media__copy');
+      copy.appendChild(el('span', 'ask-ev__eyebrow', 'Illustration'));
+      copy.appendChild(el('span', 'ask-ev__text', w.alt));
+      copy.appendChild(link(w.href, 'Explore illustration', true, 'ask-ev__go'));
+      wrap.appendChild(copy);
+      return wrap;
+    }
+
+    /* A waveform with nothing behind it but its own shape: fixed heights,
+       a slow breath on the newest turn, still everywhere else. */
+    var WAVE = [30, 52, 41, 68, 88, 60, 44, 72, 96, 78, 50, 36, 58, 84, 100, 74,
+                46, 62, 90, 70, 40, 54, 80, 64, 38, 48, 66, 34];
+
+    function music() {
+      var w = work('djing');
+      var wrap = el('span', 'ask-media ask-media--music');
+      wrap.appendChild(figure(w, 'ask-shot--music'));
+      var side = el('span', 'ask-ev__copy ask-media__copy');
+      var wave = el('span', 'ask-wave');
+      wave.setAttribute('aria-hidden', 'true');
+      for (var i = 0; i < WAVE.length; i++) {
+        var b = el('i');
+        b.style.setProperty('--h', WAVE[i] + '%');
+        b.style.setProperty('--i', i);
+        wave.appendChild(b);
+      }
+      side.appendChild(wave);
+      side.appendChild(el('span', 'ask-ev__eyebrow', 'Where to listen'));
+      var rows = listens();
+      var list = el('span', 'ask-listen');
+      for (i = 0; i < rows.length; i++) {
+        var a = el('a', 'ask-listen__row');
+        a.setAttribute('href', rows[i].href);
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer');
+        var mk = el('span', 'ask-listen__mark');
+        mk.setAttribute('aria-hidden', 'true');
+        mk.innerHTML = rows[i].mark;
+        a.appendChild(mk);
+        var lab = el('span', 'ask-listen__label', rows[i].label);
+        lab.setAttribute('data-external', '1');
+        a.appendChild(lab);
+        list.appendChild(a);
+      }
+      side.appendChild(list);
+      wrap.appendChild(side);
+      return wrap;
+    }
+
+    function outside() {
+      var wrap = el('span', 'ask-media ask-media--pair');
+      wrap.appendChild(figure(work('illustration'), 'ask-shot--pair'));
+      wrap.appendChild(figure(work('djing'), 'ask-shot--pair'));
+      return wrap;
+    }
+
+    /* ---- a flow: thoughts, connected one link at a time -------------------
+
+       The reply is the parent. Each thought is a small message box of its
+       own, and each link is an SVG path from the bottom of the thing before it
+       to the top of the thing after it, measured from the boxes as they are
+       laid out, never from coordinates written down. So a resize, a reflow or
+       a change of width redraws every link where the boxes now are.
+
+       The order is strict: the parent settles, a link draws, the thought it
+       leads to arrives at its final size, and only then does the next link
+       start. The last link leads into the project it all happened in.
+
+       Wide, the thoughts step across the column, left then right, so the
+       links run on the diagonal. Narrow, they step down one rail on the
+       left, the way a phone already reads. */
+    var flows = [];
+
+    function flowOf(q, row) {
+      var f = { wrap: el('span', 'ask-flow'), row: row, nodes: [], links: [], svg: null };
+      f.wrap.setAttribute('role', 'list');
+      f.wrap.setAttribute('aria-label', 'How it went');
+      var NS = 'http://www.w3.org/2000/svg';
+      f.svg = document.createElementNS(NS, 'svg');
+      f.svg.setAttribute('class', 'ask-flow__links');
+      f.svg.setAttribute('aria-hidden', 'true');
+      f.svg.setAttribute('focusable', 'false');
+      f.wrap.appendChild(f.svg);
+      for (var i = 0; i < q.steps.length; i++) {
+        var n = el('span', 'ask-node', q.steps[i]);
+        n.setAttribute('role', 'listitem');
+        n.setAttribute('data-side', i % 2 ? 'r' : 'l');
+        n.style.setProperty('--n', i);
+        f.wrap.appendChild(n);
+        f.nodes.push(n);
+      }
+      /* One more link than thoughts: the last leads to the evidence. */
+      for (i = 0; i <= q.steps.length; i++) {
+        var path = document.createElementNS(NS, 'path');
+        path.setAttribute('pathLength', '1');
+        path.setAttribute('class', 'ask-flow__link');
+        f.svg.appendChild(path);
+        f.links.push(path);
+      }
+      flows.push(f);
+      return f;
+    }
+
+    function anchorOf(node, top, rail) {
+      var r = node.getBoundingClientRect();
+      var x = rail ? r.left + Math.min(26, r.width / 2) : r.left + r.width / 2;
+      return { x: x, y: top ? r.top : r.bottom };
+    }
+
+    function drawFlow(f) {
+      if (!f.wrap.isConnected) return;
+      var o = f.wrap.getBoundingClientRect();
+      var rail = f.wrap.getBoundingClientRect().width < 520;
+      var bubble = f.row && f.row.querySelector('.msg__bubble');
+      var chain = [bubble].concat(f.nodes);
+      if (f.ev) chain.push(f.ev);
+      f.svg.setAttribute('width', Math.ceil(o.width));
+      f.svg.setAttribute('height', Math.ceil(o.height));
+      for (var i = 0; i < f.links.length; i++) {
+        var a = chain[i], b = chain[i + 1];
+        if (!a || !b || !a.getClientRects().length || !b.getClientRects().length) {
+          f.links[i].setAttribute('d', '');
+          continue;
+        }
+        /* The parent bubble is wide: its link leaves from where the first
+           thought sits, not from the middle of a sentence. */
+        var p = anchorOf(a, false, rail), q = anchorOf(b, true, rail);
+        if (i === 0 && !rail) p.x = Math.max(a.getBoundingClientRect().left + 40, Math.min(q.x, a.getBoundingClientRect().right - 40));
+        var x1 = p.x - o.left, y1 = p.y - o.top + 6, x2 = q.x - o.left, y2 = q.y - o.top - 6;
+        var dy = Math.max(12, (y2 - y1) * 0.55);
+        f.links[i].setAttribute('d', 'M' + x1.toFixed(1) + ' ' + y1.toFixed(1) +
+          ' C' + x1.toFixed(1) + ' ' + (y1 + dy).toFixed(1) + ' ' + x2.toFixed(1) + ' ' + (y2 - dy).toFixed(1) +
+          ' ' + x2.toFixed(1) + ' ' + y2.toFixed(1));
+      }
+    }
+
+    function redraw() {
+      for (var i = flows.length - 1; i >= 0; i--) {
+        if (!flows[i].wrap.isConnected) { flows.splice(i, 1); continue; }
+        drawFlow(flows[i]);
+      }
+    }
+    var ro = ('ResizeObserver' in window) ? new ResizeObserver(function () {
+      requestAnimationFrame(redraw);
+    }) : null;
+    window.addEventListener('resize', function () { requestAnimationFrame(redraw); });
+
+    /* Walk the chain: link, thought, link, thought… then the evidence. */
+    function playFlow(f, done) {
+      drawFlow(f);
+      if (ro) ro.observe(f.wrap);
+      if (still) {
+        for (var i = 0; i < f.nodes.length; i++) f.nodes[i].classList.add('is-in');
+        for (i = 0; i < f.links.length - 1; i++) f.links[i].classList.add('is-drawn');
+        if (done) done();
+        return;
+      }
+      var k = 0;
+      (function step() {
+        if (k >= f.nodes.length) { if (done) done(); return; }
+        var path = f.links[k], node = f.nodes[k];
+        drawFlow(f);
+        path.classList.add('is-drawn');
+        later(function () {
+          node.classList.add('is-in');
+          keep(node);
+          k++;
+          later(step, paced(NODE) + paced(STEP));
+        }, paced(DRAW));
+      })();
     }
 
     /* ---- the turn, and the lines in it ------------------------------------ */
 
     function turn() {
+      var past = box.querySelectorAll('.ask__turn');
+      for (var p = 0; p < past.length; p++) past[p].classList.add('is-past');
       var t = el('span', 'ask__turn');
       box.appendChild(t);
       var turns = box.querySelectorAll('.ask__turn');
@@ -8565,8 +8922,10 @@ window.PF = window.PF || {};
       later(function () {
         row.setAttribute('data-state', 'live');
         follow();
-        later(function () { row.setAttribute('data-state', 'settled'); }, paced(LAND));
-        if (done) done(row);
+        later(function () {
+          row.setAttribute('data-state', 'settled');
+          if (done) done(row);
+        }, paced(LAND));
       }, paced(DOTS));
       return row;
     }
@@ -8588,7 +8947,7 @@ window.PF = window.PF || {};
       var out = [], seen = {}, i, k;
       function take(id) {
         if (out.length >= 3 || seen[id] || asked[id] || !ASK.q[id]) return;
-        if (!project(ASK.q[id].show)) return;   /* never offer a project that is not live */
+        if (!answerable(ASK.q[id])) return;   /* never offer what the page cannot show */
         seen[id] = true;
         out.push(id);
       }
@@ -8600,7 +8959,7 @@ window.PF = window.PF || {};
     function choices(into, ids, kind) {
       var wrap = el('span', 'ask__choices ask__choices--' + kind);
       wrap.setAttribute('role', 'group');
-      wrap.setAttribute('aria-label', kind === 'next' ? 'Ask next' : 'Questions you can ask');
+      wrap.setAttribute('aria-label', kind === 'next' ? 'Ask next' : 'Start here');
       if (kind === 'next') {
         var head = el('span', 'ask__head');
         head.appendChild(el('span', 'ask__label', 'Ask next'));
@@ -8695,24 +9054,48 @@ window.PF = window.PF || {};
       }
     }
 
+    /* A thought, or the evidence a flow ends on, arriving below the fold of
+       the box is brought up just far enough to be seen whole. A flow is
+       taller than the box, and the reader is following it down. */
+    function keep(node) {
+      if (!node || !box) return;
+      var smooth = still ? 'auto' : 'smooth';
+      var r = node.getBoundingClientRect();
+      if (wide.matches) {
+        var tr = thread.getBoundingClientRect();
+        var over = r.bottom - (tr.bottom - 48);
+        if (over > 1) thread.scrollTo({ top: Math.min(thread.scrollTop + over, thread.scrollHeight - thread.clientHeight), behavior: smooth });
+      } else {
+        var by = r.bottom - (window.innerHeight - 32);
+        if (by > 1) window.scrollBy({ top: by, behavior: smooth });
+      }
+    }
+
     /* AND ONCE THE TURN IS COMPLETE, ITS WAY ONWARD IS ON SCREEN. While an
        answer arrives the view follows its first line; when the follow-ups
        and Browse everything have landed (and the answer has had a moment to be
        read), the view moves just far enough to show them, and never so far
-       that the evidence it is offering leaves the top. */
+       that the thing it is showing leaves the top. */
     function settleView(t, row) {
       if (!t || !row) return;
       var smooth = still ? 'auto' : 'smooth';
+      /* A flow ends on its evidence, and that is what the turn is offering:
+         the thoughts above it have been read on the way down. */
+      var shown = t.querySelector('.ask-ev') || t.querySelector('.ask-media, .ask-logos') || row;
       if (wide.matches) {
         var tr = thread.getBoundingClientRect();
         var base = thread.scrollTop - tr.top;
-        var floor = (t.querySelector('.ask-ev') || row).getBoundingClientRect().top + base - clear;
+        /* A still may go halfway under the top dissolve: by now it
+           has been looked at, and what it is offering next has to be seen. */
+        var vis = shown.querySelector && shown.querySelector('.ask-ev__vis, .ask-shot');
+        var give = vis ? vis.getBoundingClientRect().height * 0.5 : 0;
+        var floor = shown.getBoundingClientRect().top + give + base - clear;
         var end = t.getBoundingClientRect().bottom + base - thread.clientHeight + 13;
         var max = thread.scrollHeight - thread.clientHeight;
         var want = Math.max(0, Math.min(end, floor, max));
         if (want > thread.scrollTop + 1) thread.scrollTo({ top: want, behavior: smooth });
       } else {
-        var r = t.getBoundingClientRect(), a = (t.querySelector('.ask-ev') || row).getBoundingClientRect();
+        var r = t.getBoundingClientRect(), a = shown.getBoundingClientRect();
         var by = Math.min(r.bottom - window.innerHeight + 24, a.top - 72);
         if (by > 1) window.scrollBy({ top: by, behavior: smooth });
       }
@@ -8731,11 +9114,16 @@ window.PF = window.PF || {};
       requestAnimationFrame(edges);
     }
 
+    /* The room a visual may take: what the box leaves once a caption, the
+       follow-ups and Browse everything have theirs. Above 960 that is the
+       box; below it, the screen. The stylesheet clamps it. */
     function mode() {
       thread.classList.toggle('is-grow', !wide.matches);
       thread.classList.toggle('is-scroll', wide.matches);
       var stop = parseFloat(window.getComputedStyle(thread).getPropertyValue('--fade-stop')) || 9;
       clear = Math.ceil(thread.clientHeight * stop / 100) + 8;
+      var room = wide.matches ? thread.clientHeight : window.innerHeight;
+      thread.style.setProperty('--ask-room', Math.round(room) + 'px');
       edges();
     }
 
@@ -8745,6 +9133,60 @@ window.PF = window.PF || {};
       if (!live) return;
       live.textContent = '';
       later(function () { live.textContent = text; }, 60);
+    }
+
+    /* Act two's first turn is centred in the room act one used, so it opens
+       on the same spot the introduction did. Measured once, on an invisible
+       copy of the finished turn, before any of it is shown: nothing that has
+       appeared ever moves to make room for what follows it. */
+    function centreOpening(room) {
+      var probe = el('span', 'ask__turn');
+      probe.setAttribute('aria-hidden', 'true');
+      probe.style.cssText = 'visibility:hidden;position:absolute;left:0;right:0;top:0';
+      probe.appendChild(el('span', 'ask__label ask__start', 'Start here'));
+      for (var i = 0; i < ASK.open.say.length; i++) {
+        var r = T.row(ASK.open.say[i], i === 0);
+        r.classList.add('ask__say');
+        r.setAttribute('data-state', 'settled');
+        probe.appendChild(r);
+      }
+      var c = el('span', 'ask__choices ask__choices--open is-in');
+      var l = el('span', 'ask__list');
+      var ids = candidates(ASK.open.next);
+      for (i = 0; i < ids.length; i++) {
+        var b = el('span', 'ask-q');
+        b.appendChild(el('span', 'ask-q__t', ASK.q[ids[i]].label));
+        b.appendChild(el('span', 'ask-q__go', '→'));
+        l.appendChild(b);
+      }
+      c.appendChild(l);
+      probe.appendChild(c);
+      var fake = el('span', 'ask__bar is-in');
+      fake.appendChild(el('span', 'msg-cta__btn', 'Browse everything'));
+      probe.appendChild(fake);
+      box.appendChild(probe);
+      var h = probe.getBoundingClientRect().height +
+              (parseFloat(window.getComputedStyle(box).marginTop) || 0);
+      box.removeChild(probe);
+      var pad = Math.max(clear, Math.round((room - h) / 2));
+      T.track.style.paddingTop = pad + 'px';
+    }
+
+    function opening() {
+      var t = turn();
+      var start = el('span', 'ask__label ask__start', 'Start here');
+      t.appendChild(start);
+      arrive(start, 0);
+      say(t, ASK.open.say[0], true, function () {
+        later(function () {
+          say(t, ASK.open.say[1], false, function () {
+            var c = choices(t, candidates(ASK.open.next), 'open');
+            placeBar(t, false);
+            arrive(c, paced(STEP));
+            arrive(bar, paced(STEP * 3));
+          });
+        }, paced(STEP * 2));
+      });
     }
 
     function begin() {
@@ -8768,19 +9210,64 @@ window.PF = window.PF || {};
 
       box = el('span', 'ask');
       box.setAttribute('data-ask', '');
-      T.track.appendChild(box);
       thread.addEventListener('scroll', onScroll, { passive: true });
-      mode();
+      /* Anything that changes the conversation's height can move a link. */
+      if (ro) ro.observe(box);
 
-      var t = turn();
+      /* Reduced motion gets the state the performance arrives at, without
+         taking the introduction away: there was no performance, so there is
+         no act to end. The conversation simply follows it. */
+      if (still) {
+        T.track.appendChild(box);
+        mode();
+        opening();
+        return;
+      }
+
       later(function () {
-        say(t, ASK.open.say, true, function () {
-          var c = choices(t, candidates(ASK.open.next), 'open');
-          placeBar(t, false);
-          arrive(c, paced(STEP));
-          arrive(bar, paced(STEP * 2));
-        });
-      }, paced(BEAT));
+        /* What act one took is kept as act two's room. Below 960 the thread
+           grows with what is in it, and an empty box would pull the page up
+           under it for the length of the pause. */
+        var room = thread.getBoundingClientRect().height;
+        if (!wide.matches) thread.style.minHeight = room + 'px';
+        thread.classList.add('is-act-out');
+        later(function () {
+          thread.classList.add('is-act2');
+          thread.classList.remove('is-act-out');
+          thread.scrollTop = 0;
+          T.track.appendChild(box);
+          mode();
+          /* The hold is on the box's outer height, whatever its box model. */
+          if (!wide.matches) {
+            var now = thread.getBoundingClientRect().height;
+            if (Math.abs(now - room) > 0.5) thread.style.minHeight = Math.max(0, parseFloat(thread.style.minHeight) + room - now) + 'px';
+          }
+          centreOpening(wide.matches ? thread.clientHeight : room);
+          later(opening, BLANK);
+        }, CLEAR);
+      }, wide.matches ? 0 : HOLD);
+    }
+
+    /* What a turn shows, by kind. Returns the node, already in the turn. */
+    function show(t, q, p, row) {
+      var k = q.kind || 'project';
+      var node = null;
+      if (k === 'project' && p) { node = evidence(p, q.ev); point(p); }
+      else if (k === 'logos') node = logos();
+      else if (k === 'art') node = art();
+      else if (k === 'music') node = music();
+      else if (k === 'outside') node = outside();
+      if (node) t.appendChild(node);
+      return node;
+    }
+
+    /* The browser beside the conversation follows it: whatever was shown last
+       is the slide the browser is on when the page opens. js/projects.js
+       answers this event already. */
+    function point(p) {
+      try {
+        document.dispatchEvent(new CustomEvent('pf:project', { detail: { name: p.title } }));
+      } catch (err) { /* no CustomEvent: nothing follows, nothing breaks */ }
     }
 
     function choose(e) {
@@ -8820,14 +9307,22 @@ window.PF = window.PF || {};
         asked[id] = true;
         var from = prev;
         prev = id;
-        var p = project(q.show);
+        var kind = q.kind || 'project';
+        var p = (kind === 'project' || kind === 'flow') ? project(q.show) : null;
 
         later(function () {
           say(t, (q.after && from && q.after[from]) || q.say, true, function (row) {
-            var ev = p ? evidence(p, q.ev) : null;
-            if (ev) { t.appendChild(ev); arrive(ev, paced(STEP)); point(p); }
-            var ids = candidates(q.next);
-            var after = function () {
+            var shown = null;
+            var then = function () {
+              /* The visual has arrived. It is left alone for a beat, then its
+                 caption, then the way onward. */
+              later(function () {
+                if (shown) shown.classList.add('is-captioned');
+                later(onward, paced(STEP * 2));
+              }, paced(STILL));
+            };
+            var onward = function () {
+              var ids = candidates(q.next);
               if (ids.length) {
                 var c = choices(t, ids, 'next');
                 arrive(c, paced(STEP));
@@ -8835,7 +9330,7 @@ window.PF = window.PF || {};
                 say(t, ASK.done.say, false);
               }
               placeBar(t, true);
-              arrive(bar, paced(STEP), function () {
+              arrive(bar, paced(STEP * 2), function () {
                 later(function () { settleView(t, row); }, paced(900));
               });
               busy = false;
@@ -8844,10 +9339,35 @@ window.PF = window.PF || {};
                 bub.setAttribute('tabindex', '-1');
                 try { bub.focus({ preventScroll: true }); } catch (err) { bub.focus(); }
               }
-              announce(row.querySelector('.msg__text').textContent.replace(/\s+/g, ' ').trim() +
+              announce(clean(row.querySelector('.msg__text').textContent) +
+                       (kind === 'flow' ? ' ' + q.steps.join(' ') : '') +
                        (p ? ' Evidence: ' + p.title + '.' : ''));
             };
-            if (still) after(); else later(after, paced(STEP * 2));
+
+            if (kind === 'flow' && p) {
+              var f = flowOf(q, row);
+              t.appendChild(f.wrap);
+              var ev = evidence(p, q.ev);
+              ev.classList.add('ask-ev--end');
+              t.appendChild(ev);
+              f.ev = ev;
+              point(p);
+              shown = ev;
+              playFlow(f, function () {
+                f.links[f.links.length - 1].classList.add('is-drawn');
+                later(function () {
+                  arrive(ev, 0, function () { keep(ev.querySelector('.ask-ev__vis') || ev); then(); });
+                }, paced(DRAW));
+              });
+              return;
+            }
+            shown = show(t, q, p, row);
+            /* The employers arrive one after another; the caption and the
+               questions wait for the last of them to land. */
+            var landing = (kind === 'logos' && shown && !still) ?
+              paced(240 * (shown.children.length - 1)) + 620 : 0;
+            if (shown) arrive(shown, paced(STEP), function () { if (landing) later(then, landing); else then(); });
+            else then();
           });
         }, paced(STEP));
       }, still ? 0 : LEAVE);
@@ -8866,7 +9386,7 @@ window.PF = window.PF || {};
         var line = lines[againAt % lines.length];
         againAt++;
         say(t, line, true, function () {
-          var ids = candidates(ASK.open.next);
+          var ids = candidates(ASK.again.next);
           if (ids.length) arrive(choices(t, ids, 'open'), paced(STEP));
           placeBar(t, false);
           arrive(bar, paced(STEP * 2));
@@ -8887,6 +9407,8 @@ window.PF = window.PF || {};
       tint = 0;
       againAt = 0;
       fitted = [];
+      flows = [];
+      if (ro) ro.disconnect();
       if (bar) {
         var row = bar.querySelector('.msg-cta');
         if (row && row.classList.contains('ask__browse') && T.track) {
@@ -8901,7 +9423,9 @@ window.PF = window.PF || {};
       if (box && box.parentNode) box.parentNode.removeChild(box);
       box = null;
       thread.removeEventListener('scroll', onScroll);
-      thread.classList.remove('is-grow', 'is-scroll', 'is-scrolled', 'is-more');
+      thread.classList.remove('is-grow', 'is-scroll', 'is-scrolled', 'is-more', 'is-act-out', 'is-act2');
+      thread.style.minHeight = '';
+      thread.style.removeProperty('--ask-room');
       thread.removeAttribute('aria-labelledby');
     }
 
@@ -8909,6 +9433,7 @@ window.PF = window.PF || {};
 
     function onWidth() {
       if (!box) return;
+      thread.style.minHeight = '';
       mode();
       /* The browse control is a different thing either side of 960. */
       if (bar) {
@@ -8921,7 +9446,7 @@ window.PF = window.PF || {};
         }
         if (bar.parentNode) bar.parentNode.removeChild(bar);
         bar = null;
-        if (host) { placeBar(host, !!box.querySelector('.ask-ev')); bar.classList.add('is-in'); }
+        if (host) { placeBar(host, !!box.querySelector('.ask-you')); bar.classList.add('is-in'); }
       }
     }
     if (wide.addEventListener) wide.addEventListener('change', onWidth);
@@ -13422,6 +13947,117 @@ window.PF = window.PF || {};
 
 })(window.PF);
 
+
+/* ===== js/sitenav.js ===== */
+/* ==========================================================================
+   sitenav.js. QUICK LINKS AND THE MENU
+
+   The markup is in index.html and does its job without this file: every
+   entry is an ordinary link to an anchor or a route that already exists. This
+   adds the two things markup cannot do:
+
+     the menu   opens and closes. A disclosure, not a dialog: the button says
+                whether it is open, the list follows it in the reading order,
+                focus goes to the first entry, and Escape, a tap on the scrim,
+                a choice, or focus leaving the menu all close it (Escape and
+                the scrim hand focus back to the button). Crossing 960 closes it.
+     the links  the quick link for the part of the page the reader is in is
+                marked as the current location, quietly.
+   ========================================================================== */
+
+window.PF = window.PF || {};
+
+(function () {
+  'use strict';
+
+  function menu() {
+    var btn = document.querySelector('[data-gmenu]');
+    var nav = document.getElementById('site-menu');
+    var scrim = document.querySelector('[data-gmenu-scrim]');
+    if (!btn || !nav || !scrim) return;
+    var wide = window.matchMedia('(min-width: 960px)');
+    var still = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var timer = null;
+
+    function isOpen() { return btn.getAttribute('aria-expanded') === 'true'; }
+
+    function open() {
+      clearTimeout(timer);
+      nav.hidden = false;
+      scrim.hidden = false;
+      btn.setAttribute('aria-expanded', 'true');
+      btn.setAttribute('aria-label', 'Close menu');
+      requestAnimationFrame(function () {
+        nav.classList.add('is-open');
+        scrim.classList.add('is-open');
+      });
+      var first = nav.querySelector('a');
+      if (first) first.focus({ preventScroll: true });
+    }
+
+    function close(back) {
+      if (!isOpen()) return;
+      btn.setAttribute('aria-expanded', 'false');
+      btn.setAttribute('aria-label', 'Menu');
+      nav.classList.remove('is-open');
+      scrim.classList.remove('is-open');
+      timer = setTimeout(function () {
+        nav.hidden = true;
+        scrim.hidden = true;
+      }, still.matches ? 0 : 240);
+      if (back) btn.focus({ preventScroll: true });
+    }
+
+    btn.addEventListener('click', function () { if (isOpen()) close(true); else open(); });
+    scrim.addEventListener('click', function () { close(true); });
+    nav.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('a')) close(false);
+    });
+    document.addEventListener('keydown', function (e) {
+      if ((e.key === 'Escape' || e.key === 'Esc') && isOpen()) { e.preventDefault(); close(true); }
+    });
+    nav.addEventListener('focusout', function (e) {
+      var to = e.relatedTarget;
+      if (to && !nav.contains(to) && to !== btn) close(false);
+    });
+    if (wide.addEventListener) wide.addEventListener('change', function () { close(false); });
+  }
+
+  function current() {
+    var links = document.querySelectorAll('.snav__link[data-snav]');
+    if (!links.length) return;
+    var targets = [];
+    for (var i = 0; i < links.length; i++) {
+      var t = document.getElementById(links[i].getAttribute('data-snav'));
+      if (t) targets.push([t, links[i]]);
+    }
+    var ticking = false;
+    function mark() {
+      ticking = false;
+      /* The last section whose top has passed the upper third of the screen.
+         A section that is not laid out (not yet revealed) is not a place. */
+      var line = window.innerHeight * 0.34, on = null;
+      for (var j = 0; j < targets.length; j++) {
+        var r = targets[j][0].getBoundingClientRect();
+        if (!r.height) continue;
+        if (r.top <= line) on = targets[j][1];
+      }
+      for (j = 0; j < targets.length; j++) {
+        if (targets[j][1] === on) targets[j][1].setAttribute('aria-current', 'location');
+        else targets[j][1].removeAttribute('aria-current');
+      }
+    }
+    function ask() { if (!ticking) { ticking = true; requestAnimationFrame(mark); } }
+    window.addEventListener('scroll', ask, { passive: true });
+    window.addEventListener('resize', ask);
+    window.addEventListener('hashchange', ask);
+    mark();
+  }
+
+  function boot() { menu(); current(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
 
 /* ===== js/main.js ===== */
 /* ==========================================================================
