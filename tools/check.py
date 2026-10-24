@@ -14,16 +14,18 @@ deployed site. Sections:
              dark OS, toggle round-trip with reloads, OS flipped mid-visit.
              Every animation frame from the first one is sampled; a fresh
              visit must never show a dark frame.
-    seq      at 960 and up, the three landing states: intro (only the
-             conversation, centred), ready on pf:cta (the invitation and
-             nothing else, still centred, gate holds without a click), work
-             on the click (everything together, settled within 450ms exactly
-             where an unstaged page lays it out, browser at 01 and
-             navigating).
-             Below 960, the cascade. At every width: thread width constant,
-             no horizontal overflow, no errors
-    hatch    reduced motion, deep links, tablet scroll, replay while deciding
-             and after work, hard refresh
+    seq      the three states (intro, ready on pf:cta, work on Browse more).
+             At 960 and up: intro is the conversation alone, centred; ready
+             adds nothing but the conversation, still centred, the gate
+             holding without a click; Browse more opens everything together,
+             settled within 450ms exactly where a deep-linked page lays it
+             out, browser at 01 and navigating. Below 960: the same states,
+             no cascade: nothing staged is laid out until Browse more, and
+             scrolling does not open the page. At every width: thread width
+             constant, no horizontal overflow, no errors
+    hatch    reduced motion (the same states, at once), deep links, several
+             answers with previews and scrolling never opening the page,
+             replay while deciding and after work, hard refresh
     keys     Tab in each state reaches only what that state shows
     pace     the message sequence takes 0.7 of the length it was measured at
              before it was sped up (SEQ_BASE_MS)
@@ -43,10 +45,13 @@ deployed site. Sections:
              everything opening work through the gate (wide) or linking to
              #work (narrow); reduced motion; replay bringing act one back; no
              overflow and no errors
-    nav      the quick links (absent in act one, six text links in act two,
-             never touching a card once the page is open) and, below 960, the
-             menu beside the theme switch: fixed, reachable anywhere, focus
-             in and back, Escape and a tap outside close it, 44px rows
+    nav      the quick links (in the conversation's own box, on the controls'
+             line; absent in act one, five text links in act two, gone once
+             the portfolio is open; Start here returns to the openers, Projects
+             opens the portfolio at the collection, About goes to its route)
+             and, below 960, the menu beside the theme switch: fixed,
+             reachable mid-conversation, focus in and back, Escape and a tap
+             outside close it, 44px rows, Projects opens the portfolio
 
 Exit status is the number of failures.
 """
@@ -280,8 +285,10 @@ PACE = 0.7
 
 
 def baseline(b, base, w, h):
-    """The final layout as a page that was never staged lays it out."""
-    fresh(b, base, w=w, h=h, dark=True, reduced=True, wait=6)
+    """The final layout as a page opened by a deep link lays it out."""
+    fresh(b, base, '/#top', w=w, h=h, dark=True, reduced=True, wait=6)
+    b.eval('window.scrollTo(0, 0)')
+    b.pump(0.3)
     return b.eval(RECTS)
 
 
@@ -323,7 +330,7 @@ def seq_wide(b, base, shots, w, h):
     else:
         check(False, name + ' conversation reached its end alone')
     until(b, '__pf.cta !== null', 30)
-    b.pump(1.0)
+    until(b, ASK_IDLE, 20)
     s = b.eval('__pf')
     r = b.eval('[document.documentElement.dataset.landing, document.querySelector(".hero__thread").getBoundingClientRect().width,'
                ' (() => { const c = document.querySelector(".hero__copy").getBoundingClientRect(); return (c.left + c.right) / 2 - innerWidth / 2; })(),'
@@ -331,7 +338,7 @@ def seq_wide(b, base, shots, w, h):
     if shots:
         b.screenshot(os.path.join(shots, 'ready-%d.png' % w))
     check(r[0] == 'ready', name + ' pf:cta moves to ready', r[0])
-    check(r[3], name + ' ready: See the work is up')
+    check(r[3], name + ' ready: Browse more is up')
     check(not s['seen'], name + ' ready: nothing but the conversation and its invitation', 'visible: %s' % list(s['seen']))
     check(abs(r[2]) < 1, name + ' ready: still centred', 'dx %.2f' % r[2])
     land_at = b.eval('__pf.landAt')
@@ -378,45 +385,67 @@ def seq_wide(b, base, shots, w, h):
 
 
 def seq_narrow(b, base, shots, w, h):
+    """Below 960: the same three states. No cascade: the conversation is the
+    page until Browse more, and nothing staged is laid out before it."""
     fresh(b, base, w=w, h=h, dark=True)
+    name = '%dx%d' % (w, h)
     until(b, '__pf.cta !== null', 30)
-    until(b, '"5" in __pf.shownAt', 5)
+    until(b, ASK_IDLE, 25)
     b.pump(1.0)
     s = b.eval('__pf')
+    v = b.eval('(() => { const st = [...document.querySelectorAll("[data-reveal]")];'
+               ' return { landing: document.documentElement.dataset.landing, laid: st.filter(e => e.getClientRects().length).length,'
+               ' shown: st.filter(e => e.hasAttribute("data-shown")).length, h: document.documentElement.scrollHeight, vh: innerHeight,'
+               ' w0: document.querySelector(".hero__thread").getBoundingClientRect().width }; })()')
+    if shots:
+        b.screenshot(os.path.join(shots, 'conversation-%d.png' % w))
+    check(v['landing'] == 'ready' and v['laid'] == 0 and v['shown'] == 0, name + ' conversation only: nothing staged is laid out', json.dumps(v))
+    check(not s['seen'], name + ' conversation only: no portfolio block became visible', json.dumps(list(s['seen'])))
+    b.eval('window.scrollTo(0, document.documentElement.scrollHeight)')
+    b.pump(0.6)
+    check(b.eval('document.documentElement.dataset.landing') == 'ready', name + ' scrolling does not open the portfolio')
+    t0 = b.eval('(() => { const t = performance.now(); document.querySelector(".ask__browse .msg-cta__btn").click(); return t; })()')
+    b.pump(0.8)
     end = b.eval('(() => { const t=document.querySelector(".hero__thread"); const st=[...document.querySelectorAll("[data-reveal]")];'
                  'return { w1: t.getBoundingClientRect().width, hidden: st.filter(e=>getComputedStyle(e).visibility!=="visible"||+getComputedStyle(e).opacity<0.99).length,'
-                 ' landing: document.documentElement.dataset.landing }; })()')
+                 ' laid: st.filter(e => e.getClientRects().length).length, landing: document.documentElement.dataset.landing }; })()')
     if shots:
         b.screenshot(os.path.join(shots, 'whole-%d.png' % w))
-    name = '%dx%d' % (w, h)
-    order = sorted(s['shownAt'], key=lambda g: s['shownAt'][g])
-    gaps = [round(s['shownAt'][order[i + 1]] - s['shownAt'][order[i]]) for i in range(len(order) - 1)]
-    lead = round(s['shownAt'][order[0]] - s['cta']) if order and s['cta'] else None
-    check(not s['early'], name + ' nothing staged visible before pf:cta', ','.join(sorted(set(s['early']))))
-    check(order == sorted(order) and all(g <= 185 for g in gaps) and lead is not None and lead <= 220,
-          name + ' cascade unchanged: groups in order, ~140ms apart', 'lead %s gaps %s' % (lead, gaps))
-    check(end['hidden'] == 0 and end['landing'] == 'work', name + ' everything visible at the end', json.dumps(end))
-    check(s['w0'] is not None and abs(s['w0'] - end['w1']) < 0.05, name + ' thread width unchanged', '%s -> %s' % (s['w0'], end['w1']))
-    check(s['over'] == 0, name + ' no horizontal overflow', '%d of %d frames' % (s['over'], s['frames']))
+    check(end['landing'] == 'work' and end['hidden'] == 0 and end['laid'] > 0, name + ' Browse more opens the whole portfolio at once', json.dumps(end))
+    check(abs(v['w0'] - end['w1']) < 0.05, name + ' thread width unchanged', '%s -> %s' % (v['w0'], end['w1']))
+    check(b.eval('__pf.over') == 0, name + ' no horizontal overflow', '%d of %d frames' % (b.eval('__pf.over'), b.eval('__pf.frames')))
     e = errors(b)
     check(not e, name + ' no errors', '; '.join(e[:3]))
 
 
 def t_hatch(b, base):
-    fresh(b, base, dark=True, reduced=True, wait=6)
-    v = b.eval('[document.documentElement.hasAttribute("data-stage"), document.documentElement.hasAttribute("data-landing"),'
-               ' [...document.querySelectorAll("[data-reveal]")].filter(e=>e.getClientRects().length && getComputedStyle(e).visibility!=="visible").length,'
+    # Reduced motion takes the movement out, not the state: the conversation
+    # is still the page until the visitor leaves it.
+    fresh(b, base, dark=True, reduced=True, wait=3)
+    until(b, ASK_IDLE, 15)
+    v = b.eval('[document.documentElement.dataset.landing, Object.keys(__pf.seen),'
                ' getComputedStyle(document.querySelector(".hero-trust")).display]')
-    check(v == [False, False, 0, 'none'], 'reduced motion: never staged, whole, final composition', json.dumps(v))
+    check(v == ['ready', [], 'none'], 'reduced motion: conversation only, at once', json.dumps(v))
+    b.eval('document.querySelector(".ask__browse .msg-cta__btn").click()')
+    b.pump(0.8)
+    v = b.eval('[document.documentElement.dataset.landing, [...document.querySelectorAll("[data-reveal]")].filter(e=>e.getClientRects().length && getComputedStyle(e).visibility!=="visible").length]')
+    check(v == ['work', 0], 'reduced motion: Browse more opens the portfolio', json.dumps(v))
     for path in ('/#work', '/#/carry'):
         fresh(b, base, path, dark=True, wait=6)
         v = b.eval('[document.documentElement.dataset.stage, document.documentElement.dataset.landing]')
         check(v == ['5', 'work'], 'deep link %s skips the sequence' % path, json.dumps(v))
-    fresh(b, base, w=768, h=1024, dark=True, wait=5)
-    b.eval('window.scrollTo(0, innerHeight * 0.6)')
-    b.pump(0.5)
-    v = b.eval('document.documentElement.dataset.stage')
-    check(v == '5', 'tablet: scroll past half a viewport shows everything', 'stage=%s' % v)
+    # No timer, scroll or number of turns opens the page: several exchanges,
+    # project previews among them, and the portfolio stays closed.
+    for w, h in [(768, 1024), (1512, 982)]:
+        fresh(b, base, w=w, h=h, dark=True)
+        until(b, ASK_IDLE, 50)
+        for q in ('best', 'approach', 'auditfound'):
+            b.eval('(document.querySelector(\'.ask-q[data-q="%s"]\') || {click(){}}).click()' % q)
+            until(b, ASK_IDLE, 30)
+        b.eval('window.scrollTo(0, document.documentElement.scrollHeight)')
+        b.pump(1)
+        v = b.eval('[document.documentElement.dataset.landing, document.querySelectorAll(".ask-ev").length, Object.keys(__pf.seen)]')
+        check(v[0] == 'ready' and v[1] >= 2 and not v[2], '%d: three answers with previews, scrolled, and the portfolio stays closed' % w, json.dumps(v))
     # Replay while deciding: the conversation runs again, the gate stays shut.
     fresh(b, base, dark=True)
     until(b, 'document.documentElement.dataset.landing === "ready"', 30)
@@ -425,10 +454,10 @@ def t_hatch(b, base):
     b.pump(2)
     v = b.eval('[document.documentElement.dataset.landing, Object.keys(__pf.seen)]')
     check(v == ['ready', []], 'replay while ready keeps the gate', json.dumps(v))
-    until(b, '!!document.querySelector(".msg-cta:not([hidden]) .msg-cta__btn")', 25)
-    b.eval('document.querySelector(".msg-cta__btn").click()')
+    until(b, ASK_IDLE, 40)
+    b.eval('document.querySelector(".ask__browse .msg-cta__btn").click()')
     b.pump(1.5)
-    check(b.eval('document.documentElement.dataset.landing') == 'work', 'See the work after a replay opens the page')
+    check(b.eval('document.documentElement.dataset.landing') == 'work', 'Browse more after a replay opens the page')
     b.eval('document.querySelector(".hero__replay").click()')
     b.pump(3)
     v = b.eval('[document.documentElement.dataset.landing, [...document.querySelectorAll("[data-reveal]")].filter(e=>e.getClientRects().length && getComputedStyle(e).visibility!=="visible").length]')
@@ -563,14 +592,15 @@ def ask_flow(b, base, shots, w, h):
     if w < 960:
         # Below 960 the page under the thread must not jump while the room is empty.
         # Measured as the room starts to empty: the introduction's last line
-        # may still be settling before that.
+        # may still be settling before that. The thread keeps act one's
+        # height through the empty beat.
         until(b, '!!__act.out', 40)
-        nxt = '(() => { const n = document.querySelector(".hero__clients"); return n && n.getClientRects().length ? Math.round(n.getBoundingClientRect().top + scrollY) : null; })()'
+        nxt = 'Math.round(document.querySelector(".hero__thread").getBoundingClientRect().height)'
         y0 = b.eval(nxt)
         until(b, '!!__act.two', 10)
         b.pump(0.2)
         y1 = b.eval(nxt)
-        check(y0 is not None and y0 == y1, name + ' the page under the thread holds still while act two empties the room', '%s -> %s' % (y0, y1))
+        check(y0 == y1, name + ' the room holds its height while act two empties it', '%s -> %s' % (y0, y1))
     ok = until(b, ASK_IDLE, 50)
     s = b.eval(ASK_STATE)
     if not ok or not s:
@@ -595,9 +625,11 @@ def ask_flow(b, base, shots, w, h):
         # Centred when it fits; when the turn is taller than the box it starts
         # just under the top dissolve and runs to the foot.
         check(abs(c[0]) < 24 or (c[2] <= 16 and c[1] <= 80), name + ' act two opens centred in the box act one used', 'off by %.1f (above %d, below %d)' % tuple(c))
-    check(s['browse'] and s['browse'][2] and (s['browse'][0] == 'BUTTON' if w >= 960 else s['browse'][1] == '#work'),
-          name + ' Browse everything is there (the gate above 960, a link to #work below)', json.dumps(s['browse']))
-    check(land == ('ready' if w >= 960 else 'work'), name + ' the page is in its ' + ('ready' if w >= 960 else 'cascaded') + ' state', land)
+    check(s['browse'] and s['browse'][2] and s['browse'][0] == 'BUTTON' and 'Browse more' in b.eval('document.querySelector(".ask__browse").textContent'),
+          name + ' Browse more is there, the gate at every width', json.dumps(s['browse']))
+    check(land == 'ready', name + ' the page is in its conversation state', land)
+    lab = b.eval('[...document.querySelectorAll(".ask__label, .ask__again, .ask__start")].filter(e => e.getClientRects().length).length')
+    check(lab == 0, name + ' no helper labels or extra controls in the conversation', str(lab))
     if shots:
         b.screenshot(os.path.join(shots, 'ask-open-%d.png' % w))
     w0 = s['box'][3]
@@ -631,7 +663,6 @@ def ask_flow(b, base, shots, w, h):
     eb = [x['eyebrow'] for x in s['ev']]
     check(all(len(set(p.strip().lower() for p in e.split('·'))) == len(e.split('·')) for e in eb),
           name + ' no evidence eyebrow repeats itself', json.dumps(eb))
-    check(s['again'], name + ' Ask something else is offered after an answer')
     if w >= 960:
         check(s['box'][0] > s['box'][1] and s['box'][2] > 0, name + ' the box scrolls to the newest turn', json.dumps(s['box']))
     # The links follow the boxes: a narrower window redraws them.
@@ -645,12 +676,13 @@ def ask_flow(b, base, shots, w, h):
     if shots:
         b.screenshot(os.path.join(shots, 'ask-flow-%d.png' % w))
 
-    # A change of subject offers the other three openers.
-    b.eval('document.querySelector(".ask__again").click()')
+    # Start here (quick links, menu) goes back to the openers without leaving.
+    b.eval('document.dispatchEvent(new CustomEvent("pf:ask-start"))')
     until(b, '(() => { const t = document.querySelectorAll(".ask__turn"); const l = t[t.length - 1]; return l && !!l.querySelector(".ask__choices--open.is-in"); })()', 10)
     until(b, ASK_IDLE, 10)
     s = b.eval(ASK_STATE)
-    check(s['q'] == ['where', 'outside', 'ai'], name + ' a change of subject offers what has not been asked', json.dumps(s['q']))
+    check(s['q'] == ['now', 'where', 'outside'] and b.eval('document.documentElement.dataset.landing') == 'ready',
+          name + ' Start here offers what has not been asked, still in the conversation', json.dumps(s['q']))
 
     # Where: the employers, read off Where I've been, arriving one by one.
     b.eval('document.querySelector(\'.ask-q[data-q="where"]\').click()')
@@ -666,18 +698,18 @@ def ask_flow(b, base, shots, w, h):
     if shots:
         b.screenshot(os.path.join(shots, 'ask-where-%d.png' % w))
 
-    if w >= 960:
-        b.eval('document.querySelector(".ask__browse .msg-cta__btn").click()')
-        b.pump(0.5)
-        v = b.eval('[document.documentElement.dataset.landing, document.querySelector(".hero__thread").getBoundingClientRect().width,'
-                   ' !!document.querySelector(".hero__thread.is-list"), document.querySelector(".ask__browse").getClientRects().length,'
-                   ' [...document.querySelectorAll("[data-reveal]")].filter(e => e.getClientRects().length && getComputedStyle(e).visibility !== "visible").length]')
-        check(v[0] == 'work' and not v[2] and v[4] == 0, name + ' Browse everything opens the whole page, conversation kept', json.dumps(v))
-        check(abs(v[1] - w0) < 0.05, name + ' thread width unchanged into work', '%s %s' % (w0, v[1]))
-        check(v[3] == 0, name + ' Browse everything is put away once the page is open', json.dumps(v))
-        if shots:
-            b.pump(0.6)
-            b.screenshot(os.path.join(shots, 'ask-work-%d.png' % w))
+    # Browse more, at every width: the explicit way into the portfolio.
+    b.eval('document.querySelector(".ask__browse .msg-cta__btn").click()')
+    b.pump(0.5)
+    v = b.eval('[document.documentElement.dataset.landing, document.querySelector(".hero__thread").getBoundingClientRect().width,'
+               ' !!document.querySelector(".hero__thread.is-list"), document.querySelector(".ask__browse").getClientRects().length,'
+               ' [...document.querySelectorAll("[data-reveal]")].filter(e => e.getClientRects().length && getComputedStyle(e).visibility !== "visible").length]')
+    check(v[0] == 'work' and not v[2] and v[4] == 0, name + ' Browse more opens the whole page, conversation kept', json.dumps(v))
+    check(abs(v[1] - w0) < 0.05, name + ' thread width unchanged into work', '%s %s' % (w0, v[1]))
+    check(v[3] == 0, name + ' Browse more is put away once the page is open', json.dumps(v))
+    if shots:
+        b.pump(0.6)
+        b.screenshot(os.path.join(shots, 'ask-work-%d.png' % w))
     check(b.eval('__pf.over') == 0, name + ' no horizontal overflow', '%d of %d frames' % (b.eval('__pf.over'), b.eval('__pf.frames')))
     e = errors(b)
     check(not e, name + ' no errors', '; '.join(e[:3]))
@@ -707,8 +739,9 @@ def t_ask(b, base, shots):
     check(len(set(labels)) == len(labels), 'ask: no question is asked twice in different places', json.dumps(labels))
     kinds = b.eval('Object.keys(PF.ASK.q).map(id => PF.ASK.q[id].kind || "project").filter((v, i, a) => a.indexOf(v) === i).sort()')
     check(kinds == ['art', 'flow', 'logos', 'music', 'outside', 'project'], 'ask: every kind of answer is in use', json.dumps(kinds))
-    now = b.eval('[PF.ASK.open.next[0], PF.ASK.q[PF.ASK.open.next[0]].label]')
-    check(now == ['now', 'What are you currently working on?'], 'ask: "What are you currently working on?" is one of the first three', json.dumps(now))
+    now = b.eval('[PF.ASK.open.next[0], PF.ASK.q.now.label, PF.ASK.q.now.show, PF.ASK.q.now.tag, PF.ASK.q.now.next]')
+    check(now[:4] == ['now', 'What are you currently working on?', 'crypto', 'In progress'] and len(now[4]) == 3 and all(PF_q.startswith('crypt') for PF_q in now[4]),
+          'ask: "What are you currently working on?" opens first, answers with the cryptography explainer, marked in progress, with its own follow-ups', json.dumps(now))
     for w, h in [(1512, 982), (2560, 1440), (1280, 800), (1024, 768), (390, 844)]:
         ask_flow(b, base, shots, w, h)
     # The made-outside-work answers: the real pictures, the real links.
@@ -716,9 +749,11 @@ def t_ask(b, base, shots):
     until(b, ASK_IDLE, 50)
     b.eval('document.querySelector(".ask-q[data-q=\\"best\\"]").click()')
     until(b, ASK_IDLE, 20)
-    b.eval('document.querySelector(".ask__again").click()')
+    b.eval('document.dispatchEvent(new CustomEvent("pf:ask-start"))')
     until(b, '(() => { const t = document.querySelectorAll(".ask__turn"); const l = t[t.length - 1]; return l && !!l.querySelector(".ask__choices--open.is-in"); })()', 10)
     until(b, ASK_IDLE, 10)
+    b.eval('document.querySelector(".ask-q[data-q=\\"where\\"]").click()')
+    until(b, ASK_IDLE, 20)
     b.eval('document.querySelector(".ask-q[data-q=\\"outside\\"]").click()')
     until(b, ASK_IDLE, 20)
     b.pump(1.0)
@@ -774,48 +809,67 @@ def t_ask(b, base, shots):
 
 
 def t_nav(b, base, shots):
-    # The quick links: absent through act one, there in act two, gone where
-    # the open page has no margin for them.
+    # The quick links: in the conversation's own box, opposite Replay and the
+    # theme switch; absent in act one, there in act two, gone once the
+    # portfolio is open.
     fresh(b, base, w=1512, h=982, dark=False)
     b.pump(2)
     v = b.eval(NAV)
     check(v[1] == 'hidden', 'nav 1512: quick links hidden while the introduction plays', json.dumps(v))
     until(b, '__pf.cta !== null', 40)
-    b.pump(0.6)
+    until(b, ASK_IDLE, 20)
     v = b.eval(NAV)
-    check(v[0] == 'block' and v[1] == 'visible' and v[2] > 0.99 and v[3] == 6, 'nav 1512: six quick links once the conversation begins', json.dumps(v))
+    names = b.eval('[...document.querySelectorAll(".snav a")].map(a => a.textContent.trim())')
+    check(v[0] == 'flex' and v[1] == 'visible' and v[2] > 0.99 and names == ['Start here', 'Projects', 'Illustration', 'Music', 'About'],
+          'nav 1512: five quick links once the conversation begins', json.dumps([v, names]))
     pills = b.eval('[...document.querySelectorAll(".snav, .snav *")].filter(e => { const c = getComputedStyle(e); return c.backgroundColor !== "rgba(0, 0, 0, 0)" || c.boxShadow !== "none" || parseFloat(c.borderTopWidth) > 0; }).length')
     check(pills == 0, 'nav: text only, no container, pill or border', '%d painted' % pills)
-    clear = b.eval('(() => { const n = document.querySelector(".snav").getBoundingClientRect(), c = document.querySelector(".hero__copy").getBoundingClientRect(); return [Math.round(n.right), Math.round(c.left)]; })()')
-    check(clear[0] < clear[1], 'nav 1512: clear of the conversation', json.dumps(clear))
-    b.eval('document.querySelector(\'.snav a[href="#work"]\').click()')
-    b.pump(1.2)
-    v = b.eval('[document.documentElement.dataset.landing, location.hash, getComputedStyle(document.querySelector(".snav")).display]')
-    check(v[0] == 'work' and v[1] == '#work' and v[2] == 'none', 'nav 1512: Projects opens the page at the work; the links step aside', json.dumps(v))
-    for w, h in [(1920, 1080), (2560, 1440)]:
-        fresh(b, base, '/#work', w=w, h=h, dark=False, wait=3)
-        r = b.eval('(() => { const n = document.querySelector(".snav"); if (getComputedStyle(n).display === "none") return null;'
-                   ' const x = n.getBoundingClientRect(); let l = 1e9; for (const e of document.querySelectorAll(".hero-card > *")) { const q = e.getBoundingClientRect(); if (q.width && q.height) l = Math.min(l, q.left); } return [Math.round(x.right), Math.round(l)]; })()')
-        check(r is None or r[0] < r[1] - 24, 'nav %d: on the open page, the links never touch a card' % w, json.dumps(r))
+    near = b.eval('(() => { const n = document.querySelector(".snav").getBoundingClientRect(), c = document.querySelector(".hero__copy").getBoundingClientRect(),'
+                  ' t = document.querySelector(".hero__thread").getBoundingClientRect(), r = document.querySelector(".hero__replay").getBoundingClientRect();'
+                  ' return [Math.round(n.left - c.left), Math.round(c.right - n.right), Math.round(t.top - n.bottom), Math.round(Math.abs((n.top + n.bottom) / 2 - (r.top + r.bottom) / 2)), Math.round(r.left - n.right)]; })()')
+    check(near[0] >= 0 and near[1] >= 0 and 0 <= near[2] <= 120 and near[3] <= 2 and near[4] > 24,
+          'nav 1512: inside the conversation box, on the controls\' line, just above the conversation', json.dumps(near))
+    # Start here, in the conversation: back to the openers, page still closed.
+    b.eval('document.querySelector(\'.ask-q[data-q="best"]\').click()')
+    until(b, ASK_IDLE, 20)
+    b.eval('document.querySelector(\'.snav a[data-go="start"]\').click()')
+    until(b, '(() => { const t = document.querySelectorAll(".ask__turn"); const l = t[t.length - 1]; return l && !!l.querySelector(".ask__choices--open.is-in"); })()', 10)
+    until(b, ASK_IDLE, 10)
+    v = b.eval('[document.documentElement.dataset.landing, location.hash, [...document.querySelectorAll(".ask__choices:not(.is-leaving) .ask-q")].map(q => q.dataset.q)]')
+    check(v[0] == 'ready' and v[1] == '' and 'best' not in v[2] and len(v[2]) == 3, 'nav 1512: Start here returns to the openers inside the conversation', json.dumps(v))
+    b.eval('document.querySelector(\'.snav a[data-go="work"]\').click()')
+    b.pump(1.4)
+    v = b.eval('[document.documentElement.dataset.landing, location.hash, Math.round(document.getElementById("work").getBoundingClientRect().top), getComputedStyle(document.querySelector(".snav")).display]')
+    check(v[0] == 'work' and v[1] == '#work' and abs(v[2]) < 120 and v[3] == 'none', 'nav 1512: Projects opens the portfolio at the project collection; the links step aside', json.dumps(v))
+    e = errors(b)
+    check(not e, 'nav 1512: no errors', '; '.join(e[:3]))
+    # About goes to its route, which opens the portfolio behind it.
+    fresh(b, base, w=1512, h=982, dark=False)
+    until(b, ASK_IDLE, 50)
+    b.eval('document.querySelector(\'.snav a[href="#/about"]\').click()')
+    until(b, 'document.documentElement.dataset.route === "about"', 10)
+    v = b.eval('[document.documentElement.dataset.route, document.documentElement.dataset.landing]')
+    check(v == ['about', 'work'], 'nav 1512: About goes to About', json.dumps(v))
+    ext = b.eval('[...document.querySelectorAll(".snav a[target=_blank], #site-menu a[target=_blank]")].map(a => [a.textContent.trim(), /noopener/.test(a.rel)])')
+    check(len(ext) == 4 and all(x[1] for x in ext), 'nav: Illustration and Music leave in a new tab, page state untouched', json.dumps(ext))
     # The menu, below 960: paired with the theme switch, always reachable.
     for w, h in [(390, 844), (768, 1024)]:
         fresh(b, base, w=w, h=h, dark=False)
         until(b, ASK_IDLE, 50)
         p = b.eval('(() => { const t = document.querySelector(".gutil .theme-toggle").getBoundingClientRect(), m = document.querySelector(".gutil__menu").getBoundingClientRect();'
-                   ' return [Math.round(m.left - t.right), Math.round(m.top - t.top), getComputedStyle(document.querySelector(".gutil")).position, Math.round(m.width), Math.round(m.height)]; })()')
-        check(p[0] <= 10 and p[1] == 0 and p[2] == 'fixed', 'menu %d: beside the theme switch, fixed' % w, json.dumps(p))
-        b.eval('window.scrollTo(0, document.documentElement.scrollHeight / 2)')
-        b.pump(0.3)
+                   ' return [Math.round(m.left - t.right), Math.round(m.top - t.top), getComputedStyle(document.querySelector(".gutil")).position, getComputedStyle(document.querySelector(".snav")).display]; })()')
+        check(p[0] <= 10 and p[1] == 0 and p[2] == 'fixed' and p[3] == 'none', 'menu %d: beside the theme switch, fixed; no second row of links' % w, json.dumps(p))
+        b.eval('document.querySelector(\'.ask-q[data-q="now"]\').click()')
+        until(b, ASK_IDLE, 25)
         hit = b.eval('(() => { const m = document.querySelector(".gutil__menu").getBoundingClientRect(); const e = document.elementFromPoint(m.left + m.width / 2, m.top + m.height / 2); return !!e && !!e.closest(".gutil__menu"); })()')
-        check(hit, 'menu %d: reachable halfway down the page' % w)
+        check(hit, 'menu %d: reachable mid-conversation' % w)
         b.eval('document.querySelector(".gutil__menu").click()')
         b.pump(0.4)
         o = b.eval('[document.querySelector(".gutil__menu").getAttribute("aria-expanded"), document.getElementById("site-menu").hidden,'
                    ' document.activeElement && document.activeElement.textContent.trim(), [...document.querySelectorAll("#site-menu a")].map(a => a.textContent.trim()),'
-                   ' Math.min(...[...document.querySelectorAll("#site-menu a")].map(a => a.getBoundingClientRect().height))]')
-        need = ['Projects', 'Illustration', 'Music', 'About me']
-        check(o[0] == 'true' and o[1] is False and o[2] == 'Start here' and all(n in o[3] for n in need) and o[4] >= 44,
-              'menu %d: opens, focus on its first entry, Projects / Illustration / Music / About me, 44px rows' % w, json.dumps(o))
+                   ' Math.min(...[...document.querySelectorAll("#site-menu a")].map(a => a.getBoundingClientRect().height)), document.documentElement.dataset.landing]')
+        check(o[0] == 'true' and o[1] is False and o[2] == 'Start here' and o[3] == ['Start here', 'Projects', 'Illustration', 'Music', 'About'] and o[4] >= 44 and o[5] == 'ready',
+              'menu %d: opens over the conversation, focus on its first entry, 44px rows, nothing revealed' % w, json.dumps(o))
         if shots:
             b.screenshot(os.path.join(shots, 'menu-%d.png' % w))
         for t in ('keyDown', 'keyUp'):
@@ -833,6 +887,12 @@ def t_nav(b, base, shots):
         b.pump(0.3)
         th = b.eval('[document.documentElement.dataset.theme, localStorage.getItem("pf-theme")]')
         check(th == ['dark', 'dark'], 'menu %d: the paired switch still switches the theme' % w, json.dumps(th))
+        b.eval('document.querySelector(".gutil__menu").click()')
+        b.pump(0.4)
+        b.eval('document.querySelector(\'#site-menu a[data-go="work"]\').click()')
+        b.pump(1.4)
+        v = b.eval('[document.documentElement.dataset.landing, location.hash, Math.round(document.getElementById("work").getBoundingClientRect().top), document.getElementById("site-menu").hidden]')
+        check(v[0] == 'work' and v[1] == '#work' and abs(v[2]) < 140 and v[3] is True, 'menu %d: Projects opens the portfolio at the project collection' % w, json.dumps(v))
         e = errors(b)
         check(not e, 'menu %d: no errors' % w, '; '.join(e[:3]))
     fresh(b, base, '/#/carry', w=390, h=844, dark=False, wait=2)
