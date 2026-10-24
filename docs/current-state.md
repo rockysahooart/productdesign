@@ -8,25 +8,27 @@ As of 2026-10-24 on `main`.
   message 2 "I'm Sarthak Sahoo, a Product Designer based in Austin, TX" with the
   workspace illustration; message 3 "I've designed *human-centered* products in an
   AI-saturated world." with the hands illustration, reaction chips, then the
-  "See the work →" invitation.
-- Landing on desktop and ultrawide (≥960): three states. **Intro**: after the loader
-  the conversation plays alone, centred by the grid. **Ready** (on `pf:cta`): the
-  same conversation with its See the work; nothing else. **Work** (first press on See
-  the work): the conversation settles into its column and the whole page arrives in
-  one 320ms transition into the existing layout (matching the owner's reference).
-  See [design-system.md](design-system.md#landing-sequence-jsrevealjs-css16-revealcss).
-- Below 960: unchanged. The invitation runs the whole page in on its own,
-  180ms lead then 140ms apart.
-- Act two (js/ask.js): once the introduction has been read it clears (480ms), the
-  box stands empty (720ms), and the conversation begins in the same place: "I believe
-  design is how we make decisions visible, understandable, and easier to act on.",
-  "Where would you like to start?", three questions. Answers are shown by kind: a
-  project as a large film still with its caption; a flow of connected thoughts drawn
-  one link at a time and ending on the project; the employers from *Where I've been*
-  arriving one by one; the illustration; the decks, a waveform and where to listen.
-  Ask something else, and Browse everything (the old See the work button, still the gate).
-- Quick links on desktop (left margin, text only) and, below 960, a menu beside the
-  theme switch, fixed to the top corner (js/sitenav.js).
+  invitation (now Browse more, inside the conversation).
+- Three states at every width (INTRO → CONVERSATION → PORTFOLIO, `data-landing`
+  intro → ready → work). **Intro**: after the loader the message animation plays
+  alone. **Conversation** (on `pf:cta`): the introduction clears (480ms), the box
+  stands empty (720ms), and the conversation begins in the same place; nothing else
+  on the page is laid out, however many turns. **Portfolio**: only an explicit
+  choice opens it: Browse more in the conversation, Projects or About in the
+  navigation, or a deep link. The phone cascade is gone; reduced motion gets the
+  same states without the movement. See
+  [design-system.md](design-system.md#landing-states-jsrevealjs-css16-revealcss).
+- The conversation (js/ask.js): "I believe design is how we make decisions visible,
+  understandable, and easier to act on.", "Where would you like to start?", three
+  questions, Browse more, and nothing else. *What are you currently working on?* is
+  the cryptography explainer, marked in progress, with its own three follow-ups.
+  Answers are shown by kind: a project as a large film still with its caption; a
+  flow of connected thoughts drawn one link at a time and ending on the project; the
+  employers from *Where I've been*; the illustration; the decks and where to listen.
+- Navigation as a quiet companion: on desktop a row of five text links in the
+  conversation's own box (Start here, Projects, Illustration, Music, About); below
+  960 the same five in a menu beside the theme switch, fixed to the top corner
+  (js/sitenav.js).
 - Trusted By (four logo bubbles: CVS Health, Natera, PNC, CG Infinity) is built but
   not shown since the decision state was retired. Worked With (`.hero__clients`, below 960): CVS Health, CG Infinity, PNC, First United.
 - Natera appears in the *Where I've been* timeline and, at the owner's request
@@ -54,6 +56,14 @@ As of 2026-10-24 on `main`.
    there.
 
 ## Recently shipped
+
+- **2026-10-24: a minimal, direct entry.** Conversation-only until the visitor
+  chooses the portfolio, at every width (the phone cascade, its scroll and focus
+  hatches, and reduced motion's opt-out are gone). Quick links moved from the far
+  left margin into the conversation's box and cut to five; the conversation lost its
+  "Start here" and "Ask next" labels and Ask something else; Browse everything is
+  Browse more. Current work is the cryptography explainer, marked in progress.
+  Figma: section 09.
 
 - **2026-10-24: act two.** The conversation became a second act in the same place
   rather than a continuation under the introduction: clear, empty beat, philosophy

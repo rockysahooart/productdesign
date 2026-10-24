@@ -136,13 +136,22 @@ are out of the flow (`.is-act2`) until a replay.
 
 ### Quick links and the menu (js/sitenav.js)
 
-Markup in `index.html` right after the skip link: `.snav` (desktop quick links),
-`.gutil` (below 960: a second `[data-theme-toggle]`, bound by `js/theme.js` like the
-others, and the menu control), `.gmenu__scrim`, `#site-menu`. Every entry is a plain
-link to an existing anchor (`#top`, `#work`, `#experience` on *Where I've been*,
-`#tools` on Tools, `#contact`), a route (`#/about`) or an external destination already
-on the page. `js/sitenav.js` only opens and closes the menu and marks the current
-section.
+`.snav` (960 and up) is markup inside `.hero__copy`, beside the conversation. Right
+after the skip link: `.gutil` (below 960: a second `[data-theme-toggle]`, bound by
+`js/theme.js` like the others, and the menu control), `.gmenu__scrim`, `#site-menu`.
+Both lists are the same five links: Start here (`#top`, `data-go="start"`), Projects
+(`#work`, `data-go="work"`), Illustration and Music (the destinations the page
+already links to, new tab), About (`#/about`). `js/sitenav.js` opens and closes the
+menu; in the conversation it turns Start here into `pf:ask-start` (js/ask.js returns
+to the openers) and Projects into `PF.revealAll()` plus a scroll to `#work`.
+
+### Landing states (js/reveal.js)
+
+`data-landing` intro → ready → work at every width. `ready` on `pf:cta` (or a thread
+that has already ended); `work` only on Browse more (the capture-phase gate), a hash
+change or deep link, or `PF.revealAll()`. `CEILING_MS` opens the page only if the
+introduction never ends. Nothing else reveals anything: no cascade, no scroll or
+focus hatch, no timer after `ready`.
 
 ### Labels
 

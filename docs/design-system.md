@@ -130,64 +130,47 @@ not (see below). Anything that would change the middle track's width is still ou
 
 When measuring animations, read `document.getAnimations()` once per frame.
 
-## Landing sequence (`js/reveal.js`, `css/16-reveal.css`)
+## Landing states (`js/reveal.js`, `css/16-reveal.css`)
 
-Armed by `data-stage="0"` and `data-landing="intro"` from the head script (never
-under reduced motion). The page is complete without them: crawlers, JS-off and a
-failed bundle see the final composition.
-
-### ≥ 960px: three states on `:root[data-landing]`
+INTRO → CONVERSATION → PORTFOLIO, on `:root[data-landing]`, at every width. Armed
+by `data-stage="0"` and `data-landing="intro"` from the head script for every
+visitor (reduced motion included: it removes the movement, not the state). The page
+is complete without them: crawlers, JS-off and a failed bundle see the final
+composition.
 
 | state | trigger | on the page |
 |---|---|---|
-| `intro` | head script, before first paint | the conversation alone, centred; theme and replay controls |
-| `ready` | `pf:cta` (the thread's `showCta()`) | the same, plus the conversation that follows it (js/ask.js): the question, three choices and Browse everything, which is the thread's own See the work button relabelled. Nothing else arrives, however far the conversation goes |
-| `work` | the first press on Browse everything (formerly See the work) | roles, profile, LET'S TALK, Skills, Project Browser, Where I've been, Tools, everything below: one 320ms transition |
+| `intro` | head script, before first paint | the message animation alone; Replay and the theme switch (below 960: theme + menu, fixed) |
+| `ready` (conversation) | `pf:cta` (the thread's `showCta()`), or the thread having already ended when `reveal.js` runs | the same box, now the conversation (js/ask.js): its answers, pictures, flows, logos and previews all inside it, the quick links beside it. Nothing else is laid out, however many turns |
+| `work` (portfolio) | Browse more (the thread's own See the work button, relabelled), Projects or About in the navigation, any deep link or `hashchange`, `PF.revealAll()` | everything, in the layout it always had: one 320ms transition at 960 and up, at once below |
 
+- **Only an explicit choice opens the page.** Not the introduction ending, the first
+  question, a project preview in an answer, a number of turns, scrolling or tabbing.
+  The phone cascade and its scroll and focus escape hatches are gone. One safety net:
+  `CEILING_MS = 26000` opens the page if the thread never reaches `pf:cta`; it is
+  cleared at `ready`.
 - **The gate.** In `ready`, `reveal.js` takes the press on `.msg-cta__btn` in the
-  capture phase, so the first press opens the page and keeps the conversation (the
-  thread's own handler, which swaps in the list of work, only runs on later presses).
-  The ceiling is cleared at `ready`: nothing opens the page except the reader, a
-  deep link or `hashchange`.
-- **Centring is structural.** In `intro`/`ready` the grid's outer tracks are each the
-  mean of the final two (desktop `--hero-l`/`--hero-r`; ultrawide `360px` and
+  capture phase, so the first press opens the page and keeps the conversation.
+- **Projects** (js/sitenav.js) calls `PF.revealAll()`, waits two frames for the
+  layout, sets `#work` with `pushState` and scrolls the project collection into view.
+  **About** is a route change. **Illustration** and **Music** open in a new tab and
+  change nothing here. **Start here** in the conversation returns to its openers.
+- **Below 960, out of the layout.** In `intro`/`ready` every unshown `[data-reveal]`
+  block, the roles bar, the profile column, the skills disclosure and its slot are
+  `display: none`: no reserved blank space, nothing in the tab order or the
+  accessibility tree. `work` brings them all back at once.
+- **Centring is structural (≥ 960).** In `intro`/`ready` the grid's outer tracks are
+  each the mean of the final two (desktop `--hero-l`/`--hero-r`; ultrawide `360px` and
   `--pv-col`), so the middle track is centred and exactly as wide as in the final
-  layout. Identity, browser and tools carry their final widths and `justify-self: end`.
-  The press transitions `grid-template-columns` and the page's `padding-top`; the
-  outer tracks' sum is constant, so the conversation's width never changes.
+  layout. The press transitions `grid-template-columns` and the page's `padding-top`;
+  the outer tracks' sum is constant, so the conversation's width never changes.
 - **One movement.** `--land-ms: 320ms` drives the tracks, the padding and every
-  arriving block (`--rv-ms` is set to it at ≥960). No stagger.
-- **Vertical.** Desktop (960–2099): the page's top padding is
-  `max(--page-pad, (100svh − row) × --land-lift)`, `--land-lift: 0.33`, optically
-  centred (1512×945: 65px above, 133 below). Ultrawide: half the free height.
-- **Not on the page until `work`:** Skills, Where I've been, Tools, every later section,
-  and on ultrawide the browser, are `display: none` (they arrive via `@starting-style`
-  opacity). On desktop the browser is a staged block (laid out at its final width,
-  invisible, out of the tab order). The intro is one screen tall.
-- **Trusted By** (`.hero-trust`, four clay logo bubbles) is not shown anywhere at
-  present. It belonged to the retired decision state; markup and styles are kept.
-
-### < 960px: the cascade
-
-Single cue: the invitation appearing (`pf:cta`). Don't replace it with a timer.
-Then `LEAD = 180`ms, five groups `STEP = 140`ms apart:
-
-| `data-reveal` | elements |
-|---|---|
-| 1 | `.hero-id--who` (portrait) |
-| 2 | `.hero-id--talk` (LET'S TALK) |
-| 3 | `.hero__clients` (Worked With) |
-| 4 | `.hero__work` (Project Browser) |
-| 5 | `.hero-id--caps`, `.hero__past`, `.hero__tools`, `#background`, `#work`, `#more`, `#contact` |
-
-Opacity only, ~700ms, `cubic-bezier(0.34, 0.03, 0.24, 1)`. Hidden state is
-`opacity: 0; visibility: hidden` plus `pointer-events: none`. A group with no
-visible elements at the current width doesn't spend its beat.
-
-Escape hatches (all go straight to everything-visible, once, one-way): any deep
-link or `hashchange` (the skip link is one), and `CEILING_MS = 26000` if the thread
-never reaches `pf:cta`. Below 960 only: scrolling past half a viewport, a third focus
-step.
+  arriving block. No stagger.
+- **Vertical (≥ 960).** Desktop (960–2099): the page's top padding is
+  `max(--page-pad, (100svh − row) × --land-lift)`, `--land-lift: 0.33`. Ultrawide:
+  half the free height.
+- **Trusted By** (`.hero-trust`) is not shown anywhere at present; markup and styles
+  are kept.
 
 Reaction chips are `visibility: hidden` while the thread plays and they have not
 arrived (`.is-playing .rx:not(.is-in)`), so Tab never reaches an invisible chip.
@@ -197,7 +180,9 @@ arrived (`.is-playing .rx:not(.is-in)`), so Tab never reaches an invisible chip.
 The introduction is act one; the conversation is act two, in the same box on the
 same spot of the screen. Authored and deterministic: no model, no network, no free
 text. The Figma source is *Portfolio Assistant — Wireflows & Interaction*, section
-08 (act two as built; section 07 is the first version).
+09 (the minimal entry: conversation-only state, quick links beside the
+conversation, current work), with section 08 for act two's answer kinds and 07 for
+the first version.
 
 **The change of act.** Loader → introduction (Hello Team., the name, *I've designed
 human-centered products in an AI-saturated world.*, its reactions, a hold) → clear →
@@ -208,7 +193,7 @@ empty box → act two. On `pf:cta`, `enter()` freezes the thread (below), then:
 | hold (below 960 only) | `pf:cta` arrives with the last line on a phone, so the line is held to be read (its decode, then a reading) | 4400ms × pace |
 | clear | `.is-act-out`: the whole `.msg-track` to opacity 0, one movement | 480ms `cubic-bezier(.4,0,1,1)` |
 | empty | `.is-act2`: the introduction's rows `display:none`; the box is empty; nothing else changes | 720ms |
-| act two | "Start here", then the thread's own rows: the philosophy line, "Where would you like to start?", three questions, Browse everything | dots 560 × pace, landing 640 × pace, 280ms × pace between the two lines, prompts 60ms apart |
+| act two | the thread's own rows: the philosophy line, "Where would you like to start?", three questions, Browse more. No labels or helper copy | dots 560 × pace, landing 640 × pace, 280ms × pace between the two lines, prompts 60ms apart |
 
 Opacity only: the box never moves or changes size (the measure rule). Act two's
 first turn is centred in the room act one used, measured once on an invisible copy
@@ -226,9 +211,21 @@ list view), turns the track's `translateY` into `padding-top` and adds `.is-aski
 **Questions.** About three at a time, chosen by the previous answer. Every label is
 the visitor asking about the designer and reads after "I want to know…" (no
 "Show me…"). Act two opens on *What are you currently working on?*, *Which project
-best represents your work?*, *How do you approach complicated problems?*; Ask
-something else offers *Where have you worked?*, *What do you make outside of product
-design?*, *How do you use AI in your process?*.
+best represents your work?*, *How do you approach complicated problems?*; Start
+here (quick links, menu) returns to the openers and offers what has not been asked
+(*Where have you worked?*, *What do you make outside of product design?*, *How do
+you use AI in your process?*…). No "Ask next" label and no Ask something else: three
+questions under an answer explain themselves.
+
+**Current work** is the cryptography explainer: *What are you currently working
+on?* answers "Something in progress: making cryptography easier to understand
+inside a developer library", with the explainer's own running preview, the caption
+tag *In progress* in `--link-go`, and the line "How ECDH, a shared secret, key
+derivation and AES-GCM relate, shown before developers use the encryption APIs in
+code." Its follow-ups: *What are you trying to make easier to understand?* (a flow:
+ECDH, shared secret, key derivation, AES-GCM), *How does the interaction explain
+encryption?* (the preview's own description: Maya, Leo and Evan), *Why make this
+interactive?*.
 
 **Voices and evidence.**
 
@@ -263,38 +260,41 @@ thought or the evidence arriving below the box's fold is brought up just far eno
 to be seen whole; once a turn is complete and has been read (900ms × pace), the view
 shows its way onward, letting a still go at most halfway under the top dissolve.
 
-**Browse everything** is the thread's own See the work button, relabelled, so
-`js/reveal.js`'s capture-phase gate still takes its first press (ready → work, one
-320ms movement). Hidden once `data-landing="work"`. Below 960 it is a link to
-`#work`. The project browser follows the conversation (`pf:project`).
+**Browse more** is the thread's own See the work button, relabelled, at every
+width, so `js/reveal.js`'s capture-phase gate takes its press (ready → work). Hidden
+once `data-landing="work"`. The project browser follows the conversation
+(`pf:project`), so the portfolio opens on the last project shown.
 
 **Accessibility.** The heading is named by its introduction text
 (`aria-labelledby`). Each answer, a flow's thoughts included, is announced through a
 polite live region and focus moves to the reply. Questions are buttons in a labelled
-group ("Start here", "Ask next"); thoughts and employers are lists; pictures carry the
+group (named "Start here" / "Ask next" for assistive technology only); thoughts
+and employers are lists; pictures carry the
 alt text their Off the clock tiles already had; every external link opens in a new
 tab with `noopener`.
 
 ## Quick links and the menu (`js/sitenav.js`, `css/36-nav.css`)
 
-**Desktop (≥960).** `.snav`: six plain text links fixed in the left margin
-(`left: clamp(24px, 2.4vw, 48px)`, vertically centred): Start here (`#top`), Projects
-(`#work`), Experience (`#experience`), Tools (`#tools`), About (`#/about`), Contact
-(`#contact`). Be Vietnam 13px 500, `--ink-muted`; hover and focus underline at 5px
-offset, 1px; the section in view is `aria-current="location"` and takes `--ink`. No
-container, pill, border or icon. Hidden in `intro`; fades in (420ms) with act two.
-Once the page is open it stays only from 1800 to 2399, where the margin clears the
-cards. A hash change opens the whole page (`js/reveal.js`), so every link is also an
-escape hatch.
+One navigation model, two sizes: Start here, Projects, Illustration ↗, Music ↗,
+About.
+
+**960 and up.** `.snav` is a row of plain links inside `.hero__copy`, the
+conversation's own box: top-left at `clamp(--s-2, 2vw, --s-3)`, on the line Replay
+and the theme switch sit on, centred on their 38px height, 22px apart. Be Vietnam
+13px 500, `--ink-muted`; hover and focus take `--ink` and a 1px underline at 5px
+offset. No container, pill, border or icon (the ↗ is the site's `data-external`
+mark). Hidden in `intro`, fades in (420ms) with the conversation, `display: none`
+once the portfolio is open.
 
 **Below 960.** `.gutil`: the theme switch and a menu control, 40px circles (44px hit
-area) 6px apart, fixed top right (safe-area aware), aligned with Replay at the top of
-the card; the card's own switch steps aside and Replay moves one place left. The
-menu (`#site-menu`) is a disclosure: `aria-expanded`, focus to its first entry, 52px
-rows (Start here, Projects, Illustration ↗, Music ↗, Experience, About me, Contact)
-in a 288px panel 54px under the pair, on a 16% scrim. Escape and the scrim close it
-and give focus back; a choice or focus leaving it closes it; crossing 960 closes it.
-Neither control shows on a case study.
+area) 6px apart, fixed top right (safe-area aware), aligned with Replay at the top
+of the card; the card's own switch steps aside and Replay moves one place left. The
+menu (`#site-menu`) is a disclosure with the same five entries in 52px rows, a 288px
+panel 54px under the pair, on a 16% scrim. Focus goes to its first entry; Escape and
+the scrim close it and give focus back; a choice or focus leaving it closes it;
+crossing 960 closes it. Opening it reveals nothing.
+
+Neither shows on a case study.
 
 ## Project browser and cards
 
