@@ -76,7 +76,7 @@ store a credential. Don't produce an upload manifest unless the owner asks for o
   they sit on; when you change a rule, update its comment in the same voice
   (why, and what it replaced). Never strip them as verbose.
 - **Never invent content**: research, metrics, outcomes, quotes, decisions. Ask.
-- **"Natera" appears only in *Where I've been* and the Trusted By bubbles** (the latter at the owner's request, 2026-10-20). Redact it anywhere else; never substitute another name.
+- **"Natera" appears only in *Where I've been*, the Trusted By bubbles** (owner's request, 2026-10-20) **and act two's *Where have you worked?* answer, which reads that timeline** (owner's brief, 2026-10-24). Redact it anywhere else; never substitute another name.
 
 ## Do not touch without asking
 
@@ -85,9 +85,9 @@ store a credential. Don't produce an upload manifest unless the owner asks for o
 - **The thread measure rule.** The hero player measures its column once. Never change the column's inline size between states. The landing states centre it by changing the grid's *outer* tracks so the middle one keeps its width; keep it that way.
 - The three-column project-browser split and aspect-locked embeds. Never widen the visual column; scale `.slot > img`, never `.slot`.
 - The message pace, `--msg-pace` on `.hero__thread` (0.7), read by both CSS and `js/thread.js`. Change the speed there, never per value.
-- The three landing states (`data-landing`: intro → ready on `pf:cta`, which adds only the conversation that follows (the question, its choices and Browse everything) → work on the first press of Browse everything, the relabelled See the work button, one 320ms transition) and their escape hatches, `CEILING_MS = 26000`; loader safety nets `setTimeout(mark, 8000)` / `setTimeout(dissolve, 6000)`.
+- The three landing states (`data-landing`: intro → ready on `pf:cta`, where the introduction clears (480ms), the box stands empty (720ms) and act two begins in the same place, nothing else arriving → work on the first press of Browse everything, the relabelled See the work button, one 320ms transition) and their escape hatches, `CEILING_MS = 26000`; loader safety nets `setTimeout(mark, 8000)` / `setTimeout(dissolve, 6000)`.
 - Project order. The browser reads `data-rank` on the slides (carousel, ultrawide grid, the list); `PF.PROJECTS` drives case-study prev/next; the phone `#work` order repeats it. Change them together (see the architecture doc).
-- The conversation after the introduction (`js/ask.js`, `PF.ASK`): authored and deterministic. Every answer is drawn from text already on the site and maps to a live project whose title, sentence, link and preview are read off its Project Browser slide. Never add an answer that is not true of the work, and never copy project data into `PF.ASK`. See [docs/design-system.md](docs/design-system.md#the-conversation-after-the-introduction-jsaskjs-css35-askcss).
+- Act two, the conversation after the introduction (`js/ask.js`, `PF.ASK`): authored and deterministic, no free text. Every answer is drawn from text already on the site; what it shows is read off the page (a project's slide, *Where I've been*, Off the clock, the Music menu). Never add an answer that is not true of the work, never copy page data into `PF.ASK`, and keep every question a question about the designer. See [docs/design-system.md](docs/design-system.md#the-conversation-after-the-introduction-jsaskjs-css35-askcss).
 - Canonical external URLs: PNC `https://spiky-experiences-472785.framer.app/case-study`, First United Bank `https://spiky-experiences-472785.framer.app/fub`, identical at every entry point.
 - No external runtime requests: fonts, scripts and images are self-hosted. No CDN, no Google Fonts.
 - Anything on the reversed-decisions list in [docs/current-state.md](docs/current-state.md#reversed-decisions--do-not-reinstate).
@@ -102,12 +102,12 @@ any failure:
 python3 tools/check.py
 ```
 
-Sections can be run alone (`routes theme seq hatch keys copy`), and
+Sections can be run alone (`routes theme seq hatch keys copy pace ask nav`), and
 `--shots DIR` writes screenshots to look at. It covers at minimum:
 
 1. Routes: `/`, `#top`, `#work`, `#contact`, `#/about`, `#/carry`, `#/optiflow`, `#/audit`, `#/specimen`, `/slop/`. Zero console errors, zero 4xx (except `/favicon.ico`).
 2. Theme: dark-OS and light-OS fresh visits, stored dark, stored light, toggle and reload, OS flipped mid-visit. Zero dark frames on any fresh visit.
-3. Sequence at ≥960: intro shows only the conversation, centred; `pf:cta` moves to ready with only the conversation's question and Browse everything added and the gate holding; the click opens everything, settled within 450ms exactly as an unstaged page. Below 960: the cascade. Thread width constant throughout.
+3. Sequence at ≥960: intro shows only the conversation, centred; `pf:cta` moves to ready, the introduction clears and act two opens in the same place, nothing else added and the gate holding; the click opens everything, settled within 450ms exactly as an unstaged page. Below 960: the cascade. Thread width constant throughout.
 4. Escape hatches: reduced motion, deep links, tablet scroll, replay while deciding and after work, hard refresh.
 5. Widths 390, 768, 900, 1024, 1280, 1440, 1512, 1920, 2560, plus 960, 1100, 1279, 1366, 2399, 2400: no horizontal overflow at any stage; above 960 the conversation is centred on the first screen while it is alone, and the final layout is untransformed.
 6. Keyboard: Tab never lands inside a staged block before it is shown.

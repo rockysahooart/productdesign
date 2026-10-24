@@ -1,6 +1,6 @@
 # Current state
 
-As of 2026-10-20 on `main`.
+As of 2026-10-24 on `main`.
 
 ## What ships today
 
@@ -17,14 +17,21 @@ As of 2026-10-20 on `main`.
   See [design-system.md](design-system.md#landing-sequence-jsrevealjs-css16-revealcss).
 - Below 960: unchanged. The invitation runs the whole page in on its own,
   180ms lead then 140ms apart.
-- After the introduction the thread asks "What would you like to know?" (js/ask.js):
-  three authored questions, an answer in the thread's own bubble, the project as
-  evidence with its live preview and CTA, three follow-ups chosen by the path, Ask
-  something else, and Browse everything (the old See the work button, still the gate).
+- Act two (js/ask.js): once the introduction has been read it clears (480ms), the
+  box stands empty (720ms), and the conversation begins in the same place: "I believe
+  design is how we make decisions visible, understandable, and easier to act on.",
+  "Where would you like to start?", three questions. Answers are shown by kind: a
+  project as a large film still with its caption; a flow of connected thoughts drawn
+  one link at a time and ending on the project; the employers from *Where I've been*
+  arriving one by one; the illustration; the decks, a waveform and where to listen.
+  Ask something else, and Browse everything (the old See the work button, still the gate).
+- Quick links on desktop (left margin, text only) and, below 960, a menu beside the
+  theme switch, fixed to the top corner (js/sitenav.js).
 - Trusted By (four logo bubbles: CVS Health, Natera, PNC, CG Infinity) is built but
   not shown since the decision state was retired. Worked With (`.hero__clients`, below 960): CVS Health, CG Infinity, PNC, First United.
 - Natera appears in the *Where I've been* timeline and, at the owner's request
-  (2026-10-20), in the Trusted By bubbles.
+  (2026-10-20), in the Trusted By bubbles, and (2026-10-24, the owner's brief named it)
+  in act two's *Where have you worked?* answer, which reads that timeline.
 - Project order and URLs: see [portfolio-architecture.md](portfolio-architecture.md#pfprojects-display-order-everywhere).
 - `/slop/` is published and consistent with the rules (og:type `article`,
   canonical `…/slop/`, PDF at `/slop-audit.pdf`, zero relative `assets/` references).
@@ -34,13 +41,27 @@ As of 2026-10-20 on `main`.
 1. `social-preview-v2.png` (the og:image) still shows the old "Hello Team :)" greeting.
 2. `PF.PROJECTS` lists Scale as `soon` with no route; its slide links to `/scale-market`.
 3. No favicon; `/favicon.ico` 404s. Pre-existing.
-4. The assistant's answers (`PF.ASK` in js/ask.js) are drafted from text already on the
-   site, sourced line by line in Figma 06.9 / 07. They are the owner's to rewrite in
-   their own words. "Show me your strongest work" opens LiveFront (rank 01).
+4. Act two's lines (`PF.ASK` in js/ask.js) are drawn from text already on the site:
+   the cards, the case studies (Carry's testing and AI-boundary sections, OptiFlow's
+   review loop), Off the clock, and the owner's own wording for the philosophy line and
+   the four steps of *How do you approach complicated problems?*. They are the
+   owner's to rewrite in their own words.
 5. Ultrawide: the Figma ideation's evidence shelf (cards beside the conversation that
-   fly into the grid) was not built; ultrawide uses the inline evidence card.
+   fly into the grid) was not built. Flows stay inside the conversation's column on
+   every width (the measure rule); on desktop they step across it.
+6. The quick links are hidden once the page is open between 960 and 1799 and from
+   2400 up, where the margin would meet the cards; the page is its own navigation
+   there.
 
 ## Recently shipped
+
+- **2026-10-24: act two.** The conversation became a second act in the same place
+  rather than a continuation under the introduction: clear, empty beat, philosophy
+  line, then a guide whose questions read as questions about the designer
+  (*What are you currently working on?* among the first three). Answers by kind:
+  film-still projects, animated flows with measured SVG connectors, employer logos,
+  illustration, music. Desktop quick links; below 960 a fixed menu paired with the
+  theme switch. `tools/check.py ask nav` covers it. Figma: section 08.
 
 - **2026-10-23: the conversation after the introduction.** The passive See the work
   ending became an authored assistant (`js/ask.js`, `css/35-ask.css`, `PF.ASK`): the

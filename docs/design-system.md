@@ -194,65 +194,107 @@ arrived (`.is-playing .rx:not(.is-in)`), so Tab never reaches an invisible chip.
 
 ## The conversation after the introduction (`js/ask.js`, `css/35-ask.css`)
 
-The introduction no longer ends on a passive invitation. On `pf:cta` the thread
-asks "What would you like to know?", offers three authored questions, and answers
-each one with a line in its own bubble plus the project that answers it. Browse
-everything is always there. Authored and deterministic: no model, no network, no
-free text. The Figma source is *Portfolio Assistant — Wireflows & Interaction*,
-section 07.
+The introduction is act one; the conversation is act two, in the same box on the
+same spot of the screen. Authored and deterministic: no model, no network, no free
+text. The Figma source is *Portfolio Assistant — Wireflows & Interaction*, section
+08 (act two as built; section 07 is the first version).
+
+**The change of act.** Loader → introduction (Hello Team., the name, *I've designed
+human-centered products in an AI-saturated world.*, its reactions, a hold) → clear →
+empty box → act two. On `pf:cta`, `enter()` freezes the thread (below), then:
+
+| step | what | timing |
+|---|---|---|
+| hold (below 960 only) | `pf:cta` arrives with the last line on a phone, so the line is held to be read (its decode, then a reading) | 4400ms × pace |
+| clear | `.is-act-out`: the whole `.msg-track` to opacity 0, one movement | 480ms `cubic-bezier(.4,0,1,1)` |
+| empty | `.is-act2`: the introduction's rows `display:none`; the box is empty; nothing else changes | 720ms |
+| act two | "Start here", then the thread's own rows: the philosophy line, "Where would you like to start?", three questions, Browse everything | dots 560 × pace, landing 640 × pace, 280ms × pace between the two lines, prompts 60ms apart |
+
+Opacity only: the box never moves or changes size (the measure rule). Act two's
+first turn is centred in the room act one used, measured once on an invisible copy
+of the finished turn, so nothing that appears moves to make room for what follows.
+Below 960 the thread's height is held at act one's (`min-height`) so the page under
+it does not jump while the room is empty. Reduced motion has no act to end: the
+introduction stays and the conversation follows it, settled. Replay, a role change
+and a crossing of 720 bring act one back.
 
 **Hand-over.** `js/thread.js` exposes `PF.thread` (`el`, `track`, `still`,
 `enter()`, `row(text, first)`, `cta()`, `ended()`, `onReset(fn)`) and fires
 `pf:thread`. `enter()` stops the sequence (phase `ask`: no loop, no `place()`, no
-list view), turns the track's `translateY` into `padding-top` so nothing moves, and
-adds `.is-asking`. Replay, a role change and a crossing of 720 call the reset hooks:
-the conversation is removed and the introduction plays again, then asks again.
+list view), turns the track's `translateY` into `padding-top` and adds `.is-asking`.
 
-**Three voices.**
+**Questions.** About three at a time, chosen by the previous answer. Every label is
+the visitor asking about the designer and reads after "I want to know…" (no
+"Show me…"). Act two opens on *What are you currently working on?*, *Which project
+best represents your work?*, *How do you approach complicated problems?*; Ask
+something else offers *Where have you worked?*, *What do you make outside of product
+design?*, *How do you use AI in your process?*.
+
+**Voices and evidence.**
 
 | role | shape | type |
 |---|---|---|
-| assistant | the thread's own `.msg` row (dots, `msg-clay`, clay bubble), cloned from its template | the thread's face at `0.86em` (1em below 720) |
-| question | `.ask-q`: soft card, 48px (follow-ups 40px), radius 16 (14), 1px `rgba(38,34,28,.07)`, `linear-gradient(135deg, #FFFEFB 0, #FFFEFB 18%, tint 100%)`, three tints #FBF1E6 / #EEF3EA / #F1EFF7 | Be Vietnam 500 `--fs-body` |
-| visitor | `.ask-you`: right-aligned note in the tint of the question taken, flat, radius 18/18/6/18 | Be Vietnam 500 `--fs-body` |
-| evidence | `.ask-ev`, which carries `.card`, so it is the page's own clay card: preview 216×184 beside the copy, or stacked (preview 128 tall, description clamped to 3 lines) in columns under 520 (a container query on `.ask`) | eyebrow Label Caps, title +2px 500, description −1px, CTA `--link-go` |
+| guide | the thread's own `.msg` row (dots, `msg-clay`, clay bubble) | the thread's face at `0.86em` (1em below 720) |
+| question | `.ask-q`: soft card, 48px (follow-ups 40px), radius 16 (14), 1px `rgba(38,34,28,.07)`, `linear-gradient(135deg, #FFFEFB 0, #FFFEFB 18%, tint 100%)`, tints #FBF1E6 / #EEF3EA / #F1EFF7 | Be Vietnam 500 `--fs-body` |
+| visitor | `.ask-you`: right-aligned flat note in the tint taken, radius 18/18/6/18 | Be Vietnam 500 |
+| project | `.ask-ev.card`: a film still. The slide's own preview, full column width, `clamp(220px, room − 360px, 460px)` tall (square, max 340, under 520), scale 1.015 → 1 over 900ms; then its caption (eyebrow, title, line, CTA) after 700ms × pace | caption Be Vietnam |
+| flow | `.ask-flow`: four `.ask-node` boxes (`--ask-q-from`, 1px line, radius 18, `--ask-q-rest`), 44px apart, alternating left/right at 58% width (a left rail with 10px steps under 520), joined by SVG paths | the thread's face, `max(17px, .7em)` |
+| logos | `.ask-logos`: one tile per *Where I've been* stop (mark at 26px, name, years, role), from left / below / right / above, 240ms × pace apart, settling into one row (two by two under 520) | Be Vietnam |
+| art / music / outside | `.ask-media`: the Off the clock picture, `clamp(220px, room − 300px, 480px)` tall, uncovered from the bottom (`clip-path`, 820ms); music adds a 28-bar waveform (breathing only on the newest turn) and the Music menu's three links | Be Vietnam |
 
-Hover is more light: a separate `::before` layer carrying the lift shadow fades in
-(no shadow is animated), the card rises 1px and the arrow moves 3px. Focus-visible
-is the site's 2px `--focus` ring at 3px. Pressed is `scale(.985)`. Dark-theme tints
-are paired in the same block, under both dark selectors.
+**Flow links** are measured, never written down: each path runs from the bottom
+centre of one box to the top centre of the next (the first leaves the reply bubble
+above the first thought; the last enters the evidence), a cubic with control points
+at 55% of the drop. `pathLength="1"`, dash 1, offset 1 → 0 over 460ms
+`cubic-bezier(.45,0,.2,1)`, stroke `--link-go` at 55%, 1.25px. The SVG sits under the
+boxes, so a link never covers a word. Sequence: the reply settles, link 1 draws,
+thought 1 arrives at its final size (360ms), 140ms × pace, link 2… then the last
+link and the evidence. A `ResizeObserver` on the conversation redraws every link on
+any reflow. Reduced motion: everything is already drawn.
 
-**Previews are the slide's own.** The evidence copies the project browser slide's
-`.pv__vis` child: a framed preview is a second live document fitted by its own
-`--pv-w`/`--pv-h` and `--pv-scale` (and answers its frame's `pfScaleRequest`), the
-audit's walk is started with `PF.initAudit`, LiveFront's phone is plain CSS. Only the
-newest answer keeps a live preview; an earlier one folds to one line (`.is-compact`)
-and its copy is removed. At most five turns are kept.
+**Older turns step back** (opacity .5; full again on hover or focus within), an
+earlier project folds to one line and gives its live preview back, and at most
+four turns are kept.
 
 **The box.** At 960 and up the thread box keeps its measured height and scrolls
-(`.is-scroll`); the dissolve appears at the top only when scrolled, and a 40px one at
-the foot when there is more below. While an answer arrives the view follows its
-first line; once the follow-ups and actions have landed, and after a reading beat
-(900ms × pace), it moves just far enough to show them, never past the top of the
-evidence. Below 960 the box gives up its height (`.is-grow`) and the page scrolls.
+(`.is-scroll`), with the dissolve at the top only when scrolled and at the foot when
+there is more below. `--ask-room` is the box's height (the screen's below 960). A
+thought or the evidence arriving below the box's fold is brought up just far enough
+to be seen whole; once a turn is complete and has been read (900ms × pace), the view
+shows its way onward, letting a still go at most halfway under the top dissolve.
 
-**Browse everything** is the thread's own See the work button, moved into the
-conversation and relabelled, so `js/reveal.js`'s capture-phase gate still takes its
-first press (ready → work, one 320ms movement). The conversation stays where it is;
-once `data-landing="work"` (or the page was never staged) the stylesheet hides the
-button. Below 960 it is a link to `#work`. The project browser follows the
-conversation (`pf:project`), so the page opens on the last project shown.
-
-**Timing** is the thread's: dots `560 × pace`, landing `640 × pace`, a beat of
-`520 × pace` before the question, `140 × pace` between the parts of an answer, 160ms
-for the questions not taken to go, prompts 280ms on the cascade curve 60ms apart.
-Reduced motion: every step is immediate and nothing animates.
+**Browse everything** is the thread's own See the work button, relabelled, so
+`js/reveal.js`'s capture-phase gate still takes its first press (ready → work, one
+320ms movement). Hidden once `data-landing="work"`. Below 960 it is a link to
+`#work`. The project browser follows the conversation (`pf:project`).
 
 **Accessibility.** The heading is named by its introduction text
-(`aria-labelledby`), so the conversation inside it is not part of the heading. Each
-answer is announced through a polite live region and focus moves to it. Questions
-are buttons in a labelled group; the evidence card is one link named by its CTA and
-title.
+(`aria-labelledby`). Each answer, a flow's thoughts included, is announced through a
+polite live region and focus moves to the reply. Questions are buttons in a labelled
+group ("Start here", "Ask next"); thoughts and employers are lists; pictures carry the
+alt text their Off the clock tiles already had; every external link opens in a new
+tab with `noopener`.
+
+## Quick links and the menu (`js/sitenav.js`, `css/36-nav.css`)
+
+**Desktop (≥960).** `.snav`: six plain text links fixed in the left margin
+(`left: clamp(24px, 2.4vw, 48px)`, vertically centred): Start here (`#top`), Projects
+(`#work`), Experience (`#experience`), Tools (`#tools`), About (`#/about`), Contact
+(`#contact`). Be Vietnam 13px 500, `--ink-muted`; hover and focus underline at 5px
+offset, 1px; the section in view is `aria-current="location"` and takes `--ink`. No
+container, pill, border or icon. Hidden in `intro`; fades in (420ms) with act two.
+Once the page is open it stays only from 1800 to 2399, where the margin clears the
+cards. A hash change opens the whole page (`js/reveal.js`), so every link is also an
+escape hatch.
+
+**Below 960.** `.gutil`: the theme switch and a menu control, 40px circles (44px hit
+area) 6px apart, fixed top right (safe-area aware), aligned with Replay at the top of
+the card; the card's own switch steps aside and Replay moves one place left. The
+menu (`#site-menu`) is a disclosure: `aria-expanded`, focus to its first entry, 52px
+rows (Start here, Projects, Illustration ↗, Music ↗, Experience, About me, Contact)
+in a 288px panel 54px under the pair, on a 16% scrim. Escape and the scrim close it
+and give focus back; a choice or focus leaving it closes it; crossing 960 closes it.
+Neither control shows on a case study.
 
 ## Project browser and cards
 

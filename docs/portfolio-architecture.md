@@ -25,11 +25,11 @@ the retired build folder `~/Documents/Claude outputs/candidate-build/`.
 `app-1.js` modules, in order: routes, theme, stepper, media, carry, carry-ui,
 optiflow, tagging, thread, reveal, ask, dsa, ap-fit, audit-proto, px-emerge, pp-conf,
 au-personas, pv-fit, projects, encryption, clients, tools, musicmenu, case, wire,
-dsseq, main, peek, bim.
+dsseq, sitenav, main, peek, bim.
 
 CSS sections in `index.html` include `00-fonts`, `01-tokens`, `02-base`,
 `03-layout`, `04-components`, `06-responsive`, `07-clients`, `09-case`,
-`16-reveal`, `33-hero-ultrawide`, `35-ask`, plus per-study sheets (carry, optiflow,
+`16-reveal`, `33-hero-ultrawide`, `35-ask`, `36-nav`, plus per-study sheets (carry, optiflow,
 encryption, dsa, audit, specimen, personas…).
 
 ## Blocking scripts
@@ -105,25 +105,44 @@ Authored, deterministic, and the only place its words live:
 
 ```
 PF.ASK = {
-  open:  { say, next: [3 ids] },        // asked after the introduction
-  again: { say: [lines] },               // a change of subject
-  done:  { say },                        // nothing left to offer
-  q: { <id>: { label, say, after: { <previous id>: say }, show: <PF.PROJECTS key>,
+  open:  { say: [philosophy line, question], next: [3 ids] },   // act two's first turn
+  again: { say: [lines], next: [3 ids] },                        // a change of subject
+  done:  { say },                                                // nothing left to offer
+  q: { <id>: { label, say, after: { <previous id>: say },
+               kind: 'project' | 'flow' | 'logos' | 'art' | 'music' | 'outside',
+               show: <PF.PROJECTS key>,       // project and flow
+               steps: [3–4 thoughts],          // flow
                ev: <optional line from the same case study>, next: [ids] } },
-  pool: [ids]                            // fills a turn whose follow-ups were all asked
+  pool: [ids]                                    // fills a turn whose follow-ups were all asked
 }
 ```
 
-`show` is a `PF.PROJECTS` key and nothing else: the evidence card reads the
-project's title, sentence, CTA label, link and preview off its design slide
-(`.pv__slide[data-mode="design"][data-project]`), its name and context from
-`PF.PROJECTS`, and external links through `PF.isExternal`. A project that is not
-`live` or has no slide is never offered. To add a question: one entry in `q`, its id
-in somebody's `next` (or in `pool`), and nothing else; `tools/check.py ask` checks
-every mapping.
+Nothing an answer shows is copied into `PF.ASK`; it is read off the page:
 
-The thread lends the assistant its box through `PF.thread` (see the design-system
-doc). The ask module renders inside the thread's track, after the three messages.
+| kind | read from |
+|---|---|
+| project, flow | the design slide (`.pv__slide[data-mode="design"][data-project]`): title, sentence, CTA label, link, live preview; `PF.PROJECTS` for name and context; `PF.isExternal` for the link |
+| logos | *Where I've been* (`.hero__past .tl__stop`): mark class, name, years, role |
+| art, music, outside | Off the clock: the `--otc-illustration` / `--otc-djing` tokens on `:root`, each tile's `aria-label` (alt text) and `href`; the Music menu (`#music-menu .rolemenu__row`) for where to listen |
+
+A question whose source is missing (a project not `live`, a section not on the page)
+is never offered. To add one: one entry in `q`, its id in somebody's `next` (or in
+`pool`); `tools/check.py ask` checks every mapping, that every label is a question
+about the designer, and that every kind is in use.
+
+The thread lends the guide its box through `PF.thread` (see the design-system doc).
+The ask module renders inside the thread's track; in act two the introduction's rows
+are out of the flow (`.is-act2`) until a replay.
+
+### Quick links and the menu (js/sitenav.js)
+
+Markup in `index.html` right after the skip link: `.snav` (desktop quick links),
+`.gutil` (below 960: a second `[data-theme-toggle]`, bound by `js/theme.js` like the
+others, and the menu control), `.gmenu__scrim`, `#site-menu`. Every entry is a plain
+link to an existing anchor (`#top`, `#work`, `#experience` on *Where I've been*,
+`#tools` on Tools, `#contact`), a route (`#/about`) or an external destination already
+on the page. `js/sitenav.js` only opens and closes the menu and marks the current
+section.
 
 ### Labels
 
