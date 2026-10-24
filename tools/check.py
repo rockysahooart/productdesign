@@ -29,14 +29,24 @@ deployed site. Sections:
              before it was sped up (SEQ_BASE_MS)
     copy     message one reads "Hello Team." with no icon, before and after
              a role switch, and no smiley anywhere in the source
-    ask      the conversation after the introduction (js/ask.js): every
-             authored question maps to a live project whose title and link
-             are the slide's own; at five widths the question, three
-             choices, an answer with its evidence and three follow-ups, the
-             earlier evidence folding, a change of subject, focus following
-             the answer, Browse everything opening work through the gate
-             (wide) or linking to #work (narrow); reduced motion; replay
-             clearing it; no overflow and no errors
+    ask      act two, the conversation after the introduction (js/ask.js):
+             every authored question can be answered from the page, reads as
+             a question about the designer, and every kind of answer is in
+             use; at five widths the introduction clearing on pf:cta (480ms),
+             the empty room (720ms) and act two opening centred where act one
+             was, without the page below moving; a project shown large with
+             the slide's own title, link and preview; a flow of four thoughts
+             and five links drawn from the boxes' own geometry, never through
+             a thought, redrawn on resize; the earlier evidence folding; a
+             change of subject; the employers read off Where I've been; the
+             illustration, the decks and the Music menu's links; Browse
+             everything opening work through the gate (wide) or linking to
+             #work (narrow); reduced motion; replay bringing act one back; no
+             overflow and no errors
+    nav      the quick links (absent in act one, six text links in act two,
+             never touching a card once the page is open) and, below 960, the
+             menu beside the theme switch: fixed, reachable anywhere, focus
+             in and back, Escape and a tap outside close it, 44px rows
 
 Exit status is the number of failures.
 """
@@ -438,7 +448,7 @@ def tab(b):
     return b.eval('(() => { const a = document.activeElement; if (!a || a === document.body) return [null, true, null];'
                   ' const vis = a.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });'
                   ' const where = a.closest(".hero__eyebrow") ? "roles" : a.closest(".hero-card .hero__work") ? "work" :'
-                  ' a.closest(".hero-id--talk") ? "talk" : a.closest(".msg-cta") ? "cta" : a.closest("#background,#work,#more,#contact") ? "below" : "other";'
+                  ' a.closest(".hero-id--talk") ? "talk" : a.closest(".msg-cta") ? "cta" : a.closest(".ask") ? "ask" : a.closest(".snav") ? "nav" : a.closest("#background,#work,#more,#contact") ? "below" : "other";'
                   ' return [(a.tagName + "." + (a.className || "")).slice(0, 40), vis, where]; })()')
 
 
@@ -449,11 +459,13 @@ def t_keys(b, base):
     check(not bad and not [p for p in path if p[2] in ('roles', 'work', 'talk', 'below')],
           'intro: Tab reaches nothing that has not arrived', json.dumps([p[0] for p in path]))
     until(b, 'document.documentElement.dataset.landing === "ready"', 30)
-    b.pump(1.0)
-    path = [tab(b) for _ in range(14)]
+    # Act two has cleared the room and asked its question before anything in it can be reached.
+    until(b, ASK_IDLE, 15)
+    b.pump(0.5)
+    path = [tab(b) for _ in range(20)]
     where = set(p[2] for p in path)
-    check(not [p for p in path if p[0] and not p[1]] and 'cta' in where and not where & {'roles', 'talk', 'work', 'below'},
-          'ready (1440): Tab reaches See the work and the conversation\'s controls, nothing else',
+    check(not [p for p in path if p[0] and not p[1]] and 'cta' in where and 'ask' in where and not where & {'roles', 'talk', 'work', 'below'},
+          'ready (1440): Tab reaches the quick links, the questions and Browse everything, nothing else',
           json.dumps(sorted(where - {None})))
     b.eval('document.querySelector(".msg-cta__btn").click()')
     b.pump(1.5)
@@ -518,60 +530,144 @@ SLIDE = ('(k => { const s = document.querySelector(\'.pv__slide[data-mode="desig
          ' return s ? [s.querySelector(".pv__title").textContent.replace(/\\s+/g, " ").trim(), s.getAttribute("data-href")] : null; })')
 
 
+OPEN_SAY = ['I believe design is how we make decisions visible, understandable, and easier to act on.',
+            'Where would you like to start?']
+
+# A flow, measured: every thought shown, every link drawn and laid from the
+# boxes as they are now, and no link passing through a thought's text.
+FLOW = r"""(() => { const f = [...document.querySelectorAll('.ask-flow')].pop(); if (!f) return null;
+  const nodes = [...f.querySelectorAll('.ask-node')], links = [...f.querySelectorAll('.ask-flow__link')];
+  const o = f.getBoundingClientRect(); let crossings = 0;
+  for (const p of links) { const L = p.getTotalLength(); if (!L) continue;
+    for (let i = 1; i < 20; i++) { const pt = p.getPointAtLength(L * i / 20);
+      for (const n of nodes) { const r = n.getBoundingClientRect();
+        if (pt.x + o.left > r.left + 3 && pt.x + o.left < r.right - 3 && pt.y + o.top > r.top + 3 && pt.y + o.top < r.bottom - 3) crossings++; } } }
+  return { nodes: nodes.length, shown: nodes.filter(n => +getComputedStyle(n).opacity > 0.99).length,
+           links: links.length, drawn: links.filter(p => p.getAttribute('d') && Math.abs(parseFloat(getComputedStyle(p).strokeDashoffset)) < 0.01).length,
+           crossings, ends: !!f.nextElementSibling && f.nextElementSibling.classList.contains('ask-ev') }; })()"""
+
+NAV = r"""(() => { const n = document.querySelector('.snav'); const cs = getComputedStyle(n);
+  return [cs.display, cs.visibility, +cs.opacity, n.querySelectorAll('a').length]; })()"""
+
+
 def ask_flow(b, base, shots, w, h):
     name = 'ask %dx%d' % (w, h)
     fresh(b, base, w=w, h=h, dark=False)
-    ok = until(b, ASK_IDLE, 40)
+    # ACT ONE ENDS, THE ROOM EMPTIES, ACT TWO BEGINS. Timed from pf:cta.
+    b.eval('''window.__act = {}; (() => { const t = document.querySelector('.hero__thread');
+      new MutationObserver(() => { const n = performance.now();
+        if (t.classList.contains('is-act-out') && !__act.out) __act.out = n;
+        if (t.classList.contains('is-act2') && !__act.two) __act.two = n;
+        const r = t.querySelector('.ask__say'); if (r && !__act.say) __act.say = n;
+      }).observe(t, { attributes: true, subtree: true, childList: true }); })()''')
+    if w < 960:
+        # Below 960 the page under the thread must not jump while the room is empty.
+        # Measured as the room starts to empty: the introduction's last line
+        # may still be settling before that.
+        until(b, '!!__act.out', 40)
+        nxt = '(() => { const n = document.querySelector(".hero__clients"); return n && n.getClientRects().length ? Math.round(n.getBoundingClientRect().top + scrollY) : null; })()'
+        y0 = b.eval(nxt)
+        until(b, '!!__act.two', 10)
+        b.pump(0.2)
+        y1 = b.eval(nxt)
+        check(y0 is not None and y0 == y1, name + ' the page under the thread holds still while act two empties the room', '%s -> %s' % (y0, y1))
+    ok = until(b, ASK_IDLE, 50)
     s = b.eval(ASK_STATE)
     if not ok or not s:
-        check(False, name + ' the question arrives after the introduction', json.dumps(s)[:200])
+        check(False, name + ' act two arrives after the introduction', json.dumps(s)[:200])
         return
+    a = b.eval('[__act, __pf.cta]')
+    t, cta = a[0], a[1]
+    if w >= 960 and t.get('out') and t.get('two') and t.get('say'):
+        d1, d2, d3 = t['out'] - cta, t['two'] - t['out'], t['say'] - t['two']
+        check(d1 < 60 and 440 <= d2 <= 560 and 680 <= d3 <= 820, name + ' the introduction clears on pf:cta (480ms), the room is empty 720ms, then act two',
+              'cue->clear %d, clear %d, blank %d' % (d1, d2, d3))
+    else:
+        check(bool(t.get('out') and t.get('two')), name + ' the introduction clears before act two', json.dumps(t))
+    gone = b.eval('[...document.querySelectorAll(".hero__thread .msg[data-msg]")].filter(m => m.getClientRects().length).length')
+    check(gone == 0, name + ' the introduction is gone from the box in act two', '%d rows still laid out' % gone)
     land = b.eval('document.documentElement.dataset.landing')
-    check(s['says'][0][1] == 'What would you like to know?' and s['q'] == ['strongest', 'complex', 'ai'],
-          name + ' asks, with three questions', json.dumps([s['says'], s['q']]))
+    check([x[1] for x in s['says']] == OPEN_SAY and s['q'] == ['now', 'best', 'approach'],
+          name + ' act two opens on the philosophy line, a question and three choices', json.dumps([s['says'], s['q']]))
+    if w >= 960:
+        c = b.eval('(() => { const t = document.querySelector(".hero__thread").getBoundingClientRect(), o = document.querySelector(".ask__turn").getBoundingClientRect();'
+                   ' return [(o.top + o.bottom) / 2 - (t.top + t.bottom) / 2, o.top - t.top, t.bottom - o.bottom]; })()')
+        # Centred when it fits; when the turn is taller than the box it starts
+        # just under the top dissolve and runs to the foot.
+        check(abs(c[0]) < 24 or (c[2] <= 16 and c[1] <= 80), name + ' act two opens centred in the box act one used', 'off by %.1f (above %d, below %d)' % tuple(c))
     check(s['browse'] and s['browse'][2] and (s['browse'][0] == 'BUTTON' if w >= 960 else s['browse'][1] == '#work'),
           name + ' Browse everything is there (the gate above 960, a link to #work below)', json.dumps(s['browse']))
     check(land == ('ready' if w >= 960 else 'work'), name + ' the page is in its ' + ('ready' if w >= 960 else 'cascaded') + ' state', land)
     if shots:
         b.screenshot(os.path.join(shots, 'ask-open-%d.png' % w))
     w0 = s['box'][3]
-    b.eval('document.querySelector(\'.ask-q[data-q="ai"]\').click()')
-    until(b, '(() => { const e = document.querySelectorAll(".ask-ev"); return e.length === 1 && +getComputedStyle(e[0]).opacity > 0.99; })()', 10)
-    until(b, ASK_IDLE, 10)
+
+    # A project: the film still, the slide's own title, link and preview.
+    b.eval('document.querySelector(\'.ask-q[data-q="best"]\').click()')
+    until(b, ASK_IDLE, 20)
     s = b.eval(ASK_STATE)
-    sl = b.eval(SLIDE + '("optiflow")')
+    sl = b.eval(SLIDE + '("livefront")')
     ev = s['ev'][0] if s['ev'] else {}
-    check(s['you'] == ['How do you work with AI?'], name + ' the choice becomes the visitor\'s note', json.dumps(s['you']))
-    check(ev.get('k') == 'optiflow' and sl and ev.get('title') == sl[0] and ev.get('href') == sl[1] and ev.get('preview'),
-          name + ' the answer sends OptiFlow, with the slide\'s own title, link and preview', json.dumps([ev, sl]))
-    check(len(s['q']) == 3 and 'ai' not in s['q'] and s['q'][0] == 'validate', name + ' three follow-ups, chosen by the path',
-          json.dumps(s['q']))
+    check(s['you'] == ['Which project best represents your work?'], name + ' the choice becomes the visitor\'s note', json.dumps(s['you']))
+    check(ev.get('k') == 'livefront' and sl and ev.get('title') == sl[0] and ev.get('href') == sl[1] and ev.get('preview'),
+          name + ' the answer shows Craigslist, with the slide\'s own title, link and preview', json.dumps([ev, sl]))
+    big = b.eval('(() => { const v = document.querySelector(".ask-ev:not(.is-compact) .ask-ev__vis").getBoundingClientRect(), a = document.querySelector(".ask").getBoundingClientRect(); return [Math.round(v.width), Math.round(v.height), Math.round(a.width)]; })()')
+    check(big[0] >= big[2] * 0.85 and big[1] >= 200, name + ' the project is shown large: most of the column\'s width, 200px tall or more', json.dumps(big))
+    check(s['q'] == ['healthcare', 'approach', 'where'], name + ' three follow-ups, chosen by the path', json.dumps(s['q']))
     check(s['focus'], name + ' focus moves to the answer')
     if shots:
         b.screenshot(os.path.join(shots, 'ask-answer-%d.png' % w))
-    first = s['q'][0]
-    b.eval('document.querySelector(\'.ask-q[data-q="%s"]\').click()' % first)
-    until(b, '(() => { const e = document.querySelectorAll(".ask-ev"); return e.length === 2 && +getComputedStyle(e[1]).opacity > 0.99; })()', 10)
-    until(b, ASK_IDLE, 10)
+
+    # A flow: thought, link, thought, ending on the project it happened in.
+    b.eval('document.querySelector(\'.ask-q[data-q="approach"]\').click()')
+    until(b, ASK_IDLE, 30)
     s = b.eval(ASK_STATE)
+    f = b.eval(FLOW)
+    check(f and f['nodes'] == 4 and f['shown'] == 4 and f['links'] == 5 and f['drawn'] == 5 and f['ends'],
+          name + ' the flow draws four thoughts and five links, ending on its evidence', json.dumps(f))
+    check(f and f['crossings'] == 0, name + ' no link passes through a thought', json.dumps(f))
+    check(len(s['ev']) == 2 and s['ev'][0]['compact'] and not s['ev'][0]['preview'] and s['ev'][1]['k'] == 'dsa' and s['ev'][1]['preview'],
+          name + ' the earlier evidence folds; the flow ends on the audit, running', json.dumps(s['ev']))
     eb = [x['eyebrow'] for x in s['ev']]
-    check(all(len(set(p.strip().lower() for p in e.split('\u00b7'))) == len(e.split('\u00b7')) for e in eb),
+    check(all(len(set(p.strip().lower() for p in e.split('·'))) == len(e.split('·')) for e in eb),
           name + ' no evidence eyebrow repeats itself', json.dumps(eb))
-    check(len(s['ev']) == 2 and s['ev'][0]['compact'] and not s['ev'][0]['preview'] and not s['ev'][1]['compact'] and s['ev'][1]['preview'],
-          name + ' the earlier evidence folds and gives its preview back', json.dumps(s['ev']))
     check(s['again'], name + ' Ask something else is offered after an answer')
     if w >= 960:
         check(s['box'][0] > s['box'][1] and s['box'][2] > 0, name + ' the box scrolls to the newest turn', json.dumps(s['box']))
+    # The links follow the boxes: a narrower window redraws them.
+    if w >= 960:
+        b.viewport(w - 40, h)
+        b.pump(0.6)
+        f2 = b.eval(FLOW)
+        check(f2 and f2['crossings'] == 0 and f2['drawn'] == 5, name + ' resized, every link is redrawn where the boxes are', json.dumps(f2))
+        b.viewport(w, h)
+        b.pump(0.6)
     if shots:
-        b.screenshot(os.path.join(shots, 'ask-second-%d.png' % w))
+        b.screenshot(os.path.join(shots, 'ask-flow-%d.png' % w))
+
+    # A change of subject offers the other three openers.
     b.eval('document.querySelector(".ask__again").click()')
     until(b, '(() => { const t = document.querySelectorAll(".ask__turn"); const l = t[t.length - 1]; return l && !!l.querySelector(".ask__choices--open.is-in"); })()', 10)
     until(b, ASK_IDLE, 10)
     s = b.eval(ASK_STATE)
-    check(len(s['q']) == 3 and 'ai' not in s['q'] and first not in s['q'] and s['q'][:2] == ['strongest', 'complex'],
-          name + ' a change of subject offers what has not been asked', json.dumps(s['q']))
+    check(s['q'] == ['where', 'outside', 'ai'], name + ' a change of subject offers what has not been asked', json.dumps(s['q']))
+
+    # Where: the employers, read off Where I've been, arriving one by one.
+    b.eval('document.querySelector(\'.ask-q[data-q="where"]\').click()')
+    until(b, ASK_IDLE, 20)
+    lg = b.eval('(() => { const t = [...document.querySelectorAll(".hero__past .tl__name")].map(n => n.textContent.trim());'
+                ' const a = [...document.querySelectorAll(".ask-logos")].pop(); if (!a) return null;'
+                ' const tiles = [...a.querySelectorAll(".ask-logo")];'
+                ' return { names: tiles.map(x => x.querySelector(".ask-logo__name").textContent), timeline: t,'
+                ' marks: tiles.filter(x => getComputedStyle(x.querySelector(".ask-logo__mark")).backgroundImage.indexOf("url(") === 0).length,'
+                ' settled: tiles.filter(x => +getComputedStyle(x).opacity > 0.99 && getComputedStyle(x).transform === "none").length }; })()')
+    check(lg and lg['names'] == lg['timeline'] and lg['marks'] == len(lg['names']) and lg['settled'] == len(lg['names']),
+          name + ' where: every employer from the timeline, with its mark, settled in line', json.dumps(lg))
+    if shots:
+        b.screenshot(os.path.join(shots, 'ask-where-%d.png' % w))
+
     if w >= 960:
-        t0 = b.eval('(() => { const t = performance.now(); document.querySelector(".ask__browse .msg-cta__btn").click(); return t; })()')
+        b.eval('document.querySelector(".ask__browse .msg-cta__btn").click()')
         b.pump(0.5)
         v = b.eval('[document.documentElement.dataset.landing, document.querySelector(".hero__thread").getBoundingClientRect().width,'
                    ' !!document.querySelector(".hero__thread.is-list"), document.querySelector(".ask__browse").getClientRects().length,'
@@ -588,57 +684,161 @@ def ask_flow(b, base, shots, w, h):
 
 
 def t_ask(b, base, shots):
-    # Every authored answer points at a live project the page actually has.
     fresh(b, base, '/#top', w=1512, h=982, dark=False, wait=4)
-    bad = b.eval('(() => { const A = PF.ASK, out = []; for (const id in A.q) { const q = A.q[id], p = PF.project(q.show);'
-                 ' const s = document.querySelector(\'.pv__slide[data-mode="design"][data-project="\' + q.show + \'"]\');'
-                 ' if (!p || p.status !== "live" || !s || !s.getAttribute("data-href")) out.push(id + ":" + q.show);'
-                 ' for (const n of (q.next || [])) if (!A.q[n]) out.push(id + "->" + n); }'
-                 ' for (const n of A.open.next) if (!A.q[n]) out.push("open->" + n); return out; })()')
-    check(not bad, 'ask: every question maps to a live project and every follow-up exists', json.dumps(bad))
-    shown = b.eval('Object.keys(PF.ASK.q).map(id => PF.ASK.q[id].show).filter((v, i, a) => a.indexOf(v) === i).sort()')
+    # Every authored answer can be shown from the page as it is, and every
+    # follow-up exists.
+    bad = b.eval('''(() => { const A = PF.ASK, out = [];
+      const live = k => { const p = PF.project(k), s = document.querySelector('.pv__slide[data-mode="design"][data-project="' + k + '"]');
+        return p && p.status === "live" && s && s.getAttribute("data-href"); };
+      for (const id in A.q) { const q = A.q[id], k = q.kind || 'project';
+        if ((k === 'project' || k === 'flow') && !live(q.show)) out.push(id + ':' + q.show);
+        if (k === 'flow' && !(q.steps && q.steps.length >= 3)) out.push(id + ':steps');
+        for (const n of (q.next || [])) if (!A.q[n]) out.push(id + '->' + n); }
+      for (const n of A.open.next.concat(A.again.next)) if (!A.q[n]) out.push('open->' + n); return out; })()''')
+    check(not bad, 'ask: every question can be answered from the page and every follow-up exists', json.dumps(bad))
+    shown = b.eval('Object.keys(PF.ASK.q).map(id => PF.ASK.q[id].show).filter((v, i, a) => v && a.indexOf(v) === i).sort()')
     check(shown == sorted(['carry', 'crypto', 'dsa', 'governance', 'livefront', 'optiflow', 'pnc', 'specimen']),
           'ask: every live design project can be reached', json.dumps(shown))
+    # Every question is the visitor asking about the designer: a question, not
+    # a command, and never "show me" (which reads as the visitor's own work).
+    labels = b.eval('Object.keys(PF.ASK.q).map(id => PF.ASK.q[id].label)')
+    off = [l for l in labels if not l.endswith('?') or l.lower().startswith('show me') or ' me your ' in l.lower()]
+    check(not off, 'ask: every question reads as a question about the designer', json.dumps(off))
+    check(len(set(labels)) == len(labels), 'ask: no question is asked twice in different places', json.dumps(labels))
+    kinds = b.eval('Object.keys(PF.ASK.q).map(id => PF.ASK.q[id].kind || "project").filter((v, i, a) => a.indexOf(v) === i).sort()')
+    check(kinds == ['art', 'flow', 'logos', 'music', 'outside', 'project'], 'ask: every kind of answer is in use', json.dumps(kinds))
+    now = b.eval('[PF.ASK.open.next[0], PF.ASK.q[PF.ASK.open.next[0]].label]')
+    check(now == ['now', 'What are you currently working on?'], 'ask: "What are you currently working on?" is one of the first three', json.dumps(now))
     for w, h in [(1512, 982), (2560, 1440), (1280, 800), (1024, 768), (390, 844)]:
         ask_flow(b, base, shots, w, h)
-    # The governance card is the one whose context opens with its own name.
+    # The made-outside-work answers: the real pictures, the real links.
     fresh(b, base, w=1512, h=982, dark=False)
-    until(b, ASK_IDLE, 40)
-    b.eval('document.querySelector(\'.ask-q[data-q="ai"]\').click()')
-    until(b, ASK_IDLE, 12)
-    b.eval('document.querySelector(\'.ask-q[data-q="governance"]\').click()')
-    until(b, '(() => { const e = document.querySelectorAll(".ask-ev"); return e.length === 2; })()', 10)
-    until(b, ASK_IDLE, 12)
-    s = b.eval(ASK_STATE)
-    check(bool(s) and s['ev'][-1]['k'] == 'governance' and s['ev'][-1]['eyebrow'].lower().count('design governance') == 1,
-          'ask: the governance eyebrow names the project once', json.dumps(s['ev'][-1]['eyebrow'] if s and s['ev'] else None))
-    # Reduced motion: no performance, the question and its choices are there.
+    until(b, ASK_IDLE, 50)
+    b.eval('document.querySelector(".ask-q[data-q=\\"best\\"]").click()')
+    until(b, ASK_IDLE, 20)
+    b.eval('document.querySelector(".ask__again").click()')
+    until(b, '(() => { const t = document.querySelectorAll(".ask__turn"); const l = t[t.length - 1]; return l && !!l.querySelector(".ask__choices--open.is-in"); })()', 10)
+    until(b, ASK_IDLE, 10)
+    b.eval('document.querySelector(".ask-q[data-q=\\"outside\\"]").click()')
+    until(b, ASK_IDLE, 20)
+    b.pump(1.0)
+    o = b.eval('[...document.querySelectorAll(".ask-media--pair .ask-shot__img")].map(i => [i.naturalWidth > 0, i.alt.length > 20])')
+    check(o == [[True, True], [True, True]], 'ask: outside work shows the illustration and the decks, loaded, described', json.dumps(o))
+    b.eval('document.querySelector(".ask-q[data-q=\\"music\\"]").click()')
+    until(b, ASK_IDLE, 20)
+    m = b.eval('(() => { const a = [...document.querySelectorAll(".ask-media--music")].pop(); if (!a) return null;'
+               ' return { rows: [...a.querySelectorAll(".ask-listen__row")].map(r => r.getAttribute("href")),'
+               ' menu: [...document.querySelectorAll("#music-menu .rolemenu__row")].map(r => r.getAttribute("href")),'
+               ' bars: a.querySelectorAll(".ask-wave i").length, img: a.querySelector(".ask-shot__img").naturalWidth > 0,'
+               ' blank: [...a.querySelectorAll("a")].every(x => x.target === "_blank" && /noopener/.test(x.rel)) }; })()')
+    check(m and m['rows'] == m['menu'] and m['bars'] > 20 and m['img'] and m['blank'],
+          'ask: music shows the decks, a waveform and the Music menu\'s own three links', json.dumps(m))
+    b.eval('document.querySelector(".ask-q[data-q=\\"art\\"]").click()')
+    until(b, ASK_IDLE, 20)
+    a = b.eval('(() => { const a = [...document.querySelectorAll(".ask-media--art")].pop(); if (!a) return null; const i = a.querySelector(".ask-shot").getBoundingClientRect();'
+               ' return [a.querySelector(".ask-shot__img").naturalWidth > 0, Math.round(i.height), a.querySelector(".ask-ev__go").getAttribute("href")]; })()')
+    check(a and a[0] and a[1] >= 220 and 'framer' in a[2], 'ask: illustration is given the room, with its way out', json.dumps(a))
+    e = errors(b)
+    check(not e, 'ask: media answers, no errors', '; '.join(e[:3]))
+    # Reduced motion: no act to end. The introduction stays, the conversation
+    # follows it, and a flow is already drawn.
     fresh(b, base, w=1512, h=982, dark=False, reduced=True, wait=0.5)
     until(b, ASK_IDLE, 15)
     s = b.eval(ASK_STATE)
-    check(bool(s) and len(s['q']) == 3 and s['says'][0][0] == 'settled', 'ask: reduced motion asks at once, nothing animated',
-          json.dumps(s)[:200] if s else 'no conversation')
+    intro = b.eval('[...document.querySelectorAll(".hero__thread .msg[data-msg]")].filter(m => m.getClientRects().length).length')
+    check(bool(s) and len(s['q']) == 3 and s['says'][0][0] == 'settled' and intro > 0,
+          'ask: reduced motion asks at once, the introduction kept, nothing animated', json.dumps([intro, s['says'] if s else None]))
     if s:
-        b.eval('document.querySelector(\'.ask-q[data-q="complex"]\').click()')
-        b.pump(0.3)
+        b.eval('document.querySelector(\'.ask-q[data-q="approach"]\').click()')
+        b.pump(0.4)
+        f = b.eval(FLOW)
         s = b.eval(ASK_STATE)
-        check(len(s['ev']) == 1 and s['ev'][0]['k'] == 'dsa' and len(s['q']) == 3, 'ask: reduced motion answers at once', json.dumps(s['ev']))
-    # Replay is a clean start: the conversation goes and comes back with the
-    # introduction.
+        check(f and f['shown'] == 4 and f['drawn'] == 5 and len(s['ev']) == 1 and s['ev'][0]['k'] == 'dsa',
+              'ask: reduced motion answers at once, links already drawn', json.dumps(f))
+    # Replay is a clean start: the conversation goes and act one comes back.
     fresh(b, base, w=1512, h=982, dark=False)
-    until(b, ASK_IDLE, 40)
-    b.eval('document.querySelector(\'.ask-q[data-q="strongest"]\').click()')
-    until(b, ASK_IDLE, 10)
+    until(b, ASK_IDLE, 50)
+    b.eval('document.querySelector(\'.ask-q[data-q="best"]\').click()')
+    until(b, ASK_IDLE, 20)
     b.eval('document.querySelector(".hero__replay").click()')
-    b.pump(1.2)
-    v = b.eval('[!!document.querySelector(".ask"), document.querySelector(".hero__thread").classList.contains("is-asking")]')
-    check(v == [False, False], 'ask: replay clears the conversation', json.dumps(v))
-    ok = until(b, ASK_IDLE, 40)
+    b.pump(1.4)
+    v = b.eval('[!!document.querySelector(".ask"), ["is-asking", "is-act2", "is-act-out"].filter(c => document.querySelector(".hero__thread").classList.contains(c)),'
+               ' [...document.querySelectorAll(".hero__thread .msg[data-msg]")].filter(m => m.getClientRects().length).length]')
+    check(v[0] is False and v[1] == [] and v[2] > 0, 'ask: replay clears the conversation and brings act one back', json.dumps(v))
+    ok = until(b, ASK_IDLE, 50)
     s = b.eval(ASK_STATE)
-    check(bool(ok) and s['q'] == ['strongest', 'complex', 'ai'] and not s['you'], 'ask: after replay it asks again from the start',
+    check(bool(ok) and s['q'] == ['now', 'best', 'approach'] and not s['you'], 'ask: after replay act two opens again from the start',
           json.dumps(s)[:200] if s else 'none')
     e = errors(b)
     check(not e, 'ask: replay, no errors', '; '.join(e[:3]))
+
+
+def t_nav(b, base, shots):
+    # The quick links: absent through act one, there in act two, gone where
+    # the open page has no margin for them.
+    fresh(b, base, w=1512, h=982, dark=False)
+    b.pump(2)
+    v = b.eval(NAV)
+    check(v[1] == 'hidden', 'nav 1512: quick links hidden while the introduction plays', json.dumps(v))
+    until(b, '__pf.cta !== null', 40)
+    b.pump(0.6)
+    v = b.eval(NAV)
+    check(v[0] == 'block' and v[1] == 'visible' and v[2] > 0.99 and v[3] == 6, 'nav 1512: six quick links once the conversation begins', json.dumps(v))
+    pills = b.eval('[...document.querySelectorAll(".snav, .snav *")].filter(e => { const c = getComputedStyle(e); return c.backgroundColor !== "rgba(0, 0, 0, 0)" || c.boxShadow !== "none" || parseFloat(c.borderTopWidth) > 0; }).length')
+    check(pills == 0, 'nav: text only, no container, pill or border', '%d painted' % pills)
+    clear = b.eval('(() => { const n = document.querySelector(".snav").getBoundingClientRect(), c = document.querySelector(".hero__copy").getBoundingClientRect(); return [Math.round(n.right), Math.round(c.left)]; })()')
+    check(clear[0] < clear[1], 'nav 1512: clear of the conversation', json.dumps(clear))
+    b.eval('document.querySelector(\'.snav a[href="#work"]\').click()')
+    b.pump(1.2)
+    v = b.eval('[document.documentElement.dataset.landing, location.hash, getComputedStyle(document.querySelector(".snav")).display]')
+    check(v[0] == 'work' and v[1] == '#work' and v[2] == 'none', 'nav 1512: Projects opens the page at the work; the links step aside', json.dumps(v))
+    for w, h in [(1920, 1080), (2560, 1440)]:
+        fresh(b, base, '/#work', w=w, h=h, dark=False, wait=3)
+        r = b.eval('(() => { const n = document.querySelector(".snav"); if (getComputedStyle(n).display === "none") return null;'
+                   ' const x = n.getBoundingClientRect(); let l = 1e9; for (const e of document.querySelectorAll(".hero-card > *")) { const q = e.getBoundingClientRect(); if (q.width && q.height) l = Math.min(l, q.left); } return [Math.round(x.right), Math.round(l)]; })()')
+        check(r is None or r[0] < r[1] - 24, 'nav %d: on the open page, the links never touch a card' % w, json.dumps(r))
+    # The menu, below 960: paired with the theme switch, always reachable.
+    for w, h in [(390, 844), (768, 1024)]:
+        fresh(b, base, w=w, h=h, dark=False)
+        until(b, ASK_IDLE, 50)
+        p = b.eval('(() => { const t = document.querySelector(".gutil .theme-toggle").getBoundingClientRect(), m = document.querySelector(".gutil__menu").getBoundingClientRect();'
+                   ' return [Math.round(m.left - t.right), Math.round(m.top - t.top), getComputedStyle(document.querySelector(".gutil")).position, Math.round(m.width), Math.round(m.height)]; })()')
+        check(p[0] <= 10 and p[1] == 0 and p[2] == 'fixed', 'menu %d: beside the theme switch, fixed' % w, json.dumps(p))
+        b.eval('window.scrollTo(0, document.documentElement.scrollHeight / 2)')
+        b.pump(0.3)
+        hit = b.eval('(() => { const m = document.querySelector(".gutil__menu").getBoundingClientRect(); const e = document.elementFromPoint(m.left + m.width / 2, m.top + m.height / 2); return !!e && !!e.closest(".gutil__menu"); })()')
+        check(hit, 'menu %d: reachable halfway down the page' % w)
+        b.eval('document.querySelector(".gutil__menu").click()')
+        b.pump(0.4)
+        o = b.eval('[document.querySelector(".gutil__menu").getAttribute("aria-expanded"), document.getElementById("site-menu").hidden,'
+                   ' document.activeElement && document.activeElement.textContent.trim(), [...document.querySelectorAll("#site-menu a")].map(a => a.textContent.trim()),'
+                   ' Math.min(...[...document.querySelectorAll("#site-menu a")].map(a => a.getBoundingClientRect().height))]')
+        need = ['Projects', 'Illustration', 'Music', 'About me']
+        check(o[0] == 'true' and o[1] is False and o[2] == 'Start here' and all(n in o[3] for n in need) and o[4] >= 44,
+              'menu %d: opens, focus on its first entry, Projects / Illustration / Music / About me, 44px rows' % w, json.dumps(o))
+        if shots:
+            b.screenshot(os.path.join(shots, 'menu-%d.png' % w))
+        for t in ('keyDown', 'keyUp'):
+            b.call('Input.dispatchKeyEvent', type=t, key='Escape', code='Escape', windowsVirtualKeyCode=27)
+        b.pump(0.4)
+        o = b.eval('[document.querySelector(".gutil__menu").getAttribute("aria-expanded"), document.getElementById("site-menu").hidden, document.activeElement.classList.contains("gutil__menu")]')
+        check(o == ['false', True, True], 'menu %d: Escape closes it and gives focus back' % w, json.dumps(o))
+        b.eval('document.querySelector(".gutil__menu").click()')
+        b.pump(0.4)
+        b.eval('document.querySelector(".gmenu__scrim").click()')
+        b.pump(0.4)
+        o = b.eval('[document.querySelector(".gutil__menu").getAttribute("aria-expanded"), document.getElementById("site-menu").hidden]')
+        check(o == ['false', True], 'menu %d: a tap outside closes it' % w, json.dumps(o))
+        b.eval('document.querySelector(".gutil .theme-toggle").click()')
+        b.pump(0.3)
+        th = b.eval('[document.documentElement.dataset.theme, localStorage.getItem("pf-theme")]')
+        check(th == ['dark', 'dark'], 'menu %d: the paired switch still switches the theme' % w, json.dumps(th))
+        e = errors(b)
+        check(not e, 'menu %d: no errors' % w, '; '.join(e[:3]))
+    fresh(b, base, '/#/carry', w=390, h=844, dark=False, wait=2)
+    until(b, 'document.documentElement.dataset.route === "carry"', 15)
+    v = b.eval('[getComputedStyle(document.querySelector(".gutil")).display, getComputedStyle(document.querySelector(".snav")).display]')
+    check(v == ['none', 'none'], 'nav: neither shows on a case study', json.dumps(v))
 
 
 def main():
@@ -648,7 +848,7 @@ def main():
         shots = sys.argv[sys.argv.index('--shots') + 1]
         args = [a for a in args if a != shots]
         os.makedirs(shots, exist_ok=True)
-    want = set(args) or {'routes', 'theme', 'seq', 'hatch', 'keys', 'copy', 'pace', 'ask'}
+    want = set(args) or {'routes', 'theme', 'seq', 'hatch', 'keys', 'copy', 'pace', 'ask', 'nav'}
     base = serve()
     b = Browser()
     b.preload(SAMPLER)
@@ -669,6 +869,8 @@ def main():
             t_seq(b, base, shots, WIDTHS + NEAR)
         if 'ask' in want:
             t_ask(b, base, shots)
+        if 'nav' in want:
+            t_nav(b, base, shots)
     finally:
         b.close()
     print('\n%d failure(s)%s' % (len(FAILS), (': ' + ', '.join(FAILS)) if FAILS else ''))
