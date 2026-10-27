@@ -45,6 +45,10 @@ deployed site. Sections:
              everything opening work through the gate (wide) or linking to
              #work (narrow); reduced motion; replay bringing act one back; no
              overflow and no errors
+    uw       ultrawide (2100, 2400, 2560): the intro and the conversation alone
+             and centred (nothing else laid out, the profile column out of the
+             grid), through three answers, Tab, a theme switch, a resize out
+             and back, and reduced motion; Browse more opens the full grid
     nav      the quick links (in the conversation's own box, on the controls'
              line; absent in act one, five text links in act two, gone once
              the portfolio is open; Start here returns to the openers, Projects
@@ -808,6 +812,74 @@ def t_ask(b, base, shots):
     check(not e, 'ask: replay, no errors', '; '.join(e[:3]))
 
 
+# Everything on the index outside the conversation, its quick links and its
+# two controls, that is laid out and visible.
+STRAY = r"""(() => { const out = [];
+  for (const e of document.querySelectorAll('main#top *')) {
+    if (e.closest('.hero__thread, .snav, .theme-toggle, .hero__replay')) continue;
+    const r = e.getBoundingClientRect(); if (r.width < 4 || r.height < 4) continue;
+    if (!e.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) continue;
+    if (e.children.length && [...e.children].some(c => c.getBoundingClientRect().width > 4)) continue;
+    out.push(String(e.className || e.tagName).split(' ')[0]); }
+  const t = document.querySelector('.hero__thread').getBoundingClientRect();
+  return { landing: document.documentElement.dataset.landing, stray: [...new Set(out)].slice(0, 12),
+           identity: getComputedStyle(document.querySelector('.hero-card .hero__identity')).display,
+           cx: Math.round((t.left + t.right) / 2 - innerWidth / 2), w: Math.round(t.width) }; })()"""
+
+
+def t_uw(b, base, shots):
+    """Ultrawide: the intro and the conversation alone, centred, until Browse
+    more; nothing else laid out, however many answers; then the full grid."""
+    for w, h in [(2560, 1440), (2400, 1300), (2100, 1200)]:
+        name = 'uw %d' % w
+        fresh(b, base, w=w, h=h, dark=False)
+        b.pump(3)
+        v = b.eval(STRAY)
+        check(v['landing'] == 'intro' and not v['stray'] and v['identity'] == 'none' and abs(v['cx']) <= 1,
+              name + ': the intro alone, centred, nothing else laid out', json.dumps(v))
+        until(b, ASK_IDLE, 50)
+        w0 = b.eval(STRAY)['w']
+        for q in ('best', 'approach', 'where'):
+            b.eval('(document.querySelector(\'.ask-q[data-q="%s"]\') || {click(){}}).click()' % q)
+            until(b, ASK_IDLE, 30)
+        v = b.eval(STRAY)
+        check(v['landing'] == 'ready' and not v['stray'] and abs(v['cx']) <= 1 and v['w'] == w0,
+              name + ': three answers with previews, logos and a flow, still the conversation alone and centred', json.dumps(v))
+        keys = [tab(b) for _ in range(16)]
+        check(not [k for k in keys if k[0] and not k[1]] and not [k for k in keys if k[2] in ('roles', 'work', 'talk', 'below')],
+              name + ': Tab reaches nothing outside the conversation', json.dumps(sorted(set(k[2] for k in keys) - {None})))
+        if w == 2560:
+            b.eval('document.querySelector(".hero__copy > .theme-toggle").click()')
+            b.pump(0.4)
+            v = b.eval(STRAY)
+            check(v['landing'] == 'ready' and not v['stray'], name + ': switching theme keeps the conversation alone', json.dumps(v))
+            b.viewport(1512, 982)
+            b.pump(1.2)
+            b.viewport(w, h)
+            b.pump(1.2)
+            v = b.eval(STRAY)
+            check(v['landing'] == 'ready' and not v['stray'] and abs(v['cx']) <= 1, name + ': out of ultrawide and back, still only the conversation', json.dumps(v))
+            if shots:
+                b.screenshot(os.path.join(shots, 'uw-conversation-%d.png' % w))
+            until(b, ASK_IDLE, 50)
+        b.eval('document.querySelector(".ask__browse .msg-cta__btn").click()')
+        b.pump(0.6)
+        v = b.eval('[document.documentElement.dataset.landing, getComputedStyle(document.querySelector(".hero-card .hero__identity")).display,'
+                   ' getComputedStyle(document.querySelector(".hero-card .hero-tile--work")).display,'
+                   ' [...document.querySelectorAll("[data-reveal]")].filter(e => e.getClientRects().length && getComputedStyle(e).visibility !== "visible").length]')
+        check(v[0] == 'work' and v[1] != 'none' and v[2] != 'none' and v[3] == 0, name + ': Browse more opens the full ultrawide grid at once', json.dumps(v))
+        if shots and w == 2560:
+            b.pump(0.6)
+            b.screenshot(os.path.join(shots, 'uw-work-%d.png' % w))
+        e = errors(b)
+        check(not e, name + ': no errors', '; '.join(e[:3]))
+    # Reduced motion: the same isolation, without the movement.
+    fresh(b, base, w=2560, h=1440, dark=False, reduced=True, wait=3)
+    until(b, ASK_IDLE, 15)
+    v = b.eval(STRAY)
+    check(v['landing'] == 'ready' and not v['stray'] and v['identity'] == 'none', 'uw 2560 reduced motion: conversation alone', json.dumps(v))
+
+
 def t_nav(b, base, shots):
     # The quick links: in the conversation's own box, opposite Replay and the
     # theme switch; absent in act one, there in act two, gone once the
@@ -908,7 +980,7 @@ def main():
         shots = sys.argv[sys.argv.index('--shots') + 1]
         args = [a for a in args if a != shots]
         os.makedirs(shots, exist_ok=True)
-    want = set(args) or {'routes', 'theme', 'seq', 'hatch', 'keys', 'copy', 'pace', 'ask', 'nav'}
+    want = set(args) or {'routes', 'theme', 'seq', 'hatch', 'keys', 'copy', 'pace', 'ask', 'nav', 'uw'}
     base = serve()
     b = Browser()
     b.preload(SAMPLER)
@@ -931,6 +1003,8 @@ def main():
             t_ask(b, base, shots)
         if 'nav' in want:
             t_nav(b, base, shots)
+        if 'uw' in want:
+            t_uw(b, base, shots)
     finally:
         b.close()
     print('\n%d failure(s)%s' % (len(FAILS), (': ' + ', '.join(FAILS)) if FAILS else ''))
