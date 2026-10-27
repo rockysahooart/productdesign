@@ -18487,9 +18487,15 @@ button.cu-q:hover { background: var(--cu-teal-8); }
     display: none;
   }
 
+  /* Schedule a call belongs to the profile column, not to the conversation.
+     It is not a staged block, so it used to stay on screen beside the
+     introduction and the conversation; it waits for the portfolio now. */
+  :root[data-landing]:not([data-landing="work"]) .hero__book { display: none; }
+
   /* Arriving from display:none, the fade needs somewhere to start from. */
   @starting-style {
-    :root[data-landing="work"] .page[data-view="home"] [data-reveal] { opacity: 0; }
+    :root[data-landing="work"] .page[data-view="home"] [data-reveal],
+    :root[data-landing="work"] .hero-card .hero__book { opacity: 0; }
   }
 
   /* The roles are part of the page, not of the conversation: hidden until
@@ -18591,6 +18597,12 @@ button.cu-q:hover { background: var(--cu-teal-8); }
   /* The browser is the right two thirds of an ultrawide screen: off the page
      until the press. */
   :root[data-landing]:not([data-landing="work"]) .hero-card .hero-tile--work { display: none; }
+  /* And the profile column with it. On ultrawide every item is placed in
+     the page grid by its own column, so taking this one out of the layout
+     moves nothing else: the conversation keeps the centre track, and the
+     intro and the conversation are the only thing on the screen, with no
+     invisible column standing beside them. It arrives with the rest. */
+  :root[data-landing]:not([data-landing="work"]) .hero-card .hero__identity { display: none; }
 
   .hero-card .hero__identity,
   .hero-card .hero__tools { width: min(360px, 100%); justify-self: end; }
