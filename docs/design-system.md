@@ -159,6 +159,13 @@ composition.
   block, the roles bar, the profile column, the skills disclosure and its slot are
   `display: none`: no reserved blank space, nothing in the tab order or the
   accessibility tree. `work` brings them all back at once.
+- **Ultrawide (≥ 2100), the conversation alone.** In `intro`/`ready` the profile
+  column (`.hero__identity`) is `display: none` as well as the browser, Where I've
+  been, Tools and the sections: every ultrawide item is placed in the page grid by
+  its own column, so removing it moves nothing, and no invisible column stands
+  beside the centred stage. At every desktop width *Schedule a call*
+  (`.hero__book`, not a staged block) also waits for `work`. Both arrive with the
+  rest, faded in from `@starting-style`.
 - **Centring is structural (≥ 960).** In `intro`/`ready` the grid's outer tracks are
   each the mean of the final two (desktop `--hero-l`/`--hero-r`; ultrawide `360px` and
   `--pv-col`), so the middle track is centred and exactly as wide as in the final

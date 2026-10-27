@@ -102,7 +102,7 @@ any failure:
 python3 tools/check.py
 ```
 
-Sections can be run alone (`routes theme seq hatch keys copy pace ask nav`), and
+Sections can be run alone (`routes theme seq hatch keys copy pace ask nav uw`), and
 `--shots DIR` writes screenshots to look at. It covers at minimum:
 
 1. Routes: `/`, `#top`, `#work`, `#contact`, `#/about`, `#/carry`, `#/optiflow`, `#/audit`, `#/specimen`, `/slop/`. Zero console errors, zero 4xx (except `/favicon.ico`).

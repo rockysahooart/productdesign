@@ -57,6 +57,11 @@ As of 2026-10-24 on `main`.
 
 ## Recently shipped
 
+- **2026-10-26: ultrawide isolation.** At 2100 and up the profile column was laid
+  out (invisible) beside the centred conversation, and *Schedule a call* was visible
+  next to the intro and the conversation at every desktop width. Both now wait for
+  the portfolio state. `tools/check.py uw` covers 2100, 2400 and 2560.
+
 - **2026-10-24: a minimal, direct entry.** Conversation-only until the visitor
   chooses the portfolio, at every width (the phone cascade, its scroll and focus
   hatches, and reduced motion's opt-out are gone). Quick links moved from the far
