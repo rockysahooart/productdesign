@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = sys.argv[1] if len(sys.argv) > 1 else os.path.expanduser('~/3diterations/design-handoff 2')
@@ -256,6 +257,16 @@ def convert(s, name=''):
     # "All projects" links keep the project index (./#projects)
     s = re.sub(r'<a class="id" href="Main(?:-light)?(?:-m)?(?:-light)?\.dc\.html"', '<a class="id" href="./"', s)
     s = re.sub(r'<a href="Main(?:-light)?(?:-m)?(?:-light)?\.dc\.html" aria-current="page">Projects</a>', '<a href="./">Projects</a>', s)
+    # Craigslist: the chronological story around the existing artifacts (tools/craigslist_story.py; sources there)
+    if name.startswith('Craigslist'):
+        import craigslist_story as cs
+        n0 = s.count('<div class="cs-wrap">\n<section class="sec"><div class="grid6">')
+        s = s.replace('<div class="cs-wrap">\n<section class="sec"><div class="grid6">',
+                      '<div class="cs-wrap">\n' + cs.BEFORE + '<div class="grid6">', 1)
+        s = s.replace('</section>\n</div></main>', '</section>\n' + cs.AFTER + '</div></main>', 1)
+        s = s.replace('<a class="lk" href="https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0">view project <span aria-hidden="true">→</span></a>',
+                      '<a class="lk" href="https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0" target="_blank" rel="noopener">View the presentation deck <span aria-hidden="true">↗</span></a>')
+        assert n0 == 1 and cs.AFTER in s and 'View the presentation deck' in s, 'Craigslist story: source structure changed'
     # Usability pass (owner, 2026-11-21). Case-study h1 = the project's approved editorial title from the Landing card
     # (only the h1 text; static first paint and the ported source markup in the script both carry it)
     for old, new in TITLES:
