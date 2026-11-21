@@ -340,7 +340,7 @@
     document.body.appendChild(ov);
     var main = document.getElementById('vf');
     main.setAttribute('inert', ''); main.setAttribute('aria-hidden', 'true');
-    var done = false, L = null, skipAsk = false;
+    var done = false, L = null, skipAsk = false, skipping = false;
     /* skip from the very first frame: Escape / Enter / Space here (before the frame has focus or has mounted), or a
        click on the frame before its board is ready; the board's own skip (done('skip')) settles and hands off */
     function skipNow() { try { if (L && L.comp && L.comp.done) L.comp.done('skip'); else skipAsk = true; } catch (e) { hand(); } }
@@ -382,8 +382,9 @@
         ls.style.setProperty('--vf-s', Math.min(w.innerWidth / ls.offsetWidth, w.innerHeight / ls.offsetHeight).toFixed(4));
       }
       fit(); w.addEventListener('resize', fit); try { w.visualViewport.addEventListener('resize', fit); } catch (x) {}
-      var go = d.querySelector('a[aria-label="Start here"]');
-      if (go) { go.addEventListener('click', function (ev) { ev.preventDefault(); }); try { ov.focus(); go.focus(); } catch (x) {} }
+      var go = d.querySelector('a.go');
+      /* Skip (the board's .go): no navigation here - it calls the board's own skip, which settles and hands off */
+      if (go) { go.addEventListener('click', function (ev) { ev.preventDefault(); if (!skipping) { skipping = true; skipNow(); } }); try { ov.focus(); go.focus(); } catch (x) {} }
       [].forEach.call(d.querySelectorAll('a.skip'), function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); }); });
       if (root) { new MutationObserver(function () { if (root.hasAttribute('data-done')) hand(); }).observe(root, { attributes: true });
         if (root.hasAttribute('data-done')) hand(); /* reduced motion can finish before this message arrives */ }

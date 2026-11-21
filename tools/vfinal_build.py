@@ -115,6 +115,9 @@ def prod_css(name):
                     # is pinned to the board's own 390 x 844 values - the frame the envelope was measured in
                     '.root{--vb:844px!important;--sab:0px!important;--hp:24px!important;--sg:16px!important;--vm:24px!important;'
                     '--am:24px!important;--eh:1!important;--ey:-30px!important;--ew:1!important}'
+                    # the finish holds the load pose (--ly) instead of moving into the old Landing hero box (--ty, ~158px
+                    # lower): the board's own canvas rule for its static stack; the sheets still settle as designed
+                    '.root[data-fin] .ldc{transform:translate(0px,var(--ly)) scale(var(--ek))!important}'
                     '.root .nm.nmm{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;text-align:center;'
                     'order:1;flex:none}'
                     '.root .nm.nmm .or{margin-top:6px!important}'
@@ -127,6 +130,9 @@ def prod_css(name):
                     'margin-top:clamp(12px,2.5dvh,28px)}'
                     '.root .lnb .lt{width:100%;padding-bottom:0!important;text-align:center}'
                     '.root .lnb .ldl p{text-align:center}'
+                    '.root .lnb .go{width:auto;height:auto;min-width:44px;min-height:44px;padding:0 12px;border:0;border-radius:0;'
+                    'background:none;font:400 15px/1 Inter,sans-serif;color:var(--mute)}'
+                    '.root .lnb .go:hover{color:var(--ink)}'
                     '</style>')
         css = ('.root{width:100%%!important;height:100%%!important;overflow:hidden!important}'
                '.vf-ls{position:absolute;left:50%%;top:50%%;width:%spx;height:%spx;margin:-%spx 0 0 -%spx;'
@@ -203,13 +209,18 @@ def convert(s, name=''):
             # information, then the action - instead of three pieces pinned to the top, middle and bottom of the frame.
             # The sculpture keeps its frame geometry: .vf-ls is a flow box cut to the sculpture's own extent in the
             # frame (aura + sheets), and .vf-ls-i the untouched frame inside it, scaled to the height left over.
-            # The container holds the sculpture's FULL envelope across the whole sequence - entrance, every form, and
-            # the board's own settle to the stack in the last second - measured in the browser on the 390 frame
-            # (sheets and orbit ring, y 257-640), plus 8px. Nothing the animation does leaves it.
-            y0, y1 = 257 - 8, 640 + 8
+            # The container keeps the composition's height (399 frame px: names, status and action stay where they
+            # are) and the sculpture's full-cycle envelope is centred in it (owner, 2026-11-21). With the finish
+            # holding the load pose (below), every sheet and the orbit ring stay in frame y 248-481 for the whole
+            # sequence, measured in the browser; centre 364.5, so the cut starts at 364.5 - 399 / 2.
+            y0, y1 = 165, 165 + 399
             s = re.sub(r'(<div aria-hidden="true" class="aura"[^>]*></div><div aria-hidden="true" class="ldc")',
                        r'<div class="vf-ls" data-flow="1" data-y="%d" data-h="%d" style="--y:%dpx;--h:%dpx"><div class="vf-ls-i">\1' % (y0, y1 - y0, y0, y1 - y0), s, count=1)
             s = s.replace('<a href="#start" data-board=', '</div></div><a href="#start" data-board=', 1)
+            # The circular arrow under the progress bar becomes a labelled "Skip" (owner, 2026-11-21): the Loading
+            # still hands off on its own; Skip is the same control (.go), named by its visible text
+            s = s.replace('class="go" aria-label="Start here">→</a>', 'class="go">Skip</a>', 1)
+            assert 'class="go">Skip</a>' in s, name
         else:
             s = re.sub(r'(<div aria-hidden="true" class="aura"[^>]*></div><div aria-hidden="true" class="ldc")',
                        r'<div class="vf-ls" data-w="1">\1', s, count=1)
