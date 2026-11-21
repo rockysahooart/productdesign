@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>VFINAL case studies — index</title></head><body>
+<x-dc><helmet><style id="vf-shell">
+/* VFINAL — fluid case-study page (cs5). Tokens / type roles / header identity = VFINAL Case boards (r6 / light-r6 / m-r8 / p2-r2);
+   sizes are fluid between the m (390) / d (1440) / uw (2560) values. Micro-cut: no tracked-caps micro labels; sentence case. */
+.root{--bg:#1F2023;--ink:#EFE8DA;--ink2:#C9C2B5;--ink3:#D9D1C3;--mute:#A9A296;--acc:#E39A7C;--ctl:#77716A;--neu:#8F8A82;--surf:#26272B;--plane:#232428;--rule:#3A3936;--hl:239,232,218;--sh:0,0,0;--sha:1;color-scheme:dark}
+.root.t-light{--bg:#ECE7DE;--ink:#23211E;--ink2:#48443E;--ink3:#2E2B27;--mute:#625D55;--acc:#A0482A;--ctl:#857D71;--neu:#67615A;--surf:#E3DDD2;--plane:#E6E0D6;--rule:#CDC6BA;--hl:35,33,30;--sh:74,56,40;--sha:.4;color-scheme:light}
+.root{--vf-gut:clamp(16px,3.89vw,96px);--vf-max:clamp(0px,100%,1680px);
+ --vf-fs-d2:clamp(42px,5.556vw,120px);--vf-fs-h2:clamp(32px,3.2vw,56px);--vf-fs-title:clamp(20px,1.667vw,30px);--vf-fs-lede:clamp(18px,1.389vw,24px);
+ --vf-fs-body:clamp(16px,calc(.179vw + 13.43px),18px);--vf-fs-meta:15px;--vf-fs-cap:14px}
+body{margin:0;background:var(--bg)}
+.root{position:relative;box-sizing:border-box;width:100%;min-height:100vh;overflow-x:clip;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased}
+.root a{color:inherit;text-decoration:none}
+.root a:focus-visible,.root button:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
+.root .ser{font-family:'Instrument Serif',serif;font-weight:400}
+.root .or{font-family:'Noto Sans Oriya',sans-serif;font-weight:300;line-height:1.75}
+/* HEADER IDENTITY: serif name | Product Designer + Odia name (lang="or"), one baseline */
+.root header.nav{position:relative;z-index:5;box-sizing:border-box;min-height:72px;max-width:var(--vf-max);margin:0 auto;padding:12px var(--vf-gut);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 24px}
+.root header.nav .id{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.root header.nav .bn{font-size:24px;line-height:1.1}
+.root header.nav .bsep{font:300 15px/1 'Inter',sans-serif;color:var(--ctl);margin:0 -2px}
+.root header.nav .brl{font:300 15px/1.2 'Inter',sans-serif;letter-spacing:.01em;color:var(--ink2);white-space:nowrap}
+.root header.nav .bor{font-size:15px;font-weight:400;color:var(--mute);line-height:1.2}
+.root header.nav nav{display:flex;gap:30px}
+.root header.nav nav a{font:400 15px/1 'Inter',sans-serif;padding:16px 0;color:var(--mute);transition:color .2s}
+.root header.nav nav a:hover,.root header.nav nav a[aria-current]{color:var(--ink)}
+.root header.nav nav a[aria-current]{box-shadow:inset 0 -1px 0 var(--acc)}
+.root .back{display:inline-flex;align-items:center;min-height:44px;font:400 15px/1 'Inter',sans-serif;color:var(--ink2);transition:color .2s}
+.root .back:hover{color:var(--acc)}
+.root .flow{box-sizing:border-box;max-width:var(--vf-max);margin:0 auto;padding:8px var(--vf-gut) 0}
+/* prev / next between the five studies */
+.root .pn{box-sizing:border-box;max-width:var(--vf-max);margin:0 auto;padding:clamp(48px,6vw,120px) var(--vf-gut) clamp(56px,6vw,120px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:24px;border-top:1px solid var(--rule)}
+.root .pn a{display:block;padding-top:14px;border-top:1px solid var(--rule);position:relative}
+.root .pn a::before{content:"";position:absolute;left:0;top:-1px;width:24px;height:1px;background:var(--acc)}
+.root .pn .l{display:block;font:400 15px/1.45 'Inter',sans-serif;color:var(--mute)}
+.root .pn .t{display:block;margin-top:6px;font:400 var(--vf-fs-title)/1.2 'Instrument Serif',serif;color:var(--ink);text-wrap:balance}
+.root .pn a:hover .t{color:var(--acc)}
+.root .pn .nx{text-align:right}.root .pn .nx::before{left:auto;right:0}
+.root .pn .al{text-align:center}.root .pn .al::before{left:calc(50% - 12px)}
+@media (max-width:719px){.root .pn .nx,.root .pn .al{text-align:left}.root .pn .nx::before,.root .pn .al::before{left:0;right:auto}}
+
+.root .ix{box-sizing:border-box;max-width:var(--vf-max);margin:0 auto;padding:clamp(32px,5vw,96px) var(--vf-gut) clamp(56px,6vw,120px)}
+.root .ix h1{margin:0;font:400 var(--vf-fs-d2)/1 'Instrument Serif',serif;letter-spacing:-.01em}
+.root .ix ol{list-style:none;margin:clamp(40px,5vw,96px) 0 0;padding:0;counter-reset:ix}
+.root .ix li{counter-increment:ix;display:grid;grid-template-columns:minmax(40px,6rem) minmax(0,1fr);column-gap:clamp(16px,2.5vw,48px);border-top:1px solid var(--rule)}.root .ix li>a{grid-column:1/-1}.root .ix li>.lt{grid-column:2;margin:-8px 0 clamp(20px,2.2vw,36px)}
+.root .ix a{display:grid;grid-template-columns:minmax(40px,6rem) minmax(0,1fr);gap:8px clamp(16px,2.5vw,48px);align-items:baseline;padding:clamp(20px,2.2vw,36px) 0;position:relative}
+.root .ix li:last-child{border-bottom:1px solid var(--rule)}
+.root .ix a::before{content:counter(ix,decimal-leading-zero);font:400 15px/1.45 'Inter',sans-serif;font-variant-numeric:tabular-nums;color:var(--acc)}
+.root .ix .t{display:block;font:400 var(--vf-fs-h2)/1.08 'Instrument Serif',serif;color:var(--ink);text-wrap:balance;transition:color .3s}
+.root .ix .s{display:block;margin-top:12px;max-width:44em;font:300 var(--vf-fs-body)/1.6 'Inter',sans-serif;color:var(--ink2);text-wrap:pretty}
+.root .ix .go{font:400 15px/1.45 'Inter',sans-serif;color:var(--mute);white-space:nowrap}
+.root .ix a:hover .t{color:var(--acc)}
+.root .ix .lt{display:block;margin-top:10px;font:400 15px/1.45 'Inter',sans-serif;color:var(--mute)}
+.root .ix .lt a{display:inline;padding:0;border:0;color:var(--ink2);box-shadow:inset 0 -1px 0 var(--rule)}.root .ix .lt a::before{content:none}
+@media (max-width:719px){.root .ix a,.root .ix li{grid-template-columns:minmax(0,1fr)}.root .ix li>.lt{grid-column:1}}
+</style></helmet>
+<div class="root t-dark"><header class="nav"><a class="id" href="./#projects"><span class="ser bn">Sarthak Sahoo</span><span class="bsep" aria-hidden="true">|</span><span class="brl">Product Designer</span><span lang="or" class="or bor">ସାର୍ଥକ ସାହୁ</span></a><nav aria-label="Primary"><a href="./#projects" aria-current="page">Projects</a></nav></header><main class="ix"><h1>Projects</h1><ol><li><a href="#/carry"><span><span class="t">Carry</span><span class="s">How I Designed for Better Patient Recall</span></span></a><span class="lt"><a href="#/carry">Light version</a></span></li><li><a href="#/optiflow"><span><span class="t">OptiFlow</span><span class="s">How I Kept Humans in Control of AI-Assisted Clinical Billing</span></span></a><span class="lt"><a href="#/optiflow">Light version</a></span></li><li><a href="#/specimen"><span><span class="t">How I Redesigned Oncology Specimen Kits for Safer Handling</span><span class="s">I rethought FFPE tissue packaging around specimen organization, shipping requirements, material constraints, and laboratory workflows.</span></span></a><span class="lt"><a href="#/specimen">Light version</a></span></li><li><a href="#/audit"><span><span class="t">How I Audited a Healthcare Design System for Consistency and Accessibility</span><span class="s">I evaluated fragmented components, inconsistent interaction states, accessibility issues, and opportunities to establish reusable design patterns.</span></span></a><span class="lt"><a href="#/audit">Light version</a></span></li><li><a href="#/sbl"><span><span class="t">How I Modernized Securities-Based Lending Without Disrupting Familiar Workflows</span><span class="s">I redesigned PNC's application experience to improve form organization, data entry, validation, and underwriting handoffs while preserving familiar user interactions.</span></span></a><span class="lt"><a href="#/sbl">Light version</a></span></li><li><a href="#/craigslist"><span><span class="t">How I Redesigned Used-Car Discovery on Craigslist</span><span class="s">I reimagined the iOS experience to help buyers search, compare listings, evaluate seller credibility, and find relevant vehicles with less friction.</span></span></a><span class="lt"><a href="#/craigslist">Light version</a></span></li></ol></main></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1718}}'>
+class Component extends DCLogic { renderVals(){ return {}; } }
+</script>
+</body></html>

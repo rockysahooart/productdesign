@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Securities-Based Lending — case study (light)</title></head><body>
+<x-dc><helmet><style id="vf-shell">
+/* VFINAL — fluid case-study page (cs5). Tokens / type roles / header identity = VFINAL Case boards (r6 / light-r6 / m-r8 / p2-r2);
+   sizes are fluid between the m (390) / d (1440) / uw (2560) values. Micro-cut: no tracked-caps micro labels; sentence case. */
+.root{--bg:#1F2023;--ink:#EFE8DA;--ink2:#C9C2B5;--ink3:#D9D1C3;--mute:#A9A296;--acc:#E39A7C;--ctl:#77716A;--neu:#8F8A82;--surf:#26272B;--plane:#232428;--rule:#3A3936;--hl:239,232,218;--sh:0,0,0;--sha:1;color-scheme:dark}
+.root.t-light{--bg:#ECE7DE;--ink:#23211E;--ink2:#48443E;--ink3:#2E2B27;--mute:#625D55;--acc:#A0482A;--ctl:#857D71;--neu:#67615A;--surf:#E3DDD2;--plane:#E6E0D6;--rule:#CDC6BA;--hl:35,33,30;--sh:74,56,40;--sha:.4;color-scheme:light}
+.root{--vf-gut:clamp(16px,3.89vw,96px);--vf-max:clamp(0px,100%,1680px);
+ --vf-fs-d2:clamp(42px,5.556vw,120px);--vf-fs-h2:clamp(32px,3.2vw,56px);--vf-fs-title:clamp(20px,1.667vw,30px);--vf-fs-lede:clamp(18px,1.389vw,24px);
+ --vf-fs-body:clamp(16px,calc(.179vw + 13.43px),18px);--vf-fs-meta:15px;--vf-fs-cap:14px}
+body{margin:0;background:var(--bg)}
+.root{position:relative;box-sizing:border-box;width:100%;min-height:100vh;overflow-x:clip;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased}
+.root a{color:inherit;text-decoration:none}
+.root a:focus-visible,.root button:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
+.root .ser{font-family:'Instrument Serif',serif;font-weight:400}
+.root .or{font-family:'Noto Sans Oriya',sans-serif;font-weight:300;line-height:1.75}
+/* HEADER IDENTITY: serif name | Product Designer + Odia name (lang="or"), one baseline */
+.root header.nav{position:relative;z-index:5;box-sizing:border-box;min-height:72px;max-width:var(--vf-max);margin:0 auto;padding:12px var(--vf-gut);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 24px}
+.root header.nav .id{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.root header.nav .bn{font-size:24px;line-height:1.1}
+.root header.nav .bsep{font:300 15px/1 'Inter',sans-serif;color:var(--ctl);margin:0 -2px}
+.root header.nav .brl{font:300 15px/1.2 'Inter',sans-serif;letter-spacing:.01em;color:var(--ink2);white-space:nowrap}
+.root header.nav .bor{font-size:15px;font-weight:400;color:var(--mute);line-height:1.2}
+.root header.nav nav{display:flex;gap:30px}
+.root header.nav nav a{font:400 15px/1 'Inter',sans-serif;padding:16px 0;color:var(--mute);transition:color .2s}
+.root header.nav nav a:hover,.root header.nav nav a[aria-current]{color:var(--ink)}
+.root header.nav nav a[aria-current]{box-shadow:inset 0 -1px 0 var(--acc)}
+.root .back{display:inline-flex;align-items:center;min-height:44px;font:400 15px/1 'Inter',sans-serif;color:var(--ink2);transition:color .2s}
+.root .back:hover{color:var(--acc)}
+.root .flow{box-sizing:border-box;max-width:var(--vf-max);margin:0 auto;padding:8px var(--vf-gut) 0}
+/* prev / next between the five studies */
+.root .pn{box-sizing:border-box;max-width:var(--vf-max);margin:0 auto;padding:clamp(48px,6vw,120px) var(--vf-gut) clamp(56px,6vw,120px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:24px;border-top:1px solid var(--rule)}
+.root .pn a{display:block;padding-top:14px;border-top:1px solid var(--rule);position:relative}
+.root .pn a::before{content:"";position:absolute;left:0;top:-1px;width:24px;height:1px;background:var(--acc)}
+.root .pn .l{display:block;font:400 15px/1.45 'Inter',sans-serif;color:var(--mute)}
+.root .pn .t{display:block;margin-top:6px;font:400 var(--vf-fs-title)/1.2 'Instrument Serif',serif;color:var(--ink);text-wrap:balance}
+.root .pn a:hover .t{color:var(--acc)}
+.root .pn .nx{text-align:right}.root .pn .nx::before{left:auto;right:0}
+.root .pn .al{text-align:center}.root .pn .al::before{left:calc(50% - 12px)}
+@media (max-width:719px){.root .pn .nx,.root .pn .al{text-align:left}.root .pn .nx::before,.root .pn .al::before{left:0;right:auto}}
+
+.root .cl{display:block;max-width:var(--vf-max);margin:0 auto;padding:clamp(24px,3vw,56px) var(--vf-gut) 0;box-sizing:border-box}
+.root .cl .t{margin:0;font:400 var(--vf-fs-d2)/1 'Instrument Serif',serif;letter-spacing:-.01em;max-width:16em;text-wrap:balance}
+.root .cl .lede{margin:clamp(20px,2vw,32px) 0 0;max-width:36em;font:300 var(--vf-fs-lede)/1.5 'Inter',sans-serif;color:var(--ink)}
+.root .cl .pair{margin-top:clamp(40px,4vw,72px);padding-top:16px;border-top:1px solid var(--rule);max-width:56rem;position:relative}
+.root .cl .pair::before{content:"";position:absolute;left:0;top:-1px;width:24px;height:1px;background:var(--acc)}
+.root .cl .h{margin:0;font:400 var(--vf-fs-h2)/1.08 'Instrument Serif',serif;text-wrap:balance}
+.root .cl .h3{margin:clamp(32px,3vw,48px) 0 0;font:400 var(--vf-fs-title)/1.2 'Instrument Serif',serif}
+.root .cl .p{margin:clamp(14px,1.4vw,20px) 0 0;max-width:44em;font:300 var(--vf-fs-body)/1.65 'Inter',sans-serif;color:var(--ink2)}
+.root .cl .p b,.root .cl .clb b{font-weight:400;color:var(--ink)}
+.root .cl code{font:400 .92em/1 'Inter',sans-serif;color:var(--ink)}
+.root .cl a:not(.lk){box-shadow:inset 0 -1px 0 var(--rule)}.root .cl a:hover{color:var(--acc)}
+.root .cl .lk{color:var(--acc);white-space:nowrap}
+.root .cl .clb{margin:clamp(14px,1.4vw,20px) 0 0;padding:0;list-style:none;max-width:48em}
+.root .cl .clb li{position:relative;padding:12px 0 12px 22px;border-top:1px solid var(--rule);font:300 var(--vf-fs-body)/1.6 'Inter',sans-serif;color:var(--ink2)}
+.root .cl .clb li::before{content:"";position:absolute;left:0;top:calc(12px + .8em);width:10px;height:1px;background:var(--acc)}
+.root .cl .clb ul{list-style:none;padding:0;margin:6px 0 0}.root .cl .clb ul li{border-top:0;padding:4px 0 4px 22px}
+.root .cl .hero{margin:clamp(48px,5vw,96px) 0 0}
+.root .cl .dk{position:relative;background-color:var(--surf);background-image:linear-gradient(rgba(var(--hl),.05) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--hl),.05) 1px,transparent 1px);background-size:14px 14px;background-position:-1px -1px;border:1px solid rgba(var(--hl),.12);box-shadow:4px 8px 12px -8px rgba(var(--sh),calc(.7 * var(--sha)))}
+.root .cl .mount{padding:clamp(24px,4vw,72px) clamp(16px,3vw,56px);display:flex;justify-content:center}
+.root .cl .mount>.pv__embed{width:100%;height:clamp(520px,48vw,880px);margin:0 auto}
+.root .cl .cap,.root .cl figcaption{margin:14px 0 0;font:400 14px/1.55 'Inter',sans-serif;color:var(--mute);max-width:56em}
+.root .cl .sec{padding-top:clamp(56px,6vw,120px)}
+.root .cl .grid6,.root .cl .grid4{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:clamp(20px,2.4vw,40px);margin-top:clamp(24px,2.4vw,40px)}
+.root .cl .grid4{grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),260px))}
+.root .cl .scr{margin:0}
+/* screens framed once: Figma exports already carry their rounded screen corners (transparent alpha) -> shown as-is, no frame;
+   raw prototype captures (rectangular) get the same screen radius as the exports, 55/430 x 55/932 of the image, nothing else */
+.root .cl .scr .ph{border:0;background:none;box-shadow:none;border-radius:0;overflow:visible}
+.root .cl .scr .ph.pr img{border-radius:12.79% / 5.9%}
+.root .cl .scr img{display:block;width:100%;height:auto}
+
+.root .cl .res{display:flex;flex-wrap:wrap;gap:12px 32px;margin:clamp(20px,2vw,28px) 0 0;font:400 15px/1.45 'Inter',sans-serif}
+.root .cl .res .lk{box-shadow:inset 0 -1px 0 var(--acc);padding-bottom:2px}
+.root .cl .kk{margin:0 0 10px}.root .cl .kk .n{font:400 15px/1.45 'Inter',sans-serif;font-variant-numeric:tabular-nums;color:var(--acc)}
+.root .cl .cmp{display:grid;gap:clamp(28px,3vw,48px);margin-top:clamp(24px,2.4vw,40px)}
+.root .cl figcaption b{font-weight:400;color:var(--ink)}
+.root .cl .ar-mast{min-height:0}
+.root .cl .fr{color:var(--ink)}
+.root .cl .pcv{display:block;width:min(100%,560px);height:auto;margin:0 auto}
+.root .cl .met{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:24px;margin:clamp(24px,2.4vw,40px) 0 0;max-width:44rem}
+.root .cl .met>div{padding-top:16px;border-top:1px solid var(--rule);position:relative}.root .cl .met>div::before{content:"";position:absolute;left:0;top:-1px;width:24px;height:1px;background:var(--acc)}
+.root .cl .met dt{font:400 15px/1.45 'Inter',sans-serif;color:var(--mute)}.root .cl .met dd{margin:8px 0 0;font:400 clamp(40px,4.44vw,96px)/1 'Instrument Serif',serif;color:var(--ink)}
+.root .cl .q{color:var(--mute)}
+.root .cl .why{list-style:none;counter-reset:w;margin:clamp(14px,1.4vw,20px) 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:24px}
+.root .cl .why li{counter-increment:w;padding-top:14px;border-top:1px solid var(--rule)}
+.root .cl .why li::before{content:counter(w,decimal-leading-zero);display:block;font:400 15px/1.45 'Inter',sans-serif;color:var(--acc)}
+.root .cl .why b{display:block;margin-top:6px;font:400 var(--vf-fs-title)/1.2 'Instrument Serif',serif;color:var(--ink)}
+.root .cl .why span{display:block;margin-top:8px;font:300 var(--vf-fs-body)/1.6 'Inter',sans-serif;color:var(--ink2)}
+.root .cl .grid1,.root .cl .grid2{display:grid;gap:clamp(20px,2.4vw,40px);margin-top:clamp(24px,2.4vw,40px)}
+.root .cl .grid2{grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr))}
+.root .cl .scr .ph.sh img{border-radius:6px}
+.root .cl .tw{overflow-x:auto;margin-top:clamp(20px,2vw,32px);max-width:100%}
+.root .cl .st{border-collapse:collapse;width:100%;min-width:560px;font:300 15px/1.55 'Inter',sans-serif;color:var(--ink2)}
+.root .cl .st th{text-align:left;font-weight:400;color:var(--mute);padding:10px 16px 10px 0;border-bottom:1px solid var(--rule)}
+.root .cl .st td{vertical-align:top;padding:12px 16px 12px 0;border-bottom:1px solid var(--rule)}
+.root .cl .st b{font-weight:400;color:var(--ink)}
+</style></helmet>
+<div class="root t-light"><header class="nav"><a class="id" href="./#projects"><span class="ser bn">Sarthak Sahoo</span><span class="bsep" aria-hidden="true">|</span><span class="brl">Product Designer</span><span lang="or" class="or bor">ସାର୍ଥକ ସାହୁ</span></a><nav aria-label="Primary"><a href="./#projects" aria-current="page">Projects</a></nav></header><div class="flow"><a class="back" href="./#projects">← All projects</a></div><div class="cs5" data-theme="light"><div class="cs5b"><main class="cl">
+<header class="ar-mast"><h1 class="t">How I Modernized Securities-Based Lending Without Disrupting Familiar Workflows</h1><p class="lede">I redesigned PNC's application experience to improve form organization, data entry, validation, and underwriting handoffs while preserving familiar user interactions.</p>
+<p class="p fr">Built for high-income individuals and businesses handling large loan requests over $100k.</p>
+<p class="res"><a class="lk" href="https://rockysahooart.github.io/sbl-lending-console-demo/" target="_blank" rel="noopener noreferrer">Demo experience <span aria-hidden="true">↗</span></a><a class="lk" href="https://www.figma.com/design/kP5wUF63gtzu8ZQA72JJyc/PRESENTATION-DECKS?node-id=624-787" target="_blank" rel="noopener noreferrer">Figma designs <span aria-hidden="true">↗</span></a><a class="lk" href="https://github.com/rockysahooart/sbl-lending-console-demo" target="_blank" rel="noopener noreferrer">GitHub repo <span aria-hidden="true">↗</span></a><a class="lk" href="https://spiky-experiences-472785.framer.app/case-study" target="_blank" rel="noopener noreferrer">View case study <span aria-hidden="true">↗</span></a></p></header>
+<div class="cs-wrap">
+<section class="sec"><p class="kk"><span class="n">01</span></p><h2 class="h">The Problem</h2><p class="p">As lending demand grew, the console bankers use to originate securities-based credit had to handle more applications without more effort.</p>
+<ol class="why"><li><b>Scalability</b><span>Handle more applications without a matching rise in operational effort.</span></li><li><b>Workflow fragmentation</b><span>Borrower, collateral, evaluation and underwriting details sat in disconnected, dense screens, pulling focus from clients.</span></li><li><b>Submission quality</b><span>Missing information, manual checks and late exceptions caused errors, rework and delays.</span></li></ol>
+<p class="p">Compounded by legacy patterns, inconsistent components, accessibility gaps and compliance complexity.</p>
+<div class="grid1"><figure class="scr wide"><div class="ph sh"><img src="assets/vf/cs/sbl/sbl-02-before-console.webp" alt="Before · Console tabs: Pending Evaluations · Evaluations · Submitted Applications" width="1440" height="900"></div><figcaption>Before · Console tabs: Pending Evaluations · Evaluations · Submitted Applications</figcaption></figure></div></section>
+<section class="sec"><p class="kk"><span class="n">02</span></p><h2 class="h">What I Did</h2><p class="p"><b>Sole UX Designer, three months</b> — turning these operational challenges into an efficient, connected, usable enterprise experience.</p>
+<p class="p">The business asked for modernization, not a new way of working. After keeps Before's information architecture: the same screens, in the same order, with the same sections, labels and actions where you'd expect them.</p>
+<div class="cmp"><figure class="scr wide"><div class="ph sh"><img src="assets/vf/cs/sbl/sbl-03-before-evaluation.webp" alt="Evaluation: Customer Details · Auto Evaluation · Manual Evaluation · Total Evaluation" width="1440" height="900"></div><figcaption><b>Before</b> · Evaluation: Customer Details · Auto Evaluation · Manual Evaluation · Total Evaluation</figcaption></figure><figure class="scr wide"><div class="ph sh"><img src="assets/vf/cs/sbl/sbl-04-after-evaluation.webp" alt="Evaluation: Customer Details · Auto Evaluation · Manual Evaluation · Total Evaluation" width="1440" height="900"></div><figcaption><b>After</b> · Evaluation: Customer Details · Auto Evaluation · Manual Evaluation · Total Evaluation</figcaption></figure></div></section>
+<section class="sec"><p class="kk"><span class="n">03</span></p><h2 class="h">What Changed</h2><p class="p">What changed is presentation and behaviour, not the workflow:</p><ul class="clb"><li><b>Application status panel.</b> Shows Requested Loan Amount against Total Maximum Borrowing Power, and every open item grouped by step, each linked to the field where it is completed.</li><li><b>Prerequisites with explanations.</b> Next stays disabled until the current step's required items are complete; later steps show "Complete &lt;step&gt; first"; Submit stays disabled until every check is complete; Start Request needs at least one eligible account. The reason always sits beside the disabled control, with links to each missing item. Back and draft saving are never blocked. See Application lifecycle and guidance.</li><li><b>Underwriting outcomes.</b> Conditions appear as <em>Action Required · Additional information requested</em> with <b>Respond to condition</b>; a request can also be returned for correction, declined or approved, and keeps its submission history throughout.</li></ul>
+<dl class="met"><div><dt>Submission volume</dt><dd>+55%</dd></div><div><dt>Completion time</dt><dd>−30%</dd></div></dl><p class="p q">As reported by the project; not reproduced here.</p>
+<div class="grid1"><figure class="scr wide"><div class="ph sh"><img src="assets/vf/cs/sbl/sbl-06-after-pending-review.webp" alt="After · Pending Review: Post-Underwriting Review Queue" width="1440" height="900"></div><figcaption>After · Pending Review: Post-Underwriting Review Queue</figcaption></figure></div></section>
+<section class="sec"><p class="kk"><span class="n">04</span></p><h2 class="h">Before &amp; After</h2><div class="tw"><table class="st"><thead><tr><th>Before</th><th>After</th></tr></thead><tbody><tr><td>Header: Securities Lending Console, page title, user (Loan Officer)</td><td>Same, as a Carbon UI shell</td></tr><tr><td>Menu: Evaluations, Pending Review</td><td>Same, plus <b>Active Credit</b> (servicing has no Before screen)</td></tr><tr><td>Console tabs: Pending Evaluations · Evaluations · Submitted Applications</td><td>Same tabs, toolbar (search by Application ID / Business Name / Primary Applicant, Filter, Last Updated sort), columns and expandable rows. Statuses reflect the request's real state. The scenario you chose is tagged <b>Selected scenario</b>; reference records open read-only with <b>Open</b>.</td></tr><tr><td>Evaluation: Customer Details · Auto Evaluation · Manual Evaluation · Total Evaluation; Back · Generate PDF · Start Request</td><td>Same sections and footer. Selecting an account updates Maximum Borrowing Power immediately; concentrated positions appear in Manual Evaluation for credit officer review.</td></tr><tr><td>Pending Review: Post-Underwriting Review Queue</td><td>Same title, toolbar and columns; <b>Evaluate</b> opens the underwriting detail, including conditions</td></tr></tbody></table></div>
+<div class="cmp"><figure class="scr wide"><div class="ph sh"><img src="assets/vf/cs/sbl/sbl-02-before-console.webp" alt="Console tabs: Pending Evaluations · Evaluations · Submitted Applications" width="1440" height="900"></div><figcaption><b>Before</b> · Console tabs: Pending Evaluations · Evaluations · Submitted Applications</figcaption></figure><figure class="scr wide"><div class="ph sh"><img src="assets/vf/cs/sbl/sbl-05-after-console.webp" alt="Console tabs: Pending Evaluations · Evaluations · Submitted Applications" width="1440" height="900"></div><figcaption><b>After</b> · Console tabs: Pending Evaluations · Evaluations · Submitted Applications</figcaption></figure></div>
+<p class="p q">&gt; <b>Disclaimer.</b> This is an independent UX portfolio demonstration. All &gt; names, customer information, account details, loan amounts, collateral &gt; values, calculations, and financial data are entirely fictional and do not &gt; represent actual PNC customers, transactions, lending decisions, or &gt; financial figures. This is not an official PNC application. Security and &gt; compliance behaviours are simulated in the browser and are not production &gt; controls.</p></section>
+</div></main></div></div><nav class="pn" aria-label="More case studies"><a class="pv" href="#/audit"><span class="l">← Previous</span><span class="t">How I Audited a Healthcare Design System for Consistency and Accessibility</span></a><a class="al" href="./#projects"><span class="l">Index</span><span class="t">All projects</span></a><a class="nx" href="#/craigslist"><span class="l">Next →</span><span class="t">How I Redesigned Used-Car Discovery on Craigslist</span></a></nav></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":7999}}'>
+/* SBL: static page (screens are captures of the deployed demo); no runtime script needed. */
+class Component extends DCLogic { renderVals(){ return {}; } }
+</script>
+</body></html>

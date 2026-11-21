@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loading</title>
+<!-- The Loading board, isolated: board styles are global (.root, .nm, .go...), so the Loading is mounted in its own
+     document over the Landing instead of beside it. assets/vf/app.js loads this with ?b=<board> and watches data-done. -->
+<link rel="stylesheet" href="../assets/vf/fonts/fonts.css">
+<style>html,body{margin:0;height:100%;overflow:hidden}x-dc{display:block;height:100%}x-dc helmet{display:none}</style>
+<script src="../assets/vf/dc.js"></script>
+</head>
+<body>
+<script>
+  (function () {
+    var b = (/[?&]b=([\w-]+)/.exec(location.search) || [])[1];
+    if (!b) return;
+    fetch('boards/' + b + '.html').then(function (r) { return r.text(); }).then(function (t) {
+      var doc = new DOMParser().parseFromString(t, 'text/html');
+      /* board asset paths are written for the site root (assets/vf/...) */
+      var base = document.createElement('base'); base.href = '../'; document.head.appendChild(base);
+      window.VFL = VFDC.mount(doc, document.body);
+      parent.postMessage({ vf: 'loading-mounted' }, location.origin);
+    });
+  })();
+</script>
+</body>
+</html>

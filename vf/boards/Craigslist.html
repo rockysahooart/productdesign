@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Craigslist for iOS — case study (dark)</title></head><body>
+<x-dc><helmet><style id="vf-shell">
+/* VFINAL — fluid case-study page (cs5). Tokens / type roles / header identity = VFINAL Case boards (r6 / light-r6 / m-r8 / p2-r2);
+   sizes are fluid between the m (390) / d (1440) / uw (2560) values. Micro-cut: no tracked-caps micro labels; sentence case. */
+.root{--bg:#1F2023;--ink:#EFE8DA;--ink2:#C9C2B5;--ink3:#D9D1C3;--mute:#A9A296;--acc:#E39A7C;--ctl:#77716A;--neu:#8F8A82;--surf:#26272B;--plane:#232428;--rule:#3A3936;--hl:239,232,218;--sh:0,0,0;--sha:1;color-scheme:dark}
+.root.t-light{--bg:#ECE7DE;--ink:#23211E;--ink2:#48443E;--ink3:#2E2B27;--mute:#625D55;--acc:#A0482A;--ctl:#857D71;--neu:#67615A;--surf:#E3DDD2;--plane:#E6E0D6;--rule:#CDC6BA;--hl:35,33,30;--sh:74,56,40;--sha:.4;color-scheme:light}
+.root{--vf-gut:clamp(16px,3.89vw,96px);--vf-max:clamp(0px,100%,1680px);
+ --vf-fs-d2:clamp(42px,5.556vw,120px);--vf-fs-h2:clamp(32px,3.2vw,56px);--vf-fs-title:clamp(20px,1.667vw,30px);--vf-fs-lede:clamp(18px,1.389vw,24px);
+ --vf-fs-body:clamp(16px,calc(.179vw + 13.43px),18px);--vf-fs-meta:15px;--vf-fs-cap:14px}
+body{margin:0;background:var(--bg)}
+.root{position:relative;box-sizing:border-box;width:100%;min-height:100vh;overflow-x:clip;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased}
+.root a{color:inherit;text-decoration:none}
+.root a:focus-visible,.root button:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
+.root .ser{font-family:'Instrument Serif',serif;font-weight:400}
+.root .or{font-family:'Noto Sans Oriya',sans-serif;font-weight:300;line-height:1.75}
+/* HEADER IDENTITY: serif name | Product Designer + Odia name (lang="or"), one baseline */
+.root header.nav{position:relative;z-index:5;box-sizing:border-box;min-height:72px;max-width:var(--vf-max);margin:0 auto;padding:12px var(--vf-gut);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 24px}
+.root header.nav .id{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px}
+.root header.nav .bn{font-size:24px;line-height:1.1}
+.root header.nav .bsep{font:300 15px/1 'Inter',sans-serif;color:var(--ctl);margin:0 -2px}
+.root header.nav .brl{font:300 15px/1.2 'Inter',sans-serif;letter-spacing:.01em;color:var(--ink2);white-space:nowrap}
+.root header.nav .bor{font-size:15px;font-weight:400;color:var(--mute);line-height:1.2}
+.root header.nav nav{display:flex;gap:30px}
+.root header.nav nav a{font:400 15px/1 'Inter',sans-serif;padding:16px 0;color:var(--mute);transition:color .2s}
+.root header.nav nav a:hover,.root header.nav nav a[aria-current]{color:var(--ink)}
+.root header.nav nav a[aria-current]{box-shadow:inset 0 -1px 0 var(--acc)}
+.root .back{display:inline-flex;align-items:center;min-height:44px;font:400 15px/1 'Inter',sans-serif;color:var(--ink2);transition:color .2s}
+.root .back:hover{color:var(--acc)}
+.root .flow{box-sizing:border-box;max-width:var(--vf-max);margin:0 auto;padding:8px var(--vf-gut) 0}
+/* prev / next between the five studies */
+.root .pn{box-sizing:border-box;max-width:var(--vf-max);margin:0 auto;padding:clamp(48px,6vw,120px) var(--vf-gut) clamp(56px,6vw,120px);display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:24px;border-top:1px solid var(--rule)}
+.root .pn a{display:block;padding-top:14px;border-top:1px solid var(--rule);position:relative}
+.root .pn a::before{content:"";position:absolute;left:0;top:-1px;width:24px;height:1px;background:var(--acc)}
+.root .pn .l{display:block;font:400 15px/1.45 'Inter',sans-serif;color:var(--mute)}
+.root .pn .t{display:block;margin-top:6px;font:400 var(--vf-fs-title)/1.2 'Instrument Serif',serif;color:var(--ink);text-wrap:balance}
+.root .pn a:hover .t{color:var(--acc)}
+.root .pn .nx{text-align:right}.root .pn .nx::before{left:auto;right:0}
+.root .pn .al{text-align:center}.root .pn .al::before{left:calc(50% - 12px)}
+@media (max-width:719px){.root .pn .nx,.root .pn .al{text-align:left}.root .pn .nx::before,.root .pn .al::before{left:0;right:auto}}
+
+.root .cl{display:block;max-width:var(--vf-max);margin:0 auto;padding:clamp(24px,3vw,56px) var(--vf-gut) 0;box-sizing:border-box}
+.root .cl .t{margin:0;font:400 var(--vf-fs-d2)/1 'Instrument Serif',serif;letter-spacing:-.01em;max-width:16em;text-wrap:balance}
+.root .cl .lede{margin:clamp(20px,2vw,32px) 0 0;max-width:36em;font:300 var(--vf-fs-lede)/1.5 'Inter',sans-serif;color:var(--ink)}
+.root .cl .pair{margin-top:clamp(40px,4vw,72px);padding-top:16px;border-top:1px solid var(--rule);max-width:56rem;position:relative}
+.root .cl .pair::before{content:"";position:absolute;left:0;top:-1px;width:24px;height:1px;background:var(--acc)}
+.root .cl .h{margin:0;font:400 var(--vf-fs-h2)/1.08 'Instrument Serif',serif;text-wrap:balance}
+.root .cl .h3{margin:clamp(32px,3vw,48px) 0 0;font:400 var(--vf-fs-title)/1.2 'Instrument Serif',serif}
+.root .cl .p{margin:clamp(14px,1.4vw,20px) 0 0;max-width:44em;font:300 var(--vf-fs-body)/1.65 'Inter',sans-serif;color:var(--ink2)}
+.root .cl .p b,.root .cl .clb b{font-weight:400;color:var(--ink)}
+.root .cl code{font:400 .92em/1 'Inter',sans-serif;color:var(--ink)}
+.root .cl a:not(.lk){box-shadow:inset 0 -1px 0 var(--rule)}.root .cl a:hover{color:var(--acc)}
+.root .cl .lk{color:var(--acc);white-space:nowrap}
+.root .cl .clb{margin:clamp(14px,1.4vw,20px) 0 0;padding:0;list-style:none;max-width:48em}
+.root .cl .clb li{position:relative;padding:12px 0 12px 22px;border-top:1px solid var(--rule);font:300 var(--vf-fs-body)/1.6 'Inter',sans-serif;color:var(--ink2)}
+.root .cl .clb li::before{content:"";position:absolute;left:0;top:calc(12px + .8em);width:10px;height:1px;background:var(--acc)}
+.root .cl .clb ul{list-style:none;padding:0;margin:6px 0 0}.root .cl .clb ul li{border-top:0;padding:4px 0 4px 22px}
+.root .cl .hero{margin:clamp(48px,5vw,96px) 0 0}
+.root .cl .dk{position:relative;background-color:var(--surf);background-image:linear-gradient(rgba(var(--hl),.05) 1px,transparent 1px),linear-gradient(90deg,rgba(var(--hl),.05) 1px,transparent 1px);background-size:14px 14px;background-position:-1px -1px;border:1px solid rgba(var(--hl),.12);box-shadow:4px 8px 12px -8px rgba(var(--sh),calc(.7 * var(--sha)))}
+.root .cl .mount{padding:clamp(24px,4vw,72px) clamp(16px,3vw,56px);display:flex;justify-content:center}
+.root .cl .mount>.pv__embed{width:100%;height:clamp(520px,48vw,880px);margin:0 auto}
+.root .cl .cap,.root .cl figcaption{margin:14px 0 0;font:400 14px/1.55 'Inter',sans-serif;color:var(--mute);max-width:56em}
+.root .cl .sec{padding-top:clamp(56px,6vw,120px)}
+.root .cl .grid6,.root .cl .grid4{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:clamp(20px,2.4vw,40px);margin-top:clamp(24px,2.4vw,40px)}
+.root .cl .grid4{grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),260px))}
+.root .cl .scr{margin:0}
+/* screens framed once: Figma exports already carry their rounded screen corners (transparent alpha) -> shown as-is, no frame;
+   raw prototype captures (rectangular) get the same screen radius as the exports, 55/430 x 55/932 of the image, nothing else */
+.root .cl .scr .ph{border:0;background:none;box-shadow:none;border-radius:0;overflow:visible}
+.root .cl .scr .ph.pr img{border-radius:12.79% / 5.9%}
+.root .cl .scr img{display:block;width:100%;height:auto}
+</style><style id="site-livefront">
+/* the portfolio's own animated Craigslist phone (34-livefront), rules that match it, scoped under .cs5, unchanged */
+.cs5{color-scheme:light;--glass-edge:rgba(255, 255, 255, 0.75);--glass-cast:rgba(0, 0, 0, 0.35);--cursor-glow:rgba(0, 0, 0, 0.032);--torch-core:transparent;--torch-edge:transparent;--reveal:radial-gradient(circle clamp(420px, 36vmax, 600px)
+                            at 50% 50%,
+              rgba(0, 0, 0, 0) 0%,
+              rgba(0, 0, 0, 0.05) 20%,
+              rgba(0, 0, 0, 0.18) 38%,
+              rgba(0, 0, 0, 0.40) 56%,
+              rgba(0, 0, 0, 0.66) 74%,
+              rgba(0, 0, 0, 0.87) 88%,
+              rgba(0, 0, 0, 1) 100%);--beam:radial-gradient(circle 172px at 50% 50%,
+            rgba(0, 0, 0, 1) 0%,
+            rgba(0, 0, 0, 0.92) 18%,
+            rgba(0, 0, 0, 0.44) 52%,
+            rgba(0, 0, 0, 0.13) 78%,
+            rgba(0, 0, 0, 0) 100%);--canvas:#E9E9E9;--surface:#F7F7F7;--surface-sunken:#DEDEDE;--surface-raised:#F7F7F7;--canvas-case:#F6F6F6;--surface-case:#FFFFFF;--surface-sunken-case:#E8E8E8;--surface-raised-case:#FFFFFF;--ink:#262626;--ink-secondary:#4A4A4A;--ink-muted:#6A6A6A;--on-ink:#F7F7F7;--border:#D2D2D2;--border-strong:#B4B4B4;--accent:#000000;--accent-hover:#2A2A2A;--accent-wash:rgba(0, 0, 0, 0.10);--link-go:#1F5AD1;--kw-hum:#3347B8;--on-accent:#F7F7F7;--cta-fill:#262626;--cta-fill-hover:#101010;--cta-label:#F7F7F7;--focus:#262626;--statement-em:#000000;--hero-cta-fill:var(--cta-fill);--hero-cta-line:transparent;--hero-cta-label:var(--cta-label);--hero-ghost-line:var(--border-strong);--lamp-core:rgba(255, 255, 255, 0.62);--lamp-mid:rgba(255, 255, 255, 0.28);--lamp-far:rgba(255, 255, 255, 0.10);--portrait-bg:#D6D6D6;--hue-optiflow:#4F46E5;--hue-carry:#1F8A5B;--hue-crypto:#3D4A6B;--hue-pnc:#B8660F;--hue-conduit:#2563C9;--hue-specimen:#6D4AC9;--hue-dsa:#1F5F8B;--status-shipped:#13804F;--status-wip:#8A5A00;--state-suggested:#A9650B;--state-suggested-bg:rgba(184, 102, 15, 0.12);--state-accepted:#1B7247;--state-accepted-bg:rgba(27, 114, 71, 0.12);--opti-rail:#1E2233;--on-hue-optiflow:#FFFFFF;--sig-idle:#9C93C8;--sig-lane-1:#6D4AC9;--sig-lane-2:#1F8A5B;--sig-lane-3:#B8660F;--shadow-card:0 1px 2px rgba(45, 58, 31, 0.06);--shadow-lift:0 10px 28px -12px rgba(45, 58, 31, 0.24);--card-wash:linear-gradient(152deg,
+                 rgba(255, 255, 255, 0.55) 0%,
+                 rgba(255, 255, 255, 0.00) 46%,
+                 rgba(45, 58, 31, 0.035) 100%);--hero-wash:linear-gradient(112deg,
+                 rgba(255, 255, 255, 0.72) 0%,
+                 rgba(255, 255, 255, 0.24) 52%,
+                 rgba(0, 0, 0, 0.028) 100%)}
+.cs5[data-theme="dark"]{color-scheme:dark;--glass-edge:rgba(255, 255, 255, 0.09);--glass-cast:rgba(0, 0, 0, 0.8);--cursor-glow:rgba(168, 166, 255, 0.11);--veil:#35353C;--torch-core:rgba(196, 194, 255, 0.085);--torch-edge:rgba(150, 148, 255, 0.030);--canvas:#0D0D0E;--surface:#2A2A2C;--surface-sunken:#08080A;--surface-raised:#35353A;--canvas-case:#0D0D0E;--surface-case:#2A2A2C;--surface-sunken-case:#08080A;--surface-raised-case:#35353A;--ink:#EDEDED;--ink-secondary:#D2D2D2;--ink-muted:#ADADAD;--on-ink:#121212;--border:#3D3D42;--border-strong:#55555C;--accent:#C8C8C8;--accent-hover:#DEDEDE;--accent-wash:rgba(255, 255, 255, 0.14);--link-go:#7FB4FF;--kw-hum:#AFC4FF;--on-accent:#121212;--cta-fill:#DCDCDC;--cta-fill-hover:#F0F0F0;--cta-label:#0D0D0D;--focus:#E8E8E8;--statement-em:#FFFFFF;--hero-cta-fill:transparent;--hero-cta-line:#FFFFFF;--hero-cta-label:#FFFFFF;--hero-ghost-line:transparent;--lamp-core:rgba(255, 255, 255, 0.135);--lamp-mid:rgba(255, 255, 255, 0.062);--lamp-far:rgba(255, 255, 255, 0.022);--portrait-bg:#A9A9A9;--hue-optiflow:#9A94FF;--hue-carry:#56C48F;--hue-crypto:#A8B8DA;--hue-pnc:#E0A155;--hue-conduit:#7FA8F2;--hue-specimen:#B195F2;--hue-dsa:#7FB6DD;--status-shipped:#7FDDB2;--status-wip:#E8B765;--state-suggested:#E0A155;--state-suggested-bg:rgba(224, 161, 85, 0.16);--state-accepted:#56C48F;--state-accepted-bg:rgba(86, 196, 143, 0.16);--opti-rail:#10151F;--on-hue-optiflow:#171436;--sig-idle:#6F6699;--sig-lane-1:#B195F2;--sig-lane-2:#56C48F;--sig-lane-3:#E0A155;--shadow-card:0 1px 2px rgba(0, 0, 0, 0.35);--shadow-lift:0 12px 30px -14px rgba(0, 0, 0, 0.6);--card-wash:linear-gradient(152deg,
+                 rgba(255, 255, 255, 0.038) 0%,
+                 rgba(255, 255, 255, 0.000) 46%,
+                 rgba(0, 0, 0, 0.16) 100%);--hero-wash:linear-gradient(112deg,
+                 rgba(255, 255, 255, 0.10) 0%,
+                 rgba(255, 255, 255, 0.04) 52%,
+                 rgba(255, 255, 255, 0.02) 100%)}
+@media (prefers-color-scheme: dark) {.cs5:not([data-theme="light"]){color-scheme:dark;--glass-edge:rgba(255, 255, 255, 0.09);--glass-cast:rgba(0, 0, 0, 0.8);--cursor-glow:rgba(168, 166, 255, 0.11);--veil:#35353C;--torch-core:rgba(196, 194, 255, 0.085);--torch-edge:rgba(150, 148, 255, 0.030);--canvas:#0D0D0E;--surface:#2A2A2C;--surface-sunken:#08080A;--surface-raised:#35353A;--canvas-case:#0D0D0E;--surface-case:#2A2A2C;--surface-sunken-case:#08080A;--surface-raised-case:#35353A;--ink:#EDEDED;--ink-secondary:#D2D2D2;--ink-muted:#ADADAD;--on-ink:#121212;--border:#3D3D42;--border-strong:#55555C;--accent:#C8C8C8;--accent-hover:#DEDEDE;--accent-wash:rgba(255, 255, 255, 0.14);--link-go:#7FB4FF;--kw-hum:#AFC4FF;--on-accent:#121212;--cta-fill:#DCDCDC;--cta-fill-hover:#F0F0F0;--cta-label:#0D0D0D;--focus:#E8E8E8;--statement-em:#FFFFFF;--hero-cta-fill:transparent;--hero-cta-line:#FFFFFF;--hero-cta-label:#FFFFFF;--hero-ghost-line:transparent;--lamp-core:rgba(255, 255, 255, 0.135);--lamp-mid:rgba(255, 255, 255, 0.062);--lamp-far:rgba(255, 255, 255, 0.022);--portrait-bg:#A9A9A9;--hue-optiflow:#9A94FF;--hue-carry:#56C48F;--hue-crypto:#A8B8DA;--hue-pnc:#E0A155;--hue-conduit:#7FA8F2;--hue-specimen:#B195F2;--hue-dsa:#7FB6DD;--status-shipped:#7FDDB2;--status-wip:#E8B765;--state-suggested:#E0A155;--state-suggested-bg:rgba(224, 161, 85, 0.16);--state-accepted:#56C48F;--state-accepted-bg:rgba(86, 196, 143, 0.16);--opti-rail:#10151F;--on-hue-optiflow:#171436;--sig-idle:#6F6699;--sig-lane-1:#B195F2;--sig-lane-2:#56C48F;--sig-lane-3:#E0A155;--shadow-card:0 1px 2px rgba(0, 0, 0, 0.35);--shadow-lift:0 12px 30px -14px rgba(0, 0, 0, 0.6);--card-wash:linear-gradient(152deg,
+                   rgba(255, 255, 255, 0.038) 0%,
+                   rgba(255, 255, 255, 0.000) 46%,
+                   rgba(0, 0, 0, 0.16) 100%);--hero-wash:linear-gradient(112deg,
+                   rgba(255, 255, 255, 0.10) 0%,
+                   rgba(255, 255, 255, 0.04) 52%,
+                   rgba(255, 255, 255, 0.02) 100%)}}
+.cs5{--font-heading:"Cormorant Garamond", ui-serif, Georgia, "Times New Roman", serif;--font-pixel:"Cormorant Garamond", ui-serif, Georgia, "Times New Roman", serif;--font-body:"Be Vietnam Pro", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;--font-display:var(--font-heading);--font-sans:var(--font-body);--font-mono:var(--font-body);--font-artifact-display:"Cormorant Garamond", ui-serif, Georgia, "Times New Roman", serif;--font-artifact-sans:"Sora", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;--font-artifact-mono:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;--fs-label:clamp(11px, 0.10vw + 10.6px, 12px);--fs-micro:clamp(10px, 0.07vw +  9.7px, 11px);--fs-meta:clamp(12px, 0.07vw + 11.9px,  13px);--fs-body:clamp(14.5px, 0.10vw + 14.1px, 16px);--fs-lead:clamp(17px, 0.21vw + 16.0px,  20px);--fs-card:clamp(22px, 0.42vw + 16.0px,  28px);--fs-display:clamp(26px, 0.83vw + 14.0px,  38px);--fs-section:clamp(32px, 1.39vw + 12.0px,  52px);--fs-hero:clamp(40px, 2.22vw + 8.0px,   72px);--lh-hero:1.00;--lh-section:1.08;--lh-display:1.15;--lh-card:1.20;--lh-lead:1.60;--lh-body:1.55;--lh-meta:1.50;--lh-flat:1.10;--tr-hero:-0.010em;--tr-section:-0.010em;--tr-display:-0.020em;--tr-card:-0.010em;--tr-lead:normal;--tr-body:normal;--tr-meta:0.04em;--tr-label:0.09em;--fw-body:400;--fw-medium:500;--fw-strong:500;--fs-disp-k:1.15;--fw-display:600;--wonk-on:"WONK" 0;--wonk-off:"WONK" 0}
+.cs5 .pv__embed{ --font-display: var(--font-artifact-display); --font-sans: var(--font-artifact-sans); --font-mono: var(--font-artifact-mono); font-family: var(--font-sans); }
+.cs5{--s-1:8px;--s-2:13px;--s-3:21px;--s-4:34px;--s-5:55px;--s-6:89px;--s-7:144px;--page-max:1500px;--page-pad:clamp(var(--s-2), 1.9vw, 28px);--grid-gap:clamp(12px, 1.1vw, 16px);--card-pad:clamp(24px, 2.1vw, 32px);--section-gap:clamp(var(--s-5), 6vw, var(--s-6));--logo-h:clamp(19px, 1.01vw + 15px, 28px);--clients-gap:clamp(42px, 11vw, 190px);--clients-dur:46s;--row-h:clamp(300px, 27vw, 400px);--row-h-index:clamp(240px, 20vw, 300px);--row-h-wide:clamp(320px, 33vw, 480px);--r-sm:6px;--r-md:10px;--r-lg:16px;--r-btn:8px;--icon-stroke:1.7;--ease:cubic-bezier(0.22, 0.61, 0.36, 1);--ease-out:cubic-bezier(0.16, 1, 0.3, 1);--dur-fast:140ms;--dur:260ms;--dur-slow:520ms}
+@media (prefers-reduced-motion: reduce) {.cs5{--dur-fast:1ms;--dur:1ms;--dur-slow:1ms}}
+.cs5 *{ box-sizing: border-box; }
+.cs5{--wall-grain-src:url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='150'%20height='150'%3E%3Cfilter%20id='w'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.86'%20numOctaves='3'%20stitchTiles='stitch'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='150'%20height='150'%20filter='url%28%23w%29'%20opacity='0.085'/%3E%3C/svg%3E")}
+@media (max-width: 959px), (hover: none), (pointer: coarse) {.cs5{--cursor-glow:transparent}
+.cs5[data-theme="dark"]{--cursor-glow:transparent;--canvas:#121212;--surface:#242424;--surface-sunken:#0C0C0C;--surface-raised:#303030;--ink-muted:#A2A2A2;--border:#333333;--border-strong:#4C4C4C}
+@media (prefers-color-scheme: dark) {.cs5:not([data-theme="light"]){--cursor-glow:transparent;--canvas:#121212;--surface:#242424;--surface-sunken:#0C0C0C;--surface-raised:#303030;--ink-muted:#A2A2A2;--border:#333333;--border-strong:#4C4C4C}}}
+.cs5:not([data-route="home"]){--fs-disp-k:1;--veil:transparent;--reveal:radial-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);--beam:radial-gradient(rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 100%);--torch-core:transparent;--torch-edge:transparent;--cursor-glow:transparent}
+.cs5 img{ display: block; max-width: 100%; }
+.cs5 img{ height: auto; }
+.cs5 .pv__embed{ position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: var(--r-sm); }
+.cs5{--otc-illustration:url("assets/vf/cs/craigslist/f51f334af119.webp");--otc-music:url("assets/vf/cs/craigslist/177891e6f599.webp");--otc-djing:url("assets/vf/cs/craigslist/2cefaa0d9225.webp")}
+@media (max-width: 1279px) {.cs5{--clients-dur:36s}}
+@media (max-width: 900px) {.cs5{--clients-dur:30s}}
+@media (max-width: 767px) {.cs5{--clients-dur:27s}}
+@media (max-width: 460px) {.cs5{--clients-dur:19s}}
+.cs5[data-route="carry"],.cs5[data-route="optiflow"],.cs5[data-route="audit"],.cs5[data-route="specimen"]{--canvas:#FFFFFF;--surface:#FFFFFF;--surface-sunken:#F1F1F1;--surface-raised:#FFFFFF;--wall-grain:none;--wall-wash:none;--cursor-glow:transparent}
+.cs5[data-theme="dark"][data-route="carry"],.cs5[data-theme="dark"][data-route="optiflow"],.cs5[data-theme="dark"][data-route="audit"],.cs5[data-theme="dark"][data-route="specimen"]{--canvas:var(--canvas-case);--surface:var(--surface-case);--surface-sunken:var(--surface-sunken-case);--surface-raised:var(--surface-raised-case);--wall-grain:var(--wall-grain-src);--cursor-glow:rgba(168, 166, 255, 0.11)}
+@media (prefers-color-scheme: dark) {.cs5:not([data-theme="light"])[data-route="carry"],.cs5:not([data-theme="light"])[data-route="optiflow"],.cs5:not([data-theme="light"])[data-route="audit"],.cs5:not([data-theme="light"])[data-route="specimen"]{--canvas:var(--canvas-case);--surface:var(--surface-case);--surface-sunken:var(--surface-sunken-case);--surface-raised:var(--surface-raised-case);--wall-grain:var(--wall-grain-src);--cursor-glow:rgba(168, 166, 255, 0.11)}}
+@media (min-width: 960px) {.cs5[data-landing]{--land-ms:320ms;--land-ease:cubic-bezier(0.25, 0.1, 0.25, 1)}}
+@media (prefers-reduced-motion: reduce) {.cs5 *{ animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }}
+.cs5 .pv__embed{ min-height: 240px; }
+.cs5 .pv__embed--livefront{ container-type: size; display: grid; place-items: center; overflow: visible; }
+.cs5 .lfx{ --u: min(calc(100cqh / 960), calc(100cqw / 458)); --lfx-t: 6.6s; position: relative; width: calc(458 * var(--u)); height: calc(960 * var(--u)); box-sizing: border-box; border: calc(2 * var(--u)) solid transparent; border-radius: calc(70 * var(--u)); background: linear-gradient(rgb(32, 33, 37), rgb(18, 19, 21)) padding-box padding-box, linear-gradient(155deg, rgb(122, 124, 130) 0%, rgb(58, 59, 64) 22%, rgb(24, 25, 28) 55%, rgb(75, 77, 82) 100%) border-box border-box; box-shadow: inset 0 0 0 calc(1 * var(--u)) rgba(255, 255, 255, 0.07),
+    0 calc(2 * var(--u)) calc(3 * var(--u)) rgba(0, 0, 0, 0.28),
+    0 calc(16 * var(--u)) calc(34 * var(--u)) rgba(0, 0, 0, 0.16); }
+.cs5 .lfx-screen{ position: absolute; inset: calc(12 * var(--u)); border-radius: calc(56 * var(--u)); overflow: hidden; background: rgb(250, 250, 250); box-shadow: 0 0 0 calc(1 * var(--u)) #000; isolation: isolate; }
+.cs5 .lfx-s{ position: absolute; inset: 0px; width: 100%; height: 100%; display: block; opacity: 0; }
+.cs5 .lfx-s09{ opacity: 1; }
+.cs5 .lfx-s03,.cs5 .lfx-s12{ transform: translateX(101%); }
+.cs5 .lfx-dim{ position: absolute; inset: 0px; background: rgba(0, 0, 0, 0.28); opacity: 0; }
+.cs5 .lfx-sheet{ position: absolute; left: 0px; bottom: 0px; width: 100%; height: calc(62.3391%); display: block; transform: translateY(101%); }
+.cs5 .lfx-island{ position: absolute; left: 50%; top: calc(23 * var(--u)); width: calc(126 * var(--u)); height: calc(37 * var(--u)); margin-left: calc(-63 * var(--u)); border-radius: calc(19 * var(--u)); background: rgb(0, 0, 0); }
+.cs5 .lfx-glass{ position: absolute; inset: calc(12 * var(--u)); border-radius: calc(56 * var(--u)); pointer-events: none; box-shadow: inset 0 0 0 calc(1 * var(--u)) rgba(255, 255, 255, 0.10); background: linear-gradient(160deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0) 28%); }
+.cs5 .lfx-tap{ position: absolute; width: calc(44 * var(--u)); height: calc(44 * var(--u)); margin: calc(-22 * var(--u)) 0 0 calc(-22 * var(--u)); border-radius: 50%; background: rgba(134, 16, 168, 0.24); opacity: 0; }
+.cs5 .lfx-tap--1{ left: calc(80.4651%); top: calc(8.69099%); }
+.cs5 .lfx-tap--2{ left: calc(34.8837%); top: calc(27.4678%); }
+.cs5 .lfx-tap--3{ left: calc(97.2093%); top: calc(8.69099%); }
+.cs5 .lfx-tap--4{ left: calc(50%); top: calc(68.0258%); }
+.cs5 .lfx-tap--5{ left: calc(27.2093%); top: calc(48.2833%); }
+@media (prefers-reduced-motion: no-preference) {.cs5 .lfx-s01{ opacity: 1; }
+.cs5 .lfx-s03{ animation: lfx-s03   var(--lfx-t) linear infinite; }
+.cs5 .lfx-s06{ animation: lfx-s06   var(--lfx-t) linear infinite; }
+.cs5 .lfx-s09{ animation: lfx-s09   var(--lfx-t) linear infinite; }
+.cs5 .lfx-dim{ animation: lfx-dim   var(--lfx-t) linear infinite; }
+.cs5 .lfx-sheet{ animation: lfx-sheet var(--lfx-t) linear infinite; }
+.cs5 .lfx-s12{ animation: lfx-s12   var(--lfx-t) linear infinite; }
+.cs5 .lfx-tap{ animation: lfx-tap   var(--lfx-t) linear infinite; }
+.cs5 .lfx-tap--1{ animation-delay: 0.75s; }
+.cs5 .lfx-tap--2{ animation-delay: 1.65s; }
+.cs5 .lfx-tap--3{ animation-delay: 2.45s; }
+.cs5 .lfx-tap--4{ animation-delay: 3.55s; }
+.cs5 .lfx-tap--5{ animation-delay: 4.75s; }}
+@keyframes lfx-s03 { 
+  0%, 13.64% { transform: translateX(101%); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+  18.94%, 95.45% { transform: none; opacity: 1; }
+  100% { transform: none; opacity: 0; }
+}
+@keyframes lfx-s06 { 
+  0%, 27.27% { opacity: 0; }
+  31.06%, 95.45% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes lfx-dim { 
+  0%, 39.39% { opacity: 0; }
+  44.7%, 58.33% { opacity: 1; }
+  63.64%, 100% { opacity: 0; }
+}
+@keyframes lfx-sheet { 
+  0%, 39.39% { transform: translateY(101%); animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+  44.7%, 58.33% { transform: none; animation-timing-function: cubic-bezier(0.4, 0, 1, 1); }
+  63.64%, 100% { transform: translateY(101%); }
+}
+@keyframes lfx-s09 { 
+  0%, 58.33% { opacity: 0; }
+  62.12%, 95.45% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes lfx-s12 { 
+  0%, 75.76% { transform: translateX(101%); opacity: 1; animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+  81.06%, 95.45% { transform: none; opacity: 1; }
+  100% { transform: none; opacity: 0; }
+}
+@keyframes lfx-tap { 
+  0% { opacity: 0; transform: scale(0.6); }
+  2.5% { opacity: 1; transform: scale(1); }
+  6%, 100% { opacity: 0; transform: scale(1.35); }
+}
+@media (min-width: 2100px) {.cs5 .hero__work .pv__slide .pv__embed{ height: 100%; min-height: 0px; }}
+.cs5 .page[data-view="home"] .pv__embed{ border-radius: 14px; }</style></helmet>
+<div class="root t-dark"><header class="nav"><a class="id" href="./#projects"><span class="ser bn">Sarthak Sahoo</span><span class="bsep" aria-hidden="true">|</span><span class="brl">Product Designer</span><span lang="or" class="or bor">ସାର୍ଥକ ସାହୁ</span></a><nav aria-label="Primary"><a href="./#projects" aria-current="page">Projects</a></nav></header><div class="flow"><a class="back" href="./#projects">← All projects</a></div><div class="cs5" data-theme="dark"><div class="cs5b"><main class="cl">
+<header class="ar-mast"><h1 class="t">How I Redesigned Used-Car Discovery on Craigslist</h1><p class="lede">I reimagined the iOS experience to help buyers search, compare listings, evaluate seller credibility, and find relevant vehicles with less friction.</p>
+<div class="pair"><h2 class="h">Redesigning Craigslist for faster used-car discovery</h2><p class="p">For a paid product design brief with LiveFront, I redesigned Craigslist&rsquo;s React Native iOS experience and created an implementation-ready handoff for the used-car discovery flow. <a class="lk" href="https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0">view project <span aria-hidden="true">→</span></a></p></div>
+<figure class="hero"><div class="mount dk"><div class="pv__embed pv__embed--livefront" role="img" aria-label="The redesigned Craigslist iPhone app, in its real Figma screens: Home in Minneapolis, Cars and trucks browsing, results for Volkswagen Golf, the Price sheet set to a maximum of $10,000, the four results up to $10,000, and the 2016 Volkswagen Golf’s item details.">
+                <!-- The real screens from the Figma file, exported and stacked
+                     inside one static iPhone. Only the screens move. -->
+                <div class="lfx" aria-hidden="true">
+                  <div class="lfx-screen">
+                    <img class="lfx-s lfx-s01" src="assets/vf/cs/craigslist/12d471814688.webp" width="430" height="932" alt="" decoding="async">
+                    <img class="lfx-s lfx-s03" src="assets/vf/cs/craigslist/99e70b62d143.webp" width="430" height="932" alt="" decoding="async">
+                    <img class="lfx-s lfx-s06" src="assets/vf/cs/craigslist/f009f85f2577.webp" width="430" height="932" alt="" decoding="async">
+                    <img class="lfx-s lfx-s09" src="assets/vf/cs/craigslist/1579b4e217c7.webp" width="430" height="932" alt="" decoding="async">
+                    <div class="lfx-dim"></div>
+                    <img class="lfx-sheet" src="assets/vf/cs/craigslist/95c516214a6b.webp" width="430" height="581" alt="" decoding="async">
+                    <img class="lfx-s lfx-s12" src="assets/vf/cs/craigslist/47888859f3ab.webp" width="430" height="932" alt="" decoding="async">
+                    <i class="lfx-tap lfx-tap--1"></i><i class="lfx-tap lfx-tap--2"></i><i class="lfx-tap lfx-tap--3"></i><i class="lfx-tap lfx-tap--4"></i><i class="lfx-tap lfx-tap--5"></i>
+                  </div>
+                  <div class="lfx-island"></div>
+                  <div class="lfx-glass"></div>
+                </div>
+                </div></div><figcaption class="cap">The redesigned Craigslist iPhone app, in its real Figma screens: Home in Minneapolis, Cars and trucks browsing, results for Volkswagen Golf, the Price sheet set to a maximum of $10,000, the four results up to $10,000, and the 2016 Volkswagen Golf’s item details.</figcaption></figure></header>
+<div class="cs-wrap">
+<section class="sec"><div class="grid6"><figure class="scr"><div class="ph fx"><img src="assets/vf/cs/craigslist/12d471814688.webp" alt="Home in Minneapolis" width="430" height="932"></div><figcaption>Home in Minneapolis</figcaption></figure><figure class="scr"><div class="ph fx"><img src="assets/vf/cs/craigslist/99e70b62d143.webp" alt="Cars and trucks browsing" width="430" height="932"></div><figcaption>Cars and trucks browsing</figcaption></figure><figure class="scr"><div class="ph fx"><img src="assets/vf/cs/craigslist/f009f85f2577.webp" alt="results for Volkswagen Golf" width="430" height="932"></div><figcaption>results for Volkswagen Golf</figcaption></figure><figure class="scr"><div class="ph fx"><img src="assets/vf/cs/craigslist/95c516214a6b.webp" alt="the Price sheet set to a maximum of $10,000" width="430" height="581"></div><figcaption>the Price sheet set to a maximum of $10,000</figcaption></figure><figure class="scr"><div class="ph fx"><img src="assets/vf/cs/craigslist/1579b4e217c7.webp" alt="the four results up to $10,000" width="430" height="932"></div><figcaption>the four results up to $10,000</figcaption></figure><figure class="scr"><div class="ph fx"><img src="assets/vf/cs/craigslist/47888859f3ab.webp" alt="the 2016 Volkswagen Golf’s item details" width="430" height="932"></div><figcaption>the 2016 Volkswagen Golf’s item details</figcaption></figure></div></section>
+<section class="sec"><h2 class="h">Craigslist iOS redesign: browser prototype</h2><p class="p">A static HTML/CSS/JavaScript prototype of the Craigslist iOS car-shopping redesign. It's a 430 × 932 pt iPhone screen, built from the handoff and the Figma file <code>uBDKd4xLS50msiung2aDGJ</code>.</p><p class="p"><b>Live prototype:</b> <a href="https://rockysahooart.github.io/craigslist-livefront-prototype/">https://rockysahooart.github.io/craigslist-livefront-prototype/</a>. Open it on a phone for the full-screen version.</p>
+<h3 class="h3">Prototype notes</h3><ul class="clb"><li><strong>Sample data.</strong> Listings and sellers are fictional. Vehicle photos are AI-generated sample images.</li>
+        <li><strong>Map.</strong> Interactive map (Leaflet, OpenStreetMap tiles). Listing positions and search centres are illustrative; distances are straight-line.</li>
+        <li><strong>Not in Figma.</strong> Year, make/model, location and distance controls.</li>
+        <li><strong>Unavailable.</strong> Favorites, Post, Account, Chat, Saved searches list, Contact seller.</li>
+        <li><strong>Exploratory concept.</strong> Save search, alerts, Continue your search and price-drop alerts are a proposed concept, not validated. Notifications are simulated examples; nothing is monitored or delivered.</li></ul></section>
+<section class="sec"><h3 class="h3"><b>Discovery journey.</b></h3><ul class="clb"><li><b>Home:</b> the map shows the proximity circle only, with no markers.</li><li><b>Home sheet position:</b> the sheet starts raised, so the search field, the toolbar and one complete listing row sit above the bottom navigation. The position is measured from the rendered layout, so it adapts to the viewport. It's never lower than the Figma position, and never so high that the map and circle disappear.</li><li><b>Home sheet gestures:</b><ul><li>An upward swipe anywhere in the sheet, including over the search field or a card, expands it. It doesn't open search or focus anything.</li><li>Once expanded, the listings scroll normally. Pulling down collapses the sheet only when the list is at the top.</li><li>A deliberate tap on the search field opens search. A drag cancels any card or button activation.</li><li>The grabber is a button: tap, Enter or Space toggles it, and ArrowUp/ArrowDown expand or collapse it.</li><li>On desktop, a mouse drag or the wheel does the same.</li><li>The exposed map still pans and zooms.</li></ul></li><li><b>Search:</b> the search field has recent searches and the "cars" shortcut.</li><li><b>Category browsing:</b> each for-sale category works on the sample data.</li><li><b>Results:</b> a two-state results sheet. Drag the grabber or header, tap the grabber, or use Expand map / Collapse map.</li><li><b>Map view:</b> markers and clusters, a preview for the selected listing, and details.</li><li><b>Details:</b> Save star, photo counter, "Not provided" facts, pickup area, and Previous/Next across the filtered results.</li><li><b>Returning:</b> closing details restores the screen, view, selection, scroll, filters and the map position.</li></ul>
+<div class="grid4"><figure class="scr"><div class="ph pr"><img src="assets/vf/cs/craigslist/proto-01-home.webp" alt="Home" width="430" height="932"></div><figcaption>Home</figcaption></figure><figure class="scr"><div class="ph pr"><img src="assets/vf/cs/craigslist/proto-02-search.webp" alt="Search" width="430" height="932"></div><figcaption>Search</figcaption></figure><figure class="scr"><div class="ph pr"><img src="assets/vf/cs/craigslist/proto-03-results.webp" alt="Results" width="430" height="932"></div><figcaption>Results</figcaption></figure><figure class="scr"><div class="ph pr"><img src="assets/vf/cs/craigslist/proto-05-map.webp" alt="Map view" width="430" height="932"></div><figcaption>Map view</figcaption></figure></div></section>
+<section class="sec"><p class="p"><b>Filtering: one shared filter state.</b> It drives the list, the result count, the map markers, the previews and listing navigation. It combines:</p><ul class="clb"><li>the query</li><li>location and proximity (straight-line distance from the search centre)</li><li>category</li><li>price range</li><li>seller type</li><li>in Cars &amp; trucks, vehicle year, mileage, and make and model</li></ul><h3 class="h3"><b>How the filter panels behave</b></h3><ul class="clb"><li><b>Drafts:</b> sheets edit a draft. Apply commits it; Cancel, Close, Esc or the scrim discards it. Apply previews the outcome ("Show N results").</li><li><b>Filters (n) count:</b> counts price, seller, year, mileage and make/model. "Also filtered: …" lists the active sheet filters.</li><li><b>No matches:</b> the query and pills stay visible, with an explanation and the recovery actions that apply.</li><li><b>One panel at a time:</b> each sits on the bottom edge with safe-area spacing, scrolls when it's long, and keeps its footer above the keyboard.</li><li><b>Focus:</b> focus moves into the panel, Tab stays inside it, and focus returns to the control that opened it.</li></ul>
+<div class="grid4"><figure class="scr"><div class="ph pr"><img src="assets/vf/cs/craigslist/proto-04-filters.webp" alt="Filters" width="430" height="932"></div><figcaption>Filters</figcaption></figure><figure class="scr"><div class="ph pr"><img src="assets/vf/cs/craigslist/proto-07-details.webp" alt="Details" width="430" height="932"></div><figcaption>Details</figcaption></figure></div></section>
+<section class="sec"><p class="p"><b>Returning to a car search (exploratory concept, not validated).</b> Built from the Figma section "Exploration · Returning to a car search" (R0–R11), and labelled as a concept in the desktop notes.</p><ul class="clb"><li><b>Save search:</b> saves the query, category, location, radius and every applied filter. New-match alerts are optional (Off, Daily, Weekly); declining still saves. A "Search saved" confirmation offers Manage.</li><li><b>Continue your search:</b> a Home entry for the most recent saved search, with "n new" since it was last viewed. Selecting it restores the search; viewing resets the count.</li><li><b>New-match alert:</b> an example notification opens the saved results, with "1 new since …" and the new card marked "New".</li><li><b>Price-drop alert:</b> saving a listing (star) offers price-drop alerts. The example notification opens the same listing at its new price, inside its saved search. The card then shows "Price lowered from $8,900".</li><li><b>Manage:</b> change the frequency, pause alerts (Off), or remove the saved search.</li><li><b>Removed listing:</b> shows "This listing was removed by the seller" with "See matching results".</li><li><b>Storage:</b> saved searches, price-drop alerts and demo events persist in <code>localStorage</code>, separate from saved listings.</li><li><b>Notifications are in-app examples only.</b> Nothing monitors in the background, nothing is pushed or emailed, and no notification permission is requested.</li></ul><div class="grid4"><figure class="scr"><div class="ph pr"><img src="assets/vf/cs/craigslist/proto-08-save-search.webp" alt="Save search" width="430" height="932"></div><figcaption>Save search</figcaption></figure></div></section>
+</div></main></div></div><nav class="pn" aria-label="More case studies"><a class="pv" href="#/sbl"><span class="l">← Previous</span><span class="t">How I Modernized Securities-Based Lending Without Disrupting Familiar Workflows</span></a><a class="al" href="./#projects"><span class="l">Index</span><span class="t">All projects</span></a><a class="nx" href="#/carry"><span class="l">Next →</span><span class="t">Carry</span></a></nav></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":7999}}'>
+/* Craigslist: the animated phone is CSS-only (the portfolio's own keyframes); no runtime script needed. */
+class Component extends DCLogic { renderVals(){ return {}; } }
+</script>
+</body></html>
