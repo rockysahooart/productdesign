@@ -310,6 +310,10 @@
     Promise.all(jobs).then(function (docs) {
       cur = VFDC.mount(docs[0], main);
       disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); openCards(cur.el); if (R.k === 'case') { headings(cur.el); pnavClear(cur.el); } title(cur.el);
+      /* SCROLL ON ENTRY: history.scrollRestoration is manual (head script), so every entry starts at 0 - fresh visit,
+         refresh, Back, the brand or nav link. Only a theme switch (vf-y, same page) or an explicit in-page anchor
+         (#projects, #top) places it elsewhere. */
+      window.scrollTo(0, 0);
       try { var y = sessionStorage.getItem('vf-y'); if (y != null) { sessionStorage.removeItem('vf-y'); window.scrollTo(0, +y); } else landingAnchor(); } catch (e) { landingAnchor(); }
       document.documentElement.setAttribute('data-vf', 'ready');
     }).catch(function (e) { setTimeout(function () { throw e; }); });
@@ -338,7 +342,10 @@
       main.removeAttribute('inert'); main.removeAttribute('aria-hidden');
       ov.classList.add('out');
       setTimeout(function () { try { if (L) L.unmount(); } catch (e) {} if (ov.parentNode) ov.parentNode.removeChild(ov);
-        var h = main.querySelector('h1'); if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); } }, 320);
+        /* focus leaves the finished Loading frame for the document itself - never a heading (a focused h1 drew the
+           browser's ring around the hero, 2026-11-21) - so the next Tab starts at the top of the page */
+        if (document.activeElement === ov || !document.activeElement || document.activeElement === document.body) { try { ov.blur(); } catch (x) {} }
+        window.scrollTo(0, 0); }, 320);
     }
     window.addEventListener('message', function on(e) {
       if (e.source !== ov.contentWindow || !e.data || e.data.vf !== 'loading-mounted') return;

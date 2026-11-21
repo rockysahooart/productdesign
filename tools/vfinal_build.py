@@ -219,6 +219,10 @@ def convert(s, name=''):
         if old in s or jo in s:
             USED.add(old)
         s = s.replace(old, new).replace(jo, jn)
+    # Case pages: the brand and the header "Projects" link go to the Landing at its top (owner, 2026-11-21); the
+    # "All projects" links keep the project index (./#projects)
+    s = re.sub(r'<a class="id" href="Main(?:-light)?(?:-m)?(?:-light)?\.dc\.html"', '<a class="id" href="./"', s)
+    s = re.sub(r'<a href="Main(?:-light)?(?:-m)?(?:-light)?\.dc\.html" aria-current="page">Projects</a>', '<a href="./">Projects</a>', s)
     # Usability pass (owner, 2026-11-21). Case-study h1 = the project's approved editorial title from the Landing card
     # (only the h1 text; static first paint and the ported source markup in the script both carry it)
     for old, new in TITLES:

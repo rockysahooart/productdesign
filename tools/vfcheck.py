@@ -145,6 +145,9 @@ def loading(b, _):
             fail('%d Loading hand-off at %s s' % (w, gone))
         if b.eval("document.getElementById('vf').hasAttribute('inert')"):
             fail('%d Landing still inert' % w)
+        st = b.eval("({y:scrollY,a:document.activeElement.tagName,h1tab:document.querySelector('#vf h1').hasAttribute('tabindex')})")
+        if st['y'] != 0 or st['a'] not in ('BODY', 'HTML') or st['h1tab']:
+            fail('%d after Loading: not neutral at the top %s' % (w, st))
         # an internal route change does not replay it; a refresh / fresh entry does
         b.eval("location.hash='#/about'")
         b.pump(2.5)
@@ -190,6 +193,22 @@ def keys(b, _):
                     fail(tag + ' invisible')
                 if m['inert']:
                     fail(tag + ' inside inert/aria-hidden')
+
+
+def scrolltop(b, _):
+    print('scrolltop')
+    for w, h in ((1440, 900), (390, 844)):
+        visit(b, w, h, '')
+        for how in ("document.querySelector('#vf a.id').click()", "document.querySelector('#vf header nav a[href=\"./\"]').click()", "history.back()"):
+            b.eval("scrollTo(0,1200)")
+            b.eval("location.hash='#/carry'")
+            b.pump(3)
+            b.eval("scrollTo(0,3000)")
+            b.eval(how)
+            b.pump(3)
+            st = b.eval("({h:location.hash,y:scrollY,r:document.documentElement.dataset.vf,a:document.activeElement.tagName})")
+            if st['h'] not in ('', '#') or st['y'] != 0 or st['a'] not in ('BODY', 'HTML'):
+                fail('%d case -> Landing via %s: %s' % (w, how[:30], st))
 
 
 def motion(b, _):
@@ -278,7 +297,7 @@ def main():
     if '--shots' in sys.argv:
         shots = sys.argv[sys.argv.index('--shots') + 1]
         args = [a for a in args if a != shots]
-    run = args or ['sweep', 'theme', 'loading', 'keys', 'motion', 'links']
+    run = args or ['sweep', 'theme', 'loading', 'scrolltop', 'keys', 'motion', 'links']
     s = serve()
     b = B()
     try:
