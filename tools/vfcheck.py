@@ -6,7 +6,8 @@ over CDP (tools/cdp.py) and exits non-zero on any failure.
 sweep    every route x 390/768/1024/1440/1920/2560 x light/dark: zero console errors, zero 4xx, no horizontal
          overflow, no request leaving this origin, one h1, Odia name with lang="or"
 theme    fresh visit dark (owner 2026-11-21) under OS dark and light; toggle -> light persists across reload; back to dark
-loading  first visit: Loading over an inert Landing, hands off by the cap (<= 9.5s incl. fade), once per tab; Escape skips
+loading  every fresh entry / refresh: Loading over an inert page, hands off by ~10s; not on internal route changes;
+         Escape skips from the first frame; reduced motion hands off at once
 keys     Landing / case / About: 40 Tab stops each, every stop visible with a focus indicator, none inside inert
 motion   reduced motion: Landing renders; pause control holds every animation and survives reload
 links    case prev/next ring, SBL resource links (new tab), verified external destinations, Natera only where allowed
@@ -66,8 +67,8 @@ def visit(b, w, h, route, theme='light', seen=True, dark_os=False, reduced=False
     b.viewport(w, h, dark=dark_os, reduced=reduced)
     b.goto(BASE + 'vf/', 0.1)
     b.eval("localStorage.clear();sessionStorage.clear();document.cookie='vf-seen=; path=/; max-age=0';%s%s" % (
-        "localStorage.setItem('pf-theme','%s');" % theme,
-        "sessionStorage.setItem('vf-seen','1');" if seen else ''))
+        "localStorage.setItem('vf-theme','%s');" % theme,
+        "localStorage.setItem('vf-qa-skip-loading','1');" if seen else ''))
     b.urls = []
     b.goto(BASE + route, settle)
 
@@ -80,7 +81,7 @@ def sweep(b, shots):
                 visit(b, w, h, r, t)
                 m = b.eval("""({sw:document.documentElement.scrollWidth,iw:innerWidth,h1:document.querySelectorAll('#vf h1').length,
                   or:[...document.querySelectorAll('#vf [lang=or]')].every(e=>e.textContent.trim()==='ସାର୍ଥକ ସାହୁ')&&document.querySelectorAll('#vf [lang=or]').length>0,
-                  dark:!!document.querySelector('#vf .root.t-dark')===(document.documentElement.dataset.theme==='dark'),
+                  dark:!!document.querySelector('#vf .root.t-dark')===(document.documentElement.dataset.vfTheme==='dark'),
                   ready:document.documentElement.dataset.vf})""")
                 tag = '%d %s %s' % (w, r or '/', t)
                 if b.errors:
@@ -110,16 +111,16 @@ def theme(b, _):
     for dark_os in (True, False):
         b.viewport(1440, 900, dark=dark_os)
         b.goto(BASE + 'vf/', 0.1)
-        b.eval('localStorage.clear();sessionStorage.setItem("vf-seen","1")')
+        b.eval('localStorage.clear();localStorage.setItem("vf-qa-skip-loading","1")')
         b.goto(BASE, 2)
-        if b.eval('document.documentElement.dataset.theme') != 'dark' or not b.eval("!!document.querySelector('#vf .root.t-dark')"):
+        if b.eval('document.documentElement.dataset.vfTheme') != 'dark' or not b.eval("!!document.querySelector('#vf .root.t-dark')"):
             fail('fresh visit not dark (OS dark=%s)' % dark_os)
     b.eval("document.querySelector('.vf-tg').click()")
     b.pump(2.5)
     if not b.eval("!!document.querySelector('#vf .root.t-light')"):
         fail('toggle did not switch to light')
     b.goto(BASE + '#/carry', 2.5)
-    if b.eval("localStorage.getItem('pf-theme')") != 'light' or b.eval("!!document.querySelector('#vf .root.t-dark')"):
+    if b.eval("localStorage.getItem('vf-theme')") != 'light' or b.eval("!!document.querySelector('#vf .root.t-dark')"):
         fail('light not persisted to case page')
     b.eval("document.querySelector('.vf-tg').click()")
     b.pump(2.5)
@@ -140,14 +141,19 @@ def loading(b, _):
             if not b.eval("!!document.getElementById('vf-loading')"):
                 gone = time.time() - t0 + 1.0
                 break
-        if gone is None or gone > 9.8:
+        if gone is None or gone > 10.2:
             fail('%d Loading hand-off at %s s' % (w, gone))
         if b.eval("document.getElementById('vf').hasAttribute('inert')"):
             fail('%d Landing still inert' % w)
-        b.eval("sessionStorage.clear()")  # a new tab in the same browser session
-        b.goto(BASE, 2)
+        # an internal route change does not replay it; a refresh / fresh entry does
+        b.eval("location.hash='#/about'")
+        b.pump(2.5)
         if b.eval("!!document.getElementById('vf-loading')"):
-            fail('%d Loading replayed in the same browser session' % w)
+            fail('%d Loading replayed on an internal route change' % w)
+        b.call('Page.reload')
+        b.pump(1.0)
+        if not b.eval("!!document.getElementById('vf-loading')"):
+            fail('%d Loading did not run on refresh' % w)
     visit(b, 1440, 900, '', seen=False, settle=0.15)  # skip before the board has mounted
     b.call('Input.dispatchKeyEvent', type='keyDown', key='Escape', code='Escape', windowsVirtualKeyCode=27)
     b.pump(1.0)

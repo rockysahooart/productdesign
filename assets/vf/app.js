@@ -14,7 +14,7 @@
     about: { d: 'VF-4-About%-r3', uw: 'VF-4-About%-uw-r3', m: 'VF-4-About%-m-r8' }
   };
   var TITLE = 'Sarthak Sahoo, Product Designer';
-  var theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  var theme = document.documentElement.getAttribute('data-vf-theme') === 'light' ? 'light' : 'dark';
   function range() { var w = window.innerWidth; return w < 1024 ? 'm' : (w >= 2304 ? 'uw' : 'd'); }
   function route() {
     var m = /^#\/([\w-]+)/.exec(location.hash);
@@ -71,8 +71,8 @@
     if (!b) return;
     face(b, theme === 'dark' ? 'Light mode' : 'Dark mode', theme === 'dark' ? 'sun' : 'moon');
     b.addEventListener('click', function () {
-      try { localStorage.setItem('pf-theme', theme === 'dark' ? 'light' : 'dark'); sessionStorage.setItem('vf-y', String(window.scrollY)); } catch (e) {}
-      location.reload();
+      try { localStorage.setItem('vf-theme', theme === 'dark' ? 'light' : 'dark'); sessionStorage.setItem('vf-y', String(window.scrollY)); } catch (e) {}
+      internalReload();
     });
   }
 
@@ -153,6 +153,10 @@
       if (f.__vfRing) return; var slot = f.closest('.pf-live,.pf-prev'); if (!slot) return;
       var w; try { w = f.contentWindow; } catch (e) { return; } if (!w) return; f.__vfRing = 1;
       var on = function () { slot.classList.add('pf-focus'); }, off = function () { slot.classList.remove('pf-focus'); };
+      /* the frame's colour-scheme follows its document's, so the browser never paints an opaque backdrop behind the
+         original (the board fixes this for slots 03 / 05 / 06 only; the same presentation rule, every slot) */
+      var cs = function () { try { var c = getComputedStyle(f.contentDocument.documentElement).colorScheme; if (c && c !== 'normal') f.style.colorScheme = c; } catch (e) {} };
+      cs(); f.addEventListener('load', cs);
       var bindW = function () { try { var ww = f.contentWindow; if (ww.__vfRing) return; ww.__vfRing = 1; ww.addEventListener('focus', on); ww.addEventListener('blur', off); } catch (e) {} };
       bindW(); f.addEventListener('load', bindW);
     }
@@ -210,6 +214,37 @@
     addEventListener('scroll', sch, { passive: true }); addEventListener('resize', sch); nav.addEventListener('focusin', chk); chk();
   }
 
+  /* PROJECT CARDS OPEN THEIR PROJECT (owner, 2026-11-21). In the browser, a neighbour's card still comes forward on
+     the first click (the board's own tap); the ACTIVE card - click, Enter or Space - now opens the project. In the
+     project list (desktop index rows, mobile rows), a row opens its project. Destinations are the verified ones the
+     board's "View Project" links already carry (tools/vfinal_build.py PROJ). Clicks inside a live PCV stay inside its
+     own document, so a prototype's controls never navigate. */
+  var DEST = { 'Craigslist Redesign': '#/craigslist', 'Carry': '#/carry', 'Cryptography Explained': 'https://rockysahooart.github.io/encryption-coffee-shop/',
+    'Oncology Specimen Kit': '#/specimen', 'OptiFlow': '#/optiflow', 'Design System Audit': '#/audit',
+    'AI Design Governance': './slop-audit.pdf', 'Securities-Based Lending': '#/sbl', 'Scale': 'https://spiky-experiences-472785.framer.app/scale-market' };
+  function go(t) {
+    var u = DEST[t]; if (!u) return false;
+    var a = document.createElement('a'); a.href = u;
+    if (/^https?:/.test(u)) { a.target = '_blank'; a.rel = 'noopener'; } else if (/\.pdf$/.test(u)) a.setAttribute('download', '');
+    document.body.appendChild(a); a.click(); a.remove(); return true;
+  }
+  function rowTitle(el) { for (var t in DEST) { if ((el.innerText || el.textContent || '').indexOf(t) >= 0) return t; } return null; }
+  function openCards(host) {
+    if (R.k !== 'landing') return;
+    [].forEach.call(host.querySelectorAll('.spec .hit'), function (b) { b.style.cursor = 'pointer'; });
+    host.addEventListener('click', function (e) {
+      var hit = e.target.closest && e.target.closest('.spec .hit');
+      if (hit && hit.closest('.spec').classList.contains('front')) { if (go(hit.getAttribute('aria-label'))) { e.preventDefault(); e.stopPropagation(); } return; }
+      var row = e.target.closest && e.target.closest('.vix li button, .idx li button, .idx .xh button');
+      if (row) { var t = rowTitle(row.closest('li') || row); if (t && go(t)) { e.preventDefault(); e.stopPropagation(); } }
+    }, true);
+    host.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      var hit = document.activeElement; if (!hit || !hit.matches('.spec.front .hit')) return;
+      if (go(hit.getAttribute('aria-label'))) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
+  }
+
   function wheelCentre(host) {
     var land = host.querySelector('.land'), st = land && land.querySelector('.stage'), cam = st && st.querySelector('.cam');
     if (!cam) return;
@@ -226,11 +261,17 @@
   }
 
   /* links the boards leave as placeholders (Illustration, Music, Résumé): no verified destination, so not links (R5) */
-  /* LOADING ONCE PER BROWSER SESSION (usability pass, 2026-11-21): a session cookie (no expiry: shared by every tab,
-     cleared when the browser closes) as well as the tab's sessionStorage, so new tabs and returns to the home page
-     never replay the 9.5s sequence. */
-  function seen() { try { if (sessionStorage.getItem('vf-seen')) return true; } catch (e) {} return /(?:^|; )vf-seen=1/.test(document.cookie); }
-  function markSeen() { try { sessionStorage.setItem('vf-seen', '1'); } catch (e) {} try { document.cookie = 'vf-seen=1; path=/; SameSite=Lax'; } catch (e) {} }
+  /* LOADING ON EVERY ENTRY (owner, 2026-11-21): the Loading is the first thing on every fresh visit, return visit and
+     browser refresh, at any address. Only the site's own reloads skip it - a route change, the theme toggle, a range
+     change - which mark themselves in this tab just before they reload (consumed once). No visit is remembered.
+     localStorage['vf-qa-skip-loading'] is the test harness's switch (tools/vfcheck.py), never set by the site. */
+  function internalReload() { try { sessionStorage.setItem('vf-internal', '1'); } catch (e) {} location.reload(); }
+  function entry() {
+    var internal = false;
+    try { internal = sessionStorage.getItem('vf-internal') === '1'; sessionStorage.removeItem('vf-internal');
+      if (localStorage.getItem('vf-qa-skip-loading') === '1') internal = true; } catch (e) {}
+    return !internal && !/[?&]board=/.test(location.search);
+  }
 
   /* Placeholder destinations with nothing verified behind them (Résumé) are removed, not left as dead controls (R5,
      usability pass); if the link was its line's only content, the line goes with it. */
@@ -260,14 +301,16 @@
   function start() {
     var main = document.getElementById('vf');
     var first = false;
-    try { first = R.k === 'landing' && !location.hash && !seen() && !/[?&]board=/.test(location.search); } catch (e) {}
+    first = entry();
+    /* the Loading frame goes up before any page content is built, on the page's own ground, so no Landing / case
+       content is ever visible before it */
+    if (first) loading(board('loading', RG));
     var jobs = [load(board(R.k, RG))];
     
     Promise.all(jobs).then(function (docs) {
       cur = VFDC.mount(docs[0], main);
-      disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); if (R.k === 'case') { headings(cur.el); pnavClear(cur.el); } title(cur.el);
+      disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); openCards(cur.el); if (R.k === 'case') { headings(cur.el); pnavClear(cur.el); } title(cur.el);
       try { var y = sessionStorage.getItem('vf-y'); if (y != null) { sessionStorage.removeItem('vf-y'); window.scrollTo(0, +y); } else landingAnchor(); } catch (e) { landingAnchor(); }
-      if (first) loading(board('loading', RG));
       document.documentElement.setAttribute('data-vf', 'ready');
     }).catch(function (e) { setTimeout(function () { throw e; }); });
   }
@@ -278,6 +321,7 @@
   function loading(name) {
     var ov = document.createElement('iframe');
     ov.id = 'vf-loading'; ov.title = 'Loading'; ov.src = 'vf/frame.html?b=' + name;
+    ov.style.background = theme === 'dark' ? '#1F2023' : '#ECE7DE';
     document.body.appendChild(ov);
     var main = document.getElementById('vf');
     main.setAttribute('inert', ''); main.setAttribute('aria-hidden', 'true');
@@ -291,7 +335,6 @@
     function hand() {
       if (done) return; done = true;
       document.removeEventListener('keydown', onKey);
-      markSeen();
       main.removeAttribute('inert'); main.removeAttribute('aria-hidden');
       ov.classList.add('out');
       setTimeout(function () { try { if (L) L.unmount(); } catch (e) {} if (ov.parentNode) ov.parentNode.removeChild(ov);
@@ -319,13 +362,13 @@
 
   window.addEventListener('hashchange', function () {
     var n = route();
-    if (n.k !== R.k || n.s !== R.s) { window.scrollTo(0, 0); location.reload(); }
+    if (n.k !== R.k || n.s !== R.s) { window.scrollTo(0, 0); internalReload(); }
     else if (R.k === 'landing') landingAnchor();
   });
   var rt = 0;
   window.addEventListener('resize', function () {
     clearTimeout(rt);
-    rt = setTimeout(function () { if (R.k !== 'case' && range() !== RG) { markSeen(); location.reload(); } }, 250);
+    rt = setTimeout(function () { if (R.k !== 'case' && range() !== RG) { internalReload(); } }, 250);
   });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();

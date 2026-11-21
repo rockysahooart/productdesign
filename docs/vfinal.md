@@ -12,7 +12,7 @@ behaviour are the boards' own.
 
 | Path | What it is |
 |---|---|
-| `index.html` | Shell: social metadata (unchanged), the `#/slop` redirect, theme before first paint (dark unless `localStorage['pf-theme']==='light'`; owner 2026-11-21), self-hosted fonts, site controls CSS. |
+| `index.html` | Shell: social metadata (unchanged), the `#/slop` redirect, theme before first paint (dark unless `localStorage['vf-theme']==='light'`; owner 2026-11-21), self-hosted fonts, site controls CSS. |
 | `assets/vf/dc.js` | The board contract the canvas engine provided: `DCLogic` (state / setState / renderVals / mount / unmount), `{{name}}` bindings, `on<Event>="{{fn}}"` listeners. |
 | `assets/vf/app.js` | Router: route x range x theme -> board; Loading -> Landing hand-off; theme toggle; pause/play; slot focus ring; per-view `document.title`. |
 | `vf/boards/*.html` | **Generated** by `tools/vfinal_build.py` from the handoff. Never hand-edit; change the builder. |
@@ -74,6 +74,18 @@ reloads into the other board. Case studies are one fluid board at every width.
   (photograph), Governance (hand-drawn sketch) and SBL (capture of the external demo; embedding it would be an external
   runtime request) are static originals: no live source exists in this repository.
 - Heading levels never skip in the case studies (persona-card h4s under an h2 are announced as level 3).
+
+## Rendering, Loading and navigation pass (2026-11-21)
+
+- Theme lives in `localStorage['vf-theme']` and `html[data-vf-theme]`. The previous site's `pf-theme` key is retired and
+  its `data-theme` attribute is not used: the live previews run that site's code, which follows both, and on the
+  approved boards their host had neither (dark mode had turned Carry / DSA / Cryptography dark on an opaque frame).
+- Slot frames take their document's colour-scheme, so no opaque backdrop ever covers the display plane.
+- Loading runs on every fresh entry and refresh, at any address; route changes, the theme toggle and range changes
+  mark themselves internal and skip it. The frame goes up before page content is built. The Morph form track plays
+  2.6x after the entrance, so Healthcare, Finance and Developer tools pass before the board's own finish (~9.3s).
+- The active Project Card (click / Enter / Space) and every project-list row open the project's verified destination;
+  a neighbour's card first comes forward. `localStorage['vf-qa-skip-loading']` is the harness's switch only.
 
 ## Deviations and open items
 

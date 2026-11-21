@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <!-- Social metadata first: see the note under it. -->
@@ -109,14 +109,19 @@
 </script>
 <meta name="theme-color" content="#1F2023">
 <!-- VFINAL THEME, BEFORE FIRST PAINT. Dark first (owner, 2026-11-21, replacing R1's light-first rule): a first visit
-     opens dark; the site's toggle switches, and the choice persists in localStorage['pf-theme'] for returning visitors.
+     opens dark; the site's toggle switches, and the choice persists in localStorage['vf-theme'] for returning visitors.
      Set here, before any board or stylesheet paints, so no frame shows the other theme. No prefers-color-scheme
      listener: the visitor's toggle, not the OS, decides. -->
 <script>
   (function () {
     var t = 'dark';
-    try { if (localStorage.getItem('pf-theme') === 'light') t = 'light'; } catch (e) {}
-    document.documentElement.setAttribute('data-theme', t);
+    /* VFINAL keeps its theme under its own key. 'pf-theme' belongs to the previous site, whose original code still runs
+       inside the live project previews and reads it: left set, those originals would switch to their own dark theme
+       (and an opaque frame) instead of the state the approved boards show. It is retired here. */
+    try { if (localStorage.getItem('vf-theme') === 'light') t = 'light'; localStorage.removeItem('pf-theme'); } catch (e) {}
+    /* data-vf-theme, not data-theme: the live project previews run the previous site's code, which follows its host
+       page's data-theme. On the approved boards their host had none, so they show their own default state. */
+    document.documentElement.setAttribute('data-vf-theme', t);
     var m = document.querySelector('meta[name="theme-color"]');
     if (m) m.setAttribute('content', t === 'dark' ? '#1F2023' : '#ECE7DE');
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -125,7 +130,7 @@
 <link rel="stylesheet" href="assets/vf/fonts/fonts.css">
 <style>
 /* VFINAL page ground: the board tokens' --bg, so nothing flashes before the board mounts. */
-html{background:#1F2023}html[data-theme="light"]{background:#ECE7DE}
+html{background:#1F2023}html[data-vf-theme="light"]{background:#ECE7DE}
 body{margin:0}
 x-dc{display:block}x-dc helmet{display:none}
 /* site controls (assets/vf/app.js SITE CONTROLS): icon buttons after the header nav links, link colours, 44px target */

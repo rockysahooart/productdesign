@@ -20,6 +20,16 @@
       /* board asset paths are written for the site root (assets/vf/...) */
       var base = document.createElement('base'); base.href = '../'; document.head.appendChild(base);
       window.VFL = VFDC.mount(doc, document.body);
+      /* MORE FORMS, SAME LENGTH (owner, 2026-11-21). The approved Morph track holds six forms (Healthcare, Finance,
+         Developer tools, Marketplace, Education, AI-generated work) over 24.6s, but the 7.6s cap let a visitor see about
+         one. Once the entrance has assembled (its own timing, untouched), the form track - the twelve sheet tracks, the
+         group excursion and the luminance ramp - plays 2.6x, so about four forms pass before the board's own graceful
+         finish settles them to the stack and hands off. Same keyframes, eases, sheets and order; the bar, breathing and
+         glaze keep their own clocks. Reduced motion has no track, so nothing changes there. */
+      var ve = parseFloat(getComputedStyle(document.querySelector('.root')).getPropertyValue('--ve')) || 1800;
+      setTimeout(function () {
+        try { document.getAnimations().forEach(function (a) { if (/^(vl\d+|vexc|lum)$/.test(a.animationName || '')) a.playbackRate = 2.6; }); } catch (e) {}
+      }, Math.max(0, ve - performance.now()));
       parent.postMessage({ vf: 'loading-mounted' }, location.origin);
     });
   })();
