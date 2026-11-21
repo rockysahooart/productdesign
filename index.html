@@ -107,21 +107,25 @@
     }
   })();
 </script>
-<!-- VFINAL THEME, BEFORE FIRST PAINT. A fresh visit is always light; dark only through the site's toggle, stored in
-     localStorage['pf-theme'] (R1, and the forced-light rule this site already keeps). No prefers-color-scheme listener. -->
+<meta name="theme-color" content="#1F2023">
+<!-- VFINAL THEME, BEFORE FIRST PAINT. Dark first (owner, 2026-11-21, replacing R1's light-first rule): a first visit
+     opens dark; the site's toggle switches, and the choice persists in localStorage['pf-theme'] for returning visitors.
+     Set here, before any board or stylesheet paints, so no frame shows the other theme. No prefers-color-scheme
+     listener: the visitor's toggle, not the OS, decides. -->
 <script>
   (function () {
-    var t = 'light';
-    try { if (localStorage.getItem('pf-theme') === 'dark') t = 'dark'; } catch (e) {}
+    var t = 'dark';
+    try { if (localStorage.getItem('pf-theme') === 'light') t = 'light'; } catch (e) {}
     document.documentElement.setAttribute('data-theme', t);
+    var m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute('content', t === 'dark' ? '#1F2023' : '#ECE7DE');
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   })();
 </script>
-<meta name="theme-color" content="#ECE7DE">
 <link rel="stylesheet" href="assets/vf/fonts/fonts.css">
 <style>
 /* VFINAL page ground: the board tokens' --bg, so nothing flashes before the board mounts. */
-html{background:#ECE7DE}html[data-theme="dark"]{background:#1F2023}
+html{background:#1F2023}html[data-theme="light"]{background:#ECE7DE}
 body{margin:0}
 x-dc{display:block}x-dc helmet{display:none}
 /* site controls (assets/vf/app.js SITE CONTROLS): icon buttons after the header nav links, link colours, 44px target */

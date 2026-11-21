@@ -5,7 +5,7 @@ over CDP (tools/cdp.py) and exits non-zero on any failure.
 
 sweep    every route x 390/768/1024/1440/1920/2560 x light/dark: zero console errors, zero 4xx, no horizontal
          overflow, no request leaving this origin, one h1, Odia name with lang="or"
-theme    fresh visit light under OS dark and light; toggle -> dark persists across reload; back to light
+theme    fresh visit dark (owner 2026-11-21) under OS dark and light; toggle -> light persists across reload; back to dark
 loading  first visit: Loading over an inert Landing, hands off by the cap (<= 9.5s incl. fade), once per tab; Escape skips
 keys     Landing / case / About: 40 Tab stops each, every stop visible with a focus indicator, none inside inert
 motion   reduced motion: Landing renders; pause control holds every animation and survives reload
@@ -65,8 +65,8 @@ class B(Browser):
 def visit(b, w, h, route, theme='light', seen=True, dark_os=False, reduced=False, settle=2.5):
     b.viewport(w, h, dark=dark_os, reduced=reduced)
     b.goto(BASE + 'vf/', 0.1)
-    b.eval("localStorage.clear();sessionStorage.clear();%s%s" % (
-        "localStorage.setItem('pf-theme','dark');" if theme == 'dark' else '',
+    b.eval("localStorage.clear();sessionStorage.clear();document.cookie='vf-seen=; path=/; max-age=0';%s%s" % (
+        "localStorage.setItem('pf-theme','%s');" % theme,
         "sessionStorage.setItem('vf-seen','1');" if seen else ''))
     b.urls = []
     b.goto(BASE + route, settle)
@@ -112,19 +112,19 @@ def theme(b, _):
         b.goto(BASE + 'vf/', 0.1)
         b.eval('localStorage.clear();sessionStorage.setItem("vf-seen","1")')
         b.goto(BASE, 2)
-        if b.eval('document.documentElement.dataset.theme') != 'light' or not b.eval("!!document.querySelector('#vf .root.t-light')"):
-            fail('fresh visit not light (OS dark=%s)' % dark_os)
-    b.eval("document.querySelector('.vf-tg').click()")
-    b.pump(2.5)
-    if not b.eval("!!document.querySelector('#vf .root.t-dark')"):
-        fail('toggle did not switch to dark')
-    b.goto(BASE + '#/carry', 2.5)
-    if b.eval("localStorage.getItem('pf-theme')") != 'dark' or b.eval("!!document.querySelector('#vf .root.t-light')"):
-        fail('dark not persisted to case page')
+        if b.eval('document.documentElement.dataset.theme') != 'dark' or not b.eval("!!document.querySelector('#vf .root.t-dark')"):
+            fail('fresh visit not dark (OS dark=%s)' % dark_os)
     b.eval("document.querySelector('.vf-tg').click()")
     b.pump(2.5)
     if not b.eval("!!document.querySelector('#vf .root.t-light')"):
-        fail('toggle back to light failed')
+        fail('toggle did not switch to light')
+    b.goto(BASE + '#/carry', 2.5)
+    if b.eval("localStorage.getItem('pf-theme')") != 'light' or b.eval("!!document.querySelector('#vf .root.t-dark')"):
+        fail('light not persisted to case page')
+    b.eval("document.querySelector('.vf-tg').click()")
+    b.pump(2.5)
+    if not b.eval("!!document.querySelector('#vf .root.t-dark')"):
+        fail('toggle back to dark failed')
 
 
 def loading(b, _):
@@ -144,10 +144,11 @@ def loading(b, _):
             fail('%d Loading hand-off at %s s' % (w, gone))
         if b.eval("document.getElementById('vf').hasAttribute('inert')"):
             fail('%d Landing still inert' % w)
+        b.eval("sessionStorage.clear()")  # a new tab in the same browser session
         b.goto(BASE, 2)
         if b.eval("!!document.getElementById('vf-loading')"):
-            fail('%d Loading ran twice in one tab' % w)
-    visit(b, 1440, 900, '', seen=False, settle=1.2)
+            fail('%d Loading replayed in the same browser session' % w)
+    visit(b, 1440, 900, '', seen=False, settle=0.15)  # skip before the board has mounted
     b.call('Input.dispatchKeyEvent', type='keyDown', key='Escape', code='Escape', windowsVirtualKeyCode=27)
     b.pump(1.0)
     if b.eval("!!document.getElementById('vf-loading')"):
@@ -248,8 +249,21 @@ def links(b, _):
     for u in ('https://rockysahooart.framer.website/', 'https://soundcloud.com/rocky-sahoo', 'https://www.youtube.com/@6fut7music'):
         if u not in ab:
             fail('About link missing ' + u)
-    if b.eval("[...document.querySelectorAll('#vf a[data-vf-off]')].some(a=>a.hasAttribute('href'))"):
-        fail('Resume placeholder is a live link')
+    if b.eval("[...document.querySelectorAll('#vf a[data-vf-off]')].some(a=>a.hasAttribute('href')||a.offsetParent)"):
+        fail('Resume placeholder still shown')
+    if b.eval("document.getElementById('vf').innerText.indexOf('my name in Odia')") < 0:
+        fail('About: Odia sentence missing')
+    cards = {'carry': 'How I Designed for Better Patient Recall', 'optiflow': 'How I Kept Humans in Control of AI-Assisted Clinical Billing',
+             'specimen': 'How I Redesigned Oncology Specimen Kits for Safer Handling',
+             'audit': 'How I Audited a Healthcare Design System for Consistency and Accessibility'}
+    for k, t in cards.items():
+        visit(b, 390, 844, '#/' + k, settle=2.5)
+        if b.eval("document.querySelector('#vf h1').textContent.trim()") != t:
+            fail('%s h1 is not the card title' % k)
+        lv = b.eval("[...document.querySelectorAll('#vf h1,#vf h2,#vf h3,#vf h4,#vf [role=heading]')].filter(e=>!e.closest('[hidden],iframe')).map(e=>+(e.getAttribute('aria-level')||e.tagName[1]))")
+        jumps = [(a, c) for a, c in zip(lv, lv[1:]) if c > a + 1]
+        if jumps:
+            fail('%s heading level skips %s' % (k, jumps[:3]))
 
 
 def main():

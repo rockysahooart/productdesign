@@ -12,7 +12,7 @@ behaviour are the boards' own.
 
 | Path | What it is |
 |---|---|
-| `index.html` | Shell: social metadata (unchanged), the `#/slop` redirect, theme before first paint (light unless `localStorage['pf-theme']==='dark'`), self-hosted fonts, site controls CSS. |
+| `index.html` | Shell: social metadata (unchanged), the `#/slop` redirect, theme before first paint (dark unless `localStorage['pf-theme']==='light'`; owner 2026-11-21), self-hosted fonts, site controls CSS. |
 | `assets/vf/dc.js` | The board contract the canvas engine provided: `DCLogic` (state / setState / renderVals / mount / unmount), `{{name}}` bindings, `on<Event>="{{fn}}"` listeners. |
 | `assets/vf/app.js` | Router: route x range x theme -> board; Loading -> Landing hand-off; theme toggle; pause/play; slot focus ring; per-view `document.title`. |
 | `vf/boards/*.html` | **Generated** by `tools/vfinal_build.py` from the handoff. Never hand-edit; change the builder. |
@@ -57,6 +57,23 @@ reloads into the other board. Case studies are one fluid board at every width.
 - Loading -> Landing keeps the 300ms cross-fade; reduced motion hands off at once with no fade.
 - `/slop/`, `tools/check.py` and `tools/buildslop.py` are kept as they are (they describe the previous site).
 - Noto Sans Oriya 400 accepted as a temporary limitation (below).
+
+## Usability pass (2026-11-21, four-persona study)
+
+- Dark first for new visitors; the toggle's choice persists (amends R1 in the handoff `decisions.md`).
+- Loading plays once per browser session (session cookie + tab storage); Esc / Enter / Space / click skip it from
+  the first frame, even before the board has mounted. Reduced motion hands off at once.
+- Résumé items removed until a verified destination exists.
+- Case-study h1 = the Landing card's editorial title (Carry, OptiFlow, Specimen, Audit); body copy unchanged.
+- Carry, Specimen and Audit section titles (`span.ar-h2`) exposed as level-2 headings; no visual change.
+- About: the owner's sentence on the Odia name, as a body paragraph beside / under the name.
+- The originals' floating phase nav steps aside while it would cover a prototype or figure, never while focused.
+
+- Live PCVs: Craigslist, Carry, Cryptography, Design System Audit and Scale already ran live; OptiFlow's card now
+  runs the site's live tagging preview (the board's capture is its poster), as the loader was built for. Specimen
+  (photograph), Governance (hand-drawn sketch) and SBL (capture of the external demo; embedding it would be an external
+  runtime request) are static originals: no live source exists in this repository.
+- Heading levels never skip in the case studies (persona-card h4s under an h2 are announced as level 3).
 
 ## Deviations and open items
 

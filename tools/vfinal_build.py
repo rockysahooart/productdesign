@@ -136,6 +136,17 @@ def desktop_copy(s, desk):
 
 
 SRC_TEXT = ['']
+TITLES = [
+    ('Improving patient recall after oncology visits', 'How I Designed for Better Patient Recall'),
+    ('Designing AI-assisted billing review for operations teams across complex workflows',
+     'How I Kept Humans in Control of AI-Assisted Clinical Billing'),
+    ('Redesigning an oncology specimen kit for safer shipping and handling',
+     'How I Redesigned Oncology Specimen Kits for Safer Handling'),
+    ('Standardizing oncology workflows for clinical provider teams across complex systems',
+     'How I Audited a Healthcare Design System for Consistency and Accessibility'),
+]
+ODIA = ('My portfolio begins with my name in Odia, the language of my family’s roots in Odisha, India. '
+        'I wanted that part of my identity to feel present from the very beginning.')
 
 
 def convert(s, name=''):
@@ -170,6 +181,33 @@ def convert(s, name=''):
     s = s.replace('GitHub repo <span aria-hidden="true">↗</span></a></p>',
                   'GitHub repo <span aria-hidden="true">↗</span></a><a class="lk" href="%s" target="_blank" '
                   'rel="noopener noreferrer">View case study <span aria-hidden="true">↗</span></a></p>' % PNC)
+    # LIVE OPTIFLOW PCV (owner, 2026-11-21: live HTML/JS wherever the repo has it). The site ships the OptiFlow tagging
+    # preview as a live document (vf/site.html, pv__frame 2: NAT[2] 1000x900, and the board's loader already carries its
+    # camera framing, data-boost="optiflow"), but this board shows a still capture of it. The capture becomes the
+    # slot's poster, exactly as Carry's: the board's own loader swaps in the live original when the slot is near.
+    if name.startswith('VF-2-Landing'):
+        s = re.sub(r'(<div class="gp dk" style="padding:0px">)(<img src="assets/vf/shell/fd8e35a0b41bb82ee0358dc345273035\.webp"'
+                   r'[^>]*width="(\d+)" height="(\d+)")[^>]*>',
+                   lambda m: '%s<span class="pf-prev" data-k="2" data-boost="optiflow" data-title="OptiFlow: tagging preview" '
+                             'style="display:block;position:relative;overflow:hidden;width:%spx;height:%spx">%s style="display:block;'
+                             'width:100%%;height:100%%;object-fit:contain"></span>' % (m.group(1), m.group(3), m.group(4), m.group(2)),
+                   s, count=1)
+    # Usability pass (owner, 2026-11-21). Case-study h1 = the project's approved editorial title from the Landing card
+    # (only the h1 text; static first paint and the ported source markup in the script both carry it)
+    for old, new in TITLES:
+        s = s.replace('>%s</h1>' % old, '>%s</h1>' % new).replace('>%s<\\/h1>' % old, '>%s<\\/h1>' % new)
+    # About: the owner's sentence on the Odia name, as a body paragraph (.p) beside / under the name it explains
+    if name.startswith('VF-4-About'):
+        para = '<p class="p">%s</p>' % ODIA
+        if '-m-' in name:
+            s = s.replace('ସାର୍ଥକ ସାହୁ</span></div></div>\n <p data-mc="x" class="k kt"',
+                          'ସାର୍ଥକ ସାହୁ</span></div>%s</div>\n <p data-mc="x" class="k kt"' % para.replace('class="p"', 'class="p" style="margin-top:24px"'), 1)
+        elif '-uw-' in name:
+            s = s.replace('column-gap:clamp(48px,3.125cqw,80px);margin-top:140px">\n  <div><p class="p">',
+                          'column-gap:clamp(48px,3.125cqw,80px);margin-top:140px">\n  <div>%s<p class="p">' % para, 1)
+        else:
+            s = s.replace('margin-top:110px">\n  <div></div>', 'margin-top:110px">\n  <div>%s</div>' % para, 1)
+        assert ODIA in s, name
     s = s.replace('</helmet>', prod_css(name) + '</helmet>', 1)
     s = re.sub(r'href=(["\'])([^"\']*)\1', lambda m: rw_href(m) if not m.group(2).startswith("' +") else m.group(0), s)
     return s

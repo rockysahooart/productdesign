@@ -14,7 +14,7 @@
     about: { d: 'VF-4-About%-r3', uw: 'VF-4-About%-uw-r3', m: 'VF-4-About%-m-r8' }
   };
   var TITLE = 'Sarthak Sahoo, Product Designer';
-  var theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  var theme = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
   function range() { var w = window.innerWidth; return w < 1024 ? 'm' : (w >= 2304 ? 'uw' : 'd'); }
   function route() {
     var m = /^#\/([\w-]+)/.exec(location.hash);
@@ -172,6 +172,44 @@
      stage h - ws x (cb - a) (--vf-wh, from the board's own G), is shared above and below the wheel; it is zero whenever
      the wheel is height-bound, so the approved boards are unchanged. Moves the camera with `translate`, never its
      transform or scale. */
+  /* CASE-STUDY HEADINGS (usability pass): the ported originals mark their section titles as span.ar-h2 (OptiFlow uses
+     h2.ar-h2 for the same role), so Carry, Specimen and Audit jumped from h1 to h3. They are exposed as level-2
+     headings; nothing about their look, copy or order changes. */
+  function headings(host) {
+    [].forEach.call(host.querySelectorAll('span.ar-h2'), function (h) { h.setAttribute('role', 'heading'); h.setAttribute('aria-level', '2'); });
+    /* and no level is skipped: a heading deeper than one below the previous (e.g. persona-card h4s straight under a
+       section h2) is announced one level below it; tags and styles untouched */
+    var prev = 1;
+    [].forEach.call(host.querySelectorAll('h1,h2,h3,h4,h5,h6,[role=heading]'), function (h) {
+      if (h.closest('[hidden],iframe,nav.pnav')) return;
+      var lv = +(h.getAttribute('aria-level') || h.tagName.charAt(1)) || prev;
+      if (lv > prev + 1) { lv = prev + 1; h.setAttribute('aria-level', String(lv)); if (!/^H[1-6]$/.test(h.tagName)) h.setAttribute('role', 'heading'); }
+      prev = lv;
+    });
+  }
+
+  /* PHASE NAV vs PROTOTYPES (usability pass). The originals' floating phase control (nav.pnav, fixed) may sit over an
+     interactive prototype or a figure while scrolling on phones. While it would overlap one it steps aside (fades,
+     no pointer events) and returns as soon as it clears; it never hides while it holds keyboard focus, and it stays in
+     the page for assistive tech throughout. */
+  function pnavClear(host) {
+    var nav = host.querySelector('nav.pnav'); if (!nav) return;
+    var SEL = '.cu-embed,.ar-demo .cu-stage,iframe,video,figure,[data-cu],.ofw,.us,.pp,.bim';
+    var st = document.createElement('style');
+    st.textContent = 'nav.pnav{transition:opacity .2s ease,visibility .2s}nav.pnav.vf-aside{opacity:0;visibility:hidden;pointer-events:none}@media (prefers-reduced-motion: reduce){nav.pnav{transition:none}}';
+    document.head.appendChild(st);
+    var q = 0;
+    function chk() {
+      q = 0; if (nav.contains(document.activeElement)) { nav.classList.remove('vf-aside'); return; }
+      nav.classList.remove('vf-aside'); var r = nav.getBoundingClientRect(); if (!r.height) return;
+      var hit = [].some.call(host.querySelectorAll(SEL), function (e) { if (nav.contains(e)) return false; var b = e.getBoundingClientRect();
+        return b.width > 40 && b.height > 40 && b.left < r.right && b.right > r.left && b.top < r.bottom + 8 && b.bottom > r.top - 8; });
+      if (hit) nav.classList.add('vf-aside');
+    }
+    function sch() { if (!q) q = requestAnimationFrame(chk); }
+    addEventListener('scroll', sch, { passive: true }); addEventListener('resize', sch); nav.addEventListener('focusin', chk); chk();
+  }
+
   function wheelCentre(host) {
     var land = host.querySelector('.land'), st = land && land.querySelector('.stage'), cam = st && st.querySelector('.cam');
     if (!cam) return;
@@ -188,8 +226,19 @@
   }
 
   /* links the boards leave as placeholders (Illustration, Music, Résumé): no verified destination, so not links (R5) */
+  /* LOADING ONCE PER BROWSER SESSION (usability pass, 2026-11-21): a session cookie (no expiry: shared by every tab,
+     cleared when the browser closes) as well as the tab's sessionStorage, so new tabs and returns to the home page
+     never replay the 9.5s sequence. */
+  function seen() { try { if (sessionStorage.getItem('vf-seen')) return true; } catch (e) {} return /(?:^|; )vf-seen=1/.test(document.cookie); }
+  function markSeen() { try { sessionStorage.setItem('vf-seen', '1'); } catch (e) {} try { document.cookie = 'vf-seen=1; path=/; SameSite=Lax'; } catch (e) {} }
+
+  /* Placeholder destinations with nothing verified behind them (Résumé) are removed, not left as dead controls (R5,
+     usability pass); if the link was its line's only content, the line goes with it. */
   function disable(host) {
-    [].forEach.call(host.querySelectorAll('a[data-vf-off]'), function (a) { a.removeAttribute('href'); a.setAttribute('tabindex', '-1'); });
+    [].forEach.call(host.querySelectorAll('a[data-vf-off]'), function (a) {
+      a.removeAttribute('href'); a.setAttribute('tabindex', '-1'); a.hidden = true; a.style.display = 'none';
+      var p = a.parentNode; if (p && p !== host && !p.textContent.replace(a.textContent, '').trim()) { p.hidden = true; p.style.display = 'none'; }
+    });
   }
 
   function title(host) {
@@ -211,12 +260,12 @@
   function start() {
     var main = document.getElementById('vf');
     var first = false;
-    try { first = R.k === 'landing' && !location.hash && !sessionStorage.getItem('vf-seen') && !/[?&]board=/.test(location.search); } catch (e) {}
+    try { first = R.k === 'landing' && !location.hash && !seen() && !/[?&]board=/.test(location.search); } catch (e) {}
     var jobs = [load(board(R.k, RG))];
     
     Promise.all(jobs).then(function (docs) {
       cur = VFDC.mount(docs[0], main);
-      disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); title(cur.el);
+      disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); if (R.k === 'case') { headings(cur.el); pnavClear(cur.el); } title(cur.el);
       try { var y = sessionStorage.getItem('vf-y'); if (y != null) { sessionStorage.removeItem('vf-y'); window.scrollTo(0, +y); } else landingAnchor(); } catch (e) { landingAnchor(); }
       if (first) loading(board('loading', RG));
       document.documentElement.setAttribute('data-vf', 'ready');
@@ -232,10 +281,17 @@
     document.body.appendChild(ov);
     var main = document.getElementById('vf');
     main.setAttribute('inert', ''); main.setAttribute('aria-hidden', 'true');
-    var done = false, L = null;
+    var done = false, L = null, skipAsk = false;
+    /* skip from the very first frame: Escape / Enter / Space here (before the frame has focus or has mounted), or a
+       click on the frame before its board is ready; the board's own skip (done('skip')) settles and hands off */
+    function skipNow() { try { if (L && L.comp && L.comp.done) L.comp.done('skip'); else skipAsk = true; } catch (e) { hand(); } }
+    function onKey(e) { if (!done && (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); skipNow(); } }
+    document.addEventListener('keydown', onKey);
+    ov.addEventListener('click', skipNow);
     function hand() {
       if (done) return; done = true;
-      try { sessionStorage.setItem('vf-seen', '1'); } catch (e) {}
+      document.removeEventListener('keydown', onKey);
+      markSeen();
       main.removeAttribute('inert'); main.removeAttribute('aria-hidden');
       ov.classList.add('out');
       setTimeout(function () { try { if (L) L.unmount(); } catch (e) {} if (ov.parentNode) ov.parentNode.removeChild(ov);
@@ -245,6 +301,7 @@
       if (e.source !== ov.contentWindow || !e.data || e.data.vf !== 'loading-mounted') return;
       window.removeEventListener('message', on);
       var w = ov.contentWindow, d = ov.contentDocument; L = w.VFL;
+      if (skipAsk) { skipNow(); }
       var root = d.querySelector('.root');
       var ls = d.querySelector('.vf-ls');
       /* the sculpture frame scales to fit the viewport (tools/vfinal_build.py: .vf-ls); text keeps its own sizes */
@@ -268,7 +325,7 @@
   var rt = 0;
   window.addEventListener('resize', function () {
     clearTimeout(rt);
-    rt = setTimeout(function () { if (R.k !== 'case' && range() !== RG) { try { sessionStorage.setItem('vf-seen', '1'); } catch (e) {} location.reload(); } }, 250);
+    rt = setTimeout(function () { if (R.k !== 'case' && range() !== RG) { markSeen(); location.reload(); } }, 250);
   });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 })();

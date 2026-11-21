@@ -81,7 +81,7 @@ store a credential. Don't produce an upload manifest unless the owner asks for o
 ## Do not touch without asking
 
 - The two blocking `<head>` scripts (slop redirect; theme + stage arming). Their position before first paint *is* the feature. The stage is armed for every visitor, reduced motion included (owner's brief, 2026-10-24).
-- **Forced light mode.** A fresh visit is always light; dark only via the site's toggle (`localStorage['pf-theme']`). Keep the `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) … }` pattern, keep the single unscoped `theme-color` meta, and never add a `matchMedia` color-scheme listener.
+- **Dark first (owner, 2026-11-21; replaced forced light).** A first visit opens dark; light only via the site's toggle, persisted in `localStorage['pf-theme']`. The theme is set in the blocking head script before first paint; never add a `matchMedia` color-scheme listener.
 - **The thread measure rule.** The hero player measures its column once. Never change the column's inline size between states. The landing states centre it by changing the grid's *outer* tracks so the middle one keeps its width; keep it that way.
 - The three-column project-browser split and aspect-locked embeds. Never widen the visual column; scale `.slot > img`, never `.slot`.
 - The message pace, `--msg-pace` on `.hero__thread` (0.7), read by both CSS and `js/thread.js`. Change the speed there, never per value.
