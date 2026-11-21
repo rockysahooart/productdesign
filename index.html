@@ -167,6 +167,13 @@ x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
 #vf .vf-ba-scroll{overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 #vf .vf-ba-scroll img{display:block;width:100%;min-width:720px;height:auto}
 #vf .vf-ba-scroll:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
+/* progressive disclosure on case pages (tools/craigslist_story.py details()): a labelled toggle in the accent link style */
+#vf details.vf-more{margin:14px 0 0;max-width:48em}
+#vf details.vf-more>summary{list-style:none;display:inline-flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;font:400 15px/1.45 'Inter',sans-serif;color:var(--acc)}
+#vf details.vf-more>summary::-webkit-details-marker{display:none}
+#vf details.vf-more>summary::before{content:"+";display:inline-block;width:1ch;text-align:center}
+#vf details.vf-more[open]>summary::before{content:"\2212"}
+#vf details.vf-more>summary:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
 #vf-loading{position:fixed;inset:0;z-index:100;width:100%;height:100%;border:0;display:block;opacity:1;transition:opacity .3s cubic-bezier(.6,0,.2,1)}
 #vf-loading.out{opacity:0;pointer-events:none}
 @media (prefers-reduced-motion: reduce){#vf-loading{transition:none}}

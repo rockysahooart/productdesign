@@ -59,3 +59,39 @@ BEFORE_AFTER = ('<figure class="hero vf-ba"><div class="vf-ba-scroll" role="regi
                 'Minneapolis: Home, cars and trucks browsing, search entry, search results with filtering, and item details."></div>'
                 '<figcaption class="cap">Before and after, from the deck I presented. Top row: the current app. Bottom row: my redesign of '
                 'the same five steps, from Home to a single listing. The screens use different cities and sample listings.</figcaption></figure>')
+
+
+def details(summary, body):
+    return '<details class="vf-more"><summary>%s</summary>%s</details>' % (summary, body)
+
+
+def prototype(s):
+    """The prototype part of the page, told in first person, with the long behaviour lists one tap away
+    (progressive disclosure: every word kept, the screenshots stay in view)."""
+    import re
+    rep = [
+        ('<h2 class="h">Craigslist iOS redesign: browser prototype</h2>', '<h2 class="h">Try the prototype I built</h2>'),
+        ('<p class="p">A static HTML/CSS/JavaScript prototype of the Craigslist iOS car-shopping redesign. It\'s a 430 × 932 pt iPhone screen, built from the handoff and the Figma file <code>uBDKd4xLS50msiung2aDGJ</code>.</p>',
+         '<p class="p">Screens show how the redesign looks; I wanted people to feel how it behaves. So I built it as a working prototype in HTML, CSS and JavaScript, an iPhone screen at 430 × 932 points, from my handoff and the Figma file.</p>'),
+        ('<p class="p"><b>Live prototype:</b> <a href="https://rockysahooart.github.io/craigslist-livefront-prototype/">https://rockysahooart.github.io/craigslist-livefront-prototype/</a>. Open it on a phone for the full-screen version.</p>',
+         '<p class="p"><a class="lk" href="https://rockysahooart.github.io/craigslist-livefront-prototype/" target="_blank" rel="noopener">Try the live prototype <span aria-hidden="true">↗</span></a> It opens full screen on a phone.</p>'),
+    ]
+    for a, b in rep:
+        assert a in s, a[:60]
+        s = s.replace(a, b, 1)
+    # Prototype notes: what is real and what is sample data
+    m = re.search(r'<h3 class="h3">Prototype notes</h3>(<ul class="clb">.*?</ul>)', s, re.S)
+    s = s[:m.start()] + details('Prototype notes: what\u2019s real, and what\u2019s sample data', m.group(1)) + s[m.end():]
+    # Discovery journey: the behaviour list (nested) one tap away; its screenshots stay
+    a = s.index('<section class="sec"><h3 class="h3"><b>Discovery journey.</b></h3>')
+    u0 = s.index('<ul class="clb">', a); u1 = re.compile(r'</ul>\s*<div class="grid4">').search(s, u0).start() + len('</ul>')
+    s = s[:u0] + details('How each screen behaves', s[u0:u1]) + s[u1:]
+    # Filtering: the summary sentence stays; the two lists open on request
+    a = s.index('<b>Filtering: one shared filter state.</b>')
+    u0 = s.index('<ul class="clb">', a); u1 = re.compile(r'</ul>\s*<div class="grid4">').search(s, u0).start() + len('</ul>')
+    s = s[:u0] + details('What the filters combine, and how the panels behave', s[u0:u1]) + s[u1:]
+    # Returning concept: the framing sentence stays; the feature list opens on request
+    a = s.index('<b>Returning to a car search (exploratory concept, not validated).</b>')
+    u0 = s.index('<ul class="clb">', a); u1 = re.compile(r'</ul>\s*<div class="grid4">').search(s, u0).start() + len('</ul>')
+    s = s[:u0] + details('What the concept does', s[u0:u1]) + s[u1:]
+    return s

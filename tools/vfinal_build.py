@@ -220,6 +220,19 @@ COPY = [
      'I was the <b>sole UX designer for three months</b>, turning these operational challenges into an efficient, '
      'connected and usable enterprise experience.'),
     ('why users take more to navigate a system', 'why users take longer to navigate a system'),
+    # second pass (owner, 2026-11-21): first person where the pages slipped into fragments or figure-speak
+    ('Designed the human-review layer for AI-assisted billing. How reviewers kept, added, removed or corrected the billing tags a model proposed.',
+     'I designed the human-review layer for AI-assisted billing: how reviewers keep, add, remove or correct the billing tags a model proposes.'),
+    ('Turned each reviewer decision into structured feedback, suggestion, evidence, correction and reason, tied together so engineering had a signal it could act on.',
+     'I turned each reviewer decision into structured feedback (the suggestion, the evidence, the correction and the reason, tied together) so engineering had a signal it could act on.'),
+    ('Product · Engineering · Operations: the people defining the workflow, building the system, and working inside it.',
+     'I worked with product, engineering and operations: the people defining the workflow, building the system and working inside it.'),
+    ('Billing operations teams, who had to clear AI-generated tags fast and still keep enough context to judge one.',
+     'I designed for billing operations teams, who had to clear AI-generated tags fast and still keep enough context to judge each one.'),
+    ('The sections below document how that worked.', 'Below, I walk through how that worked.'),
+    ("After keeps Before's information architecture: the same screens, in the same order, with the same sections, labels and actions where you'd expect them.",
+     "My redesign keeps the original console's information architecture: the same screens, in the same order, with the same sections, labels and actions where bankers expect them."),
+    ('What changed is presentation and behaviour, not the workflow:', 'What I changed is presentation and behaviour, not the workflow:'),
     ('the users lives be improved', 'the users’ lives be improved'),
     ('create systems everyday', 'create systems every day'),
 ]
@@ -296,9 +309,12 @@ def convert(s, name=''):
                    s, count=1)
     for old, new in COPY:
         jo, jn = old.replace('"', '\\"').replace('/', '\\/'), new.replace('"', '\\"').replace('/', '\\/')
-        if old in s or jo in s:
-            USED.add(old)
-        s = s.replace(old, new).replace(jo, jn)
+        for o, n in ((old, new), (jo, jn)):
+            # source lines may wrap anywhere: match any run of whitespace (or an escaped newline) between words
+            rx = r'(?:\s|\\n)+'.join(re.escape(w) for w in o.split())
+            s, k = re.subn(rx, lambda m, n=n: n, s)
+            if k:
+                USED.add(old)
     # Case pages: the brand and the header "Projects" link go to the Landing at its top (owner, 2026-11-21); the
     # "All projects" links keep the project index (./#projects)
     s = re.sub(r'<a class="id" href="Main(?:-light)?(?:-m)?(?:-light)?\.dc\.html"', '<a class="id" href="./"', s)
@@ -319,6 +335,7 @@ def convert(s, name=''):
         s = s.replace('</section>\n</div></main>', '</section>\n' + cs.AFTER + '</div></main>', 1)
         s = s.replace('<a class="lk" href="https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0">view project <span aria-hidden="true">→</span></a>',
                       '<a class="lk" href="https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0" target="_blank" rel="noopener">View the presentation deck <span aria-hidden="true">↗</span></a>')
+        s = cs.prototype(s)
         nh = s.count('<figure class="hero"><div class="mount dk">')
         s = s.replace('<figure class="hero"><div class="mount dk">', cs.BEFORE_AFTER + '<figure class="hero"><div class="mount dk">', 1)
         assert n0 == 1 and nh == 1 and cs.AFTER in s and 'View the presentation deck' in s, 'Craigslist story: source structure changed'

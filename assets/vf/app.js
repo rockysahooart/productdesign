@@ -219,7 +219,7 @@
 
   /* PROJECT CARDS OPEN THEIR PROJECT (owner, 2026-11-21). In the browser, a neighbour's card still comes forward on
      the first click (the board's own tap); the ACTIVE card - click, Enter or Space - now opens the project. In the
-     project list (desktop index rows, mobile rows), a row opens its project. Destinations are the verified ones the
+     project list, a desktop / ultrawide index row opens its project; on phones the list is the board's accordion. Destinations are the verified ones the
      board's "View Project" links already carry (tools/vfinal_build.py PROJ). Clicks inside a live PCV stay inside its
      own document, so a prototype's controls never navigate. */
   var DEST = { 'Craigslist Redesign': '#/craigslist', 'Carry': '#/carry', 'Cryptography Explained': 'https://rockysahooart.github.io/encryption-coffee-shop/',
@@ -238,7 +238,9 @@
     host.addEventListener('click', function (e) {
       var hit = e.target.closest && e.target.closest('.spec .hit');
       if (hit && hit.closest('.spec').classList.contains('front')) { if (go(hit.getAttribute('aria-label'))) { e.preventDefault(); e.stopPropagation(); } return; }
-      var row = e.target.closest && e.target.closest('.vix li button, .idx li button, .idx .xh button');
+      /* desktop / ultrawide index rows open their project; the mobile list keeps the board's own accordion (owner,
+         2026-11-21): a row expands in place to the project's card, and only its View Project link navigates */
+      var row = e.target.closest && e.target.closest('.vix li button');
       if (row) { var t = rowTitle(row.closest('li') || row); if (t && go(t)) { e.preventDefault(); e.stopPropagation(); } }
     }, true);
     host.addEventListener('keydown', function (e) {
@@ -289,6 +291,26 @@
     });
     sec.appendChild(ol);
     mast.parentNode.insertBefore(sec, mast.nextSibling);
+  }
+
+  /* MOBILE LIST ACCORDION, CARD CENTRING (owner, 2026-11-21). The board sizes each expanded card and pins it to the
+     left of the text column, some with a built-in offset, so cards sat 0-21px left of the column and none centred.
+     One shared rule: the visible plane of the open card (.gp, or the card itself) is centred in the column the title
+     and description use, measured on the card, applied with translate only (no reflow, no per-project numbers). */
+  function accCentre(host) {
+    var idx = host.querySelector('section.idx'); if (!idx) return;
+    function f() {
+      [].forEach.call(idx.querySelectorAll('.xp.on .xpv'), function (xv) {
+        var xf = xv.querySelector('.xpf'); if (!xf) return;
+        xf.style.translate = '';
+        var g = xf.querySelector('.gp') || xf.firstElementChild || xf, r = g.getBoundingClientRect(), v = xv.getBoundingClientRect();
+        if (!r.width) return;
+        var c0 = v.left + parseFloat(getComputedStyle(xv).paddingLeft), cw = v.right - c0;
+        xf.style.translate = Math.round(c0 + (cw - r.width) / 2 - r.left) + 'px 0';
+      });
+    }
+    new MutationObserver(function () { requestAnimationFrame(f); }).observe(idx, { subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'style'] });
+    try { new ResizeObserver(function () { requestAnimationFrame(f); }).observe(idx); } catch (e) {}
   }
 
   function wheelCentre(host) {
@@ -355,7 +377,7 @@
     
     Promise.all(jobs).then(function (docs) {
       cur = VFDC.mount(docs[0], main);
-      disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
+      disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
       /* SCROLL ON ENTRY: history.scrollRestoration is manual (head script), so every entry starts at 0 - fresh visit,
          refresh, Back, the brand or nav link. Only a theme switch (vf-y, same page) or an explicit in-page anchor
          (#projects, #top) places it elsewhere. */
