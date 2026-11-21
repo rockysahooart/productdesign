@@ -104,6 +104,24 @@ def prod_css(name):
         # sculpture (aura + sheets, placed in frame pixels) sits in .vf-ls, the frame at its own size, centred and
         # scaled to fit (--vf-s = min(vw / W, vh / H), set by assets/vf/app.js), so its geometry is never re-placed.
         w, h = re.search(r'width:(\d+)px;height:(\d+)px;overflow:hidden">\s*<div aria-hidden="true" class="aura"', SRC_TEXT[0]).groups()
+        if '-m-' in name:
+            return ('<style id="vf-prod">/* production sizing (tools/vfinal_build.py FLUID): mobile Loading, one group */'
+                    '.root{width:100%!important;height:100dvh!important;overflow:hidden!important;box-sizing:border-box;'
+                    'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;'
+                    'padding:max(env(safe-area-inset-top),20px) 24px max(env(safe-area-inset-bottom),20px)}'
+                    '.root .nm.nmm{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;text-align:center;'
+                    'order:1;flex:none}'
+                    '.root .nm.nmm .or{margin-top:6px!important}'
+                    '.vf-ls{order:2;position:relative;flex:none;width:calc(390px * var(--vf-s,1));height:calc(var(--h) * var(--vf-s,1));'
+                    'margin:clamp(4px,1.5dvh,16px) 0 0;pointer-events:none}'
+                    '.vf-ls-i{position:absolute;left:0;top:0;width:390px;height:844px;transform-origin:0 0;scale:var(--vf-s,1);'
+                    'translate:0 calc(var(--y) * -1 * var(--vf-s,1))}'
+                    '.root .lnb{order:3;position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;'
+                    'flex:none;width:min(100%,320px);flex-direction:column;align-items:center!important;gap:clamp(14px,2.5dvh,24px)!important;'
+                    'margin-top:clamp(8px,2dvh,20px)}'
+                    '.root .lnb .lt{width:100%;padding-bottom:0!important;text-align:center}'
+                    '.root .lnb .ldl p{text-align:center}'
+                    '</style>')
         css = ('.root{width:100%%!important;height:100%%!important;overflow:hidden!important}'
                '.vf-ls{position:absolute;left:50%%;top:50%%;width:%spx;height:%spx;margin:-%spx 0 0 -%spx;'
                'scale:var(--vf-s,1);pointer-events:none}') % (w, h, int(h) // 2, int(w) // 2)
@@ -174,10 +192,24 @@ ODIA = ('My portfolio begins with my name in Odia, the language of my family’s
 def convert(s, name=''):
     SRC_TEXT[0] = s
     if name.startswith('VF-1-Loading'):
-        s = re.sub(r'(<div aria-hidden="true" class="aura"[^>]*></div><div aria-hidden="true" class="ldc")',
-                   r'<div class="vf-ls" data-w="1">\1', s, count=1)
-        # close .vf-ls after .ldc: .ldc is followed by the skip link
-        s = s.replace('<a href="#start" data-board=', '</div><a href="#start" data-board=', 1) if 'class="vf-ls"' in s else s
+        if '-m-' in name:
+            # MOBILE COMPOSITION (owner, 2026-11-21; Iris): one centred vertical group - name, sculpture, loading
+            # information, then the action - instead of three pieces pinned to the top, middle and bottom of the frame.
+            # The sculpture keeps its frame geometry: .vf-ls is a flow box cut to the sculpture's own extent in the
+            # frame (aura + sheets), and .vf-ls-i the untouched frame inside it, scaled to the height left over.
+            # The cut is the sculpture's envelope while the forms play - every sheet and the orbit ring, measured in
+            # the browser on the 390 frame (sheets y 257-452; the ring's visible ellipse ends higher) - plus 8px, not the aura's soft glow, which would leave empty
+            # bands around the form. The board's own settle (the last second, its stack position) sits lower and is
+            # left as designed.
+            y0, y1 = 257 - 8, 452 + 8
+            s = re.sub(r'(<div aria-hidden="true" class="aura"[^>]*></div><div aria-hidden="true" class="ldc")',
+                       r'<div class="vf-ls" data-flow="1" data-y="%d" data-h="%d" style="--y:%dpx;--h:%dpx"><div class="vf-ls-i">\1' % (y0, y1 - y0, y0, y1 - y0), s, count=1)
+            s = s.replace('<a href="#start" data-board=', '</div></div><a href="#start" data-board=', 1)
+        else:
+            s = re.sub(r'(<div aria-hidden="true" class="aura"[^>]*></div><div aria-hidden="true" class="ldc")',
+                       r'<div class="vf-ls" data-w="1">\1', s, count=1)
+            # close .vf-ls after .ldc: .ldc is followed by the skip link
+            s = s.replace('<a href="#start" data-board=', '</div><a href="#start" data-board=', 1) if 'class="vf-ls"' in s else s
     s = re.sub(r'<script src="\./support\.js"></script>', '', s)
     s = re.sub(r'<link href="https://fonts\.googleapis\.com/[^"]*" rel="stylesheet">', '', s)
     # srcdoc previews resolve assets/*.webp against this page, where the repo's own files live: the canvas-only
@@ -207,10 +239,11 @@ def convert(s, name=''):
     # preview as a live document (vf/site.html, pv__frame 2: NAT[2] 1000x900, and the board's loader already carries its
     # camera framing, data-boost="optiflow"), but this board shows a still capture of it. The capture becomes the
     # slot's poster, exactly as Carry's: the board's own loader swaps in the live original when the slot is near.
+    # data-theme="dark": the approved capture is the original's dark state; the loader applies it to the document.
     if name.startswith('VF-2-Landing'):
         s = re.sub(r'(<div class="gp dk" style="padding:0px">)(<img src="assets/vf/shell/fd8e35a0b41bb82ee0358dc345273035\.webp"'
                    r'[^>]*width="(\d+)" height="(\d+)")[^>]*>',
-                   lambda m: '%s<span class="pf-prev" data-k="2" data-boost="optiflow" data-title="OptiFlow: tagging preview" '
+                   lambda m: '%s<span class="pf-prev" data-k="2" data-boost="optiflow" data-theme="dark" data-title="OptiFlow: tagging preview" '
                              'style="display:block;position:relative;overflow:hidden;width:%spx;height:%spx">%s style="display:block;'
                              'width:100%%;height:100%%;object-fit:contain"></span>' % (m.group(1), m.group(3), m.group(4), m.group(2)),
                    s, count=1)

@@ -245,6 +245,17 @@
     }, true);
   }
 
+  /* PHONE GUTTER FOR PROJECT CARDS (owner, 2026-11-21). On phones the mobile board scales its wheel to the full
+     width, so the widest Project Cards (PCV + Plinth: Cryptography, Specimen, OptiFlow, SBL) reached within 1px of
+     the screen edges and read as cut off. One shared rule: the camera is scaled about its own origin so a full-width
+     unit keeps a 16px gutter each side - k = (w - 32) / (w - 2) - for every project alike (no per-card offsets). */
+  function phoneGutter(host) {
+    var cam = host.querySelector('#vfmcam'), root = host.querySelector('#vfmroot');
+    if (!cam || !root) return;
+    function f() { var w = root.clientWidth; cam.style.scale = Math.min(1, (w - 32) / (w - 2)).toFixed(4); }
+    f(); try { new ResizeObserver(f).observe(root); } catch (e) {}
+  }
+
   function wheelCentre(host) {
     var land = host.querySelector('.land'), st = land && land.querySelector('.stage'), cam = st && st.querySelector('.cam');
     if (!cam) return;
@@ -309,7 +320,7 @@
     
     Promise.all(jobs).then(function (docs) {
       cur = VFDC.mount(docs[0], main);
-      disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); openCards(cur.el); if (R.k === 'case') { headings(cur.el); pnavClear(cur.el); } title(cur.el);
+      disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); openCards(cur.el); if (R.k === 'case') { headings(cur.el); pnavClear(cur.el); } title(cur.el);
       /* SCROLL ON ENTRY: history.scrollRestoration is manual (head script), so every entry starts at 0 - fresh visit,
          refresh, Back, the brand or nav link. Only a theme switch (vf-y, same page) or an explicit in-page anchor
          (#projects, #top) places it elsewhere. */
@@ -355,8 +366,22 @@
       var root = d.querySelector('.root');
       var ls = d.querySelector('.vf-ls');
       /* the sculpture frame scales to fit the viewport (tools/vfinal_build.py: .vf-ls); text keeps its own sizes */
-      function fit() { if (ls) ls.style.setProperty('--vf-s', Math.min(w.innerWidth / ls.offsetWidth, w.innerHeight / ls.offsetHeight).toFixed(4)); }
-      fit(); w.addEventListener('resize', fit);
+      function fit() {
+        if (!ls) return;
+        if (ls.getAttribute('data-flow')) {
+          /* mobile group: the sculpture takes the height its siblings leave (name, loading info, action), within the
+             safe-area padding, never wider than the screen and never above its own frame size */
+          var root = ls.parentNode, cs = w.getComputedStyle(root), used = 0;
+          [].forEach.call(root.children, function (c) { if (c === ls) return; var p = w.getComputedStyle(c).position;
+            if (p === 'absolute' || p === 'fixed' || c.hidden) return; var m = w.getComputedStyle(c);
+            used += c.offsetHeight + parseFloat(m.marginTop) + parseFloat(m.marginBottom); });
+          var lm = w.getComputedStyle(ls), avail = root.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - used - parseFloat(lm.marginTop) - parseFloat(lm.marginBottom);
+          var sc = Math.max(0.45, Math.min(1, (root.clientWidth + 48) / 390, avail / +ls.getAttribute('data-h')));
+          ls.style.setProperty('--vf-s', sc.toFixed(4)); return;
+        }
+        ls.style.setProperty('--vf-s', Math.min(w.innerWidth / ls.offsetWidth, w.innerHeight / ls.offsetHeight).toFixed(4));
+      }
+      fit(); w.addEventListener('resize', fit); try { w.visualViewport.addEventListener('resize', fit); } catch (x) {}
       var go = d.querySelector('a[aria-label="Start here"]');
       if (go) { go.addEventListener('click', function (ev) { ev.preventDefault(); }); try { ov.focus(); go.focus(); } catch (x) {} }
       [].forEach.call(d.querySelectorAll('a.skip'), function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); }); });
