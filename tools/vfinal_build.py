@@ -110,16 +110,21 @@ def prod_css(name):
                     '.root{width:100%!important;height:100dvh!important;overflow:hidden!important;box-sizing:border-box;'
                     'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;'
                     'padding:max(env(safe-area-inset-top),20px) 24px max(env(safe-area-inset-bottom),20px)}'
+                    # the board places and sizes the sculpture from the viewport height (--vb, --ey, --eh, --ew and the
+                    # spacing tokens, with max-height steps); in this composition fit() sizes it, so the frame geometry
+                    # is pinned to the board's own 390 x 844 values - the frame the envelope was measured in
+                    '.root{--vb:844px!important;--sab:0px!important;--hp:24px!important;--sg:16px!important;--vm:24px!important;'
+                    '--am:24px!important;--eh:1!important;--ey:-30px!important;--ew:1!important}'
                     '.root .nm.nmm{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;text-align:center;'
                     'order:1;flex:none}'
                     '.root .nm.nmm .or{margin-top:6px!important}'
                     '.vf-ls{order:2;position:relative;flex:none;width:calc(390px * var(--vf-s,1));height:calc(var(--h) * var(--vf-s,1));'
-                    'margin:clamp(4px,1.5dvh,16px) 0 0;pointer-events:none}'
+                    'margin:clamp(12px,2.5dvh,28px) 0 0;pointer-events:none}'
                     '.vf-ls-i{position:absolute;left:0;top:0;width:390px;height:844px;transform-origin:0 0;scale:var(--vf-s,1);'
                     'translate:0 calc(var(--y) * -1 * var(--vf-s,1))}'
                     '.root .lnb{order:3;position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;'
-                    'flex:none;width:min(100%,320px);flex-direction:column;align-items:center!important;gap:clamp(14px,2.5dvh,24px)!important;'
-                    'margin-top:clamp(8px,2dvh,20px)}'
+                    'flex:none;width:min(100%,320px);flex-direction:column;align-items:center!important;gap:clamp(16px,2.5dvh,24px)!important;'
+                    'margin-top:clamp(12px,2.5dvh,28px)}'
                     '.root .lnb .lt{width:100%;padding-bottom:0!important;text-align:center}'
                     '.root .lnb .ldl p{text-align:center}'
                     '</style>')
@@ -198,11 +203,10 @@ def convert(s, name=''):
             # information, then the action - instead of three pieces pinned to the top, middle and bottom of the frame.
             # The sculpture keeps its frame geometry: .vf-ls is a flow box cut to the sculpture's own extent in the
             # frame (aura + sheets), and .vf-ls-i the untouched frame inside it, scaled to the height left over.
-            # The cut is the sculpture's envelope while the forms play - every sheet and the orbit ring, measured in
-            # the browser on the 390 frame (sheets y 257-452; the ring's visible ellipse ends higher) - plus 8px, not the aura's soft glow, which would leave empty
-            # bands around the form. The board's own settle (the last second, its stack position) sits lower and is
-            # left as designed.
-            y0, y1 = 257 - 8, 452 + 8
+            # The container holds the sculpture's FULL envelope across the whole sequence - entrance, every form, and
+            # the board's own settle to the stack in the last second - measured in the browser on the 390 frame
+            # (sheets and orbit ring, y 257-640), plus 8px. Nothing the animation does leaves it.
+            y0, y1 = 257 - 8, 640 + 8
             s = re.sub(r'(<div aria-hidden="true" class="aura"[^>]*></div><div aria-hidden="true" class="ldc")',
                        r'<div class="vf-ls" data-flow="1" data-y="%d" data-h="%d" style="--y:%dpx;--h:%dpx"><div class="vf-ls-i">\1' % (y0, y1 - y0, y0, y1 - y0), s, count=1)
             s = s.replace('<a href="#start" data-board=', '</div></div><a href="#start" data-board=', 1)
