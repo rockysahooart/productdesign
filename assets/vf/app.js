@@ -373,6 +373,9 @@
         var k = rb.width / ra.width, sp = parseFloat(getComputedStyle(ls).scale) || 1;
         var ox = ra.left + ra.width / 2 - rl.left, oy = ra.top + ra.height / 2 - rl.top;
         var dx = rb.left + rb.width / 2 - (ra.left + ra.width / 2), dy = rb.top + rb.height / 2 - (ra.top + ra.height / 2);
+        /* the status, bar and Skip have done their job (the bar is full): they fade first, so the form never passes
+           over visible text on its way down to the Landing's sculpture */
+        var lnb = d.querySelector('.lnb'); if (lnb) { lnb.style.transition = 'opacity .3s cubic-bezier(.2,.7,.2,1)'; lnb.style.opacity = '0'; }
         ls.style.transformOrigin = (ox / sp) + 'px ' + (oy / sp) + 'px';
         ls.style.transition = 'transform 1000ms cubic-bezier(.45,0,.2,1)';
         ls.style.transform = 'translate(' + (dx / sp) + 'px,' + (dy / sp) + 'px) scale(' + k + ')';
