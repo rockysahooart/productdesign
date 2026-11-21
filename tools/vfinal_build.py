@@ -136,6 +136,7 @@ def desktop_copy(s, desk):
 
 
 SRC_TEXT = ['']
+USED = set()
 TITLES = [
     ('Improving patient recall after oncology visits', 'How I Designed for Better Patient Recall'),
     ('Designing AI-assisted billing review for operations teams across complex workflows',
@@ -144,6 +145,27 @@ TITLES = [
      'How I Redesigned Oncology Specimen Kits for Safer Handling'),
     ('Standardizing oncology workflows for clinical provider teams across complex systems',
      'How I Audited a Healthcare Design System for Consistency and Accessibility'),
+]
+# EDITORIAL PASS (owner, 2026-11-21; Ada). Targeted: openings that named a mechanism before its human context, third-
+# person ledes, and clear grammar slips. Facts, figures, claims and order unchanged. Applied to the static first paint
+# and to the ported source markup in the scripts (same text, JS-escaped). Every old string must still be found.
+COPY = [
+    ('The tagging screen in an AI-assisted billing pipeline: where a reviewer checks what the model pulled out of a '
+     'document, and where a correction goes when they disagree.',
+     'I designed the screen where billing reviewers check what an AI model pulled out of each document, and where their '
+     'correction goes when they disagree with it.'),
+    ('A tissue collection kit where the preparation instructions sit in the lid and the specimen has a cavity to sit in.',
+     'I redesigned a tissue collection kit so the preparation instructions sit in the lid and the specimen has its own '
+     'cavity to sit in.'),
+    ('I mapped what PatientX already owned so Carry could sit inside it unchanged.',
+     'I mapped what PatientX, the larger product Carry is part of, already owned, so Carry could fit inside it unchanged.'),
+    ('<b>Sole UX Designer, three months</b> — turning these operational challenges into an efficient, connected, usable '
+     'enterprise experience.',
+     'I was the <b>sole UX designer for three months</b>, turning these operational challenges into an efficient, '
+     'connected and usable enterprise experience.'),
+    ('why users take more to navigate a system', 'why users take longer to navigate a system'),
+    ('the users lives be improved', 'the users’ lives be improved'),
+    ('create systems everyday', 'create systems every day'),
 ]
 ODIA = ('My portfolio begins with my name in Odia, the language of my family’s roots in Odisha, India. '
         'I wanted that part of my identity to feel present from the very beginning.')
@@ -192,6 +214,11 @@ def convert(s, name=''):
                              'style="display:block;position:relative;overflow:hidden;width:%spx;height:%spx">%s style="display:block;'
                              'width:100%%;height:100%%;object-fit:contain"></span>' % (m.group(1), m.group(3), m.group(4), m.group(2)),
                    s, count=1)
+    for old, new in COPY:
+        jo, jn = old.replace('"', '\\"').replace('/', '\\/'), new.replace('"', '\\"').replace('/', '\\/')
+        if old in s or jo in s:
+            USED.add(old)
+        s = s.replace(old, new).replace(jo, jn)
     # Usability pass (owner, 2026-11-21). Case-study h1 = the project's approved editorial title from the Landing card
     # (only the h1 text; static first paint and the ported source markup in the script both carry it)
     for old, new in TITLES:
@@ -230,6 +257,8 @@ def main():
             s = desktop_copy(s, desk)
         open(os.path.join(OUT, name + '.html'), 'w', encoding='utf-8').write(convert(s, name))
         print('board', name)
+    missing = [o[:50] for o, _ in COPY if o not in USED]
+    assert not missing, 'editorial pass: source text changed, not found: %s' % missing
     for a, b in (('shell', 'shell'), ('case-studies', 'cs')):
         src = os.path.join(SRC, 'assets', a)
         for dp, _, fs in os.walk(src):

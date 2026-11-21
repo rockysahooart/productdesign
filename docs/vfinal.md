@@ -87,6 +87,13 @@ reloads into the other board. Case studies are one fluid board at every width.
 - The active Project Card (click / Enter / Space) and every project-list row open the project's verified destination;
   a neighbour's card first comes forward. `localStorage['vf-qa-skip-loading']` is the harness's switch only.
 
+## Editorial pass (2026-11-21, Ada)
+
+Targeted, in `tools/vfinal_build.py` COPY (the build fails if a source string changes): OptiFlow and Specimen ledes
+open in first person with the human task before the mechanism; Carry names what PatientX is before relying on it;
+SBL's role line reads as a sentence; three grammar slips on About. Facts, figures, claims and order unchanged. Most of
+the site was already first person in the owner's voice and was left as written.
+
 ## Deviations and open items
 
 - **Odia weight (temporary, accepted).** Noto Sans Oriya is self-hosted from the OFL Regular master only; the boards'
