@@ -259,6 +259,38 @@
     f(); try { new ResizeObserver(f).observe(root); } catch (e) {}
   }
 
+  /* READING JOURNEY (assets/vf/journeys.js): the short, first-person overview after a case study's masthead. Each
+     step's button scrolls to its full section (no hash change: hashes are routes here). Nothing on the page moves. */
+  function journey(host) {
+    var J = window.VF_JOURNEYS && R.k === 'case' ? window.VF_JOURNEYS[route().s.toLowerCase()] : null;
+    var mast = host.querySelector('header.ar-mast');
+    if (!J || !mast) return;
+    var rmq = false; try { rmq = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+    var sec = document.createElement('section'); sec.className = 'vf-jr'; sec.setAttribute('aria-labelledby', 'vf-jr-h');
+    var h = document.createElement('h2'); h.id = 'vf-jr-h'; h.className = 'vf-jr-h'; h.textContent = J.title; sec.appendChild(h);
+    var ol = document.createElement('ol'); ol.className = 'vf-jr-l';
+    J.steps.forEach(function (st) {
+      var li = document.createElement('li');
+      var t = document.createElement('h3'); t.className = 'vf-jr-t'; t.textContent = st[0];
+      var p = document.createElement('p'); p.className = 'vf-jr-p'; p.textContent = st[1];
+      li.appendChild(t); li.appendChild(p);
+      var target = st[2] && host.querySelector(st[2]);
+      if (target) {
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'vf-jr-go';
+        b.innerHTML = '<span></span><span aria-hidden="true">\u2193</span>'; b.firstChild.textContent = st[3];
+        b.addEventListener('click', function () {
+          target.scrollIntoView({ behavior: rmq ? 'auto' : 'smooth', block: 'start' });
+          var f = target.querySelector('h2,h3,[role=heading]') || target; if (!f.hasAttribute('tabindex')) f.setAttribute('tabindex', '-1');
+          try { f.focus({ preventScroll: true }); } catch (e) {}
+        });
+        li.appendChild(b);
+      }
+      ol.appendChild(li);
+    });
+    sec.appendChild(ol);
+    mast.parentNode.insertBefore(sec, mast.nextSibling);
+  }
+
   function wheelCentre(host) {
     var land = host.querySelector('.land'), st = land && land.querySelector('.stage'), cam = st && st.querySelector('.cam');
     if (!cam) return;
@@ -323,7 +355,7 @@
     
     Promise.all(jobs).then(function (docs) {
       cur = VFDC.mount(docs[0], main);
-      disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); openCards(cur.el); if (R.k === 'case') { headings(cur.el); pnavClear(cur.el); } title(cur.el);
+      disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
       /* SCROLL ON ENTRY: history.scrollRestoration is manual (head script), so every entry starts at 0 - fresh visit,
          refresh, Back, the brand or nav link. Only a theme switch (vf-y, same page) or an explicit in-page anchor
          (#projects, #top) places it elsewhere. */

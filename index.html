@@ -151,11 +151,28 @@ x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
 #vf.vf-in-1 h1.hl,#vf.vf-in-2 :is(header,.sig,.rl2,.id>:not(h1),.acts,.ctx),#vf.vf-in-3 :is(.stage,.chips,.vix,#vfmgrp,.idx,.abt,.pager,.pg){
   opacity:1;translate:0 0;transition:opacity .6s cubic-bezier(.2,.7,.2,1),translate .6s cubic-bezier(.2,.7,.2,1)}
 @media (prefers-reduced-motion: reduce){#vf.vf-stage *{transition:none!important}}
+/* reading journey (assets/vf/journeys.js): board tokens and type roles only; the .pn card pattern (rule + accent tick) */
+#vf .vf-jr{margin:clamp(40px,5vw,80px) 0 0;max-width:1680px}
+#vf .vf-jr-h{margin:0;font:400 var(--vf-fs-h2,40px)/1.08 'Instrument Serif',serif;color:var(--ink);letter-spacing:0}
+#vf .vf-jr-l{list-style:none;margin:clamp(20px,2vw,32px) 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:clamp(24px,2.4vw,40px) clamp(20px,2.4vw,40px)}
+#vf .vf-jr-l li{position:relative;padding-top:14px;border-top:1px solid var(--rule)}
+#vf .vf-jr-l li::before{content:"";position:absolute;left:0;top:-1px;width:24px;height:1px;background:var(--acc)}
+#vf .vf-jr-t{margin:0;font:400 var(--vf-fs-title,22px)/1.2 'Instrument Serif',serif;color:var(--ink);letter-spacing:0}
+#vf .vf-jr-p{margin:10px 0 0;font:300 var(--vf-fs-body,16px)/1.6 'Inter',sans-serif;color:var(--ink2);max-width:36em}
+#vf .vf-jr-go{appearance:none;background:none;border:0;padding:0;margin:8px 0 0;min-height:44px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+  font:400 15px/1.45 'Inter',sans-serif;color:var(--acc);text-align:left}
+#vf .vf-jr-go:hover span:first-child{text-decoration:underline;text-underline-offset:3px}
+#vf .vf-jr-go:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
+/* Craigslist before/after opening (tools/craigslist_story.py): the slide at its own proportions; pans on phones */
+#vf .vf-ba-scroll{overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
+#vf .vf-ba-scroll img{display:block;width:100%;min-width:720px;height:auto}
+#vf .vf-ba-scroll:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
 #vf-loading{position:fixed;inset:0;z-index:100;width:100%;height:100%;border:0;display:block;opacity:1;transition:opacity .3s cubic-bezier(.6,0,.2,1)}
 #vf-loading.out{opacity:0;pointer-events:none}
 @media (prefers-reduced-motion: reduce){#vf-loading{transition:none}}
 </style>
 <script src="assets/vf/dc.js"></script>
+<script src="assets/vf/journeys.js" defer></script>
 <script src="assets/vf/app.js" defer></script>
 </head>
 <body>

@@ -49,3 +49,13 @@ AFTER = '''<section class="sec"><div class="pair"><h2 class="h">What I&rsquo;d d
 <p class="p">The redesigned screens and the prototype haven&rsquo;t been tested with car shoppers yet, so the next step is to put this prototype in front of the people it was designed for and see which of these decisions actually reduce the hesitation I saw.</p>
 <p class="p">Revising this project also changed how I present research. I&rsquo;d rather show fewer findings I can trace to their source than numbers I can&rsquo;t stand behind.</p></div></section>
 '''
+
+# Opening visual (owner, 2026-11-21): the deck's own before/after slide ("A familiar experience, just reorganized.",
+# slide 19 of the October 14 deck, exported unchanged from the Figma file's preserved original-deck page). It precedes
+# the existing animated hero, which stays. On phones it pans inside its own frame so the screens stay legible.
+BEFORE_AFTER = ('<figure class="hero vf-ba"><div class="vf-ba-scroll" role="region" aria-label="Before and after, scrollable" tabindex="0">'
+                '<img src="assets/vf/cs/craigslist/before-after-deck-19.png" width="1920" height="1080" loading="eager" decoding="async" '
+                'alt="Five screens of the current Craigslist app in Austin, Texas, above the same five screens in my redesign in '
+                'Minneapolis: Home, cars and trucks browsing, search entry, search results with filtering, and item details."></div>'
+                '<figcaption class="cap">Before and after, from the deck I presented. Top row: the current app. Bottom row: my redesign of '
+                'the same five steps, from Home to a single listing. The screens use different cities and sample listings.</figcaption></figure>')

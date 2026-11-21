@@ -319,7 +319,9 @@ def convert(s, name=''):
         s = s.replace('</section>\n</div></main>', '</section>\n' + cs.AFTER + '</div></main>', 1)
         s = s.replace('<a class="lk" href="https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0">view project <span aria-hidden="true">→</span></a>',
                       '<a class="lk" href="https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0" target="_blank" rel="noopener">View the presentation deck <span aria-hidden="true">↗</span></a>')
-        assert n0 == 1 and cs.AFTER in s and 'View the presentation deck' in s, 'Craigslist story: source structure changed'
+        nh = s.count('<figure class="hero"><div class="mount dk">')
+        s = s.replace('<figure class="hero"><div class="mount dk">', cs.BEFORE_AFTER + '<figure class="hero"><div class="mount dk">', 1)
+        assert n0 == 1 and nh == 1 and cs.AFTER in s and 'View the presentation deck' in s, 'Craigslist story: source structure changed'
     # Usability pass (owner, 2026-11-21). Case-study h1 = the project's approved editorial title from the Landing card
     # (only the h1 text; static first paint and the ported source markup in the script both carry it)
     for old, new in TITLES:
