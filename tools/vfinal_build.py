@@ -91,6 +91,32 @@ def prod_css(name):
     if name.startswith('VF-2-Landing'):
         k = 'landing-uw' if '-uw-' in name else (None if '-m-' in name else 'landing-d')
     css = ''
+    if name.startswith('VF-2-Landing') and '-m-' in name:
+        # View Projects (owner, 2026-11-21): a flat, square glass surface. Layers, back to front, inside the button's
+        # own stacking context, inside the board's own CTA box (its full width, 56px height and place are unchanged): a soft drifting gradient of the board's accent, ground and neutral (::before, moved by
+        # transform only, 16s, alternate); a sheer frosted plane carrying the Plinth's 14px grid at its 5-6% line
+        # weight (::after, restrained blur); then the label and a small accent arrow. Edges: one --ctl line (3:1+
+        # against the page), no radius, no shadow, no bevel. The gradient tops out at 26% accent under the frost, so
+        # the label stays above 7:1 in both themes at every frame. Reduced motion and the site's pause hold it still.
+        return ('<style id="vf-prod">/* production: View Projects (owner, 2026-11-21) */'
+                '.root .acts .btn.pri.vf-vp{position:relative;isolation:isolate;overflow:hidden;gap:10px;border-radius:0;box-shadow:none;'
+                'background:transparent;border:1px solid var(--ctl);color:var(--ink);transition:border-color .3s}'
+'.root .acts .btn.pri.vf-vp::before{content:"";position:absolute;z-index:-2;inset:-60% -40%;pointer-events:none;'
+                'background:radial-gradient(40% 70% at 30% 50%,color-mix(in srgb,var(--acc) 26%,transparent),transparent 70%),'
+                'radial-gradient(45% 80% at 72% 45%,color-mix(in srgb,var(--neu) 22%,transparent),transparent 72%),'
+                'linear-gradient(100deg,var(--bg),color-mix(in srgb,var(--bg) 88%,var(--ink)));'
+                'animation:vfvp 16s ease-in-out infinite alternate;will-change:transform}'
+                '.root .acts .btn.pri.vf-vp::after{content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;'
+                'background:linear-gradient(rgba(var(--hl),.06) 1px,transparent 1px) 0 0/14px 14px,'
+                'linear-gradient(90deg,rgba(var(--hl),.06) 1px,transparent 1px) 0 0/14px 14px,rgba(var(--sf),.38);'
+                '-webkit-backdrop-filter:blur(6px) saturate(1.05);backdrop-filter:blur(6px) saturate(1.05);transition:background-color .3s}'
+                '@keyframes vfvp{0%{transform:translate3d(-14%,-4%,0)}100%{transform:translate3d(14%,4%,0)}}'
+                '.root .acts .btn.pri.vf-vp .vf-arr{color:var(--acc);font-size:1.05em;line-height:1}'
+                '.root .acts .btn.pri.vf-vp:hover{border-color:var(--acc)}'
+                '.root .acts .btn.pri.vf-vp:active{background:transparent;border-color:var(--acc);color:var(--ink)}'
+                '.root .acts .btn.pri.vf-vp:active::after{background-color:rgba(var(--hl),.10)}'
+                '@media (prefers-reduced-motion: reduce){.root .acts .btn.pri.vf-vp::before{animation:none;transform:none}}'
+                '</style>')
     if k:
         hh, ov, tokens = FLUID[k]
         g = SRC_TEXT[0]
@@ -239,6 +265,11 @@ def convert(s, name=''):
     # board detects the canvas as x-dc inside a frame, and production mounts it in a frame (vf/frame.html) for CSS
     # isolation, so the detection is switched off rather than met
     s = s.replace("!!document.querySelector('x-dc')&&window.top!==window.self", "!!document.querySelector('x-dc')&&false")
+    # NO FOCUS ON LOAD (owner, 2026-11-21): the Loading no longer focuses its Skip control when it mounts (a
+    # programmatic focus with no prior input draws the focus ring, on phones too). Keyboard users keep Escape /
+    # Enter / Space from the first frame (assets/vf/app.js) and reach Skip with Tab.
+    if name.startswith('VF-1-Loading'):
+        s = s.replace("if(g)g.focus({preventScroll:true})", "if(g&&false)g.focus({preventScroll:true})")
     # R4: the Scale walkthrough host also stops while the visitor has paused motion (assets/vf/app.js)
     s = s.replace("function act(f){if(RM||", "function act(f){if(RM||document.documentElement.classList.contains('vf-still')||")
     # About's "Illustration · Music · DJing" line: the three verified destinations (owner, 2026-11-21), same text
@@ -272,6 +303,13 @@ def convert(s, name=''):
     # "All projects" links keep the project index (./#projects)
     s = re.sub(r'<a class="id" href="Main(?:-light)?(?:-m)?(?:-light)?\.dc\.html"', '<a class="id" href="./"', s)
     s = re.sub(r'<a href="Main(?:-light)?(?:-m)?(?:-light)?\.dc\.html" aria-current="page">Projects</a>', '<a href="./">Projects</a>', s)
+    # "View Projects" (mobile hero): a restrained button instead of the solid accent block (owner, 2026-11-21);
+    # the label stays, a small accent arrow follows it (decorative, hidden from assistive tech)
+    if name.startswith('VF-2-Landing') and '-m-' in name:
+        n = s.count('<a class="btn pri" href="#vfmgrp" onClick="{{vp}}">View Projects</a>')
+        s = s.replace('<a class="btn pri" href="#vfmgrp" onClick="{{vp}}">View Projects</a>',
+                      '<a class="btn pri vf-vp" href="#vfmgrp" onClick="{{vp}}">View Projects<span class="vf-arr" aria-hidden="true">→</span></a>')
+        assert n == 1, name
     # Craigslist: the chronological story around the existing artifacts (tools/craigslist_story.py; sources there)
     if name.startswith('Craigslist'):
         import craigslist_story as cs

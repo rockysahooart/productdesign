@@ -152,7 +152,7 @@
     function hook(f) {
       if (f.__vfRing) return; var slot = f.closest('.pf-live,.pf-prev'); if (!slot) return;
       var w; try { w = f.contentWindow; } catch (e) { return; } if (!w) return; f.__vfRing = 1;
-      var on = function () { slot.classList.add('pf-focus'); }, off = function () { slot.classList.remove('pf-focus'); };
+      var on = function () { if (kb) slot.classList.add('pf-focus'); }, off = function () { slot.classList.remove('pf-focus'); };
       /* the frame's colour-scheme follows its document's, so the browser never paints an opaque backdrop behind the
          original (the board fixes this for slots 03 / 05 / 06 only; the same presentation rule, every slot) */
       var cs = function () { try { var c = getComputedStyle(f.contentDocument.documentElement).colorScheme; if (c && c !== 'normal') f.style.colorScheme = c; } catch (e) {} };
@@ -163,7 +163,10 @@
     function scan() { [].forEach.call(host.querySelectorAll('.pf-live iframe, .pf-prev iframe'), hook); }
     scan(); new MutationObserver(scan).observe(host, { childList: true, subtree: true });
     /* and from this side: focus leaving this window for a slot frame (blur here), or returning (focusin here) */
-    function sync() { var a = document.activeElement, cur = a && a.tagName === 'IFRAME' ? a.closest('.pf-live,.pf-prev') : null;
+    var kb = false;
+    document.addEventListener('keydown', function () { kb = true; }, true);
+    document.addEventListener('pointerdown', function () { kb = false; }, true);
+    function sync() { if (!kb) return; var a = document.activeElement, cur = a && a.tagName === 'IFRAME' ? a.closest('.pf-live,.pf-prev') : null;
       [].forEach.call(host.querySelectorAll('.pf-live.pf-focus,.pf-prev.pf-focus'), function (x) { if (x !== cur && !(x.contains(a) && a.tagName === 'IFRAME')) x.classList.remove('pf-focus'); });
       if (cur) cur.classList.add('pf-focus'); }
     window.addEventListener('blur', function () { setTimeout(sync, 0); });
@@ -315,7 +318,7 @@
     first = entry();
     /* the Loading frame goes up before any page content is built, on the page's own ground, so no Landing / case
        content is ever visible before it */
-    if (first) loading(board('loading', RG));
+    if (first) { document.getElementById('vf').classList.add('vf-stage'); loading(board('loading', RG)); }
     var jobs = [load(board(R.k, RG))];
     
     Promise.all(jobs).then(function (docs) {
@@ -343,14 +346,45 @@
     var done = false, L = null, skipAsk = false, skipping = false;
     /* skip from the very first frame: Escape / Enter / Space here (before the frame has focus or has mounted), or a
        click on the frame before its board is ready; the board's own skip (done('skip')) settles and hands off */
-    function skipNow() { try { if (L && L.comp && L.comp.done) L.comp.done('skip'); else skipAsk = true; } catch (e) { hand(); } }
+    function skipNow() { skipping = true; try { if (L && L.comp && L.comp.done) L.comp.done('skip'); else skipAsk = true; } catch (e) { hand(); } }
     function onKey(e) { if (!done && (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); skipNow(); } }
     document.addEventListener('keydown', onKey);
     ov.addEventListener('click', skipNow);
+    /* HAND-OFF CHOREOGRAPHY (owner, 2026-11-21). (1) The Loading form settles into its stack (the board's own
+       finish) while gliding onto the Landing's sculpture - same geometry, measured on both pages - so the form
+       carries the eye across; (2) the frame cross-fades away (300ms) and the Landing headline rises in (8px, 600ms);
+       (3) 220ms later the supporting text and navigation, 220ms after that the project content. Opacity and
+       translate only (no layout change). Skip and reduced motion go straight to the complete, usable Landing. */
+    var rm = false; try { rm = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+    function reveal(staged) {
+      if (!staged || rm) { main.classList.remove('vf-stage', 'vf-in-1', 'vf-in-2', 'vf-in-3'); return; }
+      main.classList.add('vf-in-1');
+      setTimeout(function () { main.classList.add('vf-in-2'); }, 220);
+      setTimeout(function () { main.classList.add('vf-in-3'); }, 440);
+      setTimeout(function () { main.classList.remove('vf-stage', 'vf-in-1', 'vf-in-2', 'vf-in-3'); }, 1300);
+    }
+    function glide() {
+      if (skipping || rm) return;
+      try {
+        var d = ov.contentDocument, ls = d.querySelector('.vf-ls'), a = d.querySelector('.ldc .orb'), b = main.querySelector('.emb .orb');
+        if (!ls || !a || !b) return;
+        var ra = a.getBoundingClientRect(), rb = b.getBoundingClientRect(), rl = ls.getBoundingClientRect();
+        if (!ra.width || !rb.width || rb.bottom < 0 || rb.top > innerHeight) return;
+        var k = rb.width / ra.width, sp = parseFloat(getComputedStyle(ls).scale) || 1;
+        var ox = ra.left + ra.width / 2 - rl.left, oy = ra.top + ra.height / 2 - rl.top;
+        var dx = rb.left + rb.width / 2 - (ra.left + ra.width / 2), dy = rb.top + rb.height / 2 - (ra.top + ra.height / 2);
+        ls.style.transformOrigin = (ox / sp) + 'px ' + (oy / sp) + 'px';
+        ls.style.transition = 'transform 1000ms cubic-bezier(.45,0,.2,1)';
+        ls.style.transform = 'translate(' + (dx / sp) + 'px,' + (dy / sp) + 'px) scale(' + k + ')';
+      } catch (e) {}
+    }
     function hand() {
       if (done) return; done = true;
       document.removeEventListener('keydown', onKey);
       main.removeAttribute('inert'); main.removeAttribute('aria-hidden');
+      /* the Landing's sculpture starts its own cycle from its first frame (the stack) as the Loading form lands on it */
+      try { [].forEach.call(main.querySelectorAll('.emb'), function (e) { e.getAnimations({ subtree: true }).forEach(function (a) { a.currentTime = 0; }); }); } catch (e) {}
+      reveal(!skipping);
       ov.classList.add('out');
       setTimeout(function () { try { if (L) L.unmount(); } catch (e) {} if (ov.parentNode) ov.parentNode.removeChild(ov);
         /* focus leaves the finished Loading frame for the document itself - never a heading (a focused h1 drew the
@@ -384,9 +418,9 @@
       fit(); w.addEventListener('resize', fit); try { w.visualViewport.addEventListener('resize', fit); } catch (x) {}
       var go = d.querySelector('a.go');
       /* Skip (the board's .go): no navigation here - it calls the board's own skip, which settles and hands off */
-      if (go) { go.addEventListener('click', function (ev) { ev.preventDefault(); if (!skipping) { skipping = true; skipNow(); } }); try { ov.focus(); go.focus(); } catch (x) {} }
+      if (go) { go.addEventListener('click', function (ev) { ev.preventDefault(); if (!skipping) { skipping = true; skipNow(); } }); }
       [].forEach.call(d.querySelectorAll('a.skip'), function (a) { a.addEventListener('click', function (ev) { ev.preventDefault(); }); });
-      if (root) { new MutationObserver(function () { if (root.hasAttribute('data-done')) hand(); }).observe(root, { attributes: true });
+      if (root) { new MutationObserver(function () { if (root.hasAttribute('data-fin') && !root.__vfg) { root.__vfg = 1; glide(); } if (root.hasAttribute('data-done')) hand(); }).observe(root, { attributes: true });
         if (root.hasAttribute('data-done')) hand(); /* reduced motion can finish before this message arrives */ }
       function ready() { w.dispatchEvent(new w.Event('pf:ready')); }
       if (document.readyState === 'complete') ready(); else window.addEventListener('load', ready);
