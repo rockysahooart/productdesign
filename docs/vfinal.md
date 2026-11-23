@@ -106,3 +106,22 @@ the site was already first person in the owner's voice and was left as written.
   zero at the 1440 / 2560 boards. The wheel itself is still smaller than at 1440, by the board's own column rules.
 - **Projects index** page (`PS-CS-Main`, G13) not built.
 - Act two (`PF.ASK`) is not in VFINAL (O10).
+
+## VFINAL2 (2026-11-22; handoff `design-handoff/`, files 09-12)
+
+VFINAL2 is authoritative for visual design; the current site for copy, projects, routes and artifacts. Rollback tags:
+`vfinal-pre-vf2` (before the skin), `vfinal-pre-vf2-full` (before this migration).
+
+- **Loading:** the six `VF2-1-Loading` boards (isometric city, 4.4s build). Desktop / ultrawide: the 1440x900 / 2560x1440
+  frame centred and scaled by `min(vw/W, vh/H)`. Phones and 481-1023: the fluid m-r5 board, world centred. On `data-done`
+  the board fades its text, bar, halo and CRT and the world fades with them (11 §3 adaptation); the Landing's stepped
+  entrance starts 300ms later. Canvas-only code (inset emulation, replay) is neutralised in the builder.
+- **Landing / About:** `VF2-2-Landing` and `VF2-4-About` boards. `vf2_copy()` maps every project description, the hero
+  and identity line to the current copy; About carries the Odia sentence and the editorial fixes. Desktop frames are
+  fixed-pixel boards zoomed to the viewport (`vf2Fit`, app.js); the phone column centres at 481-1023.
+- **Case studies:** the current boards (content, PCVs, journeys) with VFINAL2 type: display Inter through the
+  size-adjusted `'VF2 Display'` alias (fonts.css). `VF2-3-Case` is a single template study holding superseded copy and is
+  not built.
+- **Fidelity gaps:** case pages do not take VF2-3-Case's centred hero, plinth mount or tracked-caps headings; the
+  hidden 10th project (VF2's `#p09`) stays disabled; orbit nodes are decorative (aria-hidden), projects are reached by
+  the arrows, the index and the card CTA.
