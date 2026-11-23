@@ -147,17 +147,20 @@ html.vf-still x-dc *,html.vf-still x-dc *::before,html.vf-still x-dc *::after{an
 /* (the slot ring is the board's .pf-focus, set by app.js for keyboard focus only - never on touch) */
 x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
 /* hand-off reveal (assets/vf/app.js HAND-OFF CHOREOGRAPHY): opacity + translate only, so nothing reflows */
-#vf.vf-stage :is(h1.hl,header,.sig,.rl2,.id>:not(h1),.acts,.ctx,.stage,.chips,.vix,#vfmgrp,.idx,.abt,.pager,.pg){opacity:0;translate:0 8px}
-#vf.vf-in-1 h1.hl,#vf.vf-in-2 :is(header,.sig,.rl2,.id>:not(h1),.acts,.ctx),#vf.vf-in-3 :is(.stage,.chips,.vix,#vfmgrp,.idx,.abt,.pager,.pg){
+/* VFINAL2 Landing blocks join the same three steps (11 §3: the entrance runs after the Loading fade): headline (.lc>h1),
+   then its column and the card text (.lc>:not(h1), .pns), then the stage and the index section (section.inf). :where, not
+   :is: #vfmgrp in the list gave the hiding rule ID weight, so steps 1-2 never showed until the classes came off */
+#vf.vf-stage :where(h1.hl,header,.sig,.rl2,.id>:not(h1),.acts,.ctx,.stage,.chips,.vix,#vfmgrp,.idx,.abt,.pager,.pg,.lc>h1,.lc>:not(h1),.pns,section.inf){opacity:0;translate:0 8px}
+#vf.vf-in-1 :where(h1.hl,.lc>h1),#vf.vf-in-2 :where(header,.sig,.rl2,.id>:not(h1),.acts,.ctx,.lc>:not(h1),.pns),#vf.vf-in-3 :where(.stage,.chips,.vix,#vfmgrp,.idx,.abt,.pager,.pg,section.inf){
   opacity:1;translate:0 0;transition:opacity .6s cubic-bezier(.2,.7,.2,1),translate .6s cubic-bezier(.2,.7,.2,1)}
 @media (prefers-reduced-motion: reduce){#vf.vf-stage *{transition:none!important}}
 /* reading journey (assets/vf/journeys.js): board tokens and type roles only; the .pn card pattern (rule + accent tick) */
 #vf .vf-jr{margin:clamp(40px,5vw,80px) 0 0;max-width:1680px}
-#vf .vf-jr-h{margin:0;font:400 var(--vf-fs-h2,40px)/1.08 'Instrument Serif',serif;color:var(--ink);letter-spacing:0}
+#vf .vf-jr-h{margin:0;font:400 var(--vf-fs-h2,40px)/1.08 'VF2 Display','Inter',sans-serif;color:var(--ink);letter-spacing:0}
 #vf .vf-jr-l{list-style:none;margin:clamp(20px,2vw,32px) 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:clamp(24px,2.4vw,40px) clamp(20px,2.4vw,40px)}
 #vf .vf-jr-l li{position:relative;padding-top:14px;border-top:1px solid var(--rule)}
 #vf .vf-jr-l li::before{content:"";position:absolute;left:0;top:-1px;width:24px;height:1px;background:var(--acc)}
-#vf .vf-jr-t{margin:0;font:400 var(--vf-fs-title,22px)/1.2 'Instrument Serif',serif;color:var(--ink);letter-spacing:0}
+#vf .vf-jr-t{margin:0;font:400 var(--vf-fs-title,22px)/1.2 'VF2 Display','Inter',sans-serif;color:var(--ink);letter-spacing:0}
 #vf .vf-jr-p{margin:10px 0 0;font:300 var(--vf-fs-body,16px)/1.6 'Inter',sans-serif;color:var(--ink2);max-width:36em}
 #vf .vf-jr-go{appearance:none;background:none;border:0;padding:0;margin:8px 0 0;min-height:44px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;
   font:400 15px/1.45 'Inter',sans-serif;color:var(--acc);text-align:left}

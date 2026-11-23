@@ -44,13 +44,14 @@ NAV = {
     '#start': './#top', '#projects': './#projects', '#about': '#/about', '#work': './#projects',
     '#book': 'https://calendly.com/rockysahooart/30min',
     '#linkedin': 'https://www.linkedin.com/in/sarthakrockysahoo/',
+    '#call': 'https://calendly.com/rockysahooart/30min',
     # owner-verified 2026-11-21
     '#illustration': 'https://rockysahooart.framer.website/',
     '#music': 'https://soundcloud.com/rocky-sahoo',
 }
 DJING = 'https://www.youtube.com/@6fut7music'
 PNC = 'https://spiky-experiences-472785.framer.app/case-study'  # canonical PNC URL (CLAUDE.md)
-DISABLED = ['#resume']  # no verified destination yet (owner, 2026-11-21)
+DISABLED = ['#resume', '#p09']  # no verified destination yet (owner, 2026-11-21); #p09: VFINAL2's hidden, unlaunched 10th project
 
 
 def rw_href(m):
@@ -87,6 +88,15 @@ FLUID = {
 
 
 def prod_css(name):
+    if name.startswith('VF2-1-Loading-m'):
+        # VFINAL2 phone Loading (11 §4): the root is the viewport; the board's own r4() places the city in it
+        # 481-1023 takes the phone rules too (11 §4, Assumption): the board centres its 390x844 world only <=480
+        return ('<style id="vf-prod">.root{width:100%!important;height:100%!important}'
+                '@media (min-width:481px){.world{left:calc(50% - 195px);width:390px;height:844px}}</style>')
+    if name.startswith('VF2-2-Landing-m') or name.startswith('VF2-4-About-m') or name.startswith('VF2-3-Case-m'):
+        # 481-1023: the 390 phone column centred; its vw-sized hero and edge-fixed menu button follow the column
+        return ('<style id="vf-prod">.root{margin-left:auto;margin-right:auto}'
+                '@media (min-width:481px){.root .top .h1.h1{font-size:26.13px}.root .mnb{right:calc(50% - 195px + 14px)!important}}</style>')
     k = None
     if name.startswith('VF-2-Landing'):
         k = 'landing-uw' if '-uw-' in name else (None if '-m-' in name else 'landing-d')
@@ -309,6 +319,65 @@ ODIA = ('My portfolio begins with my name in Odia, the language of my family’s
         'I wanted that part of my identity to feel present from the very beginning.')
 
 
+# VFINAL2 Landing copy (owner, 2026-11-22: the repo's copy is authoritative). The VFINAL2 boards carry older
+# descriptions; every panel (.pn) and index row (.row) gets the project's current editorial title and description,
+# identified by its data-n (VFINAL2 keeps the legacy numbering) and read from the built VFINAL desktop board (same project order as M_KEYS).
+VF2_TAGS = ['Mobile marketplace · Paid product design brief', 'Patient experience · Healthcare', 'Interactive explainer',
+            'Physical experience · Healthcare', 'AI-assisted operations · Healthcare', 'Design systems · Healthcare',
+            'Design governance · AI-generated work', 'Securities-based lending · Finance', 'Operations · Healthcare',
+            'Two-sided marketplace · Music education']
+VF2_COPY = [
+    ('I’ve designed human-centered products in an AI-saturated world.',
+     'I’m Rocky, and I’ve spent 5 years designing human-centered products in an increasingly AI-saturated world.'),
+    ("I'm Rocky, a product designer connecting people, processes, and technology. I make complex systems easier to understand and use.",
+     'Sarthak Sahoo · Product Designer · Austin, TX'),
+    ('Sarthak “Rocky” Sahoo', 'Sarthak Sahoo'),
+]
+
+
+def vf2_copy(s, name):
+    desk = open(os.path.join(OUT, 'VF-2-Landing-r18.html'), encoding='utf-8').read()
+    ld = re.findall(r'<p class="ld"[^>]*>(.*?)</p>', desk)
+    ed = re.findall(r'<h3 class="lh[^"]*"[^>]*>(.*?)</h3>', desk) or re.findall(r'class="lf"[^>]*>(.*?)<', desk)
+    DN = {1: 0, 2: 1, 3: 2, 4: 4, 5: 3, 6: 5, 7: 6, 8: 7, 9: 8, 10: 9}  # VFINAL2 data-n (legacy) -> project order
+    def which(block):
+        m = re.search(r'data-n="(\d+)"', block[:200])
+        return DN.get(int(m.group(1))) if m else None
+    def inner(blk, opener, text):
+        """replace the content of the first element opened by `opener` (a span or p), matching nested spans"""
+        a = blk.find(opener)
+        if a < 0:
+            return blk
+        tag = opener[1:opener.index(' ')]
+        i, depth = a + len(opener), 1
+        while depth:
+            o, c = blk.find('<' + tag, i), blk.find('</' + tag + '>', i)
+            if c < 0:
+                return blk
+            if 0 <= o < c:
+                depth, i = depth + 1, o + 1
+            else:
+                depth, i = depth - 1, c + len(tag) + 3
+        return blk[:a + len(opener)] + text + blk[i - len(tag) - 3:]
+    def pn(m):
+        blk = m.group(0); i = which(blk)
+        if i is None:
+            return blk
+        return inner(blk, '<p class="pf">', ld[i])
+    s = re.sub(r'<div class="pn"[^>]*>.*?</div>', pn, s, flags=re.S)
+    def row(m):
+        blk = m.group(0); i = which(blk)
+        return blk if i is None else inner(blk, '<span class="f">', ld[i])
+    s = re.sub(r'<a class="row"[^>]*>.*?</a>', row, s, flags=re.S)
+    s = re.sub(r'<div class="ld" data-n="\d+"[^>]*>.*?</p>', lambda m: (lambda i: m.group(0) if i is None else inner(m.group(0), '<span class="pf">', ld[i]))(which(m.group(0))), s, flags=re.S)
+    for a, b in VF2_COPY:
+        s = s.replace(a, b)
+    # the phone closing statement (the board's old intro line) maps to the same identity line the footer prints right
+    # below it; one copy is kept (the footer's)
+    s = s.replace('<p class="close">Sarthak Sahoo · Product Designer · Austin, TX</p>', '')
+    return s
+
+
 def convert(s, name=''):
     SRC_TEXT[0] = s
     if name.startswith('VF-1-Loading'):
@@ -347,10 +416,18 @@ def convert(s, name=''):
     # board detects the canvas as x-dc inside a frame, and production mounts it in a frame (vf/frame.html) for CSS
     # isolation, so the detection is switched off rather than met
     s = s.replace("!!document.querySelector('x-dc')&&window.top!==window.self", "!!document.querySelector('x-dc')&&false")
+    s = s.replace("document.querySelector('x-dc')&&window.top!==window.self", "document.querySelector('x-dc')&&false")
+    # VFINAL2 phone boards mark the canvas by "framed" before mount (html[data-canvas]); production's Loading frame is
+    # framed but never the canvas, so the 59/34 device inset emulation is dropped (11 §2)
+    s = s.replace("(window.top!==window.self)?'true':'false'", "'false'")
+    # VFINAL2 micro-cut: the filter's visible word is "Filter" (::before), its text kept only as the accessible name;
+    # the later "keep + restyle" rule (.root .r4ixb>span) re-sized that text, showing "FilterFilter by industry" on the
+    # phone boards. Same rule, one class more specific so the board's stated intent holds.
+    s = s.replace(".root .n9fb>span{font-size:0!important", ".root .r4ixb.n9fb>span,.root .n9fb>span{font-size:0!important")
     # NO FOCUS ON LOAD (owner, 2026-11-21): the Loading no longer focuses its Skip control when it mounts (a
     # programmatic focus with no prior input draws the focus ring, on phones too). Keyboard users keep Escape /
     # Enter / Space from the first frame (assets/vf/app.js) and reach Skip with Tab.
-    if name.startswith('VF-1-Loading'):
+    if name.startswith('VF-1-Loading') or name.startswith('VF2-1-Loading'):
         s = s.replace("if(g)g.focus({preventScroll:true})", "if(g&&false)g.focus({preventScroll:true})")
     # R4: the Scale walkthrough host also stops while the visitor has paused motion (assets/vf/app.js)
     s = s.replace("function act(f){if(RM||", "function act(f){if(RM||document.documentElement.classList.contains('vf-still')||")
@@ -431,6 +508,20 @@ def convert(s, name=''):
         else:
             s = s.replace('margin-top:110px">\n  <div></div>', 'margin-top:110px">\n  <div>%s</div>' % para, 1)
         assert ODIA in s, name
+    # VFINAL2 About: the same sentence, as the first body paragraph of the text section (the board's own .cols type)
+    if name.startswith('VF2-4-About'):
+        s = re.sub(r'(<section style="padding:[^"]*"><div class="cols">)(<p>Safety, income)',
+                   lambda m: m.group(1).replace('<div class="cols">', '<div class="cols" style="margin-bottom:%s"><p>%s</p></div><div class="cols">' % ('0' if '-m-' in name else '32px', ODIA)) + m.group(2), s, count=1)
+        assert ODIA in s, name
+        # the editorial pass's grammar fix on the current About (VF-4-About COPY) carried to the VFINAL2 boards
+        assert 'view everything In systems' in s, name
+        s = s.replace('view everything In systems', 'view everything in systems')
+    # VFINAL2 typography on the case studies (12: VF2 authoritative for type; content and layout are the current site's):
+    # the serif display becomes Inter through the size-adjusted 'VF2 Display' alias (assets/vf/fonts/fonts.css)
+    if name.split('-')[0] in STUDIES:
+        s = s.replace("'Instrument Serif'", "'VF2 Display'").replace('"Instrument Serif"', '"VF2 Display"')
+    if name.startswith('VF2-2-Landing'):
+        s = vf2_copy(s, name)
     s = s.replace('</helmet>', prod_css(name) + '</helmet>', 1)
     s = re.sub(r'href=(["\'])([^"\']*)\1', lambda m: rw_href(m) if not m.group(2).startswith("' +") else m.group(0), s)
     return s
@@ -455,6 +546,26 @@ def main():
         print('board', name)
     missing = [o[:50] for o, _ in COPY if o not in USED]
     assert not missing, 'editorial pass: source text changed, not found: %s' % missing
+    # VFINAL2 (owner, 2026-11-22: the full VFINAL2 design; design-handoff/12-vfinal2-source-manifest.md): its 24
+    # boards build into vf/boards/ beside VFINAL's, with the same production rewrites
+    src2 = os.path.expanduser('~/3diterations/design-handoff/source')
+    if os.path.isdir(src2):
+        for folder in ('vfinal2', 'vfinal2-loading'):
+            for fn in sorted(os.listdir(os.path.join(src2, folder))):
+                if not fn.endswith('.dc.html'):
+                    continue
+                name = fn[:-8]
+                # VF2-3-Case is one template study holding superseded copy; the case studies keep the current boards
+                # (with VFINAL2 type), so it is not built or shipped
+                if name.startswith('VF2-3-Case'):
+                    continue
+                s2 = open(os.path.join(src2, folder, fn), encoding='utf-8').read()
+                open(os.path.join(OUT, name + '.html'), 'w', encoding='utf-8').write(convert(s2, name))
+                print('board', name)
+        a2 = os.path.join(os.path.dirname(src2), 'assets', 'shell')
+        for f in os.listdir(a2):
+            if f != 'c47c27ef0fd273b7e7871b60d3d85969.html':
+                shutil.copyfile(os.path.join(a2, f), os.path.join(ROOT, 'assets', 'vf', 'shell', f))
     for a, b in (('shell', 'shell'), ('case-studies', 'cs')):
         src = os.path.join(SRC, 'assets', a)
         for dp, _, fs in os.walk(src):

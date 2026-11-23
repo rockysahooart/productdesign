@@ -8,10 +8,12 @@
 (function () {
   'use strict';
   var CASES = { carry: 'Carry', optiflow: 'OptiFlow', specimen: 'Specimen', audit: 'Audit', sbl: 'SBL', craigslist: 'Craigslist' };
+  /* VFINAL2 (owner, 2026-11-22: the full VFINAL2 design; design-handoff/12-vfinal2-source-manifest.md). Its board
+     names put the range before the theme: VF2-2-Landing-uw-light-r29, VF2-1-Loading-m-light-r5, VF2-4-About-light. */
   var SHELL = {
-    loading: { d: 'VF-1-Loading%-r7', uw: 'VF-1-Loading%-uw-r7', m: 'VF-1-Loading%-m-r7' },
-    landing: { d: 'VF-2-Landing%-r18', uw: 'VF-2-Landing%-uw-r18', m: 'VF-2-Landing%-m-r22' },
-    about: { d: 'VF-4-About%-r3', uw: 'VF-4-About%-uw-r3', m: 'VF-4-About%-m-r8' }
+    loading: { d: ['VF2-1-Loading', 'r4'], uw: ['VF2-1-Loading-uw', 'r4'], m: ['VF2-1-Loading-m', 'r5'] },
+    landing: { d: ['VF2-2-Landing', 'r29'], uw: ['VF2-2-Landing-uw', 'r29'], m: ['VF2-2-Landing-m', 'r32'] },
+    about: { d: ['VF2-4-About', ''], uw: ['VF2-4-About-uw', ''], m: ['VF2-4-About-m', 'r6'] }
   };
   var TITLE = 'Sarthak Sahoo, Product Designer';
   var theme = document.documentElement.getAttribute('data-vf-theme') === 'light' ? 'light' : 'dark';
@@ -27,7 +29,8 @@
     var q = /[?&]board=([\w-]+)/.exec(location.search);
     if (q && k !== 'loading') return q[1];
     if (k === 'case') return route().s + (theme === 'light' ? '-light' : '');
-    return SHELL[k][r].replace('%', theme === 'light' ? '-light' : '');
+    var b = SHELL[k][r];
+    return b[0] + (theme === 'light' ? '-light' : '') + (b[1] ? '-' + b[1] : '');
   }
   function load(name) {
     return fetch('vf/boards/' + name + '.html').then(function (r) {
@@ -324,6 +327,18 @@
     });
   }
 
+  /* VFINAL2 FRAME FIT (owner, 2026-11-22). The VFINAL2 desktop and ultrawide boards are exact pixel compositions
+     (1440 and 2560 wide). They are shown whole at every width of their range by zooming the board to the viewport
+     width (CSS zoom keeps layout and the boards' own measurements consistent; a transform would not), centred.
+     Phones use the fluid m board as designed. */
+  function vf2Fit(host) {
+    var root = host.querySelector('.root'); if (!root || !/^VF2-/.test(board(R.k, RG)) || RG === 'm') return;
+    var W = parseFloat(root.style.width) || root.offsetWidth;
+    function f() { var z = Math.max(0.6, Math.min(1.6, document.documentElement.clientWidth / W)); root.style.zoom = z.toFixed(4); }
+    root.style.marginLeft = 'auto'; root.style.marginRight = 'auto';
+    f(); window.addEventListener('resize', f);
+  }
+
   function wheelCentre(host) {
     var land = host.querySelector('.land'), st = land && land.querySelector('.stage'), cam = st && st.querySelector('.cam');
     if (!cam) return;
@@ -384,11 +399,12 @@
     /* the Loading frame goes up before any page content is built, on the page's own ground, so no Landing / case
        content is ever visible before it */
     if (first) { document.getElementById('vf').classList.add('vf-stage'); loading(board('loading', RG)); }
-    var jobs = [load(board(R.k, RG))];
+    window.VF_BOARD = board(R.k, RG); /* which board is mounted (VFINAL2 boards carry no t-dark / t-light class; read by tools/vfcheck.py) */
+    var jobs = [load(window.VF_BOARD)];
     
     Promise.all(jobs).then(function (docs) {
       cur = VFDC.mount(docs[0], main);
-      disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
+      vf2Fit(cur.el); disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
       /* SCROLL ON ENTRY: history.scrollRestoration is manual (head script), so every entry starts at 0 - fresh visit,
          refresh, Back, the brand or nav link. Only a theme switch (vf-y, same page) or an explicit in-page anchor
          (#projects, #top) places it elsewhere. */
@@ -446,8 +462,15 @@
         ls.style.transform = 'translate(' + (dx / sp) + 'px,' + (dy / sp) + 'px) scale(' + k + ')';
       } catch (e) {}
     }
+    var vf2 = /^VF2-1-Loading/.test(name);
     function hand() {
       if (done) return; done = true;
+      /* VFINAL2 (11 §3): the board fades its own layers over 300ms on data-done; the Landing enters only after that
+         fade, sequential, never cross-faded over the type. Reduced motion hands off at once. */
+      if (vf2 && !rm) { document.removeEventListener('keydown', onKey); setTimeout(hand2, 300); return; }
+      hand2();
+    }
+    function hand2() {
       document.removeEventListener('keydown', onKey);
       main.removeAttribute('inert'); main.removeAttribute('aria-hidden');
       /* the Landing's sculpture starts its own cycle from its first frame (the stack) as the Loading form lands on it */
@@ -484,6 +507,14 @@
         ls.style.setProperty('--vf-s', Math.min(w.innerWidth / ls.offsetWidth, w.innerHeight / ls.offsetHeight).toFixed(4));
       }
       fit(); w.addEventListener('resize', fit); try { w.visualViewport.addEventListener('resize', fit); } catch (x) {}
+      /* VFINAL2 desktop / ultrawide Loading (11 §4): the 1440x900 / 2560x1440 frame, centred and scaled by
+         min(vw / W, vh / H); zoom keeps the board's own measurements consistent */
+      if (root && /^VF2-1-Loading/.test(name) && !/-m-/.test(name)) {
+        var W2 = parseFloat(root.style.width), H2 = parseFloat(root.style.height), xd = d.querySelector('x-dc');
+        if (xd) xd.style.cssText = 'display:flex;align-items:center;justify-content:center;height:100%';
+        var fit2 = function () { root.style.zoom = Math.min(w.innerWidth / W2, w.innerHeight / H2).toFixed(4); };
+        fit2(); w.addEventListener('resize', fit2);
+      }
       var go = d.querySelector('a.go');
       /* Skip (the board's .go): no navigation here - it calls the board's own skip, which settles and hands off */
       if (go) { go.addEventListener('click', function (ev) { ev.preventDefault(); if (!skipping) { skipping = true; skipNow(); } }); }

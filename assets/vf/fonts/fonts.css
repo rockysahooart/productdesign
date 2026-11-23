@@ -11,3 +11,8 @@
 @font-face{font-family:'Instrument Serif';font-style:normal;font-weight:400;font-display:swap;src:url(InstrumentSerif-Regular.ttf) format('truetype')}
 @font-face{font-family:'Instrument Serif';font-style:italic;font-weight:400;font-display:swap;src:url(InstrumentSerif-Italic.ttf) format('truetype')}
 @font-face{font-family:'Noto Sans Oriya';font-style:normal;font-weight:300 400;font-display:swap;src:url(NotoSansOriya-Regular.ttf) format('truetype')}
+/* VFINAL2 display (owner, 2026-11-22; design-handoff 12, VFINAL2 typography): the case studies' display type moves from
+   Instrument Serif to Inter 400, VFINAL2's one family. Inter sets wider than the condensed serif, so this alias scales
+   it (size-adjust) to keep each heading on the lines its layout was written for; the serif file stays for the Loading /
+   Landing boards of VFINAL kept for rollback. */
+@font-face{font-family:'VF2 Display';font-style:normal;font-weight:100 900;font-display:swap;size-adjust:78%;src:url(Inter-100_900-normal.woff2) format('woff2')}

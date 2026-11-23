@@ -81,7 +81,7 @@ def sweep(b, shots):
                 visit(b, w, h, r, t)
                 m = b.eval("""({sw:document.documentElement.scrollWidth,iw:innerWidth,h1:document.querySelectorAll('#vf h1').length,
                   or:[...document.querySelectorAll('#vf [lang=or]')].every(e=>e.textContent.trim()==='ସାର୍ଥକ ସାହୁ')&&document.querySelectorAll('#vf [lang=or]').length>0,
-                  dark:!!document.querySelector('#vf .root.t-dark')===(document.documentElement.dataset.vfTheme==='dark'),
+                  dark:(!!document.querySelector('#vf .root.t-dark')||(!!window.VF_BOARD&&!/-light/.test(VF_BOARD)))===(document.documentElement.dataset.vfTheme==='dark'),
                   ready:document.documentElement.dataset.vf})""")
                 tag = '%d %s %s' % (w, r or '/', t)
                 if b.errors:
@@ -113,11 +113,11 @@ def theme(b, _):
         b.goto(BASE + 'vf/', 0.1)
         b.eval('localStorage.clear();localStorage.setItem("vf-qa-skip-loading","1")')
         b.goto(BASE, 2)
-        if b.eval('document.documentElement.dataset.vfTheme') != 'dark' or not b.eval("!!document.querySelector('#vf .root.t-dark')"):
+        if b.eval('document.documentElement.dataset.vfTheme') != 'dark' or not b.eval("!!document.querySelector('#vf .root.t-dark')||(!!window.VF_BOARD&&!/-light/.test(VF_BOARD))"):
             fail('fresh visit not dark (OS dark=%s)' % dark_os)
     b.eval("document.querySelector('.vf-tg').click()")
     b.pump(2.5)
-    if not b.eval("!!document.querySelector('#vf .root.t-light')"):
+    if not b.eval("!!document.querySelector('#vf .root.t-light')||/-light/.test(window.VF_BOARD||'')"):
         fail('toggle did not switch to light')
     b.goto(BASE + '#/carry', 2.5)
     if b.eval("localStorage.getItem('vf-theme')") != 'light' or b.eval("!!document.querySelector('#vf .root.t-dark')"):

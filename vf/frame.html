@@ -16,7 +16,11 @@ body .root{--bg:#0A0A0B;--ink:#E6E4DF;--ink3:#F2F0EC;--ink2:#C9C6C0;--mute:#A3A0
 body .root.t-light{--bg:#EEECE7;--ink:#262521;--ink3:#161615;--acc:#161615;--mute:#5B5852;--off:#7F7B72;--ctl:#7F7B72;--neu:#7F7B72;
   --rule:#CDC9C0;--surf:#F8F7F3;--plane:#E1DED7;--mat:#D2CEC5;
   /* not in the spec's light table: VFINAL's light --ink2 kept; rgb triplets from the light values above */
-  --ink2:#48443E;--sf:248,247,243;--hl:38,37,33;--mat2:#E1DED7}x-dc a,x-dc button{-webkit-tap-highlight-color:transparent}</style>
+  --ink2:#48443E;--sf:248,247,243;--hl:38,37,33;--mat2:#E1DED7}x-dc a,x-dc button{-webkit-tap-highlight-color:transparent}
+/* VFINAL2 hand-off (11 §3, adapted): Landing has no city, so the world fades with the text, bar, halo and CRT over the
+   same 300ms instead of gliding to a Landing stage; never moved or scaled */
+.root[data-done] .world{opacity:0;transition:opacity .3s ease}
+@media (prefers-reduced-motion: reduce){.root[data-done] .world{transition:none}}</style>
 <script src="../assets/vf/dc.js"></script>
 </head>
 <body>
