@@ -338,6 +338,22 @@ VF2_COPY = [
 def vf2_copy(s, name):
     desk = open(os.path.join(OUT, 'VF-2-Landing-r18.html'), encoding='utf-8').read()
     ld = re.findall(r'<p class="ld"[^>]*>(.*?)</p>', desk)
+    # SHORT SUBTITLES (owner, 2026-11-23): every project subtitle at about half its word count, on the mobile, desktop
+    # and ultrawide Landing alike (all three read this list). Same facts and project context, nothing added; titles
+    # and case-study copy untouched. Index 8 is the hidden, unlaunched tenth project (unchanged).
+    SHORT = {
+        0: 'Finding a used car in Craigslist’s app meant long lists and bare listings. I reorganized it screen by screen.',
+        1: 'I linked patients’ pre-visit questions to the answers they get afterward.',
+        2: 'I designed an interactive explainer showing developers how a library’s encryption works before they use it.',
+        3: 'I redesigned a specimen kit’s guidance and in-transit storage.',
+        4: 'I designed billing-data review that makes the model more confident.',
+        5: 'I audited four provider workflows and set shared interaction rules.',
+        6: 'I’m building standards for catching “AI slop” in generated product work before it ships.',
+        7: 'I turned a fragmented lending process into one guided flow for bankers, from collateral review to underwriting.',
+        9: 'I’m building a marketplace where students book teachers and teachers manage lessons and payments.',
+    }
+    assert len(ld) == 10, len(ld)
+    ld = [SHORT.get(i, d) for i, d in enumerate(ld)]
     ed = re.findall(r'<h3 class="lh[^"]*"[^>]*>(.*?)</h3>', desk) or re.findall(r'class="lf"[^>]*>(.*?)<', desk)
     DN = {1: 0, 2: 1, 3: 2, 4: 4, 5: 3, 6: 5, 7: 6, 8: 7, 9: 8, 10: 9}  # VFINAL2 data-n (legacy) -> project order
     def which(block):
