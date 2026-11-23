@@ -161,6 +161,10 @@ x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
    opacity - light on dark, dark on light - one quiet weight for all four; the files are untouched. */
 #vf .vf-logos{display:flex;align-items:center;gap:clamp(18px,4.6vw,36px);margin:44px 0 0;padding:0;list-style:none;max-width:100%}
 #vf .vf-logos li{flex-basis:0;min-width:0;display:flex}
+/* CVS Health is a two-line mark (no transparent padding in its file): at the shared height its letters read about half
+   the size of the one-line wordmarks, so its share of the row is 1.4x its aspect ratio (owner, 2026-11-23). Row width,
+   gaps and left alignment unchanged; the other three give up ~5%. */
+#vf .vf-logos li:first-child{flex-grow:2.765!important}
 #vf .vf-logos img{display:block;width:100%;height:auto;filter:grayscale(1) brightness(0) invert(1);opacity:.62}
 html[data-vf-theme="light"] #vf .vf-logos img{filter:grayscale(1) brightness(0);opacity:.58}
 #vf .top .vf-logos{margin:24px 0 4px}
