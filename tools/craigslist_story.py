@@ -10,6 +10,7 @@ version tested. Design responses are described as the deck describes them: inten
 
 BEFORE = '''<section class="sec"><div class="pair"><h2 class="h">LiveFront asked me to rethink Craigslist’s iPhone app</h2>
 <p class="p">LiveFront asked me to rethink Craigslist&rsquo;s iPhone app. It was a paid design challenge, and I was the designer: I ran the research, made the design decisions, built the Figma file, presented the work in a deck on October&nbsp;14, and built a coded prototype of the screens.</p>
+<p class="p">The app is built in React Native, so I designed within its patterns and delivered an implementation-ready handoff for the used-car discovery flow, along with the deck I presented. <a class="lk" href="https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0" target="_blank" rel="noopener">View the presentation deck <span aria-hidden="true">↗</span></a></p>
 <p class="p">Craigslist is a two-sided marketplace. Buyers come for local listings, and private sellers and dealers pay to post them. So I started from a simple idea. If browsing felt clearer and listings told people more, buyers might trust the app enough to come back, and sellers, who pay $5 a listing, would have a reason to post again.</p>
 <p class="p">I sketched what that could be worth, as an illustration rather than a forecast: every additional $5 post, less an assumed $1 in operating cost, contributes $4 toward recovering the cost of the design work.</p></div></section>
 <section class="sec"><div class="pair"><h2 class="h">I narrowed it to one journey: shopping for a used car</h2>

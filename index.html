@@ -179,6 +179,15 @@ x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
 #vf :is(.tk__m,.tk__m b,.wr__p span,.ape__facts dt,.ape__eco-l,.au-rule__l,.au-ba__l b,.au-row__l,.au-gap__l,.au-prompt__l,.px__k,.px__c,.ar-table th,.tl3 h4,.sk-sep__l,.wfx__read-k span){
   text-transform:none!important;letter-spacing:normal!important;font-size:max(13px,1em)!important}
 #vf .root .cta{text-transform:none!important;letter-spacing:.01em!important;font-size:15px!important}
+/* editorial hierarchy (owner, 2026-11-22; Iris). The section headings now tell the story, so:
+   - the oversized serif beat lines (.cs-beat) read as lead paragraphs, not a second headline per section;
+   - eyebrow labels that only restated the heading (.acc__n "What I was given", "V3 · Week 3"; .pt__n "Part 1 ·")
+     and the revision pills (ol.lp, already given by the Starting point line) are dropped;
+   - SBL's 01-04 numerals and the small accent ticks on story sections go; the phase navigator stays (it navigates).
+   Prototypes, demos, diagrams and figures are untouched. */
+#vf .cs-beat{font:300 var(--vf-fs-lede,20px)/1.5 'Inter',sans-serif!important;letter-spacing:0!important;color:var(--ink)!important;max-width:40em}
+#vf .acc__n,#vf .pt__n,#vf ol.lp,#vf .cl .kk{display:none!important}
+#vf .cl .pair::before,#vf .vf-jr-l li::before{display:none}
 #vf-loading{position:fixed;inset:0;z-index:100;width:100%;height:100%;border:0;display:block;opacity:1;transition:opacity .3s cubic-bezier(.6,0,.2,1)}
 #vf-loading.out{opacity:0;pointer-events:none}
 @media (prefers-reduced-motion: reduce){#vf-loading{transition:none}}

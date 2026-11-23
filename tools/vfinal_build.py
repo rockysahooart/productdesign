@@ -233,6 +233,23 @@ COPY = [
     ("After keeps Before's information architecture: the same screens, in the same order, with the same sections, labels and actions where you'd expect them.",
      "My redesign keeps the original console's information architecture: the same screens, in the same order, with the same sections, labels and actions where bankers expect them."),
     ('What changed is presentation and behaviour, not the workflow:', 'What I changed is presentation and behaviour, not the workflow:'),
+    # restructuring pass (owner, 2026-11-22): Carry's ending stays in its outcome section; notes become explanations
+    ('I scoped it to an MVP, took it through stakeholder review, and handed it to a first build in Playground. A leadership change above me stopped it before release.',
+     'I scoped it to an MVP and took it through stakeholder review.'),
+    ('<div class="ar-note"><p>V1, V2 and V3 are meaningful revisions to the design during the three-week exploration.</p></div>', ''),
+    ('I ruled out recording in a scope conversation that moved consent out of Carry.',
+     'Carry never records the appointment. Patients can upload a recording they made themselves, and consent to record stays outside the app.'),
+    ('Nothing on the prepare screen read as the patient’s own',
+     'The patient’s own questions looked just like the app’s suggestions, so I made suggestions something a patient chooses to add'),
+    ('I specified what upload, transcription and matching each do when they fail.',
+     'When a recording won’t upload, can’t be turned into text, or doesn’t answer a question, the patient sees what happened and what to do next.'),
+    ('I connected the same flow end to end and annotated it well enough for the team to argue with.',
+     'I connected the screens into one annotated prototype so stakeholders could walk the journey and question it together.'),
+    ('Three things I left open rather than quietly decide', 'Three technical questions stayed open for engineering to answer'),
+    ('I took V3 into the workshop. It didn’t come out unchanged.', 'In the workshop, testing with patients moved the preparation checklist below their questions.'),
+    # Landing: Craigslist's column introduces the problem; the assignment details live in the case study
+    ('For a paid product design brief with LiveFront, I redesigned Craigslist’s React Native iOS experience and created an implementation-ready handoff for the used-car discovery flow.',
+     'Finding a used car in Craigslist’s app meant scrolling past a long category list, backtracking through filters, and comparing listings that showed little beyond a title and a price. I reorganized it screen by screen.'),
     # slop pass (owner, 2026-11-22): kickers as plain labels instead of repeated rhetorical questions; no "not just X, but Y"
     ('class="pt__n">Part 1 · Who were the users?<', 'class="pt__n">Part 1 · The people<'),
     ('class="pt__n">Part 2 · What did the system look like?<', 'class="pt__n">Part 2 · The system<'),
@@ -247,10 +264,10 @@ COPY = [
     ('That’s shaped how I see design now: not just as something visual, but as something systemic.',
      'That’s shaped how I see design now: as something systemic as much as something visual.'),
     # third pass (owner, 2026-11-22): section headings as first-person story sentences, each drawn from its section
-    ('class="ar-h2">Turning workshop direction into a testable MVP<', 'class="ar-h2">I had three weeks to turn a workshop premise into something patients could test<'),
+    ('class="ar-h2">Turning workshop direction into a testable MVP<', 'class="ar-h2">I joined a small design team with three weeks to turn this idea into something patients could test<'),
     ('class="ar-h2">Placing Carry inside the existing PatientX experience<', 'class="ar-h2">Carry had to live inside an app patients already used, without changing it<'),
     ('class="ar-h2">Mapping the first workable flow<', 'class="ar-h2">I drew one complete journey, from writing questions to reading the answers back<'),
-    ('class="ar-h2">Specifying the behaviour V1 had left open<', 'class="ar-h2">My first version showed the path, but not what happens when something fails<'),
+    ('class="ar-h2">Specifying the behaviour V1 had left open<', 'class="ar-h2">My first version covered the whole journey, but not what a patient sees when something goes wrong with a recording<'),
     ('class="ar-h2">Preparing V2 for the workshop review<', 'class="ar-h2">For the workshop review, I made editing safer and kept long questions from being cut off<'),
     ('class="ar-h2">Testing V3 with patients, onsite and in Maze<', 'class="ar-h2">I tested the third version with patients, in the room and through an unmoderated tool<'),
     ('class="ar-h2">What changed, what I kept, and what I could not settle<', 'class="ar-h2">Testing moved the checklist, kept the quotations, and left some questions open<'),
@@ -284,9 +301,7 @@ COPY = [
     ('class="h">What Changed</h2>', 'class="h">Bankers now see every open item, and why a step is blocked</h2>'),
     ('class="h">Before &amp; After</h2>', 'class="h">Side by side, every screen bankers knew is still there</h2>'),
     ('preparation guidance and nothing else — it carries', 'preparation guidance and nothing else: it carries'),
-    ('preparation guidance and nothing else &mdash; it carries', 'preparation guidance and nothing else: it carries'),
     ('deliberate about consequence — the button', 'deliberate about consequence: the button'),
-    ('deliberate about consequence &mdash; the button', 'deliberate about consequence: the button'),
     ('the users lives be improved', 'the users’ lives be improved'),
     ('create systems everyday', 'create systems every day'),
 ]
@@ -363,7 +378,9 @@ def convert(s, name=''):
                    s, count=1)
     for old, new in COPY:
         jo, jn = old.replace('"', '\\"').replace('/', '\\/'), new.replace('"', '\\"').replace('/', '\\/')
-        for o, n in ((old, new), (jo, jn)):
+        # the ported source in the script writes ’ as &rsquo; and — as &mdash;: try those spellings too
+        eo, ejo = old.replace('’', '&rsquo;').replace('—', '&mdash;'), jo.replace('’', '&rsquo;').replace('—', '&mdash;')
+        for o, n in ((old, new), (jo, jn), (eo, new), (ejo, jn)):
             # source lines may wrap anywhere: match any run of whitespace (or an escaped newline) between words
             rx = r'(?:\s|\\n)+'.join(re.escape(w) for w in o.split())
             s, k = re.subn(rx, lambda m, n=n: n, s)
@@ -387,14 +404,17 @@ def convert(s, name=''):
         s = s.replace('<div class="cs-wrap">\n<section class="sec"><div class="grid6">',
                       '<div class="cs-wrap">\n' + cs.BEFORE + '<div class="grid6">', 1)
         s = s.replace('</section>\n</div></main>', '</section>\n' + cs.AFTER + '</div></main>', 1)
-        s = s.replace('<a class="lk" href="https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0">view project <span aria-hidden="true">→</span></a>',
-                      '<a class="lk" href="https://www.figma.com/deck/DqjndHMaCEq9apsosLnSE0" target="_blank" rel="noopener">View the presentation deck <span aria-hidden="true">↗</span></a>')
+
         s = cs.prototype(s)
-        s = s.replace('<h2 class="h">Redesigning Craigslist for faster used-car discovery</h2>',
-                      '<h2 class="h">I redesigned how people find a used car in Craigslist’s iPhone app</h2>', 1)
+        # one introduction, not three (owner, 2026-11-22): the familiar experience first, then the redesign; the
+        # secondary headline and its LiveFront paragraph go (the assignment is told in the brief section)
+        s = re.sub(r'<div class="pair"><h2 class="h">Redesigning Craigslist for faster used-car discovery</h2><p class="p">.*?</p></div>', '', s, count=1, flags=re.S)
+        lede = 'I reimagined the iOS experience to help buyers search, compare listings, evaluate seller credibility, and find relevant vehicles with less friction.'
+        assert lede in s, 'Craigslist lede changed'
+        s = s.replace(lede, 'Looking for a used car on your phone means finding listings near you, comparing them, working out where each car actually is, and deciding whether a seller seems trustworthy. I redesigned that experience in Craigslist’s iPhone app.', 1)
         nh = s.count('<figure class="hero"><div class="mount dk">')
         s = s.replace('<figure class="hero"><div class="mount dk">', cs.BEFORE_AFTER + '<figure class="hero"><div class="mount dk">', 1)
-        assert n0 == 1 and nh == 1 and cs.AFTER in s and 'View the presentation deck' in s, 'Craigslist story: source structure changed'
+        assert n0 == 1 and nh == 1 and cs.AFTER in s, 'Craigslist story: source structure changed'
     # Usability pass (owner, 2026-11-21). Case-study h1 = the project's approved editorial title from the Landing card
     # (only the h1 text; static first paint and the ported source markup in the script both carry it)
     for old, new in TITLES:
