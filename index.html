@@ -107,7 +107,7 @@
     }
   })();
 </script>
-<meta name="theme-color" content="#1F2023">
+<meta name="theme-color" content="#0A0A0B">
 <!-- VFINAL THEME, BEFORE FIRST PAINT. Dark first (owner, 2026-11-21, replacing R1's light-first rule): a first visit
      opens dark; the site's toggle switches, and the choice persists in localStorage['vf-theme'] for returning visitors.
      Set here, before any board or stylesheet paints, so no frame shows the other theme. No prefers-color-scheme
@@ -123,14 +123,14 @@
        page's data-theme. On the approved boards their host had none, so they show their own default state. */
     document.documentElement.setAttribute('data-vf-theme', t);
     var m = document.querySelector('meta[name="theme-color"]');
-    if (m) m.setAttribute('content', t === 'dark' ? '#1F2023' : '#ECE7DE');
+    if (m) m.setAttribute('content', t === 'dark' ? '#0A0A0B' : '#EEECE7');
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   })();
 </script>
 <link rel="stylesheet" href="assets/vf/fonts/fonts.css">
 <style>
 /* VFINAL page ground: the board tokens' --bg, so nothing flashes before the board mounts. */
-html{background:#1F2023}html[data-vf-theme="light"]{background:#ECE7DE}
+html{background:#0A0A0B}html[data-vf-theme="light"]{background:#EEECE7}
 body{margin:0}
 x-dc{display:block}x-dc helmet{display:none}
 /* site controls (assets/vf/app.js SITE CONTROLS): icon buttons after the header nav links, link colours, 44px target */
@@ -188,6 +188,18 @@ x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
 #vf .cs-beat{font:300 var(--vf-fs-lede,20px)/1.5 'Inter',sans-serif!important;letter-spacing:0!important;color:var(--ink)!important;max-width:40em}
 #vf .acc__n,#vf .pt__n,#vf ol.lp,#vf .cl .kk{display:none!important}
 #vf .cl .pair::before,#vf .vf-jr-l li::before{display:none}
+/* VFINAL2 SKIN (owner, 2026-11-22; design-handoff/10-vfinal2-visual-migration.md, groups 1-2). Token values only, on
+   every board's own variables: near-black cool neutrals, no accent (accent = the heading ink), Inter body at 400.
+   Layout, copy, artifacts and behaviour are VFINAL's. Rollback: tag vfinal-pre-vf2. */
+#vf .root,.root.vf2{--bg:#0A0A0B;--ink:#E6E4DF;--ink3:#F2F0EC;--ink2:#C9C6C0;--mute:#A3A099;--ctl:#6E6C66;--off:#6E6C66;--neu:#6E6C66;
+  --rule:#232321;--hl:230,228,223;--surf:#101012;--sf:16,16,18;--plane:#111112;--mat:#181818;--mat2:#111112;--acc:#F2F0EC;--ty-body-w:400}
+#vf .root.t-light,.root.vf2.t-light{--bg:#EEECE7;--ink:#262521;--ink3:#161615;--acc:#161615;--mute:#5B5852;--off:#7F7B72;--ctl:#7F7B72;--neu:#7F7B72;
+  --rule:#CDC9C0;--surf:#F8F7F3;--plane:#E1DED7;--mat:#D2CEC5;
+  /* not in the spec's light table: VFINAL's light --ink2 kept; rgb triplets from the light values above */
+  --ink2:#48443E;--sf:248,247,243;--hl:38,37,33;--mat2:#E1DED7}
+/* VFINAL2: the project index sits on the lower info band; headings balance their lines (same words) */
+#vf .vix{background:var(--surf);box-shadow:0 -1px 0 var(--rule)}
+#vf :is(h1,h2,h3,.ar-h2,.cs-beat,.vf-jr-t,.xph,.ld,.xpd){text-wrap:balance}
 #vf-loading{position:fixed;inset:0;z-index:100;width:100%;height:100%;border:0;display:block;opacity:1;transition:opacity .3s cubic-bezier(.6,0,.2,1)}
 #vf-loading.out{opacity:0;pointer-events:none}
 @media (prefers-reduced-motion: reduce){#vf-loading{transition:none}}

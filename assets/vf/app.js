@@ -404,7 +404,7 @@
   function loading(name) {
     var ov = document.createElement('iframe');
     ov.id = 'vf-loading'; ov.title = 'Loading'; ov.src = 'vf/frame.html?b=' + name;
-    ov.style.background = theme === 'dark' ? '#1F2023' : '#ECE7DE';
+    ov.style.background = theme === 'dark' ? '#0A0A0B' : '#EEECE7';
     document.body.appendChild(ov);
     var main = document.getElementById('vf');
     main.setAttribute('inert', ''); main.setAttribute('aria-hidden', 'true');

@@ -7,7 +7,16 @@
 <!-- The Loading board, isolated: board styles are global (.root, .nm, .go...), so the Loading is mounted in its own
      document over the Landing instead of beside it. assets/vf/app.js loads this with ?b=<board> and watches data-done. -->
 <link rel="stylesheet" href="../assets/vf/fonts/fonts.css">
-<style>html,body{margin:0;height:100%;overflow:hidden;background:#1F2023}html.t-light,html.t-light body{background:#ECE7DE}x-dc{display:block;height:100%}x-dc helmet{display:none}x-dc a,x-dc button{-webkit-tap-highlight-color:transparent}</style>
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#0A0A0B}html.t-light,html.t-light body{background:#EEECE7}x-dc{display:block;height:100%}x-dc helmet{display:none}
+/* VFINAL2 SKIN (owner, 2026-11-22; design-handoff/10-vfinal2-visual-migration.md, groups 1-2). Token values only, on
+   every board's own variables: near-black cool neutrals, no accent (accent = the heading ink), Inter body at 400.
+   Layout, copy, artifacts and behaviour are VFINAL's. Rollback: tag vfinal-pre-vf2. */
+body .root{--bg:#0A0A0B;--ink:#E6E4DF;--ink3:#F2F0EC;--ink2:#C9C6C0;--mute:#A3A099;--ctl:#6E6C66;--off:#6E6C66;--neu:#6E6C66;
+  --rule:#232321;--hl:230,228,223;--surf:#101012;--sf:16,16,18;--plane:#111112;--mat:#181818;--mat2:#111112;--acc:#F2F0EC;--ty-body-w:400}
+body .root.t-light{--bg:#EEECE7;--ink:#262521;--ink3:#161615;--acc:#161615;--mute:#5B5852;--off:#7F7B72;--ctl:#7F7B72;--neu:#7F7B72;
+  --rule:#CDC9C0;--surf:#F8F7F3;--plane:#E1DED7;--mat:#D2CEC5;
+  /* not in the spec's light table: VFINAL's light --ink2 kept; rgb triplets from the light values above */
+  --ink2:#48443E;--sf:248,247,243;--hl:38,37,33;--mat2:#E1DED7}x-dc a,x-dc button{-webkit-tap-highlight-color:transparent}</style>
 <script src="../assets/vf/dc.js"></script>
 </head>
 <body>
