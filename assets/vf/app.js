@@ -17,10 +17,11 @@
   };
   var TITLE = 'Sarthak Sahoo, Product Designer';
   var theme = document.documentElement.getAttribute('data-vf-theme') === 'light' ? 'light' : 'dark';
-  /* ultrawide boards need height as well as width (owner, 2026-11-22): their 2560x1440 composition, controls included,
-     is ~1560px tall and would render below 0.77x - 9-11px text - on a short ultrawide (3440x900). Under 1200px tall the
-     desktop composition is used, which fits there at a readable scale. Width bands otherwise as 02 RANGES. */
-  function range() { var w = window.innerWidth; return w < 1024 ? 'm' : (w >= 2304 && window.innerHeight >= 1200 ? 'uw' : 'd'); }
+  /* ONE COMPOSITION FROM 1024 UP (owner, 2026-11-23; replaces the 2304 ultrawide band and its 1200px-height gate).
+     The ultrawide boards were a second layout with their own type sizes and proportions; desktop and ultrawide now show
+     the same desktop composition, fitted by width and height (vf2Fit), so 1440x900 and 3440x900 read at the same
+     scale and extra width becomes surrounding space. The -uw boards stay in vf/boards for rollback. */
+  function range() { return window.innerWidth < 1024 ? 'm' : 'd'; }
   function route() {
     var m = /^#\/([\w-]+)/.exec(location.hash);
     if (!m) return { k: 'landing' };
@@ -352,7 +353,7 @@
       return m; }
     function f() { var vw = document.documentElement.clientWidth, z = vw / W, Hc = H ? extent() : 0;
       if (Hc) z = Math.min(z, window.innerHeight / Hc);
-      z = Math.max(0.6, Math.min(1.6, z)); root.style.zoom = z.toFixed(4); root.__vfz = +z.toFixed(4); }
+      z = Math.max(0.6, Math.min(1.4, z)); root.style.zoom = z.toFixed(4); root.__vfz = +z.toFixed(4); }
     /* ONE COORDINATE SPACE (owner, 2026-11-22). The board measures with getBoundingClientRect (screen px, zoom applied)
        and writes the results into translate / left / top (CSS px, zoomed again), as authored on a 1:1 canvas. Under the
        zoom above every such hand-off - the orbit's entry tweens, the PCV fly-in, the inspection box - was off by the zoom
