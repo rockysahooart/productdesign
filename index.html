@@ -156,6 +156,17 @@ x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
 #vf.vf-in-1 :where(h1.hl,.lc>h1),#vf.vf-in-2 :where(header,.sig,.rl2,.id>:not(h1),.acts,.ctx,.lc>:not(h1),.pns),#vf.vf-in-3 :where(.stage,.chips,.vix,#vfmgrp,.idx,.abt,.pager,.pg,section.inf){
   opacity:1;translate:0 0;transition:opacity .6s cubic-bezier(.2,.7,.2,1),translate .6s cubic-bezier(.2,.7,.2,1)}
 @media (prefers-reduced-motion: reduce){#vf.vf-stage *{transition:none!important}}
+/* Trusted By (tools/vfinal_build.py): the original four marks in one row the width of the introduction, at one height,
+   proportions kept. Drawn for white grounds (two carry black), so each renders as a single-tone silhouette at reduced
+   opacity - light on dark, dark on light - one quiet weight for all four; the files are untouched. */
+#vf .vf-logos{display:flex;align-items:center;gap:clamp(18px,4.6vw,36px);margin:44px 0 0;padding:0;list-style:none;max-width:100%}
+#vf .vf-logos li{flex-basis:0;min-width:0;display:flex}
+#vf .vf-logos img{display:block;width:100%;height:auto;filter:grayscale(1) brightness(0) invert(1);opacity:.62}
+html[data-vf-theme="light"] #vf .vf-logos img{filter:grayscale(1) brightness(0);opacity:.58}
+#vf .top .vf-logos{margin:24px 0 4px}
+/* phones: the row sits in the city box's own headroom (open sky above the towers), so the hero's height and its View
+   Projects button stay where they were */
+#vf .top .vf-logos + .city{margin-top:-16px}
 /* phone project gallery (assets/vf/app.js gallery): the carousel, its filter and the accordion step aside; each chapter
    is display, title, subtitle, CTA, with room between chapters and none inside them (no cards, no dividers) */
 #vf .root.vf-gallery :is(.stage,.r4bar,.idx,.chips,.leads,section>p.sr){display:none!important}

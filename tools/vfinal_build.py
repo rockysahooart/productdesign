@@ -538,6 +538,25 @@ def convert(s, name=''):
         s = s.replace("'Instrument Serif'", "'VF2 Display'").replace('"Instrument Serif"', '"VF2 Display"')
     if name.startswith('VF2-2-Landing'):
         s = vf2_copy(s, name)
+        # TRUSTED BY, BACK (owner, 2026-11-23): the original portfolio's four companies, in its order, from the repo's own
+        # files (unchanged), beneath the name / role / location (phones: beneath the introduction). Each mark's share of
+        # the row is its own aspect ratio (flex-grow), so all four stand at one height across the headline's width.
+        # Rendering treatment in index.html (#vf .vf-logos).
+        L = [('e1f605c00771.png', 'CVS Health', 316, 160), ('1144031febcc.png', 'Natera', 785, 160),
+             ('0faea32528e6.png', 'PNC', 578, 160), ('0dc38d5927ca.png', 'CG Infinity', 309, 63)]
+        logos = '<ul class="vf-logos" aria-label="Trusted by">' + ''.join(
+            '<li style="flex-grow:%.3f"><img src="assets/%s" alt="%s" width="%d" height="%d" decoding="async"></li>' % (w / h, f, a, w, h)
+            for f, a, w, h in L) + '</ul>'
+        if '-m-' in name:
+            a0 = '</h1><div class="city">'
+            assert s.count(a0) == 1, name
+            s = s.replace(a0, '</h1>' + logos + '<div class="city">', 1)
+        else:
+            # the paragraph right after the introduction headline: the identity line (one board's source still held
+            # the superseded intro sentence there; it takes the same line as every other board)
+            m0 = re.search(r'</h1>(<p class="g"[^>]*>)(.*?)</p>', s)
+            assert m0, name
+            s = s[:m0.start()] + '</h1>' + m0.group(1) + 'Sarthak Sahoo · Product Designer · Austin, TX</p>' + logos + s[m0.end():]
         # ORBIT DEPTH WITHOUT BLACK-OUT (owner, 2026-11-23). vf2-dim dimmed each neighbour with brightness() (down to .13)
         # over its .78 backing plate, so out-of-view cards read as opaque black (light: grey) rectangles. The same
         # position-driven curve f(u) - u is the card's place on the ring, 1 at the front - now drives transparency,
