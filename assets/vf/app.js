@@ -263,6 +263,50 @@
      width, so the widest Project Cards (PCV + Plinth: Cryptography, Specimen, OptiFlow, SBL) reached within 1px of
      the screen edges and read as cut off. One shared rule: the camera is scaled about its own origin so a full-width
      unit keeps a 16px gutter each side - k = (w - 32) / (w - 2) - for every project alike (no per-card offsets). */
+  /* PHONE PROJECT GALLERY (owner, 2026-11-23; replaces the phone Orbit carousel, its filter and the All projects
+     accordion). The nine projects stack in their order as chapters: the project's own display (PCV on its glass plinth,
+     sized by the board's own apply() exactly as when selected, then scaled to one rhythm: the 345px column or 440px
+     tall), its title, its subtitle and one CTA named for where it goes. Nothing is rebuilt: the board's elements are
+     moved, not copied. Scrolling only; the CTA is the only link; interactive artifacts keep their own input. */
+  function gallery(c) {
+    var host = c && c.el, comp = c && c.comp; if (!host || !comp || RG !== 'm' || R.k !== 'landing') return;
+    var root = host.querySelector('.root'), st = root && root.querySelector('.stage'), sec = st && st.parentNode;
+    if (!st || typeof comp.apply !== 'function') return;
+    var order = [].map.call(root.querySelectorAll('.idx > li[data-n]'), function (li) { return li.getAttribute('data-n'); });
+    var sel0 = comp.sel, size = {};
+    order.forEach(function (n) {
+      var a = st.querySelector('.art[data-n="' + n + '"]'), ld = root.querySelector('.ld[data-n="' + n + '"]');
+      if (!a || !ld || !ld.querySelector('a.pc[href]')) return; /* the hidden, unlaunched tenth project has no destination */
+      try { comp.sel = n; comp.apply(true, 1); } catch (e) {}
+      size[n] = [parseFloat(a.style.width) || a.offsetWidth, parseFloat(a.style.height) || a.offsetHeight];
+    });
+    try { comp.sel = sel0; comp.apply(true, 1); } catch (e) {}
+    var gal = document.createElement('div'); gal.className = 'vf-gal'; gal.id = 'vf-gallery';
+    order.forEach(function (n) {
+      if (!size[n]) return;
+      var a = st.querySelector('.art[data-n="' + n + '"]'), ld = root.querySelector('.ld[data-n="' + n + '"]'),
+          h = root.querySelector('.hx[data-n="' + n + '"] h3.pt'), pc = ld.querySelector('a.pc'), href = pc.getAttribute('href') || '';
+      var ch = document.createElement('article'); ch.className = 'vf-ch'; ch.setAttribute('data-n', n);
+      var fig = document.createElement('div'); fig.className = 'vf-fig';
+      a.style.setProperty('width', size[n][0] + 'px', 'important'); a.style.setProperty('height', size[n][1] + 'px', 'important');
+      fig.appendChild(a); ch.appendChild(fig);
+      if (h) { h.removeAttribute('tabindex'); ch.appendChild(h); }
+      var lead = ld.querySelector('p.lead'); if (lead) ch.appendChild(lead);
+      pc.textContent = /^#\//.test(href) ? 'View case study' : (/\.pdf$/i.test(href) ? 'View project' : 'View experience');
+      ch.appendChild(pc);
+      gal.appendChild(ch);
+    });
+    if (!gal.children.length) return;
+    sec.insertBefore(gal, st);
+    root.classList.add('vf-gallery');
+    /* one rhythm at any phone width: the column's own width (padding out) or 440px tall, whichever binds first */
+    function fit() { var col = gal.clientWidth - 48;
+      [].forEach.call(gal.querySelectorAll('.vf-ch'), function (ch) { var n = ch.getAttribute('data-n'), a = ch.querySelector('.art'), f = ch.querySelector('.vf-fig');
+        var k = Math.min(Math.min(col, 345) / size[n][0], 440 / size[n][1]); a.style.setProperty('--vf-k', k.toFixed(4));
+        f.style.height = Math.round(size[n][1] * k + 56) + 'px'; }); }
+    fit(); window.addEventListener('resize', fit);
+  }
+
   function phoneGutter(host) {
     var cam = host.querySelector('#vfmcam'), root = host.querySelector('#vfmroot');
     if (!cam || !root) return;
@@ -467,7 +511,7 @@
     
     Promise.all(jobs).then(function (docs) {
       cur = VFDC.mount(docs[0], main);
-      vf2Fit(cur.el); disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
+      vf2Fit(cur.el); gallery(cur); disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
       /* SCROLL ON ENTRY: history.scrollRestoration is manual (head script), so every entry starts at 0 - fresh visit,
          refresh, Back, the brand or nav link. Only a theme switch (vf-y, same page) or an explicit in-page anchor
          (#projects, #top) places it elsewhere. */

@@ -156,6 +156,23 @@ x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
 #vf.vf-in-1 :where(h1.hl,.lc>h1),#vf.vf-in-2 :where(header,.sig,.rl2,.id>:not(h1),.acts,.ctx,.lc>:not(h1),.pns),#vf.vf-in-3 :where(.stage,.chips,.vix,#vfmgrp,.idx,.abt,.pager,.pg,section.inf){
   opacity:1;translate:0 0;transition:opacity .6s cubic-bezier(.2,.7,.2,1),translate .6s cubic-bezier(.2,.7,.2,1)}
 @media (prefers-reduced-motion: reduce){#vf.vf-stage *{transition:none!important}}
+/* phone project gallery (assets/vf/app.js gallery): the carousel, its filter and the accordion step aside; each chapter
+   is display, title, subtitle, CTA, with room between chapters and none inside them (no cards, no dividers) */
+#vf .root.vf-gallery :is(.stage,.r4bar,.idx,.chips,.leads,section>p.sr){display:none!important}
+#vf .vf-gal{padding:24px 24px 8px}
+#vf .vf-ch{margin:0 0 clamp(80px,22vw,104px)}
+#vf .vf-ch:last-child{margin-bottom:48px}
+#vf .vf-fig{position:relative;display:flex;justify-content:center;align-items:flex-start;padding-top:28px;box-sizing:border-box}
+#vf .vf-gal .art{display:block!important;position:relative!important;inset:auto!important;left:auto!important;top:auto!important;
+  margin:0!important;translate:none!important;transform:none!important;opacity:1!important;visibility:visible!important;
+  transform-origin:50% 0!important;flex:none}
+#vf .root .vf-gal .vf-fig > .art.art{scale:var(--vf-k,1)!important}
+/* the board hides (and pauses) every live frame but the selected one; in the gallery each display shows its own */
+#vf .vf-gal .art iframe{visibility:visible!important}
+#vf .vf-ch h3.pt{margin:0 0 10px;font:400 21px/1.3 'Inter',sans-serif;color:inherit;text-wrap:balance}
+#vf .vf-ch p.lead{margin:0;font:400 16px/1.6 'Inter',sans-serif;opacity:.78}
+#vf .vf-ch p.lead .pf{font:inherit}
+#vf .vf-ch a.pc{display:inline-flex;align-items:center;min-height:44px;margin-top:16px}
 /* reading journey (assets/vf/journeys.js): board tokens and type roles only; the .pn card pattern (rule + accent tick) */
 #vf .vf-jr{margin:clamp(40px,5vw,80px) 0 0;max-width:1680px}
 #vf .vf-jr-h{margin:0;font:400 var(--vf-fs-h2,40px)/1.08 'VF2 Display','Inter',sans-serif;color:var(--ink);letter-spacing:0}
