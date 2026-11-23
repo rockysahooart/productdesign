@@ -203,6 +203,30 @@ x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
 /* VFINAL2: the project index sits on the lower info band; headings balance their lines (same words) */
 #vf .vix{background:var(--surf);box-shadow:0 -1px 0 var(--rule)}
 #vf :is(h1,h2,h3,.ar-h2,.cs-beat,.vf-jr-t,.xph,.ld,.xpd){text-wrap:balance}
+/* EDITORIAL SCALE AND PACING (owner, 2026-11-23). Desktop and ultrawide only (phones keep their scale). Not a uniform
+   shrink: the shared VFINAL tokens are retuned and the heading roles split into two tiers.
+   - Primary (case h1, --vf-fs-d2): keeps its character, capped where it overwhelmed the page (80px at 1440, 120 at 2560).
+   - Display (--vf-fs-h2: "The short version", Craigslist / SBL chapter heads): quieter, 46 -> 32px at 1440.
+   - Chapter (--vf-fs-title, .ar-h2 / the narrative section titles): a step above the supporting tier.
+   - Supporting (--vf-fs-sub, new): step, demo, task, glossary, journey titles - eleven roles that all read as chapter
+     headlines at 24px now read as what they are.
+   - Lede and body: readable, not loud. Captions / meta unchanged (14-15px, sentence case).
+   Spacing: a chapter's lead paragraph binds to the content it introduces (80px -> ~40px); the transition into the next
+   chapter gets the room instead; a supporting heading sits closer to its paragraph than to what came before. */
+@media (min-width:1024px){
+  /* heading tokens feed 'VF2 Display' (Inter at size-adjust 78%), so their rendered size is 0.78x the token:
+     h1 ~52px, display ~28, chapter ~24, supporting ~18.5 - all above the 16-17px Inter body. Maxima are reached by
+     ~1700px and held: a wider screen adds space around the reading column, not larger type (owner, 2026-11-23). */
+  #vf .root{--vf-fs-d2:clamp(56px,4.6vw,80px);--vf-fs-h2:clamp(32px,2.5vw,42px);--vf-fs-title:clamp(26px,2.15vw,34px);
+    --vf-fs-sub:clamp(21px,1.65vw,26px);--vf-fs-lede:clamp(17px,1.25vw,20px);--vf-fs-body:clamp(16px,calc(.12vw + 14.3px),17px)}
+  #vf .root .cs5 :is(.ar-h3,.demo__h,.tk__t,.us__h,.gloss__h),#vf .vf-jr-t{font-size:var(--vf-fs-sub)!important;line-height:1.3!important}
+  #vf .root .cs5 :is(.ar-h3,.demo__h,.us__h,.gloss__h){margin-bottom:.5em!important}
+  #vf .root .cs5 .cs-beat[data-phase-anchor]{margin-top:clamp(104px,8vw,168px)!important}
+  #vf .root .cs5 .cs-beat + *{margin-top:clamp(32px,2.6vw,52px)!important}
+  #vf .vf-jr-h{font-size:var(--vf-fs-h2)}
+  /* the impact figure is evidence, not a second title: display tier x1.3 (64 -> ~41px at 1440) */
+  #vf .root .cs5 .bim__val,#vf .root .met dd{font-size:calc(var(--vf-fs-h2) * 1.3)!important;line-height:1.05!important}
+}
 #vf-loading{position:fixed;inset:0;z-index:100;width:100%;height:100%;border:0;display:block;opacity:1;transition:opacity .3s cubic-bezier(.6,0,.2,1)}
 #vf-loading.out{opacity:0;pointer-events:none}
 @media (prefers-reduced-motion: reduce){#vf-loading{transition:none}}

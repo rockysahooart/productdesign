@@ -537,6 +537,13 @@ def convert(s, name=''):
                 '.root.root.r8.r10 .orbs .orb.orb.orb.orb.orb img{filter:none!important}'
                 '.root.root.r8.r10 .orbs .orb.orb.orb.orb.orb[data-tone="light"] img{filter:brightness(0.82)!important}'
                 '</style>') % {'f': F}
+        # LANDING TYPE (owner, 2026-11-23; desktop / ultrawide boards only): the right column's project title and
+        # description and the project list step down so the orbit leads; the introduction (h1) keeps its size. Board px
+        # (the board is scaled as a whole); line heights loosened to match the smaller size.
+        if '-m-' not in name:
+            soft = soft.replace('</style>', '.root .pns h3.pt{font-size:24px!important;line-height:1.25!important}'
+                                '.root .pns p.pf{font-size:15.5px!important;line-height:1.6!important}'
+                                '.root section.inf span.t{font-size:16px!important}.root section.inf span.f{font-size:15px!important;line-height:1.6!important}</style>')
         assert s.count('<style id="vf2-dim">') == 1, name
         i = s.index('</style>', s.index('<style id="vf2-dim">')) + len('</style>')
         s = s[:i] + soft + s[i:]
