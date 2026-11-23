@@ -522,6 +522,24 @@ def convert(s, name=''):
         s = s.replace("'Instrument Serif'", "'VF2 Display'").replace('"Instrument Serif"', '"VF2 Display"')
     if name.startswith('VF2-2-Landing'):
         s = vf2_copy(s, name)
+        # ORBIT DEPTH WITHOUT BLACK-OUT (owner, 2026-11-23). vf2-dim dimmed each neighbour with brightness() (down to .13)
+        # over its .78 backing plate, so out-of-view cards read as opaque black (light: grey) rectangles. The same
+        # position-driven curve f(u) - u is the card's place on the ring, 1 at the front - now drives transparency,
+        # desaturation, lower contrast and a sub-pixel blur instead; the plate is cleared so the artifact itself carries
+        # the silhouette (the hairline border stays). Geometry, plinths, stacking and the active project are untouched;
+        # --big keeps the board's own hide states.
+        F = 'pow(clamp(0, (var(--u) - 0.28) / 0.72, 1),1.4)'
+        soft = ('<style id="vf2-dim-soft">'
+                '.root.root.r8.r10 .orbs .orb.orb.orb.orb.orb{background:none!important;background-image:none!important;'
+                'box-shadow:none!important;filter:opacity(calc((0.34 + 0.66 * %(f)s) * var(--big, 1))) '
+                'saturate(calc(0.45 + 0.55 * %(f)s)) contrast(calc(0.8 + 0.2 * %(f)s)) '
+                'blur(calc((1 - %(f)s) * 0.6px))!important}'
+                '.root.root.r8.r10 .orbs .orb.orb.orb.orb.orb img{filter:none!important}'
+                '.root.root.r8.r10 .orbs .orb.orb.orb.orb.orb[data-tone="light"] img{filter:brightness(0.82)!important}'
+                '</style>') % {'f': F}
+        assert s.count('<style id="vf2-dim">') == 1, name
+        i = s.index('</style>', s.index('<style id="vf2-dim">')) + len('</style>')
+        s = s[:i] + soft + s[i:]
     s = s.replace('</helmet>', prod_css(name) + '</helmet>', 1)
     s = re.sub(r'href=(["\'])([^"\']*)\1', lambda m: rw_href(m) if not m.group(2).startswith("' +") else m.group(0), s)
     return s
