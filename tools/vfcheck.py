@@ -5,7 +5,7 @@ over CDP (tools/cdp.py) and exits non-zero on any failure.
 
 sweep    every route x 390/768/1024/1440/1920/2560 x light/dark: zero console errors, zero 4xx, no horizontal
          overflow, no request leaving this origin, one h1, Odia name with lang="or"
-theme    fresh visit dark (owner 2026-11-21) under OS dark and light; toggle -> light persists across reload; back to dark
+theme    fresh visit dark under OS dark and light; toggle -> light kept on internal navigation; refresh -> dark (owner 2026-11-23)
 loading  every fresh entry / refresh: Loading over an inert page, hands off by ~10s; not on internal route changes;
          Escape skips from the first frame; reduced motion hands off at once
 keys     Landing / case / About: 40 Tab stops each, every stop visible with a focus indicator, none inside inert
@@ -67,7 +67,7 @@ def visit(b, w, h, route, theme='light', seen=True, dark_os=False, reduced=False
     b.viewport(w, h, dark=dark_os, reduced=reduced)
     b.goto(BASE + 'vf/', 0.1)
     b.eval("localStorage.clear();sessionStorage.clear();document.cookie='vf-seen=; path=/; max-age=0';%s%s" % (
-        "localStorage.setItem('vf-theme','%s');" % theme,
+        ("sessionStorage.setItem('vf-theme','%s');sessionStorage.setItem('vf-internal','1');" % theme) if seen else '',
         "localStorage.setItem('vf-qa-skip-loading','1');" if seen else ''))
     b.urls = []
     b.goto(BASE + route, settle)
@@ -120,8 +120,12 @@ def theme(b, _):
     if not b.eval("!!document.querySelector('#vf .root.t-light')||/-light/.test(window.VF_BOARD||'')"):
         fail('toggle did not switch to light')
     b.goto(BASE + '#/carry', 2.5)
-    if b.eval("localStorage.getItem('vf-theme')") != 'light' or b.eval("!!document.querySelector('#vf .root.t-dark')"):
-        fail('light not persisted to case page')
+    if b.eval("sessionStorage.getItem('vf-theme')") != 'light' or b.eval("!!document.querySelector('#vf .root.t-dark')"):
+        fail('light not kept on internal navigation')
+    b.call('Page.reload'); b.pump(3)
+    if b.eval('document.documentElement.dataset.vfTheme') != 'dark':
+        fail('refresh did not start dark (owner 2026-11-23)')
+    b.goto(BASE + '#/carry', 0.1); b.eval("sessionStorage.setItem('vf-theme','light');sessionStorage.setItem('vf-internal','1')"); b.call('Page.reload'); b.pump(2.5)
     b.eval("document.querySelector('.vf-tg').click()")
     b.pump(2.5)
     if not b.eval("!!document.querySelector('#vf .root.t-dark')"):

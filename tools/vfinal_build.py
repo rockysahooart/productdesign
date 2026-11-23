@@ -541,9 +541,39 @@ def convert(s, name=''):
         # description and the project list step down so the orbit leads; the introduction (h1) keeps its size. Board px
         # (the board is scaled as a whole); line heights loosened to match the smaller size.
         if '-m-' not in name:
-            soft = soft.replace('</style>', '.root .pns h3.pt{font-size:24px!important;line-height:1.25!important}'
-                                '.root .pns p.pf{font-size:15.5px!important;line-height:1.6!important}'
-                                '.root section.inf span.t{font-size:16px!important}.root section.inf span.f{font-size:15px!important;line-height:1.6!important}</style>')
+            # orbit arrows either side of the ring, level with its centre (positions from app.js navPos; the board's
+            # own placement under the exhibit is the fallback until it runs)
+            soft = soft.replace('</style>', '.root .stage .r6nav{width:var(--vf-ns,56px)!important;height:var(--vf-ns,56px)!important;'
+                                'top:calc(var(--vf-ny,743px) - var(--vf-ns,56px) / 2)!important;translate:none!important}'
+                                '.root .stage .r6nav.pv{left:calc(var(--vf-nx,760px) - var(--vf-ndx,310px) - var(--vf-ns,56px) / 2)!important}'
+                                '.root .stage .r6nav.nx{left:calc(var(--vf-nx,760px) + var(--vf-ndx,310px) - var(--vf-ns,56px) / 2)!important}</style>')
+            if '-uw-' not in name:
+                soft = soft.replace('</style>', '.root .pns h3.pt{font-size:21px!important;line-height:1.28!important}'
+                                    '.root .pns p.pf{font-size:15.5px!important;line-height:1.6!important}'
+                                    '.root section.inf span.t{font-size:15px!important}.root section.inf span.f{font-size:15px!important;line-height:1.6!important}</style>')
+            else:
+                # ULTRAWIDE-FIRST (owner, 2026-11-23): this board is the Landing at every desktop width, fitted by
+                # app.js vf2Fit (--vfz = its scale). Each text role keeps the board's own size (the secondary roles
+                # stepped down as on desktop: title -25%, description / list -10%), never rendering below a readable
+                # screen size: max(board px, floor / --vfz). Primary 19, body 14, UI 13.5, micro-labels 11-12.
+                def fl(sel, base, floor, extra=''):
+                    return '%s{font-size:max(%spx, calc(%spx / var(--vfz, 1)))!important%s}' % (sel, base, floor, extra)
+                soft = soft.replace('</style>', ''.join([
+                    fl('.root .lc h1.h1', 29, 19),
+                    fl('.root .lc>p.g', 20.8, 13.5),
+                    fl('.root header.hd nav a', 19.5, 13.5),
+                    fl('.root header.hd .idn', 20.8, 13),
+                    fl('.root li>button.ix span.it', 20, 14),
+                    fl('.root li>button.ix span.c,.root .lab h2.c span,.root .pns .pn>p.c,.root section.inf a.row>span.c', 15.6, 11),
+                    fl('.root .lc>button.c', 19.5, 13.5),
+                    fl('.root .pns h3.pt', 27, 17, ';line-height:1.28!important'),
+                    fl('.root .pns p.pf', 20, 14, ';line-height:1.6!important'),
+                    fl('.root .pns a.pc,.root .pns .r5ex span', 15, 13.5),
+                    fl('.root section.inf span.t', 19.5, 14),
+                    fl('.root section.inf span.f', 19.5, 13.5, ';line-height:1.6!important'),
+                    fl('.root section.inf span.cta', 20, 13),
+                    fl('.root .stage .r4nl', 14, 12), fl('.root .stage .r4nl .c', 12, 11),
+                    fl('.root .stage .r4ctr,.root .stage .r4ctr .of', 12, 11)]) + '</style>')
         assert s.count('<style id="vf2-dim">') == 1, name
         i = s.index('</style>', s.index('<style id="vf2-dim">')) + len('</style>')
         s = s[:i] + soft + s[i:]

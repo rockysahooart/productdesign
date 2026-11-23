@@ -108,17 +108,19 @@
   })();
 </script>
 <meta name="theme-color" content="#0A0A0B">
-<!-- VFINAL THEME, BEFORE FIRST PAINT. Dark first (owner, 2026-11-21, replacing R1's light-first rule): a first visit
-     opens dark; the site's toggle switches, and the choice persists in localStorage['vf-theme'] for returning visitors.
-     Set here, before any board or stylesheet paints, so no frame shows the other theme. No prefers-color-scheme
-     listener: the visitor's toggle, not the OS, decides. -->
+<!-- VFINAL THEME, BEFORE FIRST PAINT. Dark on every load (owner, 2026-11-23; replaces 2026-11-21's persisted choice):
+     every fresh visit and every refresh opens dark, whatever the OS prefers. The toggle's choice lives in
+     sessionStorage['vf-theme'] and is honoured only on the site's own internal reloads (route changes, the toggle,
+     range changes - flagged by sessionStorage['vf-internal'] in assets/vf/app.js), so it holds while browsing and a
+     new load starts dark again. Set here, before any board or stylesheet paints: no light frame, no layout shift. -->
 <script>
   (function () {
     var t = 'dark';
     /* VFINAL keeps its theme under its own key. 'pf-theme' belongs to the previous site, whose original code still runs
        inside the live project previews and reads it: left set, those originals would switch to their own dark theme
        (and an opaque frame) instead of the state the approved boards show. It is retired here. */
-    try { if (localStorage.getItem('vf-theme') === 'light') t = 'light'; localStorage.removeItem('pf-theme'); } catch (e) {}
+    try { if (sessionStorage.getItem('vf-internal') === '1' && sessionStorage.getItem('vf-theme') === 'light') t = 'light';
+      localStorage.removeItem('vf-theme'); /* the retired persistent choice */ localStorage.removeItem('pf-theme'); } catch (e) {}
     /* data-vf-theme, not data-theme: the live project previews run the previous site's code, which follows its host
        page's data-theme. On the approved boards their host had none, so they show their own default state. */
     document.documentElement.setAttribute('data-vf-theme', t);
@@ -217,8 +219,11 @@ x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
   /* heading tokens feed 'VF2 Display' (Inter at size-adjust 78%), so their rendered size is 0.78x the token:
      h1 ~52px, display ~28, chapter ~24, supporting ~18.5 - all above the 16-17px Inter body. Maxima are reached by
      ~1700px and held: a wider screen adds space around the reading column, not larger type (owner, 2026-11-23). */
-  #vf .root{--vf-fs-d2:clamp(56px,4.6vw,80px);--vf-fs-h2:clamp(32px,2.5vw,42px);--vf-fs-title:clamp(26px,2.15vw,34px);
-    --vf-fs-sub:clamp(21px,1.65vw,26px);--vf-fs-lede:clamp(17px,1.25vw,20px);--vf-fs-body:clamp(16px,calc(.12vw + 14.3px),17px)}
+  /* second step (owner, 2026-11-23, "smaller, more negative space"): primary -9%, display / chapter -12 to -15%,
+     supporting -5% (it already sat close to body), lede -5%; body unchanged (sustained reading). At 1440 rendered:
+     h1 ~47 / display ~25 / chapter ~21 / supporting ~18 / lede 17 / body 16. */
+  #vf .root{--vf-fs-d2:clamp(52px,4.2vw,72px);--vf-fs-h2:clamp(30px,2.2vw,38px);--vf-fs-title:clamp(24px,1.9vw,30px);
+    --vf-fs-sub:clamp(21px,1.6vw,24px);--vf-fs-lede:clamp(17px,1.2vw,19px);--vf-fs-body:clamp(16px,calc(.12vw + 14.3px),17px)}
   #vf .root .cs5 :is(.ar-h3,.demo__h,.tk__t,.us__h,.gloss__h),#vf .vf-jr-t{font-size:var(--vf-fs-sub)!important;line-height:1.3!important}
   #vf .root .cs5 :is(.ar-h3,.demo__h,.us__h,.gloss__h){margin-bottom:.5em!important}
   #vf .root .cs5 .cs-beat[data-phase-anchor]{margin-top:clamp(104px,8vw,168px)!important}

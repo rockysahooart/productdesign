@@ -12,7 +12,9 @@
      names put the range before the theme: VF2-2-Landing-uw-light-r29, VF2-1-Loading-m-light-r5, VF2-4-About-light. */
   var SHELL = {
     loading: { d: ['VF2-1-Loading', 'r4'], uw: ['VF2-1-Loading-uw', 'r4'], m: ['VF2-1-Loading-m', 'r5'] },
-    landing: { d: ['VF2-2-Landing', 'r29'], uw: ['VF2-2-Landing-uw', 'r29'], m: ['VF2-2-Landing-m', 'r32'] },
+    /* ultrawide-first (owner, 2026-11-23): the approved ultrawide Landing is the Landing at every desktop width,
+       fitted by vf2Fit; its text keeps readable screen sizes through --vfz (tools/vfinal_build.py) */
+    landing: { d: ['VF2-2-Landing-uw', 'r29'], uw: ['VF2-2-Landing-uw', 'r29'], m: ['VF2-2-Landing-m', 'r32'] },
     about: { d: ['VF2-4-About', ''], uw: ['VF2-4-About-uw', ''], m: ['VF2-4-About-m', 'r6'] }
   };
   var TITLE = 'Sarthak Sahoo, Product Designer';
@@ -78,7 +80,7 @@
     if (!b) return;
     face(b, theme === 'dark' ? 'Light mode' : 'Dark mode', theme === 'dark' ? 'sun' : 'moon');
     b.addEventListener('click', function () {
-      try { localStorage.setItem('vf-theme', theme === 'dark' ? 'light' : 'dark'); sessionStorage.setItem('vf-y', String(window.scrollY)); } catch (e) {}
+      try { sessionStorage.setItem('vf-theme', theme === 'dark' ? 'light' : 'dark'); sessionStorage.setItem('vf-y', String(window.scrollY)); } catch (e) {}
       internalReload();
     });
   }
@@ -353,7 +355,34 @@
       return m; }
     function f() { var vw = document.documentElement.clientWidth, z = vw / W, Hc = H ? extent() : 0;
       if (Hc) z = Math.min(z, window.innerHeight / Hc);
-      z = Math.max(0.6, Math.min(1.4, z)); root.style.zoom = z.toFixed(4); root.__vfz = +z.toFixed(4); }
+      z = Math.max(0.4, Math.min(1.4, z)); root.style.zoom = z.toFixed(4); root.__vfz = +z.toFixed(4); root.style.setProperty('--vfz', z.toFixed(4)); navPos(z); }
+    /* ORBIT ARROWS ON EITHER SIDE (owner, 2026-11-23; replaces the pair centred under the exhibit). Anchored to the orbit
+       ring itself - its measured centre in stage px, which moves with the board's own --r5dy - and set 30.5% of the ring's
+       width out on each side (bounded by both columns), level with the active display's centre: left of the orbit,
+       right of it, clear of the background cards and of both columns. CSS in tools/vfinal_build.py reads --vf-nx / --vf-ny / --vf-ndx; the counter stays centred beneath.
+       The target never renders under 46 screen px, whatever the fit. Navigation logic and keys are the board's. */
+    function navPos(z) {
+      z = z || root.__vfz || 1;
+      var stg = root.querySelector('.stage'), rg = stg && stg.querySelector('.ringsv'); if (!rg) return;
+      var a = stg.getBoundingClientRect(), r = rg.getBoundingClientRect(); if (!r.width) return;
+      var ns = Math.max(48, 46 / z), cx = r.left + r.width / 2, room = Infinity;
+      /* never into either column: 16px clear of the introduction / index and of the project copy, measured live */
+      var lc = root.querySelector('.lc'), pn = root.querySelector('.pns');
+      if (lc) { var lr = lc.getBoundingClientRect(); if (lr.width) room = Math.min(room, cx - lr.right - 16 - ns / 2); }
+      if (pn) { var pr = pn.getBoundingClientRect(); if (pr.width) room = Math.min(room, pr.left - cx - 16 - ns / 2); }
+      /* one position for every project: the board's own r6 rule - ONE height, the median resting display midline (453 of
+         the 900px stage across the nine displays) - and as far out as the columns allow. The scene itself shifts per
+         exhibit (--r5dy), so the ring is not a stable height reference. The widest display (OptiFlow's 540px square)
+         reaches under the pair by its plain mat border only. */
+      var ny = stg.offsetHeight * 0.503, dx = room;
+      stg.style.setProperty('--vf-nx', (cx - a.left).toFixed(1) + 'px');
+      stg.style.setProperty('--vf-ny', ny.toFixed(1) + 'px');
+      stg.style.setProperty('--vf-ndx', dx.toFixed(1) + 'px');
+      stg.style.setProperty('--vf-ns', ns.toFixed(1) + 'px'); /* the board rewrites each arrow's style attribute */
+    }
+    /* the index grows as the active row passes 04: re-measure the column bound on each project change */
+    var pns0 = root.querySelector('.pns');
+    if (pns0) try { new MutationObserver(function () { navPos(); }).observe(pns0, { subtree: true, attributes: true, attributeFilter: ['hidden'] }); } catch (e) {}
     /* ONE COORDINATE SPACE (owner, 2026-11-22). The board measures with getBoundingClientRect (screen px, zoom applied)
        and writes the results into translate / left / top (CSS px, zoomed again), as authored on a 1:1 canvas. Under the
        zoom above every such hand-off - the orbit's entry tweens, the PCV fly-in, the inspection box - was off by the zoom
