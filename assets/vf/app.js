@@ -17,7 +17,10 @@
   };
   var TITLE = 'Sarthak Sahoo, Product Designer';
   var theme = document.documentElement.getAttribute('data-vf-theme') === 'light' ? 'light' : 'dark';
-  function range() { var w = window.innerWidth; return w < 1024 ? 'm' : (w >= 2304 ? 'uw' : 'd'); }
+  /* ultrawide boards need height as well as width (owner, 2026-11-22): their 2560x1440 composition, controls included,
+     is ~1560px tall and would render below 0.77x - 9-11px text - on a short ultrawide (3440x900). Under 1200px tall the
+     desktop composition is used, which fits there at a readable scale. Width bands otherwise as 02 RANGES. */
+  function range() { var w = window.innerWidth; return w < 1024 ? 'm' : (w >= 2304 && window.innerHeight >= 1200 ? 'uw' : 'd'); }
   function route() {
     var m = /^#\/([\w-]+)/.exec(location.hash);
     if (!m) return { k: 'landing' };
@@ -334,9 +337,39 @@
   function vf2Fit(host) {
     var root = host.querySelector('.root'); if (!root || !/^VF2-/.test(board(R.k, RG)) || RG === 'm') return;
     var W = parseFloat(root.style.width) || root.offsetWidth;
-    function f() { var z = Math.max(0.6, Math.min(1.6, document.documentElement.clientWidth / W)); root.style.zoom = z.toFixed(4); }
+    /* the board's stage (isometric scene, orbit, PCV on its plinth) is one frame tall (900 desktop / 1440 ultrawide),
+       measured before any zoom. Scaling by width alone pushed it past the fold on any viewport wider than the board's
+       ratio (1920x1080: a 1200px stage, the wheel below the screen, the cards floating over nothing). Same rule as the
+       Loading frame (11 §4): min(vw / W, vh / H), the board centred. */
+    var st = root.querySelector('.stage'), H = st ? st.offsetHeight : 0;
+    /* ...and the browsing controls must be inside that height too (owner, 2026-11-22): the board's vf2-align layer rests
+       the pager and arrows 100px under the exhibit, past its own 900px stage (the canvas board ran on below). The fitted
+       height is therefore the lowest essential control - arrows, counter, index, Show all, the active CTA - read from the
+       board's live geometry in its own px, plus 32px; the approved positions are untouched, only the scale follows. */
+    var ESS = '.stage .pg, .stage .r6nav, .lc .idx, .lc .n9more, .pns a.pc';
+    function extent() { var rr = root.getBoundingClientRect(), m = H;
+      [].forEach.call(root.querySelectorAll(ESS), function (e) { var r = e.getBoundingClientRect(); if (r.width && r.height) m = Math.max(m, r.bottom - rr.top + 32); });
+      return m; }
+    function f() { var vw = document.documentElement.clientWidth, z = vw / W, Hc = H ? extent() : 0;
+      if (Hc) z = Math.min(z, window.innerHeight / Hc);
+      z = Math.max(0.6, Math.min(1.6, z)); root.style.zoom = z.toFixed(4); root.__vfz = +z.toFixed(4); }
+    /* ONE COORDINATE SPACE (owner, 2026-11-22). The board measures with getBoundingClientRect (screen px, zoom applied)
+       and writes the results into translate / left / top (CSS px, zoomed again), as authored on a 1:1 canvas. Under the
+       zoom above every such hand-off - the orbit's entry tweens, the PCV fly-in, the inspection box - was off by the zoom
+       factor (rapid navigation: the PCV drifted 22-27px off its plinth at 0.8 / 1.2, 3px at 1). Rects of elements inside
+       the zoomed board are reported in the board's own CSS px, so its geometry holds at every scale. Outside it, and at
+       zoom 1, rects are untouched. */
+    if (!Element.prototype.__vfRect) {
+      var gb = Element.prototype.getBoundingClientRect; Element.prototype.__vfRect = gb;
+      Element.prototype.getBoundingClientRect = function () {
+        var r = gb.call(this), zr = document.querySelector('#vf > x-dc > .root, #vf .root'), k = zr && zr.__vfz;
+        if (!k || k === 1 || !zr.contains(this)) return r;
+        return new DOMRect(r.left / k, r.top / k, r.width / k, r.height / k);
+      };
+    }
     root.style.marginLeft = 'auto'; root.style.marginRight = 'auto';
-    f(); window.addEventListener('resize', f);
+    /* the board places its pager and arrows after mount: fit again once they are laid out */
+    f(); window.addEventListener('resize', f); requestAnimationFrame(f); setTimeout(f, 400); setTimeout(f, 1500);
   }
 
   function wheelCentre(host) {
