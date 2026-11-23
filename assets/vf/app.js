@@ -313,6 +313,17 @@
     try { new ResizeObserver(function () { requestAnimationFrame(f); }).observe(idx); } catch (e) {}
   }
 
+  /* EDITORIAL CHIPS WITHOUT EMOJI (owner, 2026-11-22; Iris). The case studies' review chips and constraint lists
+     (.tk__m, .rcv) tagged each source with an emoji (engineer, clipboard, clinician...). The words already name the
+     source, so the pictograms are removed from those two components only; prototypes and demos are untouched. */
+  function chips(host) {
+    var EMO = /(?:[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}](?:\u200D[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}])*\uFE0F?)\s*/gu;
+    [].forEach.call(host.querySelectorAll('.tk__m, .rcv b, .rcv li'), function (el) {
+      var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), n;
+      while ((n = w.nextNode())) { if (EMO.test(n.nodeValue)) { EMO.lastIndex = 0; n.nodeValue = n.nodeValue.replace(EMO, ''); } EMO.lastIndex = 0; }
+    });
+  }
+
   function wheelCentre(host) {
     var land = host.querySelector('.land'), st = land && land.querySelector('.stage'), cam = st && st.querySelector('.cam');
     if (!cam) return;
@@ -377,7 +388,7 @@
     
     Promise.all(jobs).then(function (docs) {
       cur = VFDC.mount(docs[0], main);
-      disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
+      disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
       /* SCROLL ON ENTRY: history.scrollRestoration is manual (head script), so every entry starts at 0 - fresh visit,
          refresh, Back, the brand or nav link. Only a theme switch (vf-y, same page) or an explicit in-page anchor
          (#projects, #top) places it elsewhere. */
