@@ -262,7 +262,7 @@ def links(b, _):
     visit(b, 1440, 900, '')
     hrefs = b.eval("[...document.querySelectorAll('#vf a[href]')].map(a=>a.getAttribute('href'))")
     for u in ('#/craigslist', '#/carry', '#/specimen', '#/optiflow', '#/audit', '#/sbl', './slop-audit.pdf',
-              'https://rockysahooart.github.io/encryption-coffee-shop/', 'https://spiky-experiences-472785.framer.app/scale-market'):
+              'https://rockysahooart.github.io/encryption-coffee-shop/', 'https://github.com/rockysahooart/underground-mvp'):
         if u not in hrefs:
             fail('Landing link missing ' + u)
     for u in ('https://rockysahooart.framer.website/', 'https://soundcloud.com/rocky-sahoo'):

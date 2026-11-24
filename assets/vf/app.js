@@ -236,7 +236,7 @@
      own document, so a prototype's controls never navigate. */
   var DEST = { 'Craigslist Redesign': '#/craigslist', 'Carry': '#/carry', 'Cryptography Explained': 'https://rockysahooart.github.io/encryption-coffee-shop/',
     'Oncology Specimen Kit': '#/specimen', 'OptiFlow': '#/optiflow', 'Design System Audit': '#/audit',
-    'AI Design Governance': './slop-audit.pdf', 'Securities-Based Lending': '#/sbl', 'Scale': 'https://spiky-experiences-472785.framer.app/scale-market' };
+    'AI Design Governance': './slop-audit.pdf', 'Securities-Based Lending': '#/sbl', 'Scale': 'https://github.com/rockysahooart/underground-mvp' };
   function go(t) {
     var u = DEST[t]; if (!u) return false;
     var a = document.createElement('a'); a.href = u;
@@ -458,14 +458,23 @@
        towards the ink, the top most lit (dark theme) or least shaded (light theme), each a step apart - so blocks occlude
        one another and no hidden edge shows. Distance fades the shading back into the ground colour, never into
        transparency; each visible face keeps the city's hairline. */
+    var ui = [].map.call(root.querySelectorAll('.lc, .idx, .n9more, .pns, .stage .pg, .r6nav, .stage > .art:not([hidden]), .orbs .orb[style*="opacity: 1"]'), function (e) { var r = e.getBoundingClientRect(); return r.width ? [r.left - wr.left - L, r.top - wr.top - T, r.width, r.height] : null; }).filter(Boolean);
+    var hb = root.querySelector('.lc') ? root.querySelector('.lc').getBoundingClientRect().top - wr.top - T - 24 : 140 - T;
+    ui.push([-40, -40, W + 80, hb + 40]);
     function rgb(c) { var m = (c || '').match(/[\d.]+/g) || [0, 0, 0]; return [+m[0], +m[1], +m[2]]; }
     var bgc = (function () { var els = [root, host, document.body, document.documentElement];
       for (var i = 0; i < els.length; i++) { var c = getComputedStyle(els[i]).backgroundColor, m = c.match(/[\d.]+/g); if (m && (m.length < 4 || +m[3] > 0.5)) return rgb(c); } return [10, 10, 11]; })();
     var inkc = rgb(edge), darkT = (bgc[0] + bgc[1] + bgc[2]) / 3 < 128;
     function mix(k) { return 'rgb(' + bgc.map(function (v, i) { return Math.round(v + (inkc[i] - v) * k); }).join(',') + ')'; }
-    var SH = darkT ? { t: 0.12, l: 0.075, r: 0.045, e: 0.15 } : { t: 0.02, l: 0.085, r: 0.14, e: 0.2 }; /* building edges below the streets' */
+    var SH = darkT ? { t: 0.07, l: 0.045, r: 0.028, e: 0.08 } : { t: 0.015, l: 0.05, r: 0.085, e: 0.12 }; /* a quiet backdrop (owner, 2026-11-24): faces a step apart, edges below the streets' */
+    /* FALLOFF BY VALUE (owner, 2026-11-24; replaces the masked veil and the far blur): near the copy, the navigation, the
+       controls and the featured display, every surface's shading is pulled towards the ground colour - still opaque,
+       still dimensional - reaching full strength only ~220px clear of them. No transparency, blur or overlay. */
+    var uiR = ui.map(function (r) { return [r[0], r[1], r[0] + r[2], r[1] + r[3]]; });
+    function near(px, py) { var d = 1e9; uiR.forEach(function (r) { var dx = Math.max(r[0] - px, 0, px - r[2]), dy = Math.max(r[1] - py, 0, py - r[3]); d = Math.min(d, Math.hypot(dx, dy)); });
+      return 0.15 + 0.85 * Math.pow(Math.max(0, Math.min(1, d / 220)), 1.2); }
     function prism(b) {
-      var x = b.x, y = b.y, w = b.w, d = b.d, h = b.h, f = Math.pow(1 - b.u, 1.4);
+      var x = b.x, y = b.y, w = b.w, d = b.d, h = b.h, c0 = pt(x + w / 2, y + d / 2, h / 2), f = Math.pow(1 - b.u, 1.4) * near(c0[0], c0[1]);
       var top = [pt(x, y, h), pt(x + w, y, h), pt(x + w, y + d, h), pt(x, y + d, h)],
           left = [pt(x, y + d, 0), pt(x + w, y + d, 0), pt(x + w, y + d, h), pt(x, y + d, h)],
           right = [pt(x + w, y, 0), pt(x + w, y + d, 0), pt(x + w, y + d, h), pt(x + w, y, h)];
@@ -475,7 +484,7 @@
         '<polygon points="' + poly(top) + '" fill="' + mix(SH.t * f + 0.01) + '" stroke-opacity="' + (SH.e * 1.3 * f + 0.03).toFixed(3) + '"/>';
     }
     /* lots carry a faint ground tone of their own, so the streets between them read as continuous channels */
-    var kerbs = lots.map(function (l) { var s = 4 * cell, f = Math.pow(1 - l.u, 1.6); return '<polygon points="' + poly([pt(l.x, l.y, 0), pt(l.x + s, l.y, 0), pt(l.x + s, l.y + s, 0), pt(l.x, l.y + s, 0)]) + '" fill="' + mix((darkT ? 0.035 : 0.045) * f) + '" stroke-opacity="' + (0.44 * (0.8 * f + 0.03)).toFixed(3) + '"/>'; }).join('');
+    var kerbs = lots.map(function (l) { var s = 4 * cell, c1 = pt(l.x + s / 2, l.y + s / 2, 0), f = Math.pow(1 - l.u, 1.6) * near(c1[0], c1[1]); return '<polygon points="' + poly([pt(l.x, l.y, 0), pt(l.x + s, l.y, 0), pt(l.x + s, l.y + s, 0), pt(l.x, l.y + s, 0)]) + '" fill="' + mix((darkT ? 0.022 : 0.03) * f) + '" stroke-opacity="' + (0.3 * (0.8 * f + 0.03)).toFixed(3) + '"/>'; }).join('');
     /* STREETS AS ROUTES (cell units; centre lines at 5k + 4.5, intersections where two meet). A segment is one block long;
        it is drivable where it is not inside the plaza, stands within 2.5 ring radii and is clear of the copy and controls.
        Consecutive drivable segments along one street make a run; the cars and the tram use only runs. */
@@ -530,14 +539,11 @@
       });
     }
     function form(b) { return prism(b) + (b.sub || []).map(prism).join(''); } /* a tower draws over its own podium */
-    var near = blocks.filter(function (b) { return b.u < 0.55; }).map(form).join(''), far = blocks.filter(function (b) { return b.u >= 0.55; }).map(form).join('');
+    var far = blocks.filter(function (b) { return b.u >= 0.55; }).map(form).join(''), nearB = blocks.filter(function (b) { return b.u < 0.55; }).map(form).join('');
     /* THE VEIL (owner, 2026-11-24): the city is secondary everywhere content sits. Behind the copy, the header, the
        controls and the featured display its contrast falls away softly (blurred dark shapes in the layer's own mask,
        ~85% down at the centre of each, no visible edge), so it reads fully only in open space. Vehicles keep off those
        areas altogether (their runs avoid them). */
-    var ui = [].map.call(root.querySelectorAll('.lc, .idx, .n9more, .pns, .stage .pg, .r6nav, .stage > .art:not([hidden]), .orbs .orb[style*="opacity: 1"]'), function (e) { var r = e.getBoundingClientRect(); return r.width ? [r.left - wr.left - L, r.top - wr.top - T, r.width, r.height] : null; }).filter(Boolean);
-    var hb = root.querySelector('.lc') ? root.querySelector('.lc').getBoundingClientRect().top - wr.top - T - 24 : 140 - T;
-    ui.push([-40, -40, W + 80, hb + 40]);
     var veil = '<g filter="url(#vf-iso-v)" fill="#000" fill-opacity=".85">' + ui.map(function (r) { return '<rect x="' + (r[0] - 24).toFixed(0) + '" y="' + (r[1] - 24).toFixed(0) + '" width="' + (r[2] + 48).toFixed(0) + '" height="' + (r[3] + 48).toFixed(0) + '" rx="40"/>'; }).join('') + '</g>';
     /* the grid: a pattern in the plane's own axes, origin on the scene's, so every line continues one of the orbit's */
     var mtx = [ex[0], ex[1], ey[0], ey[1], O[0], O[1]].map(function (v) { return +v.toFixed(5); }).join(' ');
@@ -550,13 +556,13 @@
       '<stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="' + (0.55 / 3.2).toFixed(4) + '" stop-color="#fff" stop-opacity="0"/>' +
       '<stop offset="' + (1 / 3.2).toFixed(4) + '" stop-color="#fff" stop-opacity="1"/><stop offset="' + (1.8 / 3.2).toFixed(4) + '" stop-color="#fff" stop-opacity=".4"/>' +
       '<stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><mask id="vf-iso-k" maskUnits="userSpaceOnUse" x="0" y="0" width="' + W + '" height="' + H + '">' +
-      '<rect width="' + W + '" height="' + H + '" fill="url(#vf-iso-m)"/>' + veil + '</mask>' +
+      '<rect width="' + W + '" height="' + H + '" fill="url(#vf-iso-m)"/></mask>' +
       '<mask id="vf-iso-k2" maskUnits="userSpaceOnUse" x="0" y="0" width="' + W + '" height="' + H + '"><rect width="' + W + '" height="' + H + '" fill="#fff"/>' + veil + '</mask></defs>' +
       '<rect width="' + W + '" height="' + H + '" fill="url(#vf-iso-g)" opacity="' + (getComputedStyle(grd).opacity || 0.23) + '" mask="url(#vf-iso-k)"/>' +
-      '<g mask="url(#vf-iso-k)"><g stroke="' + edge + '" stroke-width="1">' + kerbs + '</g><g fill="none" stroke="' + edge + '" stroke-opacity=".34" stroke-width="1">' + plaza + '</g>' +
-      '<g stroke="' + edge + '" stroke-opacity=".3" stroke-width="1" stroke-dasharray="3 7">' + lanes + '</g>' +
-      '<g stroke="' + edge + '" stroke-opacity=".4" stroke-width="1.2">' + stops + '</g>' +
-      '<g fill="' + fT + '" fill-opacity=".4" stroke="' + edge + '" stroke-opacity=".4" stroke-width="1">' + rails + '</g></g>' +
+      '<g mask="url(#vf-iso-k)"><g stroke="' + edge + '" stroke-width="1">' + kerbs + '</g><g fill="none" stroke="' + edge + '" stroke-opacity=".24" stroke-width="1">' + plaza + '</g>' +
+      '<g stroke="' + edge + '" stroke-opacity=".16" stroke-width="1" stroke-dasharray="3 7">' + lanes + '</g>' +
+      '<g stroke="' + edge + '" stroke-opacity=".2" stroke-width="1.2">' + stops + '</g>' +
+      '<g fill="' + fT + '" fill-opacity=".3" stroke="' + edge + '" stroke-opacity=".24" stroke-width="1">' + rails + '</g></g>' +
       '</svg>';
     /* the buildings sit above the vehicles (a block hides a car behind it; a car in front never reaches up into the block
        standing behind it), in a second drawing with its own defs: the veil, and the far blocks' softening */
@@ -564,7 +570,7 @@
       '<defs><filter id="vf-iso-b2" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation=".7"/></filter>' +
       '<filter id="vf-iso-v2" filterUnits="userSpaceOnUse" x="-200" y="-200" width="' + (W + 400) + '" height="' + (H + 400) + '"><feGaussianBlur stdDeviation="36"/></filter>' +
       '<mask id="vf-iso-k3" maskUnits="userSpaceOnUse" x="0" y="0" width="' + W + '" height="' + H + '"><rect width="' + W + '" height="' + H + '" fill="#fff"/>' + veil.replace('vf-iso-v)', 'vf-iso-v2)') + '</mask></defs>' +
-      '<g mask="url(#vf-iso-k3)" stroke="' + edge + '" stroke-width="1" stroke-linejoin="round"><g filter="url(#vf-iso-b2)">' + far + '</g>' + near + '</g></svg>';
+      '<g stroke="' + edge + '" stroke-width="1" stroke-linejoin="round">' + far + nearB + '</g></svg>';
     var lay = document.createElement('div'); lay.className = 'vf-iso'; lay.setAttribute('aria-hidden', 'true');
     lay.style.cssText = 'position:absolute;left:' + L.toFixed(1) + 'px;top:' + T + 'px;width:' + W + 'px;height:' + H + 'px;pointer-events:none;z-index:0;opacity:0;transition:opacity 1.2s ease';
     requestAnimationFrame(function () { requestAnimationFrame(function () { lay.style.opacity = '1'; }); });
@@ -585,10 +591,10 @@
       var hl = len / 2, hw = wid / 2, A = ax ? [hw, hl] : [hl, hw], o = pt(0, 0, 0);
       function q(x, y, z) { var v = pt(x * cell, y * cell, z * cell); return (v[0] - o[0]).toFixed(1) + ',' + (v[1] - o[1]).toFixed(1); }
       return '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" style="position:absolute;left:0;top:0;overflow:visible">' +
-        '<g stroke="' + edge + '" stroke-opacity=".6" stroke-width="1" stroke-linejoin="round">' +
-        '<polygon fill="' + mix(darkT ? 0.2 : 0.22) + '" points="' + [q(-A[0], A[1], 0), q(A[0], A[1], 0), q(A[0], A[1], hgt), q(-A[0], A[1], hgt)].join(' ') + '"/>' +
-        '<polygon fill="' + mix(darkT ? 0.14 : 0.3) + '" points="' + [q(A[0], -A[1], 0), q(A[0], A[1], 0), q(A[0], A[1], hgt), q(A[0], -A[1], hgt)].join(' ') + '"/>' +
-        '<polygon fill="' + mix(darkT ? 0.32 : 0.08) + '" points="' + [q(-A[0], -A[1], hgt), q(A[0], -A[1], hgt), q(A[0], A[1], hgt), q(-A[0], A[1], hgt)].join(' ') + '"/></g></svg>'; }
+        '<g stroke="' + edge + '" stroke-opacity=".35" stroke-width="1" stroke-linejoin="round">' +
+        '<polygon fill="' + mix(darkT ? 0.12 : 0.16) + '" points="' + [q(-A[0], A[1], 0), q(A[0], A[1], 0), q(A[0], A[1], hgt), q(-A[0], A[1], hgt)].join(' ') + '"/>' +
+        '<polygon fill="' + mix(darkT ? 0.08 : 0.22) + '" points="' + [q(A[0], -A[1], 0), q(A[0], A[1], 0), q(A[0], A[1], hgt), q(A[0], -A[1], hgt)].join(' ') + '"/>' +
+        '<polygon fill="' + mix(darkT ? 0.18 : 0.06) + '" points="' + [q(-A[0], -A[1], hgt), q(A[0], -A[1], hgt), q(A[0], A[1], hgt), q(-A[0], A[1], hgt)].join(' ') + '"/></g></svg>'; }
     function el(html) { var e = document.createElement('i'); e.className = 'vf-car'; e.style.cssText = 'position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;will-change:transform,opacity'; e.innerHTML = html; veh.appendChild(e); return e; }
     function xy(ax, c, s) { return ax ? [c, s] : [s, c]; }
     function fade(X, Y) { var d = Math.hypot(X * cell - P / 2, Y * cell - P / 2) / Rr; return Math.max(0, Math.min(1, (2.3 - d) / 1.2)); }
@@ -629,7 +635,7 @@
         if (stations.length > 1) { var nx = t.tgt + (t.fwd === -1 ? -1 : 1); if (nx < 0 || nx >= stations.length) { t.fwd = -(t.fwd || 1); nx = t.tgt + t.fwd; } else t.fwd = t.fwd || 1; t.tgt = nx; t.dir = (stations[nx] - t.s) > 0 ? 1 : -1; } }
     }
     function draw(v) { var q = pos(v), sp = pt(q[0] * cell, q[1] * cell, 0), r = v.r, ends = Math.min((v.s - r.p[0]), (r.p[r.p.length - 1] - v.s));
-      var a = (v.tram ? 0.8 : 0.7) * fade(q[0], q[1]) * Math.max(0, Math.min(1, ends / 1.2));
+      var a = (v.tram ? 0.5 : 0.42) * fade(q[0], q[1]) * Math.max(0, Math.min(1, ends / 1.2));
       v.e.style.transform = 'translate(' + sp[0].toFixed(1) + 'px,' + sp[1].toFixed(1) + 'px)'; v.e.style.opacity = a.toFixed(3); }
     var last = 0;
     function frame(ts) {

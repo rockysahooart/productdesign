@@ -38,7 +38,7 @@ PROJ = {
     '#p06': '#/audit',
     '#p07': './slop-audit.pdf',
     '#p08': '#/sbl',
-    '#p10': 'https://spiky-experiences-472785.framer.app/scale-market',
+    '#p10': 'https://github.com/rockysahooart/underground-mvp',
 }
 # Header / footer destinations: verified on the current site, else disabled (R5)
 NAV = {
@@ -343,17 +343,18 @@ def vf2_copy(s, name):
     # and ultrawide Landing alike (all three read this list). Same facts and project context, nothing added; titles
     # and case-study copy untouched. Index 8 is the hidden, unlaunched tenth project (unchanged).
     SHORT = {
-        # INTRODUCTIONS (owner, 2026-11-23, replacing the shortened subtitles): first person, the human problem, what I
-        # did, why it matters, in one or two sentences. Every fact is from that project's own case study or short version.
-        0: 'Finding a used car in Craigslist’s iPhone app meant long lists and listings with little beyond a title and a price. I redesigned how buyers search, compare listings and judge sellers, so the right car is easier to find.',
-        1: 'Patients forget much of what they hear in a short follow-up appointment. I designed Carry, which links the questions they write beforehand to the moments in the conversation that answer them.',
-        2: 'Key exchange and encryption are hard to follow from code alone. I designed an interactive explainer for a cross-platform library that shows developers how ECDH and AES-GCM work together before they use its APIs.',
-        3: 'A refused tissue sample writes off the whole test, yet the kit printed the reasons for refusal last. I reordered the instruction lid so the costly mistakes read first and specified an insert that holds the sample in transit.',
-        4: 'Reviewers checking an AI model’s billing tags had to move fast, and their corrections taught it nothing. I designed the review step so agreeing stays one action and every correction arrives sorted, with the evidence behind it.',
-        5: 'Cancer specialists use a provider portal between patients, and the same action looked different on every screen. I audited four workflows and replaced four separate fixes with one shared row pattern, clear status labels and error rules.',
+        # CONTRIBUTION FIRST (owner, 2026-11-24; replaces the two-sentence introductions of 2026-11-23): one sentence per
+        # project leading with what I did, the redundant problem restatement dropped. Every fact is from that project's
+        # own introduction, case study or short version; nothing added.
+        0: 'I redesigned how buyers search, compare listings and judge sellers in Craigslist’s iPhone app, so the right car is easier to find.',
+        1: 'I designed Carry, which links the questions patients write before a follow-up to the moments in the conversation that answer them.',
+        2: 'I designed an interactive explainer that shows developers how ECDH and AES-GCM work together before they use a cross-platform library’s APIs.',
+        3: 'I reordered the kit’s instruction lid so the reasons a sample gets refused read first, and specified an insert that holds the sample in transit.',
+        4: 'I designed the review step for an AI model’s billing tags: agreeing stays one action, and every correction arrives sorted with its evidence.',
+        5: 'I audited four provider workflows and replaced four separate fixes with one shared row pattern, clear status labels and error rules.',
         6: 'Generated product work can look finished while it is missing logic, states and evidence. I’m building standards an AI agent can use to catch that “AI slop” before it ships.',
-        7: 'Bankers assembled lending requests across dense, disconnected screens, and missing details caused errors and rework. I kept the familiar flow and added a status panel that links every open item to the field that completes it.',
-        9: 'Students need an easy way to find and book music teachers, and teachers need one place to run their lessons. I’m building a two-sided marketplace that covers both, from booking to payments and progress.',
+        7: 'I kept bankers’ familiar lending flow and added a status panel that links every open item to the field that completes it.',
+        9: 'I’m building a two-sided marketplace for music lessons: students find and book teachers, and teachers run booking, payments and progress in one place.',
     }
     assert len(ld) == 10, len(ld)
     ld = [SHORT.get(i, d) for i, d in enumerate(ld)]
@@ -473,6 +474,14 @@ def vf2_order(s, name):
         s, k = re.subn(r'(<h3 class="pt"[^>]*>)%s(</h3>)' % VF2_NAMES[n], lambda m: m.group(1) + title + m.group(2), s)
         assert k >= 1, (name, 'title', n)
     s = s.replace('class="nd sel" data-n="01"', 'class="nd" data-n="01"').replace('class="nd" data-n="%s"' % first, 'class="nd sel" data-n="%s"' % first)
+    # INDEX AS ONE SEQUENCE (owner, 2026-11-24). Collapsed, the index showed rows 1-4 plus the active row wherever it was
+    # (01 02 03 04 ... 07); it now shows four consecutive rows with the active one in them (one row of context before it
+    # where there is one), so the list always reads as a run of the sequence. 'Show all' is unchanged.
+    old_lay = "lis.forEach((li,i)=>li.classList.toggle('n9c',many&&!open&&i>=K&&li.dataset.n!==c.sel));"
+    if '-m-' not in name:
+        assert s.count(old_lay) == 1, (name, 'n9 lay')
+        s = s.replace(old_lay, "const a9=Math.max(0,lis.findIndex(li=>li.dataset.n===c.sel)),s9=Math.max(0,Math.min(a9-1,lis.length-K));"
+                      "lis.forEach((li,i)=>li.classList.toggle('n9c',many&&!open&&(i<s9||i>=s9+K)));")
     s, k = re.subn(r'this\.orbit\(\);this\.pager\(\);(\s*\}\s*members\(\))', r'this.orbit();this.pager();this.apply(true,0);\1', s)
     assert k == 1 or '-m-' in name, (name, k)  # the phone gallery applies each project itself
     return s
@@ -694,6 +703,15 @@ def convert(s, name=''):
                 '.root.root.r8.r10 .orbs .orb.orb.orb.orb.orb[data-tone="light"] img{filter:brightness(calc(0.36 + 0.42 * %(f)s)) '
                 'contrast(calc(0.72 + 0.23 * %(f)s)) saturate(calc(0.35 + 0.55 * %(f)s)) blur(calc((1 - %(f)s) * 0.7px))!important}'
                 '</style>') % {'f': F}
+        if '-m-' not in name:
+            # GROUNDED ON THE PLINTH (owner, 2026-11-24): the featured display casts a soft contact shadow on the plinth's top
+            # at its foot - an ellipse in the plane's own proportion (0.577), beneath the frame and the artwork (z -1 inside
+            # the display's own stack), so the panel reads as standing on the plinth rather than floating over it. The
+            # artwork, frame and plinth are untouched.
+            soft = soft.replace('</style>', '.root .stage>.art::after{content:"";position:absolute;z-index:-1;left:6%%;width:88%%;'
+                                'bottom:-14%%;height:calc(88%% * 0.577 * 0.42);pointer-events:none;'
+                                'background:radial-gradient(closest-side,rgba(%s,%s) 0%%,rgba(%s,%s) 45%%,rgba(%s,0) 100%%)}</style>'
+                                % (('38,34,28', '.26', '38,34,28', '.1', '38,34,28') if '-light' in name else ('0,0,0', '.62', '0,0,0', '.28', '0,0,0')))
         if '-light' in name:
             # light ground: distance recedes towards the paper (lighter, flatter), never towards black
             soft = soft.replace('brightness(calc(0.42 + 0.48 * %s))' % F, 'brightness(calc(1.22 - 0.22 * %s))' % F).replace(
