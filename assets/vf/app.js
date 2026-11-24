@@ -360,6 +360,81 @@
     mast.parentNode.insertBefore(sec, mast.nextSibling);
   }
 
+  /* THE WORLD, CONTINUED (owner, 2026-11-24, pass 9). The orbit's isometric ground runs on past its own plane across the
+     whole Landing, as one environment: the same 54px grid, continued line for line from where the orbit's grid begins to
+     fade (the two masks sum to one even ground), then fading outward over about three ring radii; on it, a sparse, dark
+     city of low prisms in the city's own face colours, each one fainter, lower and (far out) softer the further it stands
+     from the orbit, and none behind the header, the introduction, the index, the project copy or the controls. Background only: one static SVG
+     drawn once per mount, inside .world so it moves with the exhibit; the projection is measured from the scene itself
+     (three probe points), never assumed. Desktop and ultrawide; phones have the gallery; reduced motion is the same
+     still picture. */
+  function isoWorld(host) {
+    if (RG === 'm' || R.k !== 'landing') return;
+    var root = host.querySelector('.root'), world = root && root.querySelector('.stage .world'), scene = world && world.querySelector('.scene'),
+        grd = scene && scene.querySelector('.grd');
+    if (!grd || world.querySelector('.vf-iso')) return;
+    var P = scene.offsetWidth, cell = parseFloat(getComputedStyle(grd).backgroundSize) || P / 22;
+    function probe(x, y, z) { var m = document.createElement('i'); m.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;width:0;height:0;transform:translateZ(' + z + 'px)';
+      scene.appendChild(m); var r = m.getBoundingClientRect(); scene.removeChild(m); return [r.left, r.top]; }
+    var wr = world.getBoundingClientRect(), o = probe(0, 0, 0), px = probe(100, 0, 0), py = probe(0, 100, 0), pz = probe(0, 0, 100);
+    var ex = [(px[0] - o[0]) / 100, (px[1] - o[1]) / 100], ey = [(py[0] - o[0]) / 100, (py[1] - o[1]) / 100], ez = [(pz[0] - o[0]) / 100, (pz[1] - o[1]) / 100];
+    var rr = root.getBoundingClientRect(), L = rr.left - wr.left, T = -480, W = rr.width, H = world.offsetHeight + 960;
+    var O = [o[0] - wr.left - L, o[1] - wr.top - T];
+    function pt(x, y, z) { return [O[0] + x * ex[0] + y * ey[0] + z * ez[0], O[1] + x * ex[1] + y * ey[1] + z * ez[1]]; }
+    function poly(a) { return a.map(function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' '); }
+    /* colours from the scene itself, so either theme reads true */
+    function css(sel, prop) { var e = scene.querySelector(sel); return e ? getComputedStyle(e)[prop] : ''; }
+    var line = (getComputedStyle(grd).backgroundImage.match(/rgba?\([^)]*\)/) || ['rgba(230,228,223,.11)'])[0],
+        fL = css('.bx .fl', 'backgroundColor') || '#181818', fR = css('.bx .fr', 'backgroundColor') || '#111112', fT = css('.bx .tp', 'backgroundColor') || '#232322',
+        edge = (line.replace(/rgba\(([^,]+),([^,]+),([^,]+),[^)]*\)/, 'rgb($1,$2,$3)'));
+    var C = pt(P / 2, P / 2, 0), Rr = P / 2, ky = Math.hypot(ex[0] + ey[0], ex[1] + ey[1]) / Math.SQRT2; /* the plane circle's vertical squash */
+    var kx = Math.hypot(ex[0] - ey[0], ex[1] - ey[1]) / Math.SQRT2;
+    /* the text columns stay clear of prisms (their rects, in this layer's coordinates, with a margin) */
+    var keep = [].map.call(root.querySelectorAll('.lc, .pns, .stage .pg, .r6nav'), function (e) { var r = e.getBoundingClientRect(); return r.width ? [r.left - wr.left - L - 40, r.top - wr.top - T - 40, r.right - wr.left - L + 40, r.bottom - wr.top - T + 40] : null; }).filter(Boolean);
+    keep.push([-1e4, -1e4, 1e5, (root.querySelector('.lc') ? root.querySelector('.lc').getBoundingClientRect().top - wr.top - T - 24 : 140 - T)]); /* the header band */
+    var seed = 7; function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+    var N = Math.ceil(3.2 * Rr / cell), blocks = [];
+    for (var i = -N; i < N + Math.ceil(P / cell); i++) for (var j = -N; j < N + Math.ceil(P / cell); j++) {
+      var cx = (i + 0.5) * cell - P / 2, cy = (j + 0.5) * cell - P / 2, d = Math.hypot(cx, cy) / Rr;
+      if (d < 1.08 || d > 3.1 || rnd() > 0.05) continue;
+      var w = cell * (rnd() < 0.3 ? 2 : 1), dp = cell * (rnd() < 0.3 ? 2 : 1), u = (d - 1.08) / 2.02;
+      var h = cell * (0.4 + rnd() * 2.2) * (1 - 0.7 * u), x = i * cell, y = j * cell;
+      var q = [pt(x, y, h), pt(x + w, y, h), pt(x + w, y + dp, h), pt(x, y + dp, 0), pt(x, y + dp, h)];
+      var bb = [Math.min(pt(x, y + dp, 0)[0], q[0][0]), Math.min(q[0][1], q[1][1], q[4][1]), Math.max(pt(x + w, y, 0)[0], q[1][0]), pt(x + w, y + dp, 0)[1]];
+      if (bb[2] < 0 || bb[0] > W || bb[3] < 0 || bb[1] > H) continue;
+      if (keep.some(function (k) { return bb[0] < k[2] && bb[2] > k[0] && bb[1] < k[3] && bb[3] > k[1]; })) continue;
+      blocks.push({ x: x, y: y, w: w, d: dp, h: h, u: u });
+    }
+    blocks.sort(function (a, b) { return (a.x + a.y) - (b.x + b.y); }); /* back to front */
+    function prism(b) {
+      var x = b.x, y = b.y, w = b.w, d = b.d, h = b.h;
+      var top = [pt(x, y, h), pt(x + w, y, h), pt(x + w, y + d, h), pt(x, y + d, h)],
+          left = [pt(x, y + d, 0), pt(x + w, y + d, 0), pt(x + w, y + d, h), pt(x, y + d, h)],
+          right = [pt(x + w, y, 0), pt(x + w, y + d, 0), pt(x + w, y + d, h), pt(x + w, y, h)];
+      var a = (0.24 * (1 - b.u) + 0.035).toFixed(3);
+      /* faces in the city's colours, edged with its hairline (the faces' inset outlines), all at one fading strength */
+      return '<g opacity="' + a + '"><polygon points="' + poly(left) + '" fill="' + fL + '" stroke="' + edge + '" stroke-opacity=".22"/><polygon points="' + poly(right) + '" fill="' + fR + '" stroke="' + edge + '" stroke-opacity=".18"/>' +
+        '<polygon points="' + poly(top) + '" fill="' + fT + '" stroke="' + edge + '" stroke-opacity=".36"/></g>';
+    }
+    var near = blocks.filter(function (b) { return b.u < 0.55; }).map(prism).join(''), far = blocks.filter(function (b) { return b.u >= 0.55; }).map(prism).join('');
+    /* the grid: a pattern in the plane's own axes, origin on the scene's, so every line continues one of the orbit's */
+    var mtx = [ex[0], ex[1], ey[0], ey[1], O[0], O[1]].map(function (v) { return +v.toFixed(5); }).join(' ');
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true" focusable="false">' +
+      '<defs><pattern id="vf-iso-g" width="' + cell + '" height="' + cell + '" patternUnits="userSpaceOnUse" patternTransform="matrix(' + mtx + ')">' +
+      '<path d="M0 0H' + cell + 'M0 0V' + cell + '" stroke="' + line + '" stroke-width="' + (1 / Math.max(kx, ky)).toFixed(3) + '" fill="none"/></pattern>' +
+      '<filter id="vf-iso-b" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation=".9"/></filter>' +
+      '<radialGradient id="vf-iso-m" gradientUnits="userSpaceOnUse" cx="' + C[0].toFixed(1) + '" cy="' + C[1].toFixed(1) + '" r="' + (3.2 * Rr * kx).toFixed(1) + '" gradientTransform="translate(' + C[0].toFixed(1) + ' ' + C[1].toFixed(1) + ') scale(1 ' + (ky / kx).toFixed(4) + ') translate(' + (-C[0]).toFixed(1) + ' ' + (-C[1]).toFixed(1) + ')">' +
+      '<stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="' + (0.55 / 3.2).toFixed(4) + '" stop-color="#fff" stop-opacity="0"/>' +
+      '<stop offset="' + (1 / 3.2).toFixed(4) + '" stop-color="#fff" stop-opacity="1"/><stop offset="' + (1.6 / 3.2).toFixed(4) + '" stop-color="#fff" stop-opacity=".7"/>' +
+      '<stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><mask id="vf-iso-k" maskUnits="userSpaceOnUse" x="0" y="0" width="' + W + '" height="' + H + '">' +
+      '<rect width="' + W + '" height="' + H + '" fill="url(#vf-iso-m)"/></mask></defs>' +
+      '<rect width="' + W + '" height="' + H + '" fill="url(#vf-iso-g)" opacity="' + (getComputedStyle(grd).opacity || 0.23) + '" mask="url(#vf-iso-k)"/>' +
+      '<g filter="url(#vf-iso-b)" stroke-width="1">' + far + '</g><g stroke-width="1">' + near + '</g></svg>';
+    var lay = document.createElement('div'); lay.className = 'vf-iso'; lay.setAttribute('aria-hidden', 'true');
+    lay.style.cssText = 'position:absolute;left:' + L.toFixed(1) + 'px;top:' + T + 'px;width:' + W + 'px;height:' + H + 'px;pointer-events:none;z-index:0';
+    lay.innerHTML = svg; world.insertBefore(lay, world.firstChild);
+  }
+
   /* SKIM FIRST, DEPTH ON REQUEST (owner, 2026-11-24, pass 7). Each case study reads in a minute: the short version (above),
      then every section's heading and lede, the evidence (figures, working prototypes, decks, crops), what I did, the
      decisions (moves, rules, notes) and the closing line stay in view. The supporting prose between them - further
@@ -582,7 +657,7 @@
     
     Promise.all(jobs).then(function (docs) {
       cur = VFDC.mount(docs[0], main);
-      vf2Fit(cur.el); gallery(cur); disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); fold(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
+      vf2Fit(cur.el); gallery(cur); isoWorld(cur.el); disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); fold(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
       /* SCROLL ON ENTRY: history.scrollRestoration is manual (head script), so every entry starts at 0 - fresh visit,
          refresh, Back, the brand or nav link. Only a theme switch (vf-y, same page) or an explicit in-page anchor
          (#projects, #top) places it elsewhere. */
