@@ -19,7 +19,19 @@ body .root.t-light{--bg:#EEECE7;--ink:#262521;--ink3:#161615;--acc:#161615;--mut
   --ink2:#48443E;--sf:248,247,243;--hl:38,37,33;--mat2:#E1DED7}x-dc a,x-dc button{-webkit-tap-highlight-color:transparent}
 /* VFINAL2 hand-off (11 §3, adapted): Landing has no city, so the world fades with the text, bar, halo and CRT over the
    same 300ms instead of gliding to a Landing stage; never moved or scaled */
-.root[data-done] .world{opacity:0;transition:opacity .3s ease}
+html:not(.vf-glide) .root[data-done] .world{opacity:0;transition:opacity .3s ease}
+/* the glide's colour (assets/vf/app.js glide2): only the city's existing edge lines - left face edges and footings violet,
+   right face edges and conduits cyan, top edges and the ring pink - each a crisp 1px core with a tight ~2px glow kept to
+   the line. No ambient fill, haze or bloom: the ground stays black, face interiors dark, the grid monochrome. It eases on
+   as the glide starts and off before the city lands, so both resting states are VFINAL2's own. */
+html.vf-glide .ld .fl,html.vf-glide .ld .fr,html.vf-glide .ld .tp,html.vf-glide .ld .cd,html.vf-glide .ld .ft,html.vf-glide .ld .ringsv circle{
+  transition:box-shadow .32s cubic-bezier(.45,0,.2,1),background-color .32s cubic-bezier(.45,0,.2,1),border-color .32s cubic-bezier(.45,0,.2,1),stroke .32s cubic-bezier(.45,0,.2,1),filter .32s cubic-bezier(.45,0,.2,1)!important}
+html.vf-edge .ld .fl{box-shadow:inset 1px 0 0 0 #A78BFA,inset -1px 0 0 0 #A78BFA,inset 2px 0 2px -1px rgba(167,139,250,.55),inset -2px 0 2px -1px rgba(167,139,250,.55)!important}
+html.vf-edge .ld .fr{box-shadow:inset 0 1px 0 0 #67E8F9,inset 0 -1px 0 0 #67E8F9,inset 0 2px 2px -1px rgba(103,232,249,.5),inset 0 -2px 2px -1px rgba(103,232,249,.5)!important}
+html.vf-edge .ld .tp{box-shadow:inset 0 0 0 1px #F472B6,inset 0 0 2px 1px rgba(244,114,182,.45)!important}
+html.vf-edge .ld .cd{background-color:#67E8F9!important;box-shadow:0 0 2px 0 rgba(103,232,249,.6)!important}
+html.vf-edge .ld .ft{border-color:#A78BFA!important;box-shadow:0 -1px 2px -1px rgba(167,139,250,.55)!important}
+html.vf-edge .ld .ringsv circle{stroke:#F472B6!important;filter:drop-shadow(0 0 1px rgba(244,114,182,.7))!important}
 @media (prefers-reduced-motion: reduce){.root[data-done] .world{transition:none}}</style>
 <script src="../assets/vf/dc.js"></script>
 </head>

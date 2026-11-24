@@ -545,11 +545,11 @@
        translate only (no layout change). Skip and reduced motion go straight to the complete, usable Landing. */
     var rm = false; try { rm = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
     function reveal(staged) {
-      if (!staged || rm) { main.classList.remove('vf-stage', 'vf-in-1', 'vf-in-2', 'vf-in-3'); return; }
+      if (!staged || rm) { main.classList.remove('vf-stage', 'vf-in-1', 'vf-in-2', 'vf-in-3', 'vf-cont'); return; }
       main.classList.add('vf-in-1');
       setTimeout(function () { main.classList.add('vf-in-2'); }, 220);
       setTimeout(function () { main.classList.add('vf-in-3'); }, 440);
-      setTimeout(function () { main.classList.remove('vf-stage', 'vf-in-1', 'vf-in-2', 'vf-in-3'); }, 1300);
+      setTimeout(function () { main.classList.remove('vf-stage', 'vf-in-1', 'vf-in-2', 'vf-in-3', 'vf-cont'); }, 1300);
     }
     function glide() {
       if (skipping || rm) return;
@@ -574,8 +574,40 @@
       if (done) return; done = true;
       /* VFINAL2 (11 §3): the board fades its own layers over 300ms on data-done; the Landing enters only after that
          fade, sequential, never cross-faded over the type. Reduced motion hands off at once. */
-      if (vf2 && !rm) { document.removeEventListener('keydown', onKey); setTimeout(hand2, 300); return; }
+      if (vf2 && !rm) { document.removeEventListener('keydown', onKey);
+        if (!skipping && glide2()) { setTimeout(hand2, 1050); return; }
+        setTimeout(hand2, 300); return; }
       hand2();
+    }
+    /* VFINAL MOTION ON VFINAL2 STATES (owner, 2026-11-23). VFINAL's hand-off choreography - the status and controls go
+       first, then the Loading form glides (1000ms, its .45,0,.2,1 curve) onto its Landing counterpart, then the frame
+       dissolves and the Landing arrives in its three steps - now carries VFINAL2's own compositions: the Loading city
+       glides onto the Landing's city (the stage under the Orbit; the hero city on phones), measured on both pages (same
+       geometry, so it lands exactly). The whole frame moves as one transform, so VFINAL2's own city transforms are never
+       overridden or doubled. During the glide only, the city's existing edge lines (face edges, footings, conduits, the
+       ring) carry violet, cyan and pink: a 1px core with a ~2px glow held to the line; the ground stays black, the faces
+       dark, and both resting states monochrome.
+       Skip and reduced motion keep the plain fade. */
+    function glide2() {
+      try {
+        main.classList.add('vf-cont'); /* the Landing city at rest (staging offset released) before it is measured */
+        var d = ov.contentDocument, sc = d && d.querySelector('.world .scene');
+        var G = Element.prototype.__vfRect || Element.prototype.getBoundingClientRect;
+        var tg = [].filter.call(main.querySelectorAll('.world .scene'), function (e) { return G.call(e).width > 0; })[0];
+        if (!sc || !tg) { main.classList.remove('vf-cont'); return false; }
+        var a = sc.getBoundingClientRect(), b = G.call(tg);
+        if (!a.width || !b.width || b.bottom < 0 || b.top > innerHeight) { main.classList.remove('vf-cont'); return false; }
+        var k = b.width / a.width, cx = a.left + a.width / 2, cy = a.top + a.height / 2;
+        d.documentElement.classList.add('vf-glide');
+        /* colour on the city's own edge lines only (vf/frame.html .vf-edge): on as the glide starts, back to
+           monochrome before it lands; no ambient light, the ground and the faces stay dark */
+        d.documentElement.classList.add('vf-edge'); setTimeout(function () { try { d.documentElement.classList.remove('vf-edge'); } catch (e) {} }, 620);
+        ov.style.transformOrigin = cx + 'px ' + cy + 'px';
+        ov.style.transition = 'transform 1000ms cubic-bezier(.45,0,.2,1), opacity .3s cubic-bezier(.6,0,.2,1)';
+        void ov.offsetWidth;
+        ov.style.transform = 'translate(' + (b.left + b.width / 2 - cx).toFixed(1) + 'px,' + (b.top + b.height / 2 - cy).toFixed(1) + 'px) scale(' + k.toFixed(4) + ')';
+        return true;
+      } catch (e) { return false; }
     }
     function hand2() {
       document.removeEventListener('keydown', onKey);
