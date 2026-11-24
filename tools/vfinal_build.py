@@ -403,7 +403,18 @@ def vf2_copy(s, name):
 # Ids (data-n), PCVs, titles and destinations are unchanged; only the sequence moves: the board's own D.nums (Orbit, arrows,
 # counter, ring; every industry subset follows it), its first selection, the DOM order of the index and the rows (the
 # phone gallery reads the index), and every printed position number. The hidden, unlaunched 09 stays last.
-VF2_ORDER = ['08', '01', '03', '02', '05', '10', '07', '06', '04', '09']
+VF2_ORDER = ['08', '01', '03', '02', '05', '10', '06', '04', '07', '09']
+# HIDDEN FROM THE PUBLIC PORTFOLIO (owner, 2026-11-24): AI Design Governance (07) is withdrawn for now through the board's
+# own navHidden switch, as the unlaunched 09 already is - Orbit, counter, index, rows, phone gallery and menu skip it; its
+# PCV, panel, case page, routes and source stay in place. To bring it back: drop '07' from VF2_HIDDEN and put it back in
+# VF2_ORDER after Scale (10).
+VF2_HIDDEN = ['07', '09']
+# DISPLAY TITLES (owner, 2026-11-24): first-person headlines for three projects on the Landing panels, the phone gallery
+# and the Projects page; the project names (index, menu, labels), routes and assets are unchanged.
+VF2_TITLES = {'02': 'How I designed a tool to help patients prepare for and remember medical appointments',
+              '04': 'How I designed an AI-assisted billing review workflow',
+              '10': 'How I designed a marketplace for music education'}
+VF2_NAMES = {'02': 'Carry', '04': 'OptiFlow', '10': 'Scale'}
 
 
 def vf2_order(s, name):
@@ -452,6 +463,15 @@ def vf2_order(s, name):
     # orbit scale, posed by the same camera, ring and pillar as before. The hand-off path already ended at psi 0.
     s, k = re.subn(r'(function r14psi\(phi\)\{[^}]*\})', r'\1r14psi=function(){return 0;};', s)
     assert k == 1 or '-m-' in name, (name, 'r14psi', k)
+    nh = '"navHidden": ["09"]'
+    assert s.count(nh) == 1, (name, 'navHidden')
+    s = s.replace(nh, '"navHidden": ' + json.dumps(VF2_HIDDEN))
+    for n in VF2_HIDDEN:
+        s = re.sub(r'<li data-n="%s">' % n, '<li data-n="%s" hidden>' % n, s)
+        s = re.sub(r'<a class="row" data-n="%s"(?![^>]*\bhidden\b)' % n, '<a class="row" data-n="%s" hidden' % n, s)
+    for n, title in VF2_TITLES.items():
+        s, k = re.subn(r'(<h3 class="pt"[^>]*>)%s(</h3>)' % VF2_NAMES[n], lambda m: m.group(1) + title + m.group(2), s)
+        assert k >= 1, (name, 'title', n)
     s = s.replace('class="nd sel" data-n="01"', 'class="nd" data-n="01"').replace('class="nd" data-n="%s"' % first, 'class="nd sel" data-n="%s"' % first)
     s, k = re.subn(r'this\.orbit\(\);this\.pager\(\);(\s*\}\s*members\(\))', r'this.orbit();this.pager();this.apply(true,0);\1', s)
     assert k == 1 or '-m-' in name, (name, k)  # the phone gallery applies each project itself
@@ -721,7 +741,71 @@ def convert(s, name=''):
         s = s.replace("'Inter'", "'Geist'").replace('"Inter"', '"Geist"')
     s = s.replace('</helmet>', prod_css(name) + '</helmet>', 1)
     s = re.sub(r'href=(["\'])([^"\']*)\1', lambda m: rw_href(m) if not m.group(2).startswith("' +") else m.group(0), s)
+    if name.startswith('VF2-') or name.split('-')[0] in STUDIES:
+        s = projects_links(s, name)
     return s
+
+
+def projects_links(s, name):
+    """PROJECTS PAGE (owner, 2026-11-24): every 'Projects' navigation link - the header nav, the phone menu, a case
+    study's 'All projects' - opens the Projects page (#/projects). In-page buttons such as the phone hero's 'View
+    Projects' keep their own targets. The phone menu's Projects disclosure (projects by industry, old numbering) becomes
+    a plain link to the same page."""
+    s = re.sub(r'<nav\b.*?</nav>', lambda m: m.group(0).replace('href="./#projects" aria-current="page"', 'href="./#/projects"').replace('href="./#projects"', 'href="./#/projects"'), s, flags=re.S)
+    s = re.sub(r'<a([^>]*)href="\./#projects"([^>]*)>(\s*(?:\u2190\s*)?All [Pp]rojects)', r'<a\1href="./#/projects"\2>\3', s)
+    s, k = re.subn(r'<button type="button" class="mni mnd" id="mnpj".*?</button><div class="mnix" id="mnix" hidden>.*?</div>(?=</li>)',
+                   '<a class="mni" href="./#/projects">Projects</a>', s, flags=re.S)
+    return s
+
+
+def projects_boards():
+    """PROJECTS PAGE (owner, 2026-11-24). One board per range and theme, built from the About board (its header, footer,
+    tokens and fitting) with its content replaced by the project grid: each remaining project, in the shared order, as
+    its own visual (the PCV the Orbit shows) on a dark plinth-like panel of one proportion, and its display title - no
+    descriptions or metadata. The whole card is the link to the project's existing destination. Colours derive from the
+    board's text colour (currentColor), so the dark and light boards each read true."""
+    land = open(os.path.join(OUT, 'VF2-2-Landing-uw-r29.html'), encoding='utf-8').read()
+    cards = []
+    for n in VF2_ORDER:
+        if n in VF2_HIDDEN:
+            continue
+        img = re.search(r'<button type="button" class="orb" data-n="%s"[^>]*>.*?<img[^>]*src="([^"]+)"' % n, land, re.S).group(1)
+        row = re.search(r'<a class="row" data-n="%s"([^>]*)>' % n, land).group(1)
+        attrs = ' '.join(re.findall(r'(href="[^"]*"|target="[^"]*"|rel="[^"]*")', row))
+        pn = re.search(r'<div class="pn" data-n="%s"[^>]*>.*?<h3 class="pt"[^>]*>(.*?)</h3>' % n, land, re.S).group(1)
+        title = re.sub(r'<(?!/?span\b)[^>]+>', '', pn).strip()  # the Landing's no-break spans (Securities-Based) stay
+        cards.append('<li><a class="pjc" %s><span class="pjv"><img src="%s" alt="" loading="lazy" decoding="async"></span>'
+                     '<h2 class="pjt">%s</h2></a></li>' % (attrs, img, title))
+    grid = '<ol class="pjg" role="list">' + ''.join(cards) + '</ol>'
+    css = ('<style>.root .pj{padding:var(--pj-top) var(--pj-x) 0}.root .pj h1{margin:0 0 var(--pj-h);font:330 var(--pj-fs)/1.1 \'Newsreader\',Georgia,serif;'
+           'letter-spacing:-.01em;color:inherit}.root .pjg{list-style:none;margin:0;padding:0;display:grid;'
+           'grid-template-columns:repeat(var(--pj-c),minmax(0,1fr));gap:var(--pj-gy) var(--pj-gx)}.root .pjc{display:block;color:inherit;'
+           'text-decoration:none;outline:none}.root .pjv{display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;'
+           'padding:12%;box-sizing:border-box;background:color-mix(in srgb,currentColor 3.5%,transparent);border:1px solid color-mix(in srgb,currentColor 14%,transparent);transition:border-color .3s}'
+           '.root .pjv img{display:block;max-width:100%;max-height:100%;object-fit:contain}.root .pjt{margin:var(--pj-t) 0 0;'
+           'font:400 var(--pj-ts)/1.32 \'Newsreader\',Georgia,serif;color:inherit;opacity:.9;text-wrap:balance}'
+           '.root .pjc:hover .pjv{border-color:color-mix(in srgb,currentColor 40%,transparent)}.root .pjc:hover .pjt{opacity:1}'
+           '.root .pjc:focus-visible .pjv{outline:2px solid currentColor;outline-offset:4px}'
+           '.root .pjt .vc-nb{white-space:nowrap}@media (prefers-reduced-motion:reduce){.root .pjv{transition:none}}</style>')
+    for src, dst, mob in (('VF2-4-About', 'VF2-5-Projects', 0), ('VF2-4-About-light', 'VF2-5-Projects-light', 0),
+                          ('VF2-4-About-m-r6', 'VF2-5-Projects-m', 1), ('VF2-4-About-m-light-r6', 'VF2-5-Projects-m-light', 1)):
+        s = open(os.path.join(OUT, src + '.html'), encoding='utf-8').read()
+        vars_ = ('--pj-top:48px;--pj-x:var(--gx);--pj-h:40px;--pj-fs:34px;--pj-c:1;--pj-gy:56px;--pj-gx:0;--pj-t:18px;--pj-ts:21px' if mob else
+                 '--pj-top:72px;--pj-x:80px;--pj-h:72px;--pj-fs:52px;--pj-c:3;--pj-gy:88px;--pj-gx:48px;--pj-t:24px;--pj-ts:22px')
+        body = '<section class="pj" aria-labelledby="pj-h" style="%s"><h1 id="pj-h">Projects</h1>%s</section>' % (vars_, grid)
+        if mob:
+            s, k = re.subn(r'<main>.*?</main>', '<main>' + body + '</main>', s, flags=re.S)
+        else:
+            s, k = re.subn(r'<section aria-label="About".*?(?=<section class="inf")', body, s, flags=re.S)
+            s = s.replace('margin-top:140px;padding:90px 80px 100px', 'margin-top:160px;padding:90px 80px 100px', 1)
+        assert k == 1, (dst, 'content')
+        s = re.sub(r'(<div class="root[^"]*" style="[^"]*?)height:\d+px;', r'\1height:auto;', s, count=1)
+        s = s.replace('<a href="#/about" aria-current="page"', '<a href="#/about"').replace('<a class="mni" href="#/about" aria-current="page"', '<a class="mni" href="#/about"')
+        s = s.replace('href="./#/projects" class="g"', 'href="./#/projects" class="g" aria-current="page"', 1)
+        s = s.replace('<a class="mni" href="./#/projects">', '<a class="mni" href="./#/projects" aria-current="page">', 1)
+        s = s.replace('</helmet>', css + '</helmet>', 1)
+        open(os.path.join(OUT, dst + '.html'), 'w', encoding='utf-8').write(s)
+        print('board', dst)
 
 
 def main():
@@ -759,6 +843,7 @@ def main():
                 s2 = open(os.path.join(src2, folder, fn), encoding='utf-8').read()
                 open(os.path.join(OUT, name + '.html'), 'w', encoding='utf-8').write(convert(s2, name))
                 print('board', name)
+        projects_boards()
         a2 = os.path.join(os.path.dirname(src2), 'assets', 'shell')
         for f in os.listdir(a2):
             if f != 'c47c27ef0fd273b7e7871b60d3d85969.html':

@@ -15,7 +15,9 @@
     /* ultrawide-first (owner, 2026-11-23): the approved ultrawide Landing is the Landing at every desktop width,
        fitted by vf2Fit; its text keeps readable screen sizes through --vfz (tools/vfinal_build.py) */
     landing: { d: ['VF2-2-Landing-uw', 'r29'], uw: ['VF2-2-Landing-uw', 'r29'], m: ['VF2-2-Landing-m', 'r32'] },
-    about: { d: ['VF2-4-About', ''], uw: ['VF2-4-About-uw', ''], m: ['VF2-4-About-m', 'r6'] }
+    about: { d: ['VF2-4-About', ''], uw: ['VF2-4-About-uw', ''], m: ['VF2-4-About-m', 'r6'] },
+    /* PROJECTS (owner, 2026-11-24): the grid of every public project, built from the About board (tools/vfinal_build.py) */
+    projects: { d: ['VF2-5-Projects', ''], uw: ['VF2-5-Projects', ''], m: ['VF2-5-Projects-m', ''] }
   };
   var TITLE = 'Sarthak Sahoo, Product Designer';
   var theme = document.documentElement.getAttribute('data-vf-theme') === 'light' ? 'light' : 'dark';
@@ -28,6 +30,7 @@
     var m = /^#\/([\w-]+)/.exec(location.hash);
     if (!m) return { k: 'landing' };
     if (m[1] === 'about') return { k: 'about' };
+    if (m[1] === 'projects') return { k: 'projects' };
     if (CASES[m[1]]) return { k: 'case', s: CASES[m[1]] };
     return { k: 'landing' };
   }
@@ -272,7 +275,7 @@
     var host = c && c.el, comp = c && c.comp; if (!host || !comp || RG !== 'm' || R.k !== 'landing') return;
     var root = host.querySelector('.root'), st = root && root.querySelector('.stage'), sec = st && st.parentNode;
     if (!st || typeof comp.apply !== 'function') return;
-    var order = [].map.call(root.querySelectorAll('.idx > li[data-n]'), function (li) { return li.getAttribute('data-n'); });
+    var order = [].map.call(root.querySelectorAll('.idx > li[data-n]:not([hidden])'), function (li) { return li.getAttribute('data-n'); });
     var sel0 = comp.sel, size = {};
     order.forEach(function (n) {
       var a = st.querySelector('.art[data-n="' + n + '"]'), ld = root.querySelector('.ld[data-n="' + n + '"]');
@@ -781,6 +784,7 @@
   function title(host) {
     var h = host.querySelector('h1');
     if (R.k === 'about') document.title = 'About · ' + TITLE;
+    else if (R.k === 'projects') document.title = 'Projects · ' + TITLE;
     else if (R.k === 'case' && h) document.title = h.textContent.replace(/\s+/g, ' ').trim() + ' · ' + TITLE;
     else document.title = TITLE;
   }
@@ -808,7 +812,7 @@
       cur = VFDC.mount(docs[0], main);
       vf2Fit(cur.el); gallery(cur); (function (h) { /* the world is measured once the Landing has settled (fonts, entrance) */
         var go = function () { setTimeout(function () { if (h.isConnected) isoWorld(h); }, 1400); };
-        try { document.fonts.ready.then(go); } catch (e) { go(); } })(cur.el); disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); fold(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
+        try { document.fonts.ready.then(go); } catch (e) { go(); } })(cur.el); disable(cur.el); if (R.k !== 'about' && R.k !== 'projects') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); fold(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
       /* SCROLL ON ENTRY: history.scrollRestoration is manual (head script), so every entry starts at 0 - fresh visit,
          refresh, Back, the brand or nav link. Only a theme switch (vf-y, same page) or an explicit in-page anchor
          (#projects, #top) places it elsewhere. */
