@@ -161,6 +161,11 @@ x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
 #vf.vf-in-1 :where(h1.hl,.lc>h1),#vf.vf-in-2 :where(header,.sig,.rl2,.id>:not(h1),.acts,.ctx,.lc>:not(h1),.pns),#vf.vf-in-3 :where(.stage,.chips,.vix,#vfmgrp,.idx,.abt,.pager,.pg,section.inf){
   opacity:1;translate:0 0;transition:opacity .6s cubic-bezier(.2,.7,.2,1),translate .6s cubic-bezier(.2,.7,.2,1)}
 @media (prefers-reduced-motion: reduce){#vf.vf-stage *{transition:none!important}}
+/* SERIF TITLES (owner, 2026-11-23): Newsreader, light, optical sizing on, for the hero, the active project's title, the
+   phone gallery titles and each case study's title; everything else is Geist. Sizes set so the serif's smaller x-height
+   reads at the weight the sans did, composition unchanged. */
+#vf .root .lc h1.h1,#vf .root .top h1.h1,#vf .root .pns h3.pt,#vf .vf-ch h3.pt,#vf .root .cs5 h1.ar-title,#vf .root h1.t{
+  font-family:'Newsreader',Georgia,serif!important;font-weight:330!important;font-optical-sizing:auto;letter-spacing:-.01em!important}
 /* HERO PHOTO AND ROLES (owner, 2026-11-23). The profile photo (About's own portrait) sits just above the introduction,
    left-aligned, ~54px on screen at any fit (board px / --vfz), with a small corner radius. The two roles carry a slow
    gradient clipped to their letters only: pearl silver, ice blue, lavender, steel blue (deeper tones of the same four on
@@ -206,20 +211,20 @@ html[data-vf-theme="light"] #vf .vf-logos img{filter:grayscale(1) brightness(0);
 #vf .root .vf-gal .vf-fig > .art.art{scale:var(--vf-k,1)!important}
 /* the board hides (and pauses) every live frame but the selected one; in the gallery each display shows its own */
 #vf .vf-gal .art iframe{visibility:visible!important}
-#vf .vf-ch h3.pt{margin:0 0 12px;font:400 26px/1.25 'Inter',sans-serif;color:inherit;text-wrap:balance}
-#vf .vf-ch p.lead{margin:0;font:400 16.5px/1.6 'Inter',sans-serif;opacity:.78}
+#vf .vf-ch h3.pt{margin:0 0 12px;font:400 26px/1.25 'Geist','Inter',sans-serif;color:inherit;text-wrap:balance}
+#vf .vf-ch p.lead{margin:0;font:400 16.5px/1.6 'Geist','Inter',sans-serif;opacity:.78}
 #vf .vf-ch p.lead .pf{font:inherit}
 #vf .vf-ch a.pc{display:inline-flex;align-items:center;min-height:44px;margin-top:16px}
 /* reading journey (assets/vf/journeys.js): board tokens and type roles only; the .pn card pattern (rule + accent tick) */
 #vf .vf-jr{margin:clamp(40px,5vw,80px) 0 0;max-width:1680px}
-#vf .vf-jr-h{margin:0;font:400 var(--vf-fs-h2,40px)/1.08 'VF2 Display','Inter',sans-serif;color:var(--ink);letter-spacing:0}
+#vf .vf-jr-h{margin:0;font:400 var(--vf-fs-h2,40px)/1.08 'VF2 Display','Geist','Inter',sans-serif;color:var(--ink);letter-spacing:0}
 #vf .vf-jr-l{list-style:none;margin:clamp(20px,2vw,32px) 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:clamp(24px,2.4vw,40px) clamp(20px,2.4vw,40px)}
 #vf .vf-jr-l li{position:relative;padding-top:14px;border-top:1px solid var(--rule)}
 #vf .vf-jr-l li::before{content:"";position:absolute;left:0;top:-1px;width:24px;height:1px;background:var(--acc)}
-#vf .vf-jr-t{margin:0;font:400 var(--vf-fs-title,22px)/1.2 'VF2 Display','Inter',sans-serif;color:var(--ink);letter-spacing:0}
-#vf .vf-jr-p{margin:10px 0 0;font:300 var(--vf-fs-body,16px)/1.6 'Inter',sans-serif;color:var(--ink2);max-width:36em}
+#vf .vf-jr-t{margin:0;font:400 var(--vf-fs-title,22px)/1.2 'VF2 Display','Geist','Inter',sans-serif;color:var(--ink);letter-spacing:0}
+#vf .vf-jr-p{margin:10px 0 0;font:300 var(--vf-fs-body,16px)/1.6 'Geist','Inter',sans-serif;color:var(--ink2);max-width:36em}
 #vf .vf-jr-go{appearance:none;background:none;border:0;padding:0;margin:8px 0 0;min-height:44px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;
-  font:400 15px/1.45 'Inter',sans-serif;color:var(--acc);text-align:left}
+  font:400 15px/1.45 'Geist','Inter',sans-serif;color:var(--acc);text-align:left}
 #vf .vf-jr-go:hover span:first-child{text-decoration:underline;text-underline-offset:3px}
 #vf .vf-jr-go:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
 /* Craigslist before/after opening (tools/craigslist_story.py): the slide at its own proportions; pans on phones */
@@ -228,7 +233,7 @@ html[data-vf-theme="light"] #vf .vf-logos img{filter:grayscale(1) brightness(0);
 #vf .vf-ba-scroll:focus-visible{outline:2px solid var(--acc);outline-offset:4px}
 /* progressive disclosure on case pages (tools/craigslist_story.py details()): a labelled toggle in the accent link style */
 #vf details.vf-more{margin:14px 0 0;max-width:48em}
-#vf details.vf-more>summary{list-style:none;display:inline-flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;font:400 15px/1.45 'Inter',sans-serif;color:var(--acc)}
+#vf details.vf-more>summary{list-style:none;display:inline-flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;font:400 15px/1.45 'Geist','Inter',sans-serif;color:var(--acc)}
 #vf details.vf-more>summary::-webkit-details-marker{display:none}
 #vf details.vf-more>summary::before{content:"+";display:inline-block;width:1ch;text-align:center}
 #vf details.vf-more[open]>summary::before{content:"\2212"}
@@ -244,7 +249,7 @@ html[data-vf-theme="light"] #vf .vf-logos img{filter:grayscale(1) brightness(0);
      and the revision pills (ol.lp, already given by the Starting point line) are dropped;
    - SBL's 01-04 numerals and the small accent ticks on story sections go; the phase navigator stays (it navigates).
    Prototypes, demos, diagrams and figures are untouched. */
-#vf .cs-beat{font:300 var(--vf-fs-lede,20px)/1.5 'Inter',sans-serif!important;letter-spacing:0!important;color:var(--ink)!important;max-width:40em}
+#vf .cs-beat{font:300 var(--vf-fs-lede,20px)/1.5 'Geist','Inter',sans-serif!important;letter-spacing:0!important;color:var(--ink)!important;max-width:40em}
 #vf .acc__n,#vf .pt__n,#vf ol.lp,#vf .cl .kk{display:none!important}
 #vf .cl .pair::before,#vf .vf-jr-l li::before{display:none}
 /* VFINAL2 SKIN (owner, 2026-11-22; design-handoff/10-vfinal2-visual-migration.md, groups 1-2). Token values only, on

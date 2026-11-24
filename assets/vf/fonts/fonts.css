@@ -15,4 +15,10 @@
    Instrument Serif to Inter 400, VFINAL2's one family. Inter sets wider than the condensed serif, so this alias scales
    it (size-adjust) to keep each heading on the lines its layout was written for; the serif file stays for the Loading /
    Landing boards of VFINAL kept for rollback. */
-@font-face{font-family:'VF2 Display';font-style:normal;font-weight:100 900;font-display:swap;size-adjust:78%;src:url(Inter-100_900-normal.woff2) format('woff2')}
+@font-face{font-family:'VF2 Display';font-style:normal;font-weight:100 900;font-display:swap;size-adjust:78%;src:url(Geist-wght.ttf) format('truetype')}
+/* VFINAL2 TYPE PAIR (owner, 2026-11-23): Newsreader (OFL, variable weight + optical size) for the hero and the major
+   project / case-study titles, Geist (OFL, variable weight) for body, navigation, descriptions and buttons - replacing
+   Inter. Both from the google/fonts repository, self-hosted, licences beside them. The 'VF2 Display' alias above now
+   points at Geist, so the case studies' secondary headings move with the body family. */
+@font-face{font-family:'Newsreader';font-style:normal;font-weight:200 800;font-display:swap;src:url(Newsreader-opsz_wght.ttf) format('truetype')}
+@font-face{font-family:'Geist';font-style:normal;font-weight:100 900;font-display:swap;src:url(Geist-wght.ttf) format('truetype')}

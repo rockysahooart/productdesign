@@ -394,12 +394,20 @@
        height is therefore the lowest essential control - arrows, counter, index, Show all, the active CTA - read from the
        board's live geometry in its own px, plus 32px; the approved positions are untouched, only the scale follows. */
     var ESS = '.stage .pg, .stage .r6nav, .lc .idx, .lc .n9more, .pns a.pc';
-    function extent() { var rr = root.getBoundingClientRect(), m = H;
+    var hmax = 0; /* the tallest extent seen: the index grows as the active project passes 04; never pulse back */
+    function extent() { var rr = root.getBoundingClientRect(), m = Math.max(H, hmax);
       [].forEach.call(root.querySelectorAll(ESS), function (e) { var r = e.getBoundingClientRect(); if (r.width && r.height) m = Math.max(m, r.bottom - rr.top + 32); });
-      return m; }
-    function f() { var vw = document.documentElement.clientWidth, z = vw / W, Hc = H ? extent() : 0;
-      if (Hc) z = Math.min(z, window.innerHeight / Hc);
-      z = Math.max(0.4, Math.min(1.4, z)); root.style.zoom = z.toFixed(4); root.__vfz = +z.toFixed(4); root.style.setProperty('--vfz', z.toFixed(4)); navPos(z); }
+      hmax = m; return m; }
+    /* the text floors (max(board px, floor / --vfz)) make the column taller as the scale drops, which lowers the scale
+       again: iterate to a fixed point (converges in two or three steps) so the controls are never a few px under */
+    function f() { var z0 = 0;
+      for (var it = 0; it < 6; it++) {
+        var vw = document.documentElement.clientWidth, z = vw / W, Hc = H ? extent() : 0;
+        if (Hc) z = Math.min(z, window.innerHeight / Hc);
+        z = Math.max(0.4, Math.min(1.4, z)); root.style.zoom = z.toFixed(4); root.__vfz = +z.toFixed(4); root.style.setProperty('--vfz', z.toFixed(4));
+        if (Math.abs(z - z0) < 0.001) break; z0 = z;
+      }
+      navPos(z); }
     /* ORBIT ARROWS ON EITHER SIDE (owner, 2026-11-23; replaces the pair centred under the exhibit). Anchored to the orbit
        ring itself - its measured centre in stage px, which moves with the board's own --r5dy - and set 30.5% of the ring's
        width out on each side (bounded by both columns), level with the active display's centre: left of the orbit,
@@ -426,7 +434,7 @@
     }
     /* the index grows as the active row passes 04: re-measure the column bound on each project change */
     var pns0 = root.querySelector('.pns');
-    if (pns0) try { new MutationObserver(function () { navPos(); }).observe(pns0, { subtree: true, attributes: true, attributeFilter: ['hidden'] }); } catch (e) {}
+    if (pns0) try { new MutationObserver(function () { f(); }).observe(pns0, { subtree: true, attributes: true, attributeFilter: ['hidden'] }); } catch (e) {}
     /* ONE COORDINATE SPACE (owner, 2026-11-22). The board measures with getBoundingClientRect (screen px, zoom applied)
        and writes the results into translate / left / top (CSS px, zoomed again), as authored on a 1:1 canvas. Under the
        zoom above every such hand-off - the orbit's entry tweens, the PCV fly-in, the inspection box - was off by the zoom
@@ -444,6 +452,7 @@
     root.style.marginLeft = 'auto'; root.style.marginRight = 'auto';
     /* the board places its pager and arrows after mount: fit again once they are laid out */
     f(); window.addEventListener('resize', f); requestAnimationFrame(f); setTimeout(f, 400); setTimeout(f, 1500);
+    try { document.fonts.ready.then(f); } catch (e) {} /* the serif / sans pair can arrive after the first fit and change its height */
   }
 
   function wheelCentre(host) {

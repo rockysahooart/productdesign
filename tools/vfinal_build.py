@@ -626,14 +626,14 @@ def convert(s, name=''):
                 def fl(sel, base, floor, extra=''):
                     return '%s{font-size:max(%spx, calc(%spx / var(--vfz, 1)))!important%s}' % (sel, base, floor, extra)
                 soft = soft.replace('</style>', ''.join([
-                    fl('.root .lc h1.h1', 29, 19),
+                    fl('.root .lc h1.h1', 34, 22),
                     fl('.root .lc>p.g', 20.8, 13.5),
                     fl('.root header.hd nav a', 19.5, 13.5),
                     fl('.root header.hd .idn', 20.8, 13),
                     fl('.root li>button.ix span.it', 20, 14),
                     fl('.root li>button.ix span.c,.root .lab h2.c span,.root .pns .pn>p.c,.root section.inf a.row>span.c', 15.6, 11),
                     fl('.root .lc>button.c', 19.5, 13.5),
-                    fl('.root .pns h3.pt', 27, 17, ';line-height:1.28!important'),
+                    fl('.root .pns h3.pt', 31, 19.5, ';line-height:1.24!important'),
                     fl('.root .pns p.pf', 20, 14, ';line-height:1.6!important'),
                     fl('.root .pns a.pc,.root .pns .r5ex span', 15, 13.5),
                     fl('.root section.inf span.t', 19.5, 14),
@@ -649,6 +649,9 @@ def convert(s, name=''):
     # of the city's ordinary conduits: same geometry, the grid's own hairline.
     if name.startswith('VF2-'):
         s = re.sub(r'(<i class="cd)\s+lit(?=[\s"])', r'\1', s)
+    # Geist replaces Inter on the VFINAL2 boards and the case studies (owner, 2026-11-23; assets/vf/fonts/fonts.css)
+    if name.startswith('VF2-') or name.split('-')[0] in STUDIES:
+        s = s.replace("'Inter'", "'Geist'").replace('"Inter"', '"Geist"')
     s = s.replace('</helmet>', prod_css(name) + '</helmet>', 1)
     s = re.sub(r'href=(["\'])([^"\']*)\1', lambda m: rw_href(m) if not m.group(2).startswith("' +") else m.group(0), s)
     return s
