@@ -680,15 +680,25 @@ def convert(s, name=''):
         # desaturation, lower contrast and a sub-pixel blur instead; the plate is cleared so the artifact itself carries
         # the silhouette (the hairline border stays). Geometry, plinths, stacking and the active project are untouched;
         # --big keeps the board's own hide states.
-        F = 'pow(clamp(0, (var(--u) - 0.28) / 0.72, 1),1.4)'
+        # ORBIT DEPTH AS SOLID OBJECTS (owner, 2026-11-24; replaces the transparency of 2026-11-23). Every orbit member is
+        # fully opaque at every depth; depth is value, contrast, saturation and softness, driven by the board's own
+        # position curve f(u) (u = place on the ring, 1 at the front): near neighbours lightly reduced, the middle of the
+        # ring darker and quieter, the back darkest, flattest and a touch soft - still solid, still their own silhouettes.
+        # The active project keeps no filter at all. --big keeps the board's own hide states; the plate stays cleared.
+        F = 'pow(clamp(0, (var(--u) - 0.1) / 0.9, 1),1.2)'
         soft = ('<style id="vf2-dim-soft">'
                 '.root.root.r8.r10 .orbs .orb.orb.orb.orb.orb{background:none!important;background-image:none!important;'
-                'box-shadow:none!important;filter:opacity(calc((0.34 + 0.66 * %(f)s) * var(--big, 1))) '
-                'saturate(calc(0.45 + 0.55 * %(f)s)) contrast(calc(0.8 + 0.2 * %(f)s)) '
-                'blur(calc((1 - %(f)s) * 0.6px))!important}'
-                '.root.root.r8.r10 .orbs .orb.orb.orb.orb.orb img{filter:none!important}'
-                '.root.root.r8.r10 .orbs .orb.orb.orb.orb.orb[data-tone="light"] img{filter:brightness(0.82)!important}'
+                'box-shadow:none!important;filter:none!important;opacity:var(--big, 1)}'
+                '.root.root.r8.r10 .orbs .orb.orb.orb.orb.orb img{filter:brightness(calc(0.42 + 0.48 * %(f)s)) '
+                'contrast(calc(0.72 + 0.23 * %(f)s)) saturate(calc(0.35 + 0.55 * %(f)s)) blur(calc((1 - %(f)s) * 0.7px))!important}'
+                '.root.root.r8.r10 .orbs .orb.orb.orb.orb.orb[data-tone="light"] img{filter:brightness(calc(0.36 + 0.42 * %(f)s)) '
+                'contrast(calc(0.72 + 0.23 * %(f)s)) saturate(calc(0.35 + 0.55 * %(f)s)) blur(calc((1 - %(f)s) * 0.7px))!important}'
                 '</style>') % {'f': F}
+        if '-light' in name:
+            # light ground: distance recedes towards the paper (lighter, flatter), never towards black
+            soft = soft.replace('brightness(calc(0.42 + 0.48 * %s))' % F, 'brightness(calc(1.22 - 0.22 * %s))' % F).replace(
+                'brightness(calc(0.36 + 0.42 * %s))' % F, 'brightness(calc(1.12 - 0.2 * %s))' % F).replace(
+                'contrast(calc(0.72 + 0.23 * %s))' % F, 'contrast(calc(0.55 + 0.4 * %s))' % F)
         # LANDING TYPE (owner, 2026-11-23; desktop / ultrawide boards only): the right column's project title and
         # description and the project list step down so the orbit leads; the introduction (h1) keeps its size. Board px
         # (the board is scaled as a whole); line heights loosened to match the smaller size.
