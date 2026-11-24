@@ -220,6 +220,25 @@ html[data-vf-theme="light"] #vf .vf-logos img{filter:grayscale(1) brightness(0);
 #vf .vf-ch p.lead{margin:0;font:400 16.5px/1.6 'Geist','Inter',sans-serif;opacity:.78}
 #vf .vf-ch p.lead .pf{font:inherit}
 #vf .vf-ch a.pc{display:inline-flex;align-items:center;min-height:44px;margin-top:24px}
+/* case-study folds (assets/vf/app.js fold): the supporting prose behind a quiet, full-width disclosure row; its label is
+   the fold's own sub-heading where it has one, at that heading's size, with a chevron that turns when open */
+#vf details.vf-fold{margin:20px 0 28px;border-top:1px solid color-mix(in srgb,currentColor 16%,transparent)}
+#vf details.vf-fold>summary{display:flex!important;width:100%;box-sizing:border-box;align-items:center;justify-content:space-between;gap:16px;min-height:48px;padding:10px 0;cursor:pointer;list-style:none}
+#vf details.vf-fold>summary::-webkit-details-marker{display:none}
+#vf details.vf-fold>summary::before{content:none!important;display:none!important}
+#vf details.vf-fold>summary>*{margin:0!important}
+#vf details.vf-fold>summary .vf-fold-l{font:500 15px/1.4 'Geist','Inter',sans-serif;letter-spacing:.01em;opacity:.8}
+#vf details.vf-fold>summary::after{content:'';flex:none;width:8px;height:8px;margin-right:4px;border:solid currentColor;border-width:0 1.5px 1.5px 0;rotate:45deg;translate:0 -2px;opacity:.7;transition:rotate .2s}
+#vf details.vf-fold[open]>summary::after{rotate:-135deg;translate:0 2px}
+#vf details.vf-fold>summary:hover .vf-fold-l{opacity:1}
+#vf details.vf-fold>summary:focus-visible{outline:2px solid currentColor;outline-offset:4px}
+#vf details.vf-fold[open]>summary{margin-bottom:8px}
+@media (prefers-reduced-motion:reduce){#vf details.vf-fold>summary::after{transition:none}}
+/* PHONE CASE COLUMN (2026-11-24). Below 900px the Audit's prototype frame (.ap-fit, which ap-fit.js scales its 713px
+   stage into) passed the stage's fixed 713px up as the column's min-content width, so every paragraph of that case ran
+   713px wide and was cut off at the screen edge (phones and tablets). The frame is size-contained on its inline axis: it
+   takes the column's width, and ap-fit.js scales the prototype into it as designed. */
+@media (max-width:899px){#vf .cs5 #audit .ap-fit{contain:inline-size}}
 /* reading journey (assets/vf/journeys.js): board tokens and type roles only; the .pn card pattern (rule + accent tick) */
 #vf .vf-jr{margin:clamp(40px,5vw,80px) 0 0;max-width:1680px}
 #vf .vf-jr-h{margin:0;font:400 var(--vf-fs-h2,40px)/1.08 'VF2 Display','Geist','Inter',sans-serif;color:var(--ink);letter-spacing:0}

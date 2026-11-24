@@ -360,6 +360,52 @@
     mast.parentNode.insertBefore(sec, mast.nextSibling);
   }
 
+  /* SKIM FIRST, DEPTH ON REQUEST (owner, 2026-11-24, pass 7). Each case study reads in a minute: the short version (above),
+     then every section's heading and lede, the evidence (figures, working prototypes, decks, crops), what I did, the
+     decisions (moves, rules, notes) and the closing line stay in view. The supporting prose between them - further
+     paragraphs, ticket logs, story write-ups, tables, test notes, the glossary - folds into a native disclosure in place,
+     its own sub-heading as the label where it has one. Nothing is removed, reworded or reordered; find-in-page opens a
+     fold; the short version's links still land on their sections. */
+  function fold(host) {
+    var KEEP = 'figure, section.ar-demo, section.acc, .ape__deck, .sk-crops, .sk-cfg, .cs-did, .cs-move, .ar-note, .ar-end, .au-rule, ' +
+      '.acc__lede, .ts-turn, .pair, .cmp, .mount, .pv__embed, .scr, .hero, .lfx, .vf-jr';
+    var MEDIA = 'iframe, img, video, canvas, picture, .cu-embed';
+    function words(e) { return (e.textContent || '').trim().split(/\s+/).length; }
+    function keeps(e) {
+      if (/^H2$/.test(e.tagName)) return true;
+      if (e.matches(KEEP)) return true;
+      return !e.matches('article.pp, article.tk, .us') && !!e.querySelector(MEDIA);
+    }
+    function wrap(run, body) {
+      if (!run.length) return;
+      var n = 0; run.forEach(function (e) { n += words(e); });
+      if (n < (body.matches('section.sec') ? 60 : 30)) return; /* a sentence or two: not worth a click */
+      var d = document.createElement('details'); d.className = 'vf-fold';
+      var s = document.createElement('summary');
+      if (/^H[34]$/.test(run[0].tagName)) { s.appendChild(run.shift()); } else { var l = document.createElement('span'); l.className = 'vf-fold-l'; l.textContent = 'More detail'; s.appendChild(l); }
+      d.appendChild(s); body.insertBefore(d, run[0] || null);
+      run.forEach(function (e) { d.appendChild(e); });
+    }
+    [].forEach.call(host.querySelectorAll('.acc__b, .pt__b, section.sec'), function (body) {
+      var kids = [].slice.call(body.children), run = [], lede = !!body.querySelector(':scope > .acc__lede');
+      kids.forEach(function (e, i) {
+        var keep = keeps(e);
+        if (!keep && e.matches('p.kk')) keep = true; /* the section's kicker */
+        else if (!keep && !lede && /^P$/.test(e.tagName)) { keep = true; lede = true; } /* the first paragraph is the lede */
+        if (!keep && /^H[34]$/.test(e.tagName) && kids[i + 1] && keeps(kids[i + 1])) keep = true; /* it labels evidence */
+        if (!keep && kids[i - 1] && /:\s*$/.test(kids[i - 1].textContent || '') && keeps(kids[i - 1]) !== false && !run.length && i > 0) keep = true; /* a lede ending in a colon keeps what it introduces */
+        if (keep) { wrap(run, body); run = []; } else run.push(e);
+      });
+      wrap(run, body);
+    });
+    [].forEach.call(host.querySelectorAll('section.gloss'), function (g) {
+      var h = g.querySelector('.gloss__h'); if (!h || g.querySelector('details.vf-fold')) return;
+      var d = document.createElement('details'); d.className = 'vf-fold vf-fold--gloss'; var s = document.createElement('summary');
+      var rest = [].slice.call(g.children).filter(function (e) { return e !== h; });
+      s.appendChild(h); d.appendChild(s); rest.forEach(function (e) { d.appendChild(e); }); g.appendChild(d);
+    });
+  }
+
   /* MOBILE LIST ACCORDION, CARD CENTRING (owner, 2026-11-21). The board sizes each expanded card and pins it to the
      left of the text column, some with a built-in offset, so cards sat 0-21px left of the column and none centred.
      One shared rule: the visible plane of the open card (.gp, or the card itself) is centred in the column the title
@@ -536,7 +582,7 @@
     
     Promise.all(jobs).then(function (docs) {
       cur = VFDC.mount(docs[0], main);
-      vf2Fit(cur.el); gallery(cur); disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
+      vf2Fit(cur.el); gallery(cur); disable(cur.el); if (R.k !== 'about') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); fold(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
       /* SCROLL ON ENTRY: history.scrollRestoration is manual (head script), so every entry starts at 0 - fresh visit,
          refresh, Back, the brand or nav link. Only a theme switch (vf-y, same page) or an explicit in-page anchor
          (#projects, #top) places it elsewhere. */
