@@ -203,7 +203,7 @@ html[data-vf-theme="light"] #vf .vf-logos img{filter:grayscale(1) brightness(0);
 #vf .root.vf-gallery :is(.stage,.r4bar,.idx,.chips,.leads,section>p.sr){display:none!important}
 /* one centred content column for plinths and text alike: the column is min(100% - 48px, 345px) */
 #vf .vf-gal{padding:24px max(24px, calc((100% - 345px) / 2)) 8px}
-#vf .vf-ch{margin:0 0 clamp(80px,22vw,104px)}
+#vf .vf-ch{margin:0 0 clamp(96px,28vw,128px)}
 #vf .vf-ch:last-child{margin-bottom:48px}
 #vf .vf-fig{position:relative;display:flex;justify-content:center;align-items:flex-start;box-sizing:border-box}
 /* placed by its plinth (app.js gallery fit): scale --vf-k about the art's top centre, shifted so the plinth's own centre
@@ -214,10 +214,12 @@ html[data-vf-theme="light"] #vf .vf-logos img{filter:grayscale(1) brightness(0);
 #vf .root .vf-gal .vf-fig > .art.art{scale:var(--vf-k,1)!important}
 /* the board hides (and pauses) every live frame but the selected one; in the gallery each display shows its own */
 #vf .vf-gal .art iframe{visibility:visible!important}
-#vf .vf-ch h3.pt{margin:0 0 12px;font:400 26px/1.25 'Geist','Inter',sans-serif;color:inherit;text-wrap:balance}
+/* type and spacing in proportion (owner, 2026-11-24): the title steps with the width (24px at 375) and the copy breathes:
+   16px title to copy, 24px copy to CTA, about 1.5 chapters of air between projects (was 26px fixed, 12px, 16px, 80-104px) */
+#vf .vf-ch h3.pt{margin:0 0 16px;font:400 clamp(22px,6.4vw,27px)/1.25 'Geist','Inter',sans-serif;color:inherit;text-wrap:balance}
 #vf .vf-ch p.lead{margin:0;font:400 16.5px/1.6 'Geist','Inter',sans-serif;opacity:.78}
 #vf .vf-ch p.lead .pf{font:inherit}
-#vf .vf-ch a.pc{display:inline-flex;align-items:center;min-height:44px;margin-top:16px}
+#vf .vf-ch a.pc{display:inline-flex;align-items:center;min-height:44px;margin-top:24px}
 /* reading journey (assets/vf/journeys.js): board tokens and type roles only; the .pn card pattern (rule + accent tick) */
 #vf .vf-jr{margin:clamp(40px,5vw,80px) 0 0;max-width:1680px}
 #vf .vf-jr-h{margin:0;font:400 var(--vf-fs-h2,40px)/1.08 'VF2 Display','Geist','Inter',sans-serif;color:var(--ink);letter-spacing:0}
