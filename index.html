@@ -180,6 +180,18 @@ x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
 html[data-vf-theme="light"] #vf .vf-gt{background-image:linear-gradient(100deg,#4E5866 0%,#2F6F91 22%,#5D4AA0 46%,#2C4F7C 68%,#4E5866 86%,#2F6F91 100%)}
 @keyframes vf-gt{to{background-position:100% 50%}}
 @media (prefers-reduced-motion: reduce){#vf .vf-gt{animation:none}}
+/* "ROCKY" (owner, 2026-11-24). The name alone in Newsreader Italic (the family's own italic master, same weight and optical
+   size as the headline), with a slow pearl-silver / muted-lavender / ice-blue gradient clipped strictly to its letters:
+   no glow, shadow or spill. A hair of inline padding (given back by the margin) keeps the italic's overhang inside the
+   painted box, so size, spacing and wrapping are the headline's own. Deeper tones of the same three on the light theme
+   for contrast; still under reduced motion. */
+#vf .vf-rk{font-style:italic;font-weight:inherit;font-synthesis:none;padding:0 .08em 0 .02em;margin:0 -.08em 0 -.02em;
+  background-image:linear-gradient(105deg,#E6E4E8 0%,#C4BAE6 30%,#B9DCEE 55%,#E6E4E8 78%,#C4BAE6 100%);
+  background-size:260% 100%;background-position:0% 50%;-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;animation:vf-rk 24s ease-in-out infinite alternate}
+html[data-vf-theme="light"] #vf .vf-rk{background-image:linear-gradient(105deg,#4F4C57 0%,#5B4C96 30%,#2C6A8A 55%,#4F4C57 78%,#5B4C96 100%)}
+@keyframes vf-rk{to{background-position:100% 50%}}
+@media (prefers-reduced-motion: reduce){#vf .vf-rk{animation:none}}
 /* Trusted By (tools/vfinal_build.py): the original four marks in one row the width of the introduction, at one height,
    proportions kept. Drawn for white grounds (two carry black), so each renders as a single-tone silhouette at reduced
    opacity - light on dark, dark on light - one quiet weight for all four; the files are untouched. */

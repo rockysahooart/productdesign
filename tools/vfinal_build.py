@@ -657,6 +657,8 @@ def convert(s, name=''):
         # the two roles carry the gradient (index.html .vf-gt); the profile photo stands just above the introduction
         HERO_H = HERO.replace('product designer', '<span class="vf-gt">product designer</span>').replace(
             'creative technologist', '<span class="vf-gt">creative technologist</span>')
+        # "Rocky" alone in Newsreader Italic with its own letter-clipped gradient (owner, 2026-11-24; index.html .vf-rk)
+        HERO_H = HERO_H.replace('I’m Rocky,', 'I’m <em class="vf-rk">Rocky</em>,', 1)
         ME = ('<img class="vf-me" src="assets/vf/shell/3bfd1d80dd3cf028b53dc1331dc2b885.webp" alt="Sarthak Sahoo" '
               'width="54" height="54" decoding="async">')
         s = re.sub(r'<h1 class="h1">(?:(?!</h1>).)*?AI-saturated world\.(?:</span>)?</h1>', '<h1 class="h1">' + HERO + '</h1>', s, count=1, flags=re.S)
