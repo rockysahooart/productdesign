@@ -20,17 +20,16 @@ body .root.t-light{--bg:#EEECE7;--ink:#262521;--ink3:#161615;--acc:#161615;--mut
 /* VFINAL2 hand-off (11 §3, adapted): Landing has no city, so the world fades with the text, bar, halo and CRT over the
    same 300ms instead of gliding to a Landing stage; never moved or scaled */
 html:not(.vf-glide) .root[data-done] .world{opacity:0;transition:opacity .3s ease}
-/* FOUR-STAGE MORPH (morph() below), lean (owner, 2026-11-24: monochrome, performance). Each prism part transitions only the
-   properties the morph actually writes on it (was eight on every part: ~1,000 transitions per stage on a phone); the
-   board's build keyframes stand down on everything the morph drives, so the two never run at once; the ground dims as plain
-   opacity (one property, no filter layers). Original monochrome linework throughout: no colour, glow or filter. */
+/* FOUR-STAGE MORPH (morph() below), lean (owner, 2026-11-24: monochrome, performance). Transform only (pass 1,
+   2026-11-24): every prism part moves, scales and turns by transform alone, so the morph never lays out a frame (was
+   left/top/width/height on every part: ~700 layouts and ~1.9s of style work on a 4x-throttled phone). The .bx scales about
+   its corner (scale3d keeps z, so face heights stay true); the board's build keyframes stand down on everything the morph
+   drives, so the two never run at once; the ground dims as plain opacity. Original monochrome linework: no colour, glow or
+   filter. */
 html.vf-mx .ld{--mx-e:cubic-bezier(.45,0,.2,1)}
 html.vf-mx .ld .bx,html.vf-mx .ld .bx>i,html.vf-mx .ld :is(.grd,.ft,.cd,.ringsv,.nd){animation:none!important}
-html.vf-mx .ld .bx{transition:left 1s var(--mx-e),top 1s var(--mx-e),width 1s var(--mx-e),height 1s var(--mx-e),transform 1s var(--mx-e)!important}
-html.vf-mx .ld .bx>.fl{transition:top 1s var(--mx-e),width 1s var(--mx-e),transform 1s var(--mx-e)!important}
-html.vf-mx .ld .bx>.fr{transition:left 1s var(--mx-e),height 1s var(--mx-e),transform 1s var(--mx-e)!important}
-html.vf-mx .ld .bx>.tp{transition:width 1s var(--mx-e),height 1s var(--mx-e),transform 1s var(--mx-e)!important}
-html.vf-mx .ld .bx>.sh{transition:width 1s var(--mx-e),transform 1s var(--mx-e)!important}
+html.vf-mx .ld .bx{transform-origin:0 0}
+html.vf-mx .ld .bx,html.vf-mx .ld .bx>i{transition:transform 1s var(--mx-e)!important}
 html.vf-mx .ld :is(.grd,.ft,.cd,.ringsv,.nd){transition:opacity .9s var(--mx-e)}
 html.vf-mx-v1 .ld :is(.grd,.ft,.cd,.ringsv,.nd){opacity:0}
 html.vf-mx-now .ld .bx,html.vf-mx-now .ld .bx>i,html.vf-mx-now .ld :is(.grd,.ft,.cd,.ringsv,.nd){transition:none!important}
@@ -62,17 +61,20 @@ html.vf-mx-now .ld .bx,html.vf-mx-now .ld .bx>i,html.vf-mx-now .ld :is(.grd,.ft,
       parent.postMessage({ vf: 'loading-mounted' }, location.origin);
     });
 
-    /* FOUR-STAGE MORPH (owner, 2026-11-23): VFINAL -> VFINAL2 -> VFINAL -> VFINAL2, on the city's own 47 prisms - no new or
-       duplicated geometry. Every prism is parametric (.bx position + footprint; faces from one height h against data-hm:
-       left face scaleY(h/HM), right face scaleX(h/HM), top translateZ(h), shadow scaleX((w+.9h)/(w+.9HM))), so a stage is
-       a set of those values and the change between stages is a transition of them.
-         1 VFINAL, the stack: twelve towers become VFINAL's twelve Morph sheets, thin and stacked over the centre; the rest
-           fold flat; the ground, ring and conduits dim away (VFINAL had no city).
-         2 VFINAL2, re-formed: the city at its own positions on another skyline (VFINAL2's industry-profile re-forming).
-         3 VFINAL, the spiral: the twelve sheets fan into an ascending spiral (another Morph form).
-         4 VFINAL2, approved: every prism back to its exact original values; the board's own hand-off follows.
-       Monochrome throughout (the original linework; owner, 2026-11-24). The board's
-       done() waits for stage 4; Skip lands on stage 4 at once; reduced motion keeps the board's own static city. */
+    /* FOUR-STAGE MORPH (owner, 2026-11-23; kinetic pass 2026-11-24): VFINAL -> VFINAL2 -> VFINAL -> VFINAL2, on the
+       city's own 47 prisms - no new or duplicated geometry. Every prism is parametric (.bx position + footprint + turn;
+       faces from one height h against data-hm: left face scaleY(h/HM), right face scaleX(h/HM), top translateZ(h), shadow
+       scaleX), so a stage is a set of those values and the change between stages is one continuous transition of them,
+       written as transforms only. The VFINAL forms are VFINAL's own Morph forms (its vl0-11 sheet tracks): the stack, the
+       twisted stack (each sheet turned 15deg more than the one below) and the ring.
+         1 VFINAL: twelve towers rise into VFINAL's stack of twelve sheets over the centre, then twist into its helix; the
+           rest fold flat; the ground, ring and conduits dim away (VFINAL had no city).
+         2 VFINAL2, re-formed: the helix untwists and the city stands at its own positions on another skyline (VFINAL2's
+           industry-profile re-forming).
+         3 VFINAL: the twelve sheets fly out to VFINAL's ring, each turned to the circle, rising as it goes round.
+         4 VFINAL2, approved: every prism back to its exact authored values; the board's own hand-off follows.
+       Monochrome throughout (the original linework; owner, 2026-11-24). The board's done() waits for stage 4; Skip lands
+       on stage 4 at once; reduced motion keeps the board's own static city. */
     function morph() {
       var rm = false; try { rm = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
       var root = document.querySelector('.root'), scene = document.querySelector('.world .scene'), comp = window.VFL && window.VFL.comp;
@@ -90,39 +92,39 @@ html.vf-mx-now .ld .bx,html.vf-mx-now .ld .bx>i,html.vf-mx-now .ld :is(.grd,.ft,
       orig.forEach(function (o) { o.d = Math.hypot(o.x + o.w / 2 - C, o.y + o.w / 2 - C) / cell; });
       var towers = orig.filter(function (o) { return o.top && o.tw; }).sort(function (a, b) { return a.d - b.d; });
       var sheets = towers.slice(0, 12);
-      function set(o, x, y, w, h, z, sh) {
-        var bx = o.bx, f = o.f, HM = o.hm; h = Math.max(0, h);
-        if (o.top) { bx.style.left = x + 'px'; bx.style.top = y + 'px'; }
-        bx.style.width = w + 'px'; bx.style.height = w + 'px';
-        bx.style.transform = z ? 'translateZ(' + z.toFixed(1) + 'px)' : '';
-        if (f.fl) { f.fl.style.top = w + 'px'; f.fl.style.width = w + 'px'; f.fl.style.transform = 'rotateX(90deg) scaleY(' + (h / HM).toFixed(4) + ')'; }
-        if (f.fr) { f.fr.style.left = w + 'px'; f.fr.style.height = w + 'px'; f.fr.style.transform = 'rotateY(-90deg) scaleX(' + (h / HM).toFixed(4) + ')'; }
-        if (f.tp) { f.tp.style.width = w + 'px'; f.tp.style.height = w + 'px'; f.tp.style.transform = 'translateZ(' + h.toFixed(1) + 'px)'; }
-        if (f.sh) { f.sh.style.width = (w + 0.9 * HM) + 'px'; f.sh.style.transform = 'scaleX(' + (sh === 0 ? 0 : (w + 0.9 * h) / (w + 0.9 * HM)).toFixed(4) + ')'; }
+      /* one prism to (x, y) top-left, footprint w, lifted z, turned r degrees, height h; transforms only */
+      function set(o, x, y, w, h, z, r, sh) {
+        var f = o.f, HM = o.hm, w0 = o.w || 1, s = Math.max(w / w0, 0.001); h = Math.max(0, h);
+        o.bx.style.transform = 'translate3d(' + (x + w / 2 - o.x).toFixed(2) + 'px,' + (y + w / 2 - o.y).toFixed(2) + 'px,' + (z || 0).toFixed(1) +
+          'px) rotateZ(' + (r || 0).toFixed(1) + 'deg) scale3d(' + s.toFixed(4) + ',' + s.toFixed(4) + ',1) translate(' + (-w0 / 2) + 'px,' + (-w0 / 2) + 'px)';
+        if (f.fl) f.fl.style.transform = 'rotateX(90deg) scaleY(' + (h / HM).toFixed(4) + ')';
+        if (f.fr) f.fr.style.transform = 'rotateY(-90deg) scaleX(' + (h / HM).toFixed(4) + ')';
+        if (f.tp) f.tp.style.transform = 'translateZ(' + h.toFixed(1) + 'px)';
+        if (f.sh) f.sh.style.transform = 'scaleX(' + (sh === 0 ? 0 : (s * w0 + 0.9 * h) / (s * (w0 + 0.9 * HM))).toFixed(4) + ')';
       }
       function delay(o, ms) { [o.bx].concat([].slice.call(o.bx.children)).forEach(function (e) { e.style.transitionDelay = ms + 'ms'; }); }
       /* VFINAL had no city: everything that is not a sheet folds flat and closes to nothing at its own centre */
-      function flat(o) { set(o, o.top ? o.x + o.w / 2 : o.x, o.top ? o.y + o.w / 2 : o.y, 0, 0, 0, 0); }
-      /* VFINAL: the stack (sheet i: 5 cells square, 6px thick, 15px apart, centred) */
-      function stack() {
-        orig.forEach(function (o) { var i = sheets.indexOf(o); delay(o, (i < 0 ? 0 : i * 45));
-          if (i < 0) { flat(o); return; }
-          var w = 5 * cell; set(o, C - w / 2, C - w / 2, w, 6 * K, (28 + i * 15) * K, 0); });
+      function flat(o) { set(o, o.x + o.w / 2, o.y + o.w / 2, 0, 0, 0, 0, 0); }
+      /* VFINAL: the stack (sheet i: 5 cells square, 6px thick, 15px apart, centred), twisted 15deg a sheet for the helix */
+      function stack(tw) {
+        orig.forEach(function (o) { var i = sheets.indexOf(o); delay(o, (i < 0 ? 0 : i * (tw ? 30 : 45)));
+          if (i < 0) { if (!tw) flat(o); return; }
+          var w = 5 * cell; set(o, C - w / 2, C - w / 2, w, 6 * K, (28 + i * 15) * K, tw ? i * 15 : 0, 0); });
       }
       /* VFINAL2: the city re-formed to another skyline (same positions and footprints, heights by a two-lobed profile) */
       function city() {
         orig.forEach(function (o) { delay(o, Math.round(o.d * 45));
           var a = Math.atan2(o.y - C, o.x - C), f = 0.35 + 0.85 * (0.5 + 0.5 * Math.sin(2 * a + 0.9));
-          set(o, o.x, o.y, o.w, o.tw ? o.h * f + (o.top ? 0 : 0) : o.h, 0); });
+          set(o, o.x, o.y, o.w, o.tw ? o.h * f : o.h, 0, 0); });
       }
-      /* VFINAL: the spiral (the same twelve sheets, 3.5 cells square, around the centre, rising) */
-      function spiral() {
+      /* VFINAL: the ring (the same twelve sheets, 3.5 cells square, each turned to the circle, rising as it goes round) */
+      function ring() {
         orig.forEach(function (o) { var i = sheets.indexOf(o); delay(o, (i < 0 ? Math.round(o.d * 30) : i * 40));
           if (i < 0) { flat(o); return; }
           var w = 3.5 * cell, r = 3.4 * cell, a = i / 12 * Math.PI * 2 - Math.PI / 2;
-          set(o, C + Math.cos(a) * r - w / 2, C + Math.sin(a) * r - w / 2, w, 6 * K, (20 + i * 11) * K, 0); });
+          set(o, C + Math.cos(a) * r - w / 2, C + Math.sin(a) * r - w / 2, w, 6 * K, (20 + i * 11) * K, i * 30 + 180, 0); });
       }
-      /* VFINAL2, approved: the authored values, exactly */
+      /* VFINAL2, approved: the authored values, exactly (no authored .bx transform, so each turn and lift returns to none) */
       function final(now) {
         orig.forEach(function (o) { delay(o, now ? 0 : Math.round(o.d * 45));
           o.bx.setAttribute('style', o.s); for (var k in o.fs) if (o.f[k] && o.fs[k] != null) o.f[k].setAttribute('style', o.fs[k]);
@@ -131,12 +133,13 @@ html.vf-mx-now .ld .bx,html.vf-mx-now .ld .bx>i,html.vf-mx-now .ld :is(.grd,.ft,
       var html = document.documentElement, timers = [], finished = false, pending = null, D0 = comp.done;
       /* from the ground, as the board's own build did: every prism flat at frame 0, then it rises into the stack */
       html.classList.add('vf-mx', 'vf-mx-v1', 'vf-mx-now');
-      orig.forEach(function (o) { flat(o); if (o.top && sheets.indexOf(o) >= 0) set(o, C - 2.5 * cell, C - 2.5 * cell, 5 * cell, 0, 0, 0); });
+      orig.forEach(function (o) { flat(o); if (o.top && sheets.indexOf(o) >= 0) set(o, C - 2.5 * cell, C - 2.5 * cell, 5 * cell, 0, 0, 0, 0); });
       void root.offsetWidth; html.classList.remove('vf-mx-now');
-      setTimeout(stack, 120);
+      setTimeout(function () { stack(false); }, 120);
+      setTimeout(function () { stack(true); }, 760);
       function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
       at(1500, function () { html.classList.remove('vf-mx-v1'); city(); });
-      at(3000, function () { html.classList.add('vf-mx-v1'); spiral(); });
+      at(3000, function () { html.classList.add('vf-mx-v1'); ring(); });
       at(4500, function () { html.classList.remove('vf-mx-v1'); final(false); });
       /* the board's watch() waited on the build keyframes the morph replaced (cancelled, so it never resolves): stage 4
          is the build's end, so mark it and let the board's own fin() hand off once progress is also complete */
