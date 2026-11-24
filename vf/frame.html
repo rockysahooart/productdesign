@@ -20,27 +20,20 @@ body .root.t-light{--bg:#EEECE7;--ink:#262521;--ink3:#161615;--acc:#161615;--mut
 /* VFINAL2 hand-off (11 §3, adapted): Landing has no city, so the world fades with the text, bar, halo and CRT over the
    same 300ms instead of gliding to a Landing stage; never moved or scaled */
 html:not(.vf-glide) .root[data-done] .world{opacity:0;transition:opacity .3s ease}
-/* the glide's colour (assets/vf/app.js glide2): only the city's existing edge lines - left face edges and footings violet,
-   right face edges and conduits cyan, top edges and the ring pink - each a crisp 1px core with a tight ~2px glow kept to
-   the line. No ambient fill, haze or bloom: the ground stays black, face interiors dark, the grid monochrome. It eases on
-   as the glide starts and off before the city lands, so both resting states are VFINAL2's own. */
-html.vf-glide .ld .fl,html.vf-glide .ld .fr,html.vf-glide .ld .tp,html.vf-glide .ld .cd,html.vf-glide .ld .ft,html.vf-glide .ld .ringsv circle{
-  transition:box-shadow .32s cubic-bezier(.45,0,.2,1),background-color .32s cubic-bezier(.45,0,.2,1),border-color .32s cubic-bezier(.45,0,.2,1),stroke .32s cubic-bezier(.45,0,.2,1),filter .32s cubic-bezier(.45,0,.2,1)!important}
-/* four-stage morph (morph() below): prism values transition; the board's build keyframes stand down so they never
-   fight the morph; VFINAL stages dim the city ground (filter, not opacity: the build animates opacity) */
-html.vf-mx .ld .bx,html.vf-mx .ld .bx>i{animation:none!important;transition:left 1000ms cubic-bezier(.45,0,.2,1),top 1000ms cubic-bezier(.45,0,.2,1),
-  width 1000ms cubic-bezier(.45,0,.2,1),height 1000ms cubic-bezier(.45,0,.2,1),transform 1000ms cubic-bezier(.45,0,.2,1),
-  box-shadow .32s cubic-bezier(.45,0,.2,1),background-color .32s cubic-bezier(.45,0,.2,1)!important}
-html.vf-mx .ld :is(.grd,.ft,.cd,.ringsv,.nd){transition:filter 900ms cubic-bezier(.45,0,.2,1)}
-html.vf-mx-v1 .ld :is(.grd,.ft,.cd,.ringsv,.nd){filter:opacity(0)}
-html.vf-mx-now .ld .bx,html.vf-mx-now .ld .bx>i{transition:none!important}
-html.vf-mx .ld .cd,html.vf-mx .ld .ft,html.vf-mx .ld .ringsv circle{transition:box-shadow .32s,background-color .32s,border-color .32s,stroke .32s,filter 900ms cubic-bezier(.45,0,.2,1)!important}
-html.vf-edge .ld .fl{box-shadow:inset 1px 0 0 0 #A78BFA,inset -1px 0 0 0 #A78BFA,inset 2px 0 2px -1px rgba(167,139,250,.55),inset -2px 0 2px -1px rgba(167,139,250,.55)!important}
-html.vf-edge .ld .fr{box-shadow:inset 0 1px 0 0 #67E8F9,inset 0 -1px 0 0 #67E8F9,inset 0 2px 2px -1px rgba(103,232,249,.5),inset 0 -2px 2px -1px rgba(103,232,249,.5)!important}
-html.vf-edge .ld .tp{box-shadow:inset 0 0 0 1px #F472B6,inset 0 0 2px 1px rgba(244,114,182,.45)!important}
-html.vf-edge .ld .cd{background-color:#67E8F9!important;box-shadow:0 0 2px 0 rgba(103,232,249,.6)!important}
-html.vf-edge .ld .ft{border-color:#A78BFA!important;box-shadow:0 -1px 2px -1px rgba(167,139,250,.55)!important}
-html.vf-edge .ld .ringsv circle{stroke:#F472B6!important;filter:drop-shadow(0 0 1px rgba(244,114,182,.7))!important}
+/* FOUR-STAGE MORPH (morph() below), lean (owner, 2026-11-24: monochrome, performance). Each prism part transitions only the
+   properties the morph actually writes on it (was eight on every part: ~1,000 transitions per stage on a phone); the
+   board's build keyframes stand down on everything the morph drives, so the two never run at once; the ground dims as plain
+   opacity (one property, no filter layers). Original monochrome linework throughout: no colour, glow or filter. */
+html.vf-mx .ld{--mx-e:cubic-bezier(.45,0,.2,1)}
+html.vf-mx .ld .bx,html.vf-mx .ld .bx>i,html.vf-mx .ld :is(.grd,.ft,.cd,.ringsv,.nd){animation:none!important}
+html.vf-mx .ld .bx{transition:left 1s var(--mx-e),top 1s var(--mx-e),width 1s var(--mx-e),height 1s var(--mx-e),transform 1s var(--mx-e)!important}
+html.vf-mx .ld .bx>.fl{transition:top 1s var(--mx-e),width 1s var(--mx-e),transform 1s var(--mx-e)!important}
+html.vf-mx .ld .bx>.fr{transition:left 1s var(--mx-e),height 1s var(--mx-e),transform 1s var(--mx-e)!important}
+html.vf-mx .ld .bx>.tp{transition:width 1s var(--mx-e),height 1s var(--mx-e),transform 1s var(--mx-e)!important}
+html.vf-mx .ld .bx>.sh{transition:width 1s var(--mx-e),transform 1s var(--mx-e)!important}
+html.vf-mx .ld :is(.grd,.ft,.cd,.ringsv,.nd){transition:opacity .9s var(--mx-e)}
+html.vf-mx-v1 .ld :is(.grd,.ft,.cd,.ringsv,.nd){opacity:0}
+html.vf-mx-now .ld .bx,html.vf-mx-now .ld .bx>i,html.vf-mx-now .ld :is(.grd,.ft,.cd,.ringsv,.nd){transition:none!important}
 @media (prefers-reduced-motion: reduce){.root[data-done] .world{transition:none}}</style>
 <script src="../assets/vf/dc.js"></script>
 </head>
@@ -78,7 +71,7 @@ html.vf-edge .ld .ringsv circle{stroke:#F472B6!important;filter:drop-shadow(0 0 
          2 VFINAL2, re-formed: the city at its own positions on another skyline (VFINAL2's industry-profile re-forming).
          3 VFINAL, the spiral: the twelve sheets fan into an ascending spiral (another Morph form).
          4 VFINAL2, approved: every prism back to its exact original values; the board's own hand-off follows.
-       Colour stays on the existing edge lines (.vf-edge) while it changes and clears for the final state. The board's
+       Monochrome throughout (the original linework; owner, 2026-11-24). The board's
        done() waits for stage 4; Skip lands on stage 4 at once; reduced motion keeps the board's own static city. */
     function morph() {
       var rm = false; try { rm = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
@@ -140,19 +133,18 @@ html.vf-edge .ld .ringsv circle{stroke:#F472B6!important;filter:drop-shadow(0 0 
       html.classList.add('vf-mx', 'vf-mx-v1', 'vf-mx-now');
       orig.forEach(function (o) { flat(o); if (o.top && sheets.indexOf(o) >= 0) set(o, C - 2.5 * cell, C - 2.5 * cell, 5 * cell, 0, 0, 0); });
       void root.offsetWidth; html.classList.remove('vf-mx-now');
-      setTimeout(function () { html.classList.add('vf-edge'); stack(); }, 120);
+      setTimeout(stack, 120);
       function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
       at(1500, function () { html.classList.remove('vf-mx-v1'); city(); });
       at(3000, function () { html.classList.add('vf-mx-v1'); spiral(); });
       at(4500, function () { html.classList.remove('vf-mx-v1'); final(false); });
-      at(5300, function () { html.classList.remove('vf-edge'); });
       /* the board's watch() waited on the build keyframes the morph replaced (cancelled, so it never resolves): stage 4
          is the build's end, so mark it and let the board's own fin() hand off once progress is also complete */
       at(5900, function () { finished = true; html.classList.add('vf-mx-end'); comp._built = true;
         if (pending !== null) D0.call(comp, pending); else { try { comp.fin(); } catch (e) {} } });
       comp.done = function (r) {
         if (finished) return D0.call(comp, r);
-        if (r === 'skip') { timers.forEach(clearTimeout); html.classList.add('vf-mx-now'); html.classList.remove('vf-mx-v1', 'vf-edge');
+        if (r === 'skip') { timers.forEach(clearTimeout); html.classList.add('vf-mx-now'); html.classList.remove('vf-mx-v1');
           final(true); void root.offsetWidth; finished = true; html.classList.add('vf-mx-end'); return D0.call(comp, r); }
         pending = r;
       };

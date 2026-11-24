@@ -544,7 +544,23 @@
   /* LOADING (first visit per tab): over the Landing, runs once (no canvas loop), hands off on data-done with the
      interim 300ms cross-fade (04 HAND-OFF; the seamless move awaits the owner, G8). The Landing beneath is inert
      until then. 'pf:ready' fires once the page has loaded, so the bar reports real progress. */
+  /* LIVE PROTOTYPES WAIT FOR THE LOADING (owner, 2026-11-24, performance). The Landing's live slots build their originals
+     from the previous site's page (vf/site.html, 2.5MB, one fetch shared by every slot) as soon as it mounts - under the
+     Loading, where it competed with the morph: on a phone (CPU x4) frames over 50ms fell from ~20 to 3, p95 frame time
+     from 67-83ms to 33ms, nodes from 25.5k to 7.9k when it waited. So while the Loading is up that one request is held,
+     and released once the Landing's entrance has run; the slots show their posters meanwhile, then go live as before. */
+  var siteGate = null;
+  function holdSite() {
+    if (siteGate || !window.fetch) return;
+    var f0 = window.fetch, open = false, waiting = [];
+    siteGate = function () { if (open) return; open = true; window.fetch = f0; waiting.splice(0).forEach(function (go) { go(); }); };
+    window.fetch = function (u) { var a = arguments, self = this;
+      if (!open && /(^|\/)vf\/site\.html(\?|$)/.test(String(u && u.url || u))) return new Promise(function (res, rej) { waiting.push(function () { f0.apply(self, a).then(res, rej); }); });
+      return f0.apply(this, a); };
+    setTimeout(function () { if (siteGate) siteGate(); }, 15000); /* never held past this, whatever happens */
+  }
   function loading(name) {
+    holdSite();
     var ov = document.createElement('iframe');
     ov.id = 'vf-loading'; ov.title = 'Loading'; ov.src = 'vf/frame.html?b=' + name;
     ov.style.background = theme === 'dark' ? '#0A0A0B' : '#EEECE7';
@@ -604,9 +620,7 @@
        dissolves and the Landing arrives in its three steps - now carries VFINAL2's own compositions: the Loading city
        glides onto the Landing's city (the stage under the Orbit; the hero city on phones), measured on both pages (same
        geometry, so it lands exactly). The whole frame moves as one transform, so VFINAL2's own city transforms are never
-       overridden or doubled. During the glide only, the city's existing edge lines (face edges, footings, conduits, the
-       ring) carry violet, cyan and pink: a 1px core with a ~2px glow held to the line; the ground stays black, the faces
-       dark, and both resting states monochrome.
+       overridden or doubled. Monochrome throughout: the original linework (owner, 2026-11-24, colour removed).
        Skip and reduced motion keep the plain fade. */
     function glide2() {
       try {
@@ -619,9 +633,6 @@
         if (!a.width || !b.width || b.bottom < 0 || b.top > innerHeight) { main.classList.remove('vf-cont'); return false; }
         var k = b.width / a.width, cx = a.left + a.width / 2, cy = a.top + a.height / 2;
         d.documentElement.classList.add('vf-glide');
-        /* colour on the city's own edge lines only (vf/frame.html .vf-edge): on as the glide starts, back to
-           monochrome before it lands; no ambient light, the ground and the faces stay dark */
-        d.documentElement.classList.add('vf-edge'); setTimeout(function () { try { d.documentElement.classList.remove('vf-edge'); } catch (e) {} }, 620);
         ov.style.transformOrigin = cx + 'px ' + cy + 'px';
         ov.style.transition = 'transform 1000ms cubic-bezier(.45,0,.2,1), opacity .3s cubic-bezier(.6,0,.2,1)';
         void ov.offsetWidth;
@@ -635,6 +646,7 @@
       /* the Landing's sculpture starts its own cycle from its first frame (the stack) as the Loading form lands on it */
       try { [].forEach.call(main.querySelectorAll('.emb'), function (e) { e.getAnimations({ subtree: true }).forEach(function (a) { a.currentTime = 0; }); }); } catch (e) {}
       reveal(!skipping);
+      setTimeout(function () { if (siteGate) siteGate(); }, skipping || rm ? 200 : 1400); /* after the entrance */
       ov.classList.add('out');
       setTimeout(function () { try { if (L) L.unmount(); } catch (e) {} if (ov.parentNode) ov.parentNode.removeChild(ov);
         /* focus leaves the finished Loading frame for the document itself - never a heading (a focused h1 drew the
