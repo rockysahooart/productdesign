@@ -422,27 +422,47 @@
       if (off(lb)) continue;
       lots.push({ x: lx, y: ly, u: u });
       var r = rnd(), sb = 0.3 * cell, parts;
-      if (r < 0.4) parts = [];                                                         /* an open lot: streets lead */
-      else if (r < 0.6) parts = [[0, 0, 4, 4, 0.4 + rnd() * 0.6]];                    /* a podium */
-      else if (r < 0.82) parts = rnd() < 0.5 ? [[0, 0, 2, 4, 1 + rnd() * 1.6], [2, 0, 2, 4, 0.6 + rnd()]] : [[0, 0, 4, 2, 1 + rnd() * 1.6], [0, 2, 4, 2, 0.6 + rnd()]];
-      else parts = [[0, 0, 2, 2], [2, 0, 2, 2], [0, 2, 2, 2], [2, 2, 2, 2]].filter(function () { return rnd() < 0.6; }).map(function (q) { return q.concat([0.7 + rnd() * 2.4]); });
+      /* one even rhythm (owner, 2026-11-24): a lot in four stands open, the rest hold one podium, a pair or a cluster of
+         set-back blocks in one height band, so density reads as a city, not a scatter */
+      if (r < 0.25) parts = [];                                                        /* an open lot */
+      else if (r < 0.5) parts = [[0, 0, 4, 4, 0.5 + rnd() * 0.5]];                    /* a podium */
+      else if (r < 0.82) parts = rnd() < 0.5 ? [[0, 0, 2, 4, 0.9 + rnd() * 0.9], [2, 0, 2, 4, 0.6 + rnd() * 0.6]] : [[0, 0, 4, 2, 0.9 + rnd() * 0.9], [0, 2, 4, 2, 0.6 + rnd() * 0.6]];
+      else parts = [[0, 0, 2, 2], [2, 0, 2, 2], [0, 2, 2, 2], [2, 2, 2, 2]].filter(function () { return rnd() < 0.8; }).map(function (q) { return q.concat([0.8 + rnd() * 1.2]); });
       parts.forEach(function (q) {
-        var x = lx + q[0] * cell + sb, y = ly + q[1] * cell + sb, w = q[2] * cell - 2 * sb, dp = q[3] * cell - 2 * sb, h = q[4] * cell * (1 - 0.75 * u);
+        var x = lx + q[0] * cell + sb, y = ly + q[1] * cell + sb, w = q[2] * cell - 2 * sb, dp = q[3] * cell - 2 * sb, h = q[4] * cell * (1 - 0.5 * u);
         if (!off(box(x, y, w, dp, h))) blocks.push({ x: x, y: y, w: w, d: dp, h: h, u: u });
       });
     }
-    blocks.sort(function (a, b) { return (a.x + a.y) - (b.x + b.y); }); /* back to front */
+    /* back to front, exactly: for footprints that never overlap, A must be drawn before B when it lies wholly on B's far
+       side in x or in y; a topological order of that relation (not a sort key) keeps every occlusion right */
+    (function () { var rest = blocks.slice(), out = [];
+      function behind(a, b) { return a.x + a.w <= b.x + 1e-6 || a.y + a.d <= b.y + 1e-6; }
+      while (rest.length) { var k = 0;
+        for (var i = 0; i < rest.length; i++) { var ok = true; for (var j = 0; j < rest.length; j++) if (j !== i && behind(rest[j], rest[i]) && !behind(rest[i], rest[j])) { ok = false; break; } if (ok) { k = i; break; } }
+        out.push(rest.splice(k, 1)[0]); }
+      blocks = out; })();
+    /* SOLID FORMS (owner, 2026-11-24): every face opaque - top, left and right planes mixed from the ground colour
+       towards the ink, the top most lit (dark theme) or least shaded (light theme), each a step apart - so blocks occlude
+       one another and no hidden edge shows. Distance fades the shading back into the ground colour, never into
+       transparency; each visible face keeps the city's hairline. */
+    function rgb(c) { var m = (c || '').match(/[\d.]+/g) || [0, 0, 0]; return [+m[0], +m[1], +m[2]]; }
+    var bgc = (function () { var els = [root, host, document.body, document.documentElement];
+      for (var i = 0; i < els.length; i++) { var c = getComputedStyle(els[i]).backgroundColor, m = c.match(/[\d.]+/g); if (m && (m.length < 4 || +m[3] > 0.5)) return rgb(c); } return [10, 10, 11]; })();
+    var inkc = rgb(edge), darkT = (bgc[0] + bgc[1] + bgc[2]) / 3 < 128;
+    function mix(k) { return 'rgb(' + bgc.map(function (v, i) { return Math.round(v + (inkc[i] - v) * k); }).join(',') + ')'; }
+    var SH = darkT ? { t: 0.13, l: 0.08, r: 0.05, e: 0.24 } : { t: 0.02, l: 0.09, r: 0.15, e: 0.3 };
     function prism(b) {
-      var x = b.x, y = b.y, w = b.w, d = b.d, h = b.h;
+      var x = b.x, y = b.y, w = b.w, d = b.d, h = b.h, f = Math.pow(1 - b.u, 1.4);
       var top = [pt(x, y, h), pt(x + w, y, h), pt(x + w, y + d, h), pt(x, y + d, h)],
           left = [pt(x, y + d, 0), pt(x + w, y + d, 0), pt(x + w, y + d, h), pt(x, y + d, h)],
           right = [pt(x + w, y, 0), pt(x + w, y + d, 0), pt(x + w, y + d, h), pt(x + w, y, h)];
-      var a = (0.55 * Math.pow(1 - b.u, 1.8) + 0.02).toFixed(3); /* near reads, far all but vanishes */
-      /* wireframe first: the city's hairline on faces held near the ground colour (fill .55), all at one fading strength */
-      return '<g opacity="' + a + '"><polygon points="' + poly(left) + '" fill="' + fL + '" fill-opacity=".55" stroke="' + edge + '" stroke-opacity=".4"/><polygon points="' + poly(right) + '" fill="' + fR + '" fill-opacity=".55" stroke="' + edge + '" stroke-opacity=".32"/>' +
-        '<polygon points="' + poly(top) + '" fill="' + fT + '" fill-opacity=".55" stroke="' + edge + '" stroke-opacity=".6"/></g>';
+      var so = (SH.e * f + 0.03).toFixed(3);
+      return '<polygon points="' + poly(left) + '" fill="' + mix(SH.l * f + 0.01) + '" stroke-opacity="' + so + '"/>' +
+        '<polygon points="' + poly(right) + '" fill="' + mix(SH.r * f + 0.01) + '" stroke-opacity="' + so + '"/>' +
+        '<polygon points="' + poly(top) + '" fill="' + mix(SH.t * f + 0.01) + '" stroke-opacity="' + (SH.e * 1.3 * f + 0.03).toFixed(3) + '"/>';
     }
-    var kerbs = lots.map(function (l) { var s = 4 * cell; return '<polygon points="' + poly([pt(l.x, l.y, 0), pt(l.x + s, l.y, 0), pt(l.x + s, l.y + s, 0), pt(l.x, l.y + s, 0)]) + '" opacity="' + (0.8 * Math.pow(1 - l.u, 1.6) + 0.03).toFixed(3) + '"/>'; }).join('');
+    /* lots carry a faint ground tone of their own, so the streets between them read as continuous channels */
+    var kerbs = lots.map(function (l) { var s = 4 * cell, f = Math.pow(1 - l.u, 1.6); return '<polygon points="' + poly([pt(l.x, l.y, 0), pt(l.x + s, l.y, 0), pt(l.x + s, l.y + s, 0), pt(l.x, l.y + s, 0)]) + '" fill="' + mix((darkT ? 0.035 : 0.045) * f) + '" stroke-opacity="' + (0.34 * (0.8 * f + 0.03)).toFixed(3) + '"/>'; }).join('');
     /* STREETS AS ROUTES (cell units; centre lines at 5k + 4.5, intersections where two meet). A segment is one block long;
        it is drivable where it is not inside the plaza, stands within 2.5 ring radii and is clear of the copy and controls.
        Consecutive drivable segments along one street make a run; the cars and the tram use only runs. */
@@ -502,15 +522,23 @@
       '<rect width="' + W + '" height="' + H + '" fill="url(#vf-iso-m)"/>' + veil + '</mask>' +
       '<mask id="vf-iso-k2" maskUnits="userSpaceOnUse" x="0" y="0" width="' + W + '" height="' + H + '"><rect width="' + W + '" height="' + H + '" fill="#fff"/>' + veil + '</mask></defs>' +
       '<rect width="' + W + '" height="' + H + '" fill="url(#vf-iso-g)" opacity="' + (getComputedStyle(grd).opacity || 0.23) + '" mask="url(#vf-iso-k)"/>' +
-      '<g mask="url(#vf-iso-k)"><g fill="none" stroke="' + edge + '" stroke-opacity=".34" stroke-width="1">' + kerbs + plaza + '</g>' +
+      '<g mask="url(#vf-iso-k)"><g stroke="' + edge + '" stroke-width="1">' + kerbs + '</g><g fill="none" stroke="' + edge + '" stroke-opacity=".34" stroke-width="1">' + plaza + '</g>' +
       '<g stroke="' + edge + '" stroke-opacity=".26" stroke-width="1" stroke-dasharray="3 7">' + lanes + '</g>' +
       '<g fill="' + fT + '" fill-opacity=".4" stroke="' + edge + '" stroke-opacity=".4" stroke-width="1">' + rails + '</g></g>' +
-      '<g mask="url(#vf-iso-k2)"><g filter="url(#vf-iso-b)" stroke-width="1">' + far + '</g><g stroke-width="1">' + near + '</g></g></svg>';
+      '</svg>';
+    /* the buildings sit above the vehicles (a block hides a car behind it; a car in front never reaches up into the block
+       standing behind it), in a second drawing with its own defs: the veil, and the far blocks' softening */
+    var svgB = '<svg xmlns="http://www.w3.org/2000/svg" width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true" focusable="false" style="position:absolute;left:0;top:0">' +
+      '<defs><filter id="vf-iso-b2" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation=".7"/></filter>' +
+      '<filter id="vf-iso-v2" filterUnits="userSpaceOnUse" x="-200" y="-200" width="' + (W + 400) + '" height="' + (H + 400) + '"><feGaussianBlur stdDeviation="36"/></filter>' +
+      '<mask id="vf-iso-k3" maskUnits="userSpaceOnUse" x="0" y="0" width="' + W + '" height="' + H + '"><rect width="' + W + '" height="' + H + '" fill="#fff"/>' + veil.replace('vf-iso-v)', 'vf-iso-v2)') + '</mask></defs>' +
+      '<g mask="url(#vf-iso-k3)" stroke="' + edge + '" stroke-width="1" stroke-linejoin="round"><g filter="url(#vf-iso-b2)">' + far + '</g>' + near + '</g></svg>';
     var lay = document.createElement('div'); lay.className = 'vf-iso'; lay.setAttribute('aria-hidden', 'true');
     lay.style.cssText = 'position:absolute;left:' + L.toFixed(1) + 'px;top:' + T + 'px;width:' + W + 'px;height:' + H + 'px;pointer-events:none;z-index:0;opacity:0;transition:opacity 1.2s ease';
     requestAnimationFrame(function () { requestAnimationFrame(function () { lay.style.opacity = '1'; }); });
-    lay.innerHTML = svg; world.insertBefore(lay, world.firstChild);
-    /* TRAFFIC AND TRANSIT (owner, 2026-11-24). Miniature wireframe vehicles on the street runs above, one small loop for all:
+    lay.innerHTML = svg + '<div class="vf-veh" style="position:absolute;left:0;top:0;width:0;height:0"></div>' + svgB; world.insertBefore(lay, world.firstChild);
+    var veh = lay.querySelector('.vf-veh');
+    /* TRAFFIC AND TRANSIT (owner, 2026-11-24). Miniature solid vehicles on the street runs above, one small loop for all:
        a car keeps to its lane, eases off towards each intersection, stops there when its stop sign says so or when cross
        traffic or the tram is at the crossing, waits for it to clear, then pulls away; it follows the car ahead at a gap, and
        leaves its run at the end to reappear later on another. The tram shuttles its own street between three stations:
@@ -525,11 +553,11 @@
       var hl = len / 2, hw = wid / 2, A = ax ? [hw, hl] : [hl, hw], o = pt(0, 0, 0);
       function q(x, y, z) { var v = pt(x * cell, y * cell, z * cell); return (v[0] - o[0]).toFixed(1) + ',' + (v[1] - o[1]).toFixed(1); }
       return '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" style="position:absolute;left:0;top:0;overflow:visible">' +
-        '<g fill="' + fT + '" fill-opacity=".6" stroke="' + edge + '" stroke-opacity=".75" stroke-width="1">' +
-        '<polygon points="' + [q(-A[0], A[1], 0), q(A[0], A[1], 0), q(A[0], A[1], hgt), q(-A[0], A[1], hgt)].join(' ') + '"/>' +
-        '<polygon points="' + [q(A[0], -A[1], 0), q(A[0], A[1], 0), q(A[0], A[1], hgt), q(A[0], -A[1], hgt)].join(' ') + '"/>' +
-        '<polygon points="' + [q(-A[0], -A[1], hgt), q(A[0], -A[1], hgt), q(A[0], A[1], hgt), q(-A[0], A[1], hgt)].join(' ') + '"/></g></svg>'; }
-    function el(html) { var e = document.createElement('i'); e.className = 'vf-car'; e.style.cssText = 'position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;will-change:transform,opacity'; e.innerHTML = html; lay.appendChild(e); return e; }
+        '<g stroke="' + edge + '" stroke-opacity=".6" stroke-width="1" stroke-linejoin="round">' +
+        '<polygon fill="' + mix(darkT ? 0.2 : 0.22) + '" points="' + [q(-A[0], A[1], 0), q(A[0], A[1], 0), q(A[0], A[1], hgt), q(-A[0], A[1], hgt)].join(' ') + '"/>' +
+        '<polygon fill="' + mix(darkT ? 0.14 : 0.3) + '" points="' + [q(A[0], -A[1], 0), q(A[0], A[1], 0), q(A[0], A[1], hgt), q(A[0], -A[1], hgt)].join(' ') + '"/>' +
+        '<polygon fill="' + mix(darkT ? 0.32 : 0.08) + '" points="' + [q(-A[0], -A[1], hgt), q(A[0], -A[1], hgt), q(A[0], A[1], hgt), q(-A[0], A[1], hgt)].join(' ') + '"/></g></svg>'; }
+    function el(html) { var e = document.createElement('i'); e.className = 'vf-car'; e.style.cssText = 'position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;will-change:transform,opacity'; e.innerHTML = html; veh.appendChild(e); return e; }
     function xy(ax, c, s) { return ax ? [c, s] : [s, c]; }
     function fade(X, Y) { var d = Math.hypot(X * cell - P / 2, Y * cell - P / 2) / Rr; return Math.max(0, Math.min(1, (2.3 - d) / 1.2)); }
     var V = [], tram = null;
