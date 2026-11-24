@@ -482,8 +482,21 @@
     var tramRun = runs.filter(function (r) { return r.c === PL + 0.5; }).sort(function (a, b) { return b.p.length - a.p.length; })[0] ||
       runs.slice().sort(function (a, b) { return (b.p.length - dist(b)) - (a.p.length - dist(a)); })[0] || null;
     var plaza = '<polygon points="' + poly([pt(0, 0, 0), pt(PL * cell, 0, 0), pt(PL * cell, PL * cell, 0), pt(0, PL * cell, 0)]) + '" opacity=".5"/>';
-    var lanes = runs.filter(function (r) { return r !== tramRun && dist(r) < 1.9; }).map(function (r) { var a = cp(r.ax, r.c, r.p[0]), b = cp(r.ax, r.c, r.p[r.p.length - 1]);
-      return '<line x1="' + a[0].toFixed(1) + '" y1="' + a[1].toFixed(1) + '" x2="' + b[0].toFixed(1) + '" y2="' + b[1].toFixed(1) + '" opacity="' + (0.5 * (1 - (dist(r) - 1) / 0.9)).toFixed(3) + '"/>'; }).join('');
+    /* ROAD MARKINGS: a dashed centre line on each block-length segment, broken at every intersection, and a short stop
+       line across each approaching lane exactly where the cars halt (0.55 cell before the crossing's centre), on the
+       streets nearest the plaza; all in the plane's own projection, so they lie on the grid */
+    function seg(ax, c0, s0, c1, s1) { var a = cp(ax, c0, s0), b = cp(ax, c1, s1); return '<line x1="' + a[0].toFixed(1) + '" y1="' + a[1].toFixed(1) + '" x2="' + b[0].toFixed(1) + '" y2="' + b[1].toFixed(1) + '"/>'; }
+    var lanes = '', stops = '';
+    runs.filter(function (r) { return r !== tramRun && dist(r) < 1.9; }).forEach(function (r) {
+      var op = (0.5 * (1 - (dist(r) - 1) / 0.9)).toFixed(3), L1 = '', S1 = '';
+      for (var i = 0; i + 1 < r.p.length; i++) L1 += seg(r.ax, r.c, r.p[i] + 0.6, r.c, r.p[i + 1] - 0.6);
+      r.p.forEach(function (ip, i) {
+        [1, -1].forEach(function (dir) { var s = ip - 0.55 * dir, side = 0.5 * dir * (r.ax ? -1 : 1);
+          if ((dir > 0 && i === 0) || (dir < 0 && i === r.p.length - 1)) return; /* no approach from outside the run */
+          S1 += seg(r.ax, r.c + 0.04 * Math.sign(side), s, r.c + side * 0.9, s); });
+      });
+      lanes += '<g opacity="' + op + '">' + L1 + '</g>'; stops += '<g opacity="' + op + '">' + S1 + '</g>';
+    });
     var rails = '', stations = [];
     if (tramRun) {
       var tp = tramRun.p; [-0.13, 0.13].forEach(function (o) { var a = cp(tramRun.ax, tramRun.c + o, tp[0]), b = cp(tramRun.ax, tramRun.c + o, tp[tp.length - 1]);
@@ -524,6 +537,7 @@
       '<rect width="' + W + '" height="' + H + '" fill="url(#vf-iso-g)" opacity="' + (getComputedStyle(grd).opacity || 0.23) + '" mask="url(#vf-iso-k)"/>' +
       '<g mask="url(#vf-iso-k)"><g stroke="' + edge + '" stroke-width="1">' + kerbs + '</g><g fill="none" stroke="' + edge + '" stroke-opacity=".34" stroke-width="1">' + plaza + '</g>' +
       '<g stroke="' + edge + '" stroke-opacity=".26" stroke-width="1" stroke-dasharray="3 7">' + lanes + '</g>' +
+      '<g stroke="' + edge + '" stroke-opacity=".4" stroke-width="1.2">' + stops + '</g>' +
       '<g fill="' + fT + '" fill-opacity=".4" stroke="' + edge + '" stroke-opacity=".4" stroke-width="1">' + rails + '</g></g>' +
       '</svg>';
     /* the buildings sit above the vehicles (a block hides a car behind it; a car in front never reaches up into the block
