@@ -201,12 +201,15 @@ html[data-vf-theme="light"] #vf .vf-logos img{filter:grayscale(1) brightness(0);
 /* phone project gallery (assets/vf/app.js gallery): the carousel, its filter and the accordion step aside; each chapter
    is display, title, subtitle, CTA, with room between chapters and none inside them (no cards, no dividers) */
 #vf .root.vf-gallery :is(.stage,.r4bar,.idx,.chips,.leads,section>p.sr){display:none!important}
-#vf .vf-gal{padding:24px 24px 8px}
+/* one centred content column for plinths and text alike: the column is min(100% - 48px, 345px) */
+#vf .vf-gal{padding:24px max(24px, calc((100% - 345px) / 2)) 8px}
 #vf .vf-ch{margin:0 0 clamp(80px,22vw,104px)}
 #vf .vf-ch:last-child{margin-bottom:48px}
-#vf .vf-fig{position:relative;display:flex;justify-content:center;align-items:flex-start;padding-top:28px;box-sizing:border-box}
+#vf .vf-fig{position:relative;display:flex;justify-content:center;align-items:flex-start;box-sizing:border-box}
+/* placed by its plinth (app.js gallery fit): scale --vf-k about the art's top centre, shifted so the plinth's own centre
+   is the column's and its top sits 24px into the figure */
 #vf .vf-gal .art{display:block!important;position:relative!important;inset:auto!important;left:auto!important;top:auto!important;
-  margin:0!important;translate:none!important;transform:none!important;opacity:1!important;visibility:visible!important;
+  margin:var(--vf-ty,0px) 0 0!important;translate:var(--vf-tx,0px) 0!important;transform:none!important;opacity:1!important;visibility:visible!important;
   transform-origin:50% 0!important;flex:none}
 #vf .root .vf-gal .vf-fig > .art.art{scale:var(--vf-k,1)!important}
 /* the board hides (and pauses) every live frame but the selected one; in the gallery each display shows its own */

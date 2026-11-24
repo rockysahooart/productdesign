@@ -299,12 +299,26 @@
     if (!gal.children.length) return;
     sec.insertBefore(gal, st);
     root.classList.add('vf-gallery');
-    /* one rhythm at any phone width: the column's own width (padding out) or 440px tall, whichever binds first */
-    function fit() { var col = gal.clientWidth - 48;
-      [].forEach.call(gal.querySelectorAll('.vf-ch'), function (ch) { var n = ch.getAttribute('data-n'), a = ch.querySelector('.art'), f = ch.querySelector('.vf-fig');
-        var k = Math.min(Math.min(col, 345) / size[n][0], 440 / size[n][1]); a.style.setProperty('--vf-k', k.toFixed(4));
-        f.style.height = Math.round(size[n][1] * k + 56) + 'px'; }); }
+    /* PLINTH-FIRST FIT (owner, 2026-11-24; replaces sizing by the art box, which left the wide plinths 7px from the screen
+       edges, past the text, and the phone ones narrow inside it). What reads is the glass plinth, not the art box (larger
+       than the art for captures, smaller for phone mock-ups whose art carries transparent padding). So each chapter is
+       fitted by its plinth, read from the glass's own layout box (offsets, unaffected by the scale): the plinth fills the
+       text column (up to 345px) or stands 440px tall, whichever binds; it is centred on the column by its own centre, and
+       its top sits 24px into the figure. The text below starts on the column's edge. Refitted when a slot goes live (the
+       glass changes shape) and on resize. */
+    var PAD = 24;
+    function fit() { var cs = getComputedStyle(gal), col = gal.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      [].forEach.call(gal.querySelectorAll('.vf-ch'), function (ch) { var n = ch.getAttribute('data-n'), a = ch.querySelector('.art'), f = ch.querySelector('.vf-fig'), g = a.querySelector('.glass');
+        var w = size[n][0], h = size[n][1], gl = 0, gt = 0, gw = w, gh = h;
+        if (g && g.offsetWidth) { gl = g.offsetLeft; gt = g.offsetTop; gw = g.offsetWidth; gh = g.offsetHeight; }
+        var k = Math.min(col / gw, 440 / gh);
+        a.style.setProperty('--vf-k', k.toFixed(4));
+        a.style.setProperty('--vf-tx', (-((gl + gw / 2) - w / 2) * k).toFixed(1) + 'px');
+        a.style.setProperty('--vf-ty', (PAD - gt * k).toFixed(1) + 'px');
+        f.style.height = Math.round(gh * k + PAD + 36) + 'px'; }); } /* 36px of air between the plinth and its title */
     fit(); window.addEventListener('resize', fit);
+    try { var mo = new MutationObserver(function () { fit(); });
+      [].forEach.call(gal.querySelectorAll('.art'), function (a) { mo.observe(a, { attributes: true, attributeFilter: ['class'] }); }); } catch (e) {}
   }
 
   function phoneGutter(host) {
