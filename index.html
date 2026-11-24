@@ -152,13 +152,22 @@ x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
 /* VFINAL2 Landing blocks join the same three steps (11 §3: the entrance runs after the Loading fade): headline (.lc>h1),
    then its column and the card text (.lc>:not(h1), .pns), then the stage and the index section (section.inf). :where, not
    :is: #vfmgrp in the list gave the hiding rule ID weight, so steps 1-2 never showed until the classes came off */
-#vf.vf-stage :where(h1.hl,header,.sig,.rl2,.id>:not(h1),.acts,.ctx,.stage,.chips,.vix,#vfmgrp,.idx,.abt,.pager,.pg,.lc>h1,.lc>:not(h1),.pns,section.inf){opacity:0;translate:0 8px}
-/* after the city glide (app.js glide2) the Landing's own city is already in place: its stage (phones: the hero, whose
-   city it holds) shows at once under the dissolving frame, so the city never blinks; the copy still arrives in steps */
+/* AUTHORED ARRIVAL (owner, 2026-11-24; replaces the three steps of 2026-11-21). The Loading city glides onto the Landing's
+   city (app.js glide2) and the frame lifts; the city and its plinth are already in place beneath it (vf-cont), the
+   extended city grows outward from them, and the content follows in five steps ~180ms apart, each an 8px rise with its
+   opacity (600ms): 1 the headline, 2 name and identity (header, portrait, identity line), 3 the company logos, 4 project
+   navigation and the featured artwork (index, filter, orbit, displays, arrows, counter; phones: View Projects and the
+   gallery), 5 the project's title, description and CTA. Opacity and translate only: nothing reflows. */
+#vf.vf-stage :where(h1.hl,header,.sig,.rl2,.id>:not(h1),.acts,.ctx,.chips,.vix,#vfmgrp,.idx,.abt,.pager,.pg,.lc>*,.pns,section.inf,.stage>:not(.world):not(.r4pool),.vf-gal){opacity:0;translate:0 8px}
+#vf.vf-stage .vf-iso{opacity:0!important}
 #vf.vf-cont.vf-stage .stage,#vf.vf-cont.vf-stage header.top{opacity:1;translate:none}
 #vf.vf-cont.vf-stage header.top > :not(.city){opacity:0;translate:0 8px}
-#vf.vf-cont.vf-in-1 header.top > :not(.city){opacity:1;translate:0 0;transition:opacity .6s cubic-bezier(.2,.7,.2,1),translate .6s cubic-bezier(.2,.7,.2,1)}
-#vf.vf-in-1 :where(h1.hl,.lc>h1),#vf.vf-in-2 :where(header,.sig,.rl2,.id>:not(h1),.acts,.ctx,.lc>:not(h1),.pns),#vf.vf-in-3 :where(.stage,.chips,.vix,#vfmgrp,.idx,.abt,.pager,.pg,section.inf){
+#vf.vf-in-1 .vf-iso{opacity:1!important;transition:opacity 1.4s cubic-bezier(.2,.7,.2,1)!important}
+#vf.vf-in-1 :where(h1.hl,.lc>h1),#vf.vf-cont.vf-in-1 header.top>h1.h1,#vf.vf-cont.vf-in-1 header.top>h1.hl,
+#vf.vf-in-2 :where(header,.sig,.rl2,.id>:not(h1),.lc>.vf-me,.lc>p.g),#vf.vf-cont.vf-in-2 header.top>:is(.tr,.vf-me),
+#vf.vf-in-3 :where(.lc>.vf-logos),#vf.vf-cont.vf-in-3 header.top>.vf-logos,
+#vf.vf-in-4 :where(.lc>*,.idx,.chips,.vix,#vfmgrp,.pager,.pg,.abt,.stage>:not(.world):not(.r4pool),.vf-gal),#vf.vf-cont.vf-in-4 header.top>a.vps,
+#vf.vf-in-5 :where(.pns,.ctx,.acts,section.inf){
   opacity:1;translate:0 0;transition:opacity .6s cubic-bezier(.2,.7,.2,1),translate .6s cubic-bezier(.2,.7,.2,1)}
 @media (prefers-reduced-motion: reduce){#vf.vf-stage *{transition:none!important}}
 /* SERIF TITLES (owner, 2026-11-23): Newsreader, light, optical sizing on, for the hero, the active project's title, the

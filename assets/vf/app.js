@@ -929,12 +929,13 @@
        (3) 220ms later the supporting text and navigation, 220ms after that the project content. Opacity and
        translate only (no layout change). Skip and reduced motion go straight to the complete, usable Landing. */
     var rm = false; try { rm = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+    /* five steps after the frame lifts (index.html AUTHORED ARRIVAL): headline, identity, logos, project navigation and
+       featured artwork, project copy; the page is interactive from the first step */
+    var STEPS = ['vf-in-1', 'vf-in-2', 'vf-in-3', 'vf-in-4', 'vf-in-5'];
     function reveal(staged) {
-      if (!staged || rm) { main.classList.remove('vf-stage', 'vf-in-1', 'vf-in-2', 'vf-in-3', 'vf-cont'); return; }
-      main.classList.add('vf-in-1');
-      setTimeout(function () { main.classList.add('vf-in-2'); }, 220);
-      setTimeout(function () { main.classList.add('vf-in-3'); }, 440);
-      setTimeout(function () { main.classList.remove('vf-stage', 'vf-in-1', 'vf-in-2', 'vf-in-3', 'vf-cont'); }, 1300);
+      if (!staged || rm) { main.classList.remove.apply(main.classList, ['vf-stage', 'vf-cont'].concat(STEPS)); return; }
+      STEPS.forEach(function (c, i) { setTimeout(function () { main.classList.add(c); }, 160 + i * 180); });
+      setTimeout(function () { main.classList.remove.apply(main.classList, ['vf-stage', 'vf-cont'].concat(STEPS)); }, 160 + 4 * 180 + 760);
     }
     function glide() {
       if (skipping || rm) return;
