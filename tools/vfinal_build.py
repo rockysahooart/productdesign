@@ -571,8 +571,14 @@ def convert(s, name=''):
             for f, a, w, h in L) + '</ul>'
         # HERO (owner, 2026-11-23): one sentence pair on every board; the phone board's hand-broken lines go (balanced wrap)
         HERO = 'I’m Rocky, a product designer and creative technologist. I turn complex ideas into experiences people can understand and use.'
+        # the two roles carry the gradient (index.html .vf-gt); the profile photo stands just above the introduction
+        HERO_H = HERO.replace('product designer', '<span class="vf-gt">product designer</span>').replace(
+            'creative technologist', '<span class="vf-gt">creative technologist</span>')
+        ME = ('<img class="vf-me" src="assets/vf/shell/3bfd1d80dd3cf028b53dc1331dc2b885.webp" alt="Sarthak Sahoo" '
+              'width="54" height="54" decoding="async">')
         s = re.sub(r'<h1 class="h1">(?:(?!</h1>).)*?AI-saturated world\.(?:</span>)?</h1>', '<h1 class="h1">' + HERO + '</h1>', s, count=1, flags=re.S)
-        assert HERO in s and 'AI-saturated' not in s.split('<h1 class="h1">')[1][:400], name
+        s = s.replace('<h1 class="h1">' + HERO + '</h1>', ME + '<h1 class="h1">' + HERO_H + '</h1>', 1)
+        assert HERO_H in s and s.count('class="vf-me"') == 1, name
         if '-m-' in name:
             a0 = '</h1><div class="city">'
             assert s.count(a0) == 1, name
@@ -638,6 +644,11 @@ def convert(s, name=''):
         assert s.count('<style id="vf2-dim">') == 1, name
         i = s.index('</style>', s.index('<style id="vf2-dim">')) + len('</style>')
         s = s[:i] + soft + s[i:]
+    # THE WHITE LINE (owner, 2026-11-23): VFINAL2's one "lit" conduit (L6, litIn at 3650ms) is the solid white line from
+    # the plinth to the front node, in the Loading city and the Landing stage. It loses only its lit state and stays one
+    # of the city's ordinary conduits: same geometry, the grid's own hairline.
+    if name.startswith('VF2-'):
+        s = re.sub(r'(<i class="cd)\s+lit(?=[\s"])', r'\1', s)
     s = s.replace('</helmet>', prod_css(name) + '</helmet>', 1)
     s = re.sub(r'href=(["\'])([^"\']*)\1', lambda m: rw_href(m) if not m.group(2).startswith("' +") else m.group(0), s)
     return s

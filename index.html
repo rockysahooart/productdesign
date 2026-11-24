@@ -153,9 +153,28 @@ x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
    then its column and the card text (.lc>:not(h1), .pns), then the stage and the index section (section.inf). :where, not
    :is: #vfmgrp in the list gave the hiding rule ID weight, so steps 1-2 never showed until the classes came off */
 #vf.vf-stage :where(h1.hl,header,.sig,.rl2,.id>:not(h1),.acts,.ctx,.stage,.chips,.vix,#vfmgrp,.idx,.abt,.pager,.pg,.lc>h1,.lc>:not(h1),.pns,section.inf){opacity:0;translate:0 8px}
+/* after the city glide (app.js glide2) the Landing's own city is already in place: its stage (phones: the hero, whose
+   city it holds) shows at once under the dissolving frame, so the city never blinks; the copy still arrives in steps */
+#vf.vf-cont.vf-stage .stage,#vf.vf-cont.vf-stage header.top{opacity:1;translate:none}
+#vf.vf-cont.vf-stage header.top > :not(.city){opacity:0;translate:0 8px}
+#vf.vf-cont.vf-in-1 header.top > :not(.city){opacity:1;translate:0 0;transition:opacity .6s cubic-bezier(.2,.7,.2,1),translate .6s cubic-bezier(.2,.7,.2,1)}
 #vf.vf-in-1 :where(h1.hl,.lc>h1),#vf.vf-in-2 :where(header,.sig,.rl2,.id>:not(h1),.acts,.ctx,.lc>:not(h1),.pns),#vf.vf-in-3 :where(.stage,.chips,.vix,#vfmgrp,.idx,.abt,.pager,.pg,section.inf){
   opacity:1;translate:0 0;transition:opacity .6s cubic-bezier(.2,.7,.2,1),translate .6s cubic-bezier(.2,.7,.2,1)}
 @media (prefers-reduced-motion: reduce){#vf.vf-stage *{transition:none!important}}
+/* HERO PHOTO AND ROLES (owner, 2026-11-23). The profile photo (About's own portrait) sits just above the introduction,
+   left-aligned, ~54px on screen at any fit (board px / --vfz), with a small corner radius. The two roles carry a slow
+   gradient clipped to their letters only: pearl silver, ice blue, lavender, steel blue (deeper tones of the same four on
+   the light theme for contrast). No glow, no layout change (background-clip only); still under reduced motion. */
+#vf .vf-me{display:block;width:calc(54px / var(--vfz, 1));height:calc(54px / var(--vfz, 1));object-fit:cover;
+  border-radius:calc(10px / var(--vfz, 1));margin:0 0 calc(20px / var(--vfz, 1))}
+#vf .top .vf-me{width:52px;height:52px;border-radius:10px;margin:8px 0 0}
+#vf .root h1.h1 .vf-gt{display:inline!important} /* the phone board blocks its h1 spans (its old hand-broken lines) */
+#vf .vf-gt{background-image:linear-gradient(100deg,#D8DCE3 0%,#BFE4F4 22%,#C8B9F2 46%,#7E9CC4 68%,#D8DCE3 86%,#BFE4F4 100%);
+  background-size:300% 100%;background-position:0% 50%;-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;animation:vf-gt 18s ease-in-out infinite alternate}
+html[data-vf-theme="light"] #vf .vf-gt{background-image:linear-gradient(100deg,#4E5866 0%,#2F6F91 22%,#5D4AA0 46%,#2C4F7C 68%,#4E5866 86%,#2F6F91 100%)}
+@keyframes vf-gt{to{background-position:100% 50%}}
+@media (prefers-reduced-motion: reduce){#vf .vf-gt{animation:none}}
 /* Trusted By (tools/vfinal_build.py): the original four marks in one row the width of the introduction, at one height,
    proportions kept. Drawn for white grounds (two carry black), so each renders as a single-tone silhouette at reduced
    opacity - light on dark, dark on light - one quiet weight for all four; the files are untouched. */
@@ -173,7 +192,7 @@ html[data-vf-theme="light"] #vf .vf-logos img{filter:grayscale(1) brightness(0);
 #vf .top .vf-logos + .city{margin-top:-16px}
 /* short phones (owner's two-sentence hero, 2026-11-23): the hero a step smaller so it keeps the View Projects button on the
    first screen; the city keeps its clearance under the logos */
-@media (max-height:700px){#vf .root .top h1.h1{font-size:clamp(21px,min(6.1vw,3.5svh),25px)!important}}
+@media (max-height:700px){#vf .root .top h1.h1{font-size:clamp(20px,min(5.6vw,3.2svh),23px)!important;margin-top:16px!important}#vf .top .vf-logos{margin-top:18px}}
 /* phone project gallery (assets/vf/app.js gallery): the carousel, its filter and the accordion step aside; each chapter
    is display, title, subtitle, CTA, with room between chapters and none inside them (no cards, no dividers) */
 #vf .root.vf-gallery :is(.stage,.r4bar,.idx,.chips,.leads,section>p.sr){display:none!important}
@@ -187,8 +206,8 @@ html[data-vf-theme="light"] #vf .vf-logos img{filter:grayscale(1) brightness(0);
 #vf .root .vf-gal .vf-fig > .art.art{scale:var(--vf-k,1)!important}
 /* the board hides (and pauses) every live frame but the selected one; in the gallery each display shows its own */
 #vf .vf-gal .art iframe{visibility:visible!important}
-#vf .vf-ch h3.pt{margin:0 0 10px;font:400 21px/1.3 'Inter',sans-serif;color:inherit;text-wrap:balance}
-#vf .vf-ch p.lead{margin:0;font:400 16px/1.6 'Inter',sans-serif;opacity:.78}
+#vf .vf-ch h3.pt{margin:0 0 12px;font:400 26px/1.25 'Inter',sans-serif;color:inherit;text-wrap:balance}
+#vf .vf-ch p.lead{margin:0;font:400 16.5px/1.6 'Inter',sans-serif;opacity:.78}
 #vf .vf-ch p.lead .pf{font:inherit}
 #vf .vf-ch a.pc{display:inline-flex;align-items:center;min-height:44px;margin-top:16px}
 /* reading journey (assets/vf/journeys.js): board tokens and type roles only; the .pn card pattern (rule + accent tick) */
