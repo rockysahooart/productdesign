@@ -394,13 +394,24 @@
        height is therefore the lowest essential control - arrows, counter, index, Show all, the active CTA - read from the
        board's live geometry in its own px, plus 32px; the approved positions are untouched, only the scale follows. */
     var ESS = '.stage .pg, .stage .r6nav, .lc .idx, .lc .n9more, .pns a.pc';
+    /* ULTRAWIDE: THE ORBIT LIFTED AS ONE UNIT (owner, 2026-11-23). The board moves its whole scene per exhibit (--r5dy), and
+       for the tall phone exhibits the ring's front arc and its front node reach board y ~1560 - the bottom of the fitted
+       view - while ~210px stood empty between the header and the displays. From 2304px wide the whole scene (world,
+       plinths, displays, cards, arc, labels, arrows, counter) rises by one constant 118 board px, which centres its full
+       extent (displays' top ~325 to the arc's lowest point ~1580) between the header (112) and the view's bottom (1558).
+       The board keeps re-anchoring its own --r5dy (three layers aim the display at the header line), so the lift is added
+       after it, in the same translate (CSS --vf-lift, tools/vfinal_build.py), never fed back into its measurements. The
+       fit measures the unlifted extent, so the scale is exactly what it was. Desktop and phones are unaffected. */
+    var stg1 = root.querySelector('.stage'), SD = 0;
+    function lift() { SD = document.documentElement.clientWidth >= 2304 ? 118 : 0; root.style.setProperty('--vf-lift', SD + 'px'); }
+    lift();
     var hmax = 0; /* the tallest extent seen: the index grows as the active project passes 04; never pulse back */
     function extent() { var rr = root.getBoundingClientRect(), m = Math.max(H, hmax);
-      [].forEach.call(root.querySelectorAll(ESS), function (e) { var r = e.getBoundingClientRect(); if (r.width && r.height) m = Math.max(m, r.bottom - rr.top + 32); });
+      [].forEach.call(root.querySelectorAll(ESS), function (e) { var r = e.getBoundingClientRect(); if (r.width && r.height) m = Math.max(m, r.bottom - rr.top + 32 + (stg1 && stg1.contains(e) ? SD : 0)); });
       hmax = m; return m; }
     /* the text floors (max(board px, floor / --vfz)) make the column taller as the scale drops, which lowers the scale
        again: iterate to a fixed point (converges in two or three steps) so the controls are never a few px under */
-    function f() { var z0 = 0;
+    function f() { var z0 = 0; lift();
       for (var it = 0; it < 6; it++) {
         var vw = document.documentElement.clientWidth, z = vw / W, Hc = H ? extent() : 0;
         if (Hc) z = Math.min(z, window.innerHeight / Hc);

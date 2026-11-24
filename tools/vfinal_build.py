@@ -610,8 +610,11 @@ def convert(s, name=''):
         if '-m-' not in name:
             # orbit arrows either side of the ring, level with its centre (positions from app.js navPos; the board's
             # own placement under the exhibit is the fallback until it runs)
+            # ultrawide lift (app.js vf2Fit, --vf-lift): added after the board's own --r5dy in the same translates
+            soft = soft.replace('</style>', '.root.r4 .stage .world,.root.r4 .stage .orbs,.root.r4 .stage>.art{translate:0 calc(var(--r5dy,0px) - var(--vf-lift,0px))!important}'
+                                '.root .stage .pg{translate:0 calc(100px - var(--vf-lift,0px))!important}.root .stage .r4pool{translate:0 calc(0px - var(--vf-lift,0px))}</style>')
             soft = soft.replace('</style>', '.root .stage .r6nav{width:var(--vf-ns,56px)!important;height:var(--vf-ns,56px)!important;'
-                                'top:calc(var(--vf-ny,743px) - var(--vf-ns,56px) / 2)!important;translate:none!important}'
+                                'top:calc(var(--vf-ny,743px) - var(--vf-ns,56px) / 2 - var(--vf-lift,0px))!important;translate:none!important}'
                                 '.root .stage .r6nav.pv{left:calc(var(--vf-nx,760px) - var(--vf-ndx,310px) - var(--vf-ns,56px) / 2)!important}'
                                 '.root .stage .r6nav.nx{left:calc(var(--vf-nx,760px) + var(--vf-ndx,310px) - var(--vf-ns,56px) / 2)!important}</style>')
             if '-uw-' not in name:
