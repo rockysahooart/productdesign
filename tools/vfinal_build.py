@@ -540,6 +540,17 @@ def convert(s, name=''):
         s, nx = re.subn(r'(<h2 class="c g cap" style="margin-bottom:\d+px">Where I’ve been</h2>)',
                         lambda m: m.group(1) + '<div class="cols" style="margin-bottom:48px"><p>%s</p></div>' % XP, s, count=1)
         assert nx == 1, name
+        # WHERE I'VE BEEN, FROM THE RESUME (owner, 2026-11-23: SarthakSahoo-ProductDesignResume-2026.pdf is the source).
+        # Titles, employers and dates as the resume gives them; employment type only where it states one (CVS: the title
+        # says Consultant; CG Infinity and Cognizant: the client the work was for). Nothing inferred.
+        TL = [('2022–23', 'CVS Health', 'UI/UX Designer, Consultant', 'Healthcare'),
+              ('2024', 'CG Infinity', 'UX Designer', 'Client: First United Bank'),
+              ('2025–26', 'Cognizant', 'UX Designer', 'Client: PNC'),
+              ('2026–', 'Natera', 'UX Designer', 'Biotechnology')]
+        s, nt = re.subn(r'<ol class="tl">.*?</ol>', lambda m: '<ol class="tl">' + ''.join(
+            '<li><span class="y">%s</span><span class="co">%s</span><span class="ro">%s</span><span class="c g se">%s</span></li>' % r
+            for r in TL) + '</ol>', s, count=1, flags=re.S)
+        assert nt == 1, name
         # the editorial pass's grammar fix on the current About (VF-4-About COPY) carried to the VFINAL2 boards
         assert 'view everything In systems' in s, name
         s = s.replace('view everything In systems', 'view everything in systems')
