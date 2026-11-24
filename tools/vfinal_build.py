@@ -397,12 +397,13 @@ def vf2_copy(s, name):
     return s
 
 
-# SHARED PROJECT ORDER (owner, 2026-11-24): Securities-Based Lending, Craigslist, Cryptography Explained, Carry, Oncology
-# Specimen Kit, OptiFlow, Scale, AI Design Governance, Design System Audit; the Landing opens on Securities-Based Lending.
+# SHARED PROJECT ORDER (owner, 2026-11-24; OptiFlow moved to ninth the same day): Securities-Based Lending, Craigslist,
+# Cryptography Explained, Carry, Oncology Specimen Kit, Scale, AI Design Governance, Design System Audit, OptiFlow; the
+# Landing opens on Securities-Based Lending.
 # Ids (data-n), PCVs, titles and destinations are unchanged; only the sequence moves: the board's own D.nums (Orbit, arrows,
 # counter, ring; every industry subset follows it), its first selection, the DOM order of the index and the rows (the
 # phone gallery reads the index), and every printed position number. The hidden, unlaunched 09 stays last.
-VF2_ORDER = ['08', '01', '03', '02', '05', '04', '10', '07', '06', '09']
+VF2_ORDER = ['08', '01', '03', '02', '05', '10', '07', '06', '04', '09']
 
 
 def vf2_order(s, name):
