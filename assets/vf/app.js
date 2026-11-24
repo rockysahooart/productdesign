@@ -339,13 +339,16 @@
     if (!J || !mast) return;
     var rmq = false; try { rmq = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
     var sec = document.createElement('section'); sec.className = 'vf-jr'; sec.setAttribute('aria-labelledby', 'vf-jr-h');
-    var h = document.createElement('h2'); h.id = 'vf-jr-h'; h.className = 'vf-jr-h'; h.textContent = J.title; sec.appendChild(h);
+    /* SECOND EDITORIAL PASS (owner, 2026-11-24): no 'The short version' label (the heading stays for screen readers) and
+       no paragraphs - each restated a section below. The overview is the six first-person headlines, each leading to
+       its section. */
+    var h = document.createElement('h2'); h.id = 'vf-jr-h'; h.className = 'vf-jr-h vf-sr'; h.textContent = 'Overview'; sec.appendChild(h);
     var ol = document.createElement('ol'); ol.className = 'vf-jr-l';
     J.steps.forEach(function (st) {
       var li = document.createElement('li');
       var t = document.createElement('h3'); t.className = 'vf-jr-t'; t.textContent = st[0];
       var p = document.createElement('p'); p.className = 'vf-jr-p'; p.textContent = st[1];
-      li.appendChild(t); li.appendChild(p);
+      li.appendChild(t);
       var target = st[2] && host.querySelector(st[2]);
       if (target) {
         var b = document.createElement('button'); b.type = 'button'; b.className = 'vf-jr-go';
@@ -636,8 +639,8 @@
      its own sub-heading as the label where it has one. Nothing is removed, reworded or reordered; find-in-page opens a
      fold; the short version's links still land on their sections. */
   function fold(host) {
-    var KEEP = 'figure, section.ar-demo, section.acc, .ape__deck, .sk-crops, .sk-cfg, .cs-did, .cs-move, .ar-note, .ar-end, .au-rule, ' +
-      '.acc__lede, .ts-turn, .pair, .cmp, .mount, .pv__embed, .scr, .hero, .lfx, .vf-jr';
+    var KEEP = 'figure, section.ar-demo, section.acc, .ape__deck, .sk-crops, .sk-cfg, .cs-did, .cs-move, .ar-end, .au-rule, ' +
+      '.ts-turn, .pair, .cmp, .mount, .pv__embed, .scr, .hero, .lfx, .vf-jr, details';
     var MEDIA = 'iframe, img, video, canvas, picture, .cu-embed';
     function words(e) { return (e.textContent || '').trim().split(/\s+/).length; }
     function keeps(e) {
@@ -648,15 +651,17 @@
     function wrap(run, body) {
       if (!run.length) return;
       var n = 0; run.forEach(function (e) { n += words(e); });
-      if (n < (body.matches('section.sec') ? 60 : 30)) return; /* a sentence or two: not worth a click */
+      if (n < 15) return; /* a sentence: not worth a click (second pass, owner, 2026-11-24: was 30, 60 on the long-form pages) */
       var d = document.createElement('details'); d.className = 'vf-fold';
       var s = document.createElement('summary');
       if (/^H[34]$/.test(run[0].tagName)) { s.appendChild(run.shift()); } else { var l = document.createElement('span'); l.className = 'vf-fold-l'; l.textContent = 'More detail'; s.appendChild(l); }
       d.appendChild(s); body.insertBefore(d, run[0] || null);
       run.forEach(function (e) { d.appendChild(e); });
     }
-    [].forEach.call(host.querySelectorAll('.acc__b, .pt__b, section.sec'), function (body) {
-      var kids = [].slice.call(body.children), run = [], lede = !!body.querySelector(':scope > .acc__lede');
+    [].forEach.call(host.querySelectorAll('.acc__b, .pt__b, section.sec, .pair'), function (body) {
+      /* an accordion section's header already carries its title and one-line lede, so its body keeps no second lede
+         (second pass, owner, 2026-11-24); the long-form pages keep their first paragraph as the section's lede */
+      var kids = [].slice.call(body.children), run = [], lede = body.matches('.acc__b') || !!body.querySelector(':scope > .acc__lede');
       kids.forEach(function (e, i) {
         var keep = keeps(e);
         if (!keep && e.matches('p.kk')) keep = true; /* the section's kicker */
