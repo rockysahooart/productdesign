@@ -433,29 +433,20 @@
         if (Math.abs(z - z0) < 0.001) break; z0 = z;
       }
       navPos(z); }
-    /* ORBIT ARROWS ON EITHER SIDE (owner, 2026-11-23; replaces the pair centred under the exhibit). Anchored to the orbit
-       ring itself - its measured centre in stage px, which moves with the board's own --r5dy - and set 30.5% of the ring's
-       width out on each side (bounded by both columns), level with the active display's centre: left of the orbit,
-       right of it, clear of the background cards and of both columns. CSS in tools/vfinal_build.py reads --vf-nx / --vf-ny / --vf-ndx; the counter stays centred beneath.
-       The target never renders under 46 screen px, whatever the fit. Navigation logic and keys are the board's. */
+    /* ORBIT ARROWS IN THE INFORMATION COLUMN (owner, 2026-11-24; replaces the pair either side of the orbit, which
+       replaced the pair centred under the exhibit). Previous and next sit together, left-aligned, above the project's
+       number, title and description: placed at the information column's own top-left (measured live, board px), and the
+       column's copy steps down by one arrow plus 24px (CSS in tools/vfinal_build.py reads --vf-nx / --vf-ny / --vf-ns).
+       One position for every project, inside the fitted height. The target never renders under 46 screen px, whatever
+       the fit. Navigation logic, keys, swipe and the counter are the board's. */
     function navPos(z) {
       z = z || root.__vfz || 1;
-      var stg = root.querySelector('.stage'), rg = stg && stg.querySelector('.ringsv'); if (!rg) return;
-      var a = stg.getBoundingClientRect(), r = rg.getBoundingClientRect(); if (!r.width) return;
-      var ns = Math.max(48, 46 / z), cx = r.left + r.width / 2, room = Infinity;
-      /* never into either column: 16px clear of the introduction / index and of the project copy, measured live */
-      var lc = root.querySelector('.lc'), pn = root.querySelector('.pns');
-      if (lc) { var lr = lc.getBoundingClientRect(); if (lr.width) room = Math.min(room, cx - lr.right - 16 - ns / 2); }
-      if (pn) { var pr = pn.getBoundingClientRect(); if (pr.width) room = Math.min(room, pr.left - cx - 16 - ns / 2); }
-      /* one position for every project: the board's own r6 rule - ONE height, the median resting display midline (453 of
-         the 900px stage across the nine displays) - and as far out as the columns allow. The scene itself shifts per
-         exhibit (--r5dy), so the ring is not a stable height reference. The widest display (OptiFlow's 540px square)
-         reaches under the pair by its plain mat border only. */
-      var ny = stg.offsetHeight * 0.503, dx = room;
-      stg.style.setProperty('--vf-nx', (cx - a.left).toFixed(1) + 'px');
-      stg.style.setProperty('--vf-ny', ny.toFixed(1) + 'px');
-      stg.style.setProperty('--vf-ndx', dx.toFixed(1) + 'px');
-      stg.style.setProperty('--vf-ns', ns.toFixed(1) + 'px'); /* the board rewrites each arrow's style attribute */
+      var stg = root.querySelector('.stage'), pn = root.querySelector('.pns'); if (!stg || !pn) return;
+      var a = stg.getBoundingClientRect(), pr = pn.getBoundingClientRect(); if (!pr.width) return;
+      var ns = Math.max(44, 46 / z);
+      root.style.setProperty('--vf-ns', ns.toFixed(1) + 'px');
+      stg.style.setProperty('--vf-nx', (pr.left - a.left).toFixed(1) + 'px');
+      stg.style.setProperty('--vf-ny', (pr.top - a.top).toFixed(1) + 'px'); /* the board rewrites each arrow's style attribute */
     }
     /* the index grows as the active row passes 04: re-measure the column bound on each project change */
     var pns0 = root.querySelector('.pns');

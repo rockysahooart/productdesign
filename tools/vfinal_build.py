@@ -9,6 +9,7 @@ handoff assets byte-for-byte into assets/vf/. Nothing else in a board is changed
 """
 
 import os
+import json
 import re
 import shutil
 import sys
@@ -396,6 +397,66 @@ def vf2_copy(s, name):
     return s
 
 
+# SHARED PROJECT ORDER (owner, 2026-11-24): Securities-Based Lending, Craigslist, Cryptography Explained, Carry, Oncology
+# Specimen Kit, OptiFlow, Scale, AI Design Governance, Design System Audit; the Landing opens on Securities-Based Lending.
+# Ids (data-n), PCVs, titles and destinations are unchanged; only the sequence moves: the board's own D.nums (Orbit, arrows,
+# counter, ring; every industry subset follows it), its first selection, the DOM order of the index and the rows (the
+# phone gallery reads the index), and every printed position number. The hidden, unlaunched 09 stays last.
+VF2_ORDER = ['08', '01', '03', '02', '05', '04', '10', '07', '06', '09']
+
+
+def vf2_order(s, name):
+    old = 'D.nums=["01","02","03","05","04","06","07","08","09","10"];D.map.Healthcare=["02","05","04","06","09"];'
+    assert s.count(old) == 1, name
+    s = s.replace(old, 'D.nums=' + json.dumps(VF2_ORDER, separators=(',', ':')) + ';Object.keys(D.map).forEach(k=>D.map[k]'
+                  '.sort((a,b)=>D.nums.indexOf(a)-D.nums.indexOf(b)));')
+    assert s.count("this.sel='01'") == 1, name
+    s = s.replace("this.sel='01'", "this.sel='" + VF2_ORDER[0] + "'")
+    pos = {n: '%02d' % (i + 1) for i, n in enumerate(VF2_ORDER)}
+    def num(blk):
+        n = re.search(r'data-n="(\d+)"', blk).group(1)
+        return re.sub(r'(class="c g[^"]*">)\d\d<', lambda m: m.group(1) + pos[n] + '<', blk, count=1)
+    CM = r'(?:<!--(?:(?!-->).)*-->\s*)?'  # a reinstate note travels with the element it annotates
+    def reorder(run, item):
+        items = re.findall(item, run, re.S)
+        gaps = re.split(item, run, flags=re.S)
+        assert len(items) == 10 and all(not g.strip() for g in gaps[1:-1]), (name, len(items), [g[:200] for g in gaps[1:-1] if g.strip()])
+        by = {re.search(r'data-n="(\d+)"', x).group(1): num(x) for x in items}
+        return gaps[0] + gaps[1].join(by[n] for n in VF2_ORDER) + gaps[-1]
+    def idx(m):
+        body = re.sub(r' aria-current="true"', '', m.group(2))
+        body = reorder(body, CM + r'<li data-n="\d+"[^>]*>.*?</li>')
+        body = body.replace('class="ix">', 'class="ix" aria-current="true">', 1)
+        return m.group(1) + body + m.group(3)
+    s, k = re.subn(r'(<ol class="idx"[^>]*>)(.*?)(</ol>)', idx, s, flags=re.S)
+    assert k == 1, name
+    row = CM + r'<a class="row" data-n="\d+".*?</a>'
+    s = re.sub('(?:' + row + r'\s*){9}' + row, lambda m: reorder(m.group(0), row), s, flags=re.S)
+    s = re.sub(r'<div class="pn" data-n="\d+"[^>]*>(?:(?!<div class="pn").)*?class="c g pnn">\d\d<', lambda m: num(m.group(0)), s, flags=re.S)
+    # the first paint is the first project's: the authored markup shows 01, so the shown/hidden state of its display,
+    # panel and phone heading/lead/stem moves to the new first, and the board places everything once on mount
+    first = VF2_ORDER[0]
+    def vis(m):
+        cls, n, rest = m.group(1), m.group(2), m.group(3)
+        if n == '01' and ' hidden' not in rest[:12]:
+            return '<%s class="%s" data-n="01" hidden%s' % (m.group(0)[1:m.group(0).index(' ')], cls, rest)
+        if n == first and rest.startswith(' hidden'):
+            return '<%s class="%s" data-n="%s"%s' % (m.group(0)[1:m.group(0).index(' ')], cls, n, rest[7:])
+        return m.group(0)
+    s = re.sub(r'<\w+ class="(art|pn|stem|hx|ld|mh)" data-n="(01|%s)"([^>]*)' % first, vis, s)
+    # INACTIVE PCVs FACE THE CAMERA (owner, 2026-11-24). The r14 pose turned each orbit neighbour about its own spine
+    # (rotateY(psi), 26-58deg) under the board's orthographic isometric camera, where a turn has no perspective to read as
+    # depth: it rendered as a plain horizontal squash (cos psi, 11-39% narrower than its art). psi is 0 for every member:
+    # each neighbour keeps its PCV's intrinsic aspect (object-fit: contain in the display's own box), at the one uniform
+    # orbit scale, posed by the same camera, ring and pillar as before. The hand-off path already ended at psi 0.
+    s, k = re.subn(r'(function r14psi\(phi\)\{[^}]*\})', r'\1r14psi=function(){return 0;};', s)
+    assert k == 1 or '-m-' in name, (name, 'r14psi', k)
+    s = s.replace('class="nd sel" data-n="01"', 'class="nd" data-n="01"').replace('class="nd" data-n="%s"' % first, 'class="nd sel" data-n="%s"' % first)
+    s, k = re.subn(r'this\.orbit\(\);this\.pager\(\);(\s*\}\s*members\(\))', r'this.orbit();this.pager();this.apply(true,0);\1', s)
+    assert k == 1 or '-m-' in name, (name, k)  # the phone gallery applies each project itself
+    return s
+
+
 def convert(s, name=''):
     SRC_TEXT[0] = s
     if name.startswith('VF-1-Loading'):
@@ -560,6 +621,7 @@ def convert(s, name=''):
         s = s.replace("'Instrument Serif'", "'VF2 Display'").replace('"Instrument Serif"', '"VF2 Display"')
     if name.startswith('VF2-2-Landing'):
         s = vf2_copy(s, name)
+        s = vf2_order(s, name)
         # TRUSTED BY, BACK (owner, 2026-11-23): the original portfolio's four companies, in its order, from the repo's own
         # files (unchanged), beneath the name / role / location (phones: beneath the introduction). Each mark's share of
         # the row is its own aspect ratio (flex-grow), so all four stand at one height across the headline's width.
@@ -608,15 +670,16 @@ def convert(s, name=''):
         # description and the project list step down so the orbit leads; the introduction (h1) keeps its size. Board px
         # (the board is scaled as a whole); line heights loosened to match the smaller size.
         if '-m-' not in name:
-            # orbit arrows either side of the ring, level with its centre (positions from app.js navPos; the board's
-            # own placement under the exhibit is the fallback until it runs)
+            # orbit arrows together above the project copy in the information column (positions from app.js navPos;
+            # the board's own placement under the exhibit is the fallback until it runs)
             # ultrawide lift (app.js vf2Fit, --vf-lift): added after the board's own --r5dy in the same translates
             soft = soft.replace('</style>', '.root.r4 .stage .world,.root.r4 .stage .orbs,.root.r4 .stage>.art{translate:0 calc(var(--r5dy,0px) - var(--vf-lift,0px))!important}'
                                 '.root .stage .pg{translate:0 calc(100px - var(--vf-lift,0px))!important}.root .stage .r4pool{translate:0 calc(0px - var(--vf-lift,0px))}</style>')
-            soft = soft.replace('</style>', '.root .stage .r6nav{width:var(--vf-ns,56px)!important;height:var(--vf-ns,56px)!important;'
-                                'top:calc(var(--vf-ny,743px) - var(--vf-ns,56px) / 2 - var(--vf-lift,0px))!important;translate:none!important}'
-                                '.root .stage .r6nav.pv{left:calc(var(--vf-nx,760px) - var(--vf-ndx,310px) - var(--vf-ns,56px) / 2)!important}'
-                                '.root .stage .r6nav.nx{left:calc(var(--vf-nx,760px) + var(--vf-ndx,310px) - var(--vf-ns,56px) / 2)!important}</style>')
+            soft = soft.replace('</style>', '.root .stage .r6nav{width:var(--vf-ns,48px)!important;height:var(--vf-ns,48px)!important;'
+                                'top:var(--vf-ny,236px)!important;translate:none!important;z-index:6}'
+                                '.root .stage .r6nav.pv{left:var(--vf-nx,1880px)!important}'
+                                '.root .stage .r6nav.nx{left:calc(var(--vf-nx,1880px) + var(--vf-ns,48px) + 10px / var(--vfz,1))!important}'
+                                '.root .pns{padding-top:calc(var(--vf-ns,48px) + 20px / var(--vfz,1))}</style>')
             if '-uw-' not in name:
                 soft = soft.replace('</style>', '.root .pns h3.pt{font-size:21px!important;line-height:1.28!important}'
                                     '.root .pns p.pf{font-size:15.5px!important;line-height:1.6!important}'
