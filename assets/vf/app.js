@@ -425,15 +425,25 @@
       if (off(lb)) continue;
       lots.push({ x: lx, y: ly, u: u });
       var r = rnd(), sb = 0.3 * cell, parts;
-      /* one even rhythm (owner, 2026-11-24): a lot in four stands open, the rest hold one podium, a pair or a cluster of
-         set-back blocks in one height band, so density reads as a city, not a scatter */
-      if (r < 0.25) parts = [];                                                        /* an open lot */
-      else if (r < 0.5) parts = [[0, 0, 4, 4, 0.5 + rnd() * 0.5]];                    /* a podium */
-      else if (r < 0.82) parts = rnd() < 0.5 ? [[0, 0, 2, 4, 0.9 + rnd() * 0.9], [2, 0, 2, 4, 0.6 + rnd() * 0.6]] : [[0, 0, 4, 2, 0.9 + rnd() * 0.9], [0, 2, 4, 2, 0.6 + rnd() * 0.6]];
-      else parts = [[0, 0, 2, 2], [2, 0, 2, 2], [0, 2, 2, 2], [2, 2, 2, 2]].filter(function () { return rnd() < 0.8; }).map(function (q) { return q.concat([0.8 + rnd() * 1.2]); });
+      /* INTENTIONAL BLOCKS (owner, 2026-11-24, spatial pass). About a lot in three stands open; the rest take one of four
+         forms - a tower on a low podium, a stepped pair, a terrace of three, or a low pavilion - so heights vary within a
+         block and between blocks instead of repeating flat slabs. Heights swell gently by district (a slow wave round
+         the plaza) and fall with distance. No block stands behind the copy, the navigation, the controls or the featured
+         display: those keep real negative space (the lots and streets still run beneath them, veiled). */
+      var dist2 = 0.75 + 0.35 * Math.sin(Math.atan2(ly + 2 * cell - P / 2, lx + 2 * cell - P / 2) * 3 + 0.7);
+      if (r < 0.34) parts = [];                                                                         /* open */
+      else if (r < 0.56) parts = [[0, 0, 4, 4, 0.35, [[1, 1, 2, 2, 1.3 + rnd() * 1.3]]]];               /* tower on podium */
+      else if (r < 0.78) parts = rnd() < 0.5 ? [[0, 0, 2, 4, 1.1 + rnd() * 0.8], [2, 0, 2, 4, 0.5 + rnd() * 0.4]] /* stepped pair */
+                                             : [[0, 0, 4, 2, 1.1 + rnd() * 0.8], [0, 2, 4, 2, 0.5 + rnd() * 0.4]];
+      else if (r < 0.92) parts = [[0, 0, 4, 1.25, 0.6 + rnd() * 0.3], [0, 1.4, 4, 1.25, 0.8 + rnd() * 0.4], [0, 2.8, 4, 1.2, 0.5 + rnd() * 0.3]]; /* terrace */
+      else parts = [[0.5, 0.5, 3, 3, 0.3]];                                                              /* pavilion */
       parts.forEach(function (q) {
-        var x = lx + q[0] * cell + sb, y = ly + q[1] * cell + sb, w = q[2] * cell - 2 * sb, dp = q[3] * cell - 2 * sb, h = q[4] * cell * (1 - 0.5 * u);
-        if (!off(box(x, y, w, dp, h))) blocks.push({ x: x, y: y, w: w, d: dp, h: h, u: u });
+        var k = (1 - 0.5 * u) * dist2;
+        var x = lx + q[0] * cell + sb, y = ly + q[1] * cell + sb, w = q[2] * cell - 2 * sb, dp = q[3] * cell - 2 * sb, h = q[4] * cell * k;
+        var bb = box(x, y, w, dp, h), sub = (q[5] || []).map(function (s) { var sx = lx + s[0] * cell, sy = ly + s[1] * cell, sw = s[2] * cell, sd = s[3] * cell;
+          return { x: sx, y: sy, w: sw, d: sd, h: s[4] * cell * k, u: u }; });
+        sub.forEach(function (s) { var b2 = box(s.x, s.y, s.w, s.d, s.h); bb = [Math.min(bb[0], b2[0]), Math.min(bb[1], b2[1]), Math.max(bb[2], b2[2]), Math.max(bb[3], b2[3])]; });
+        if (!off(bb) && !hits(bb)) blocks.push({ x: x, y: y, w: w, d: dp, h: h, u: u, sub: sub });
       });
     }
     /* back to front, exactly: for footprints that never overlap, A must be drawn before B when it lies wholly on B's far
@@ -453,7 +463,7 @@
       for (var i = 0; i < els.length; i++) { var c = getComputedStyle(els[i]).backgroundColor, m = c.match(/[\d.]+/g); if (m && (m.length < 4 || +m[3] > 0.5)) return rgb(c); } return [10, 10, 11]; })();
     var inkc = rgb(edge), darkT = (bgc[0] + bgc[1] + bgc[2]) / 3 < 128;
     function mix(k) { return 'rgb(' + bgc.map(function (v, i) { return Math.round(v + (inkc[i] - v) * k); }).join(',') + ')'; }
-    var SH = darkT ? { t: 0.13, l: 0.08, r: 0.05, e: 0.24 } : { t: 0.02, l: 0.09, r: 0.15, e: 0.3 };
+    var SH = darkT ? { t: 0.12, l: 0.075, r: 0.045, e: 0.15 } : { t: 0.02, l: 0.085, r: 0.14, e: 0.2 }; /* building edges below the streets' */
     function prism(b) {
       var x = b.x, y = b.y, w = b.w, d = b.d, h = b.h, f = Math.pow(1 - b.u, 1.4);
       var top = [pt(x, y, h), pt(x + w, y, h), pt(x + w, y + d, h), pt(x, y + d, h)],
@@ -465,7 +475,7 @@
         '<polygon points="' + poly(top) + '" fill="' + mix(SH.t * f + 0.01) + '" stroke-opacity="' + (SH.e * 1.3 * f + 0.03).toFixed(3) + '"/>';
     }
     /* lots carry a faint ground tone of their own, so the streets between them read as continuous channels */
-    var kerbs = lots.map(function (l) { var s = 4 * cell, f = Math.pow(1 - l.u, 1.6); return '<polygon points="' + poly([pt(l.x, l.y, 0), pt(l.x + s, l.y, 0), pt(l.x + s, l.y + s, 0), pt(l.x, l.y + s, 0)]) + '" fill="' + mix((darkT ? 0.035 : 0.045) * f) + '" stroke-opacity="' + (0.34 * (0.8 * f + 0.03)).toFixed(3) + '"/>'; }).join('');
+    var kerbs = lots.map(function (l) { var s = 4 * cell, f = Math.pow(1 - l.u, 1.6); return '<polygon points="' + poly([pt(l.x, l.y, 0), pt(l.x + s, l.y, 0), pt(l.x + s, l.y + s, 0), pt(l.x, l.y + s, 0)]) + '" fill="' + mix((darkT ? 0.035 : 0.045) * f) + '" stroke-opacity="' + (0.44 * (0.8 * f + 0.03)).toFixed(3) + '"/>'; }).join('');
     /* STREETS AS ROUTES (cell units; centre lines at 5k + 4.5, intersections where two meet). A segment is one block long;
        it is drivable where it is not inside the plaza, stands within 2.5 ring radii and is clear of the copy and controls.
        Consecutive drivable segments along one street make a run; the cars and the tram use only runs. */
@@ -485,6 +495,10 @@
     var tramRun = runs.filter(function (r) { return r.c === PL + 0.5; }).sort(function (a, b) { return b.p.length - a.p.length; })[0] ||
       runs.slice().sort(function (a, b) { return (b.p.length - dist(b)) - (a.p.length - dist(a)); })[0] || null;
     var plaza = '<polygon points="' + poly([pt(0, 0, 0), pt(PL * cell, 0, 0), pt(PL * cell, PL * cell, 0), pt(0, PL * cell, 0)]) + '" opacity=".5"/>';
+    /* the plaza joins the city: where each avenue meets the ring road, a short path runs on into the plaza */
+    for (var av = 4.5; av < PL; av += S) [[av, 0, av, 1.6], [av, PL, av, PL - 1.6], [0, av, 1.6, av], [PL, av, PL - 1.6, av]].forEach(function (q) {
+      var a = pt(q[0] * cell, q[1] * cell, 0), b = pt(q[2] * cell, q[3] * cell, 0);
+      plaza += '<line x1="' + a[0].toFixed(1) + '" y1="' + a[1].toFixed(1) + '" x2="' + b[0].toFixed(1) + '" y2="' + b[1].toFixed(1) + '" stroke-dasharray="2 5" opacity=".6"/>'; });
     /* ROAD MARKINGS: a dashed centre line on each block-length segment, broken at every intersection, and a short stop
        line across each approaching lane exactly where the cars halt (0.55 cell before the crossing's centre), on the
        streets nearest the plaza; all in the plane's own projection, so they lie on the grid */
@@ -515,7 +529,8 @@
           '<line x1="' + q(side - 0.2, s + 0.4, 0)[0].toFixed(1) + '" y1="' + q(side - 0.2, s + 0.4, 0)[1].toFixed(1) + '" x2="' + q(side - 0.2, s + 0.4, 0.22)[0].toFixed(1) + '" y2="' + q(side - 0.2, s + 0.4, 0.22)[1].toFixed(1) + '"/>';
       });
     }
-    var near = blocks.filter(function (b) { return b.u < 0.55; }).map(prism).join(''), far = blocks.filter(function (b) { return b.u >= 0.55; }).map(prism).join('');
+    function form(b) { return prism(b) + (b.sub || []).map(prism).join(''); } /* a tower draws over its own podium */
+    var near = blocks.filter(function (b) { return b.u < 0.55; }).map(form).join(''), far = blocks.filter(function (b) { return b.u >= 0.55; }).map(form).join('');
     /* THE VEIL (owner, 2026-11-24): the city is secondary everywhere content sits. Behind the copy, the header, the
        controls and the featured display its contrast falls away softly (blurred dark shapes in the layer's own mask,
        ~85% down at the centre of each, no visible edge), so it reads fully only in open space. Vehicles keep off those
@@ -539,7 +554,7 @@
       '<mask id="vf-iso-k2" maskUnits="userSpaceOnUse" x="0" y="0" width="' + W + '" height="' + H + '"><rect width="' + W + '" height="' + H + '" fill="#fff"/>' + veil + '</mask></defs>' +
       '<rect width="' + W + '" height="' + H + '" fill="url(#vf-iso-g)" opacity="' + (getComputedStyle(grd).opacity || 0.23) + '" mask="url(#vf-iso-k)"/>' +
       '<g mask="url(#vf-iso-k)"><g stroke="' + edge + '" stroke-width="1">' + kerbs + '</g><g fill="none" stroke="' + edge + '" stroke-opacity=".34" stroke-width="1">' + plaza + '</g>' +
-      '<g stroke="' + edge + '" stroke-opacity=".26" stroke-width="1" stroke-dasharray="3 7">' + lanes + '</g>' +
+      '<g stroke="' + edge + '" stroke-opacity=".3" stroke-width="1" stroke-dasharray="3 7">' + lanes + '</g>' +
       '<g stroke="' + edge + '" stroke-opacity=".4" stroke-width="1.2">' + stops + '</g>' +
       '<g fill="' + fT + '" fill-opacity=".4" stroke="' + edge + '" stroke-opacity=".4" stroke-width="1">' + rails + '</g></g>' +
       '</svg>';
