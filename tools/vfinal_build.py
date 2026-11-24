@@ -328,7 +328,7 @@ VF2_TAGS = ['Mobile marketplace · Paid product design brief', 'Patient experien
             'Two-sided marketplace · Music education']
 VF2_COPY = [
     ('I’ve designed human-centered products in an AI-saturated world.',
-     'I’m Rocky, and I’ve spent 5 years designing human-centered products in an increasingly AI-saturated world.'),
+     'I’m Rocky, a product designer and creative technologist. I turn complex ideas into experiences people can understand and use.'),
     ("I'm Rocky, a product designer connecting people, processes, and technology. I make complex systems easier to understand and use.",
      'Sarthak Sahoo · Product Designer · Austin, TX'),
     ('Sarthak “Rocky” Sahoo', 'Sarthak Sahoo'),
@@ -342,15 +342,17 @@ def vf2_copy(s, name):
     # and ultrawide Landing alike (all three read this list). Same facts and project context, nothing added; titles
     # and case-study copy untouched. Index 8 is the hidden, unlaunched tenth project (unchanged).
     SHORT = {
-        0: 'Finding a used car in Craigslist’s app meant long lists and bare listings. I reorganized it screen by screen.',
-        1: 'I linked patients’ pre-visit questions to the answers they get afterward.',
-        2: 'I designed an interactive explainer showing developers how a library’s encryption works before they use it.',
-        3: 'I redesigned a specimen kit’s guidance and in-transit storage.',
-        4: 'I designed billing-data review that makes the model more confident.',
-        5: 'I audited four provider workflows and set shared interaction rules.',
-        6: 'I’m building standards for catching “AI slop” in generated product work before it ships.',
-        7: 'I turned a fragmented lending process into one guided flow for bankers, from collateral review to underwriting.',
-        9: 'I’m building a marketplace where students book teachers and teachers manage lessons and payments.',
+        # INTRODUCTIONS (owner, 2026-11-23, replacing the shortened subtitles): first person, the human problem, what I
+        # did, why it matters, in one or two sentences. Every fact is from that project's own case study or short version.
+        0: 'Finding a used car in Craigslist’s iPhone app meant long lists and listings with little beyond a title and a price. I redesigned how buyers search, compare listings and judge sellers, so the right car is easier to find.',
+        1: 'Patients forget much of what they hear in a short follow-up appointment. I designed Carry, which links the questions they write beforehand to the moments in the conversation that answer them.',
+        2: 'Key exchange and encryption are hard to follow from code alone. I designed an interactive explainer for a cross-platform library that shows developers how ECDH and AES-GCM work together before they use its APIs.',
+        3: 'A refused tissue sample writes off the whole test, yet the kit printed the reasons for refusal last. I reordered the instruction lid so the costly mistakes read first and specified an insert that holds the sample in transit.',
+        4: 'Reviewers checking an AI model’s billing tags had to move fast, and their corrections taught it nothing. I designed the review step so agreeing stays one action and every correction arrives sorted, with the evidence behind it.',
+        5: 'Cancer specialists use a provider portal between patients, and the same action looked different on every screen. I audited four workflows and replaced four separate fixes with one shared row pattern, clear status labels and error rules.',
+        6: 'Generated product work can look finished while it is missing logic, states and evidence. I’m building standards an AI agent can use to catch that “AI slop” before it ships.',
+        7: 'Bankers assembled lending requests across dense, disconnected screens, and missing details caused errors and rework. I kept the familiar flow and added a status panel that links every open item to the field that completes it.',
+        9: 'Students need an easy way to find and book music teachers, and teachers need one place to run their lessons. I’m building a two-sided marketplace that covers both, from booking to payments and progress.',
     }
     assert len(ld) == 10, len(ld)
     ld = [SHORT.get(i, d) for i, d in enumerate(ld)]
@@ -529,6 +531,15 @@ def convert(s, name=''):
         s = re.sub(r'(<section style="padding:[^"]*"><div class="cols">)(<p>Safety, income)',
                    lambda m: m.group(1).replace('<div class="cols">', '<div class="cols" style="margin-bottom:%s"><p>%s</p></div><div class="cols">' % ('0' if '-m-' in name else '32px', ODIA)) + m.group(2), s, count=1)
         assert ODIA in s, name
+        # EXPERIENCE FRAMING (owner, 2026-11-23): one paragraph under Where I've been, in the owner's terms (full-time and
+        # consulting roles, quick understanding of complex systems, long-term ownership) and the sectors already listed.
+        # The timeline itself (titles, dates, employers) is unchanged pending the owner's confirmation against the resume.
+        XP = ('My work has spanned full-time roles and consulting engagements across healthcare, finance and biotechnology. '
+              'Each one asked me to understand a complex system quickly and contribute where it mattered most. What I want '
+              'next is to own a product over the long term and see its decisions through.')
+        s, nx = re.subn(r'(<h2 class="c g cap" style="margin-bottom:\d+px">Where I’ve been</h2>)',
+                        lambda m: m.group(1) + '<div class="cols" style="margin-bottom:48px"><p>%s</p></div>' % XP, s, count=1)
+        assert nx == 1, name
         # the editorial pass's grammar fix on the current About (VF-4-About COPY) carried to the VFINAL2 boards
         assert 'view everything In systems' in s, name
         s = s.replace('view everything In systems', 'view everything in systems')
@@ -547,6 +558,10 @@ def convert(s, name=''):
         logos = '<ul class="vf-logos" aria-label="Trusted by">' + ''.join(
             '<li style="flex-grow:%.3f"><img src="assets/%s" alt="%s" width="%d" height="%d" decoding="async"></li>' % (w / h, f, a, w, h)
             for f, a, w, h in L) + '</ul>'
+        # HERO (owner, 2026-11-23): one sentence pair on every board; the phone board's hand-broken lines go (balanced wrap)
+        HERO = 'I’m Rocky, a product designer and creative technologist. I turn complex ideas into experiences people can understand and use.'
+        s = re.sub(r'<h1 class="h1">(?:(?!</h1>).)*?AI-saturated world\.(?:</span>)?</h1>', '<h1 class="h1">' + HERO + '</h1>', s, count=1, flags=re.S)
+        assert HERO in s and 'AI-saturated' not in s.split('<h1 class="h1">')[1][:400], name
         if '-m-' in name:
             a0 = '</h1><div class="city">'
             assert s.count(a0) == 1, name

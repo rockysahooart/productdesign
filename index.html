@@ -171,6 +171,9 @@ html[data-vf-theme="light"] #vf .vf-logos img{filter:grayscale(1) brightness(0);
 /* phones: the row sits in the city box's own headroom (open sky above the towers), so the hero's height and its View
    Projects button stay where they were */
 #vf .top .vf-logos + .city{margin-top:-16px}
+/* short phones (owner's two-sentence hero, 2026-11-23): the hero a step smaller so it keeps the View Projects button on the
+   first screen; the city keeps its clearance under the logos */
+@media (max-height:700px){#vf .root .top h1.h1{font-size:clamp(21px,min(6.1vw,3.5svh),25px)!important}}
 /* phone project gallery (assets/vf/app.js gallery): the carousel, its filter and the accordion step aside; each chapter
    is display, title, subtitle, CTA, with room between chapters and none inside them (no cards, no dividers) */
 #vf .root.vf-gallery :is(.stage,.r4bar,.idx,.chips,.leads,section>p.sr){display:none!important}
