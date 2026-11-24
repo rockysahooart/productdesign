@@ -4,6 +4,18 @@
    claimed), and each step links to the full section below it, which is unchanged: the journey is the overview, the
    page is the depth. Inserted after the masthead by assets/vf/app.js. Targets: a CSS selector on the page. */
 window.VF_JOURNEYS = {
+  /* Craigslist (owner, 2026-11-23: the two-layer pilot with Carry). Same rule: every sentence restates the page. */
+  craigslist: {
+    title: 'The short version',
+    steps: [
+      ['Buyers come to Craigslist for local listings, and sellers pay to post them', 'Craigslist is a two-sided marketplace: buyers come for local listings, and private sellers and dealers pay to post them. If browsing felt clearer and listings told people more, buyers might trust the app enough to come back, and sellers would have a reason to post again.', '.cs-wrap > section:nth-of-type(1)', 'The brief'],
+      ['LiveFront asked me to rethink the iPhone app, and I chose one journey', 'It was a paid design challenge, and I was the designer: I ran the research, made the design decisions, built the Figma file and a coded prototype. Craigslist sells almost everything, so I chose one journey to redesign well: shopping for a used car.', '.cs-wrap > section:nth-of-type(2)', 'Why one journey'],
+      ['In usability sessions, people hesitated screen after screen', 'I asked people to shop for a car in the current app and looked closely at every screen they passed through. The friction often showed up as a pause before the next tap, and friction like that can make people give up on a search.', '.cs-wrap > section:nth-of-type(3)', 'What I saw'],
+      ['Before designing, I set three rules for comfort, clarity and effort', 'Touch targets comfortable enough to avoid misclicks, a hierarchy that follows what people are trying to do, and main actions that take no extra effort on a bigger phone or with smaller hands. I kept Craigslist’s own type and colours so it still felt like Craigslist.', '.cs-wrap > section:nth-of-type(4)', 'The three rules'],
+      ['I kept the journey people knew and reorganized each screen', 'Home, browsing, search, results and a listing stay in the order people already know; what sits on each screen changed. I then built the redesign as a working prototype in HTML, CSS and JavaScript, so you can feel how it behaves.', '.cs-wrap > section:nth-of-type(5)', 'See each screen'],
+      ['The next step is testing it with car shoppers', 'The redesigned screens and the prototype haven’t been tested with car shoppers yet, so that comes next. Revising this project also changed how I present research: I’d rather show fewer findings I can trace than numbers I can’t stand behind.', '.cs-wrap > section:nth-of-type(11)', 'What comes next']
+    ]
+  },
   carry: {
     title: 'The short version',
     steps: [
