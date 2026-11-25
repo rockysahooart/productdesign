@@ -343,18 +343,17 @@ def vf2_copy(s, name):
     # and ultrawide Landing alike (all three read this list). Same facts and project context, nothing added; titles
     # and case-study copy untouched. Index 8 is the hidden, unlaunched tenth project (unchanged).
     SHORT = {
-        # CONTRIBUTION FIRST (owner, 2026-11-24; replaces the two-sentence introductions of 2026-11-23): one sentence per
-        # project leading with what I did, the redundant problem restatement dropped. Every fact is from that project's
-        # own introduction, case study or short version; nothing added.
-        0: 'I redesigned how buyers search, compare listings and judge sellers in Craigslist’s iPhone app, so the right car is easier to find.',
-        1: 'I designed Carry, which links the questions patients write before a follow-up to the moments in the conversation that answer them.',
-        2: 'I designed an interactive explainer that shows developers how ECDH and AES-GCM work together before they use a cross-platform library’s APIs.',
-        3: 'I reordered the kit’s instruction lid so the reasons a sample gets refused read first, and specified an insert that holds the sample in transit.',
-        4: 'I designed the review step for an AI model’s billing tags: agreeing stays one action, and every correction arrives sorted with its evidence.',
-        5: 'I audited four provider workflows and replaced four separate fixes with one shared row pattern, clear status labels and error rules.',
+        # SUBTITLES (owner, 2026-11-24; replaces the contribution-first sentences): the owner's own copy, one line of human
+        # and business value per project. Index 6 is AI Design Governance (withdrawn from the public portfolio; unchanged).
+        0: 'Making local discovery feel simpler, safer, and worth coming back to.',
+        1: 'Helping patients remember what matters, while easing the burden on care teams.',
+        2: 'Making the invisible understandable, so developers can build with confidence.',
+        3: 'Protecting critical samples, reducing uncertainty, and preserving what matters most.',
+        4: 'Keeping people in control of AI decisions before small errors become costly ones.',
+        5: 'Bringing clarity to fragmented workflows, so people and systems work better together.',
         6: 'Generated product work can look finished while it is missing logic, states and evidence. I’m building standards an AI agent can use to catch that “AI slop” before it ships.',
-        7: 'I kept bankers’ familiar lending flow and added a status panel that links every open item to the field that completes it.',
-        9: 'I’m building a two-sided marketplace for music lessons: students find and book teachers, and teachers run booking, payments and progress in one place.',
+        7: 'Less friction for bankers. More momentum for the businesses they serve.',
+        9: 'Opening more doors for students and more opportunities for the people who teach.',
     }
     assert len(ld) == 10, len(ld)
     ld = [SHORT.get(i, d) for i, d in enumerate(ld)]
@@ -799,7 +798,7 @@ def convert(s, name=''):
                     fl('.root li>button.ix span.c,.root .lab h2.c span,.root .pns .pn>p.c,.root section.inf a.row>span.c', 15.6, 11),
                     fl('.root .lc>button.c', 19.5, 13.5),
                     fl('.root .pns h3.pt', 31, 19.5, ';line-height:1.24!important'),
-                    fl('.root .pns p.pf', 20, 14, ';line-height:1.6!important'),
+                    fl('.root .pns p.pf', 20, 13.5, ';line-height:1.6!important;opacity:.78'),  # subtitles (owner, 2026-11-24): a step back from the title
                     fl('.root .pns a.pc,.root .pns .r5ex span', 15, 13.5),
                     fl('.root section.inf span.t', 19.5, 14),
                     fl('.root section.inf span.f', 19.5, 13.5, ';line-height:1.6!important'),
