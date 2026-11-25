@@ -659,6 +659,24 @@
      paragraphs, ticket logs, story write-ups, tables, test notes, the glossary - folds into a native disclosure in place,
      its own sub-heading as the label where it has one. Nothing is removed, reworded or reordered; find-in-page opens a
      fold; the short version's links still land on their sections. */
+  /* EVIDENCE LABELS (owner, 2026-11-24, credibility pass). Every headline figure on a case study says what kind of number
+     it is, read from its own "How this is calculated" text: Projected (the case the design makes; not measured), Modelled
+     (a calculation over stated assumptions), Estimate (a cost range or amount at risk), From testing (observed in the
+     project's own testing), By design (true of the design by construction). The figures are also set smaller, so a
+     projection no longer reads as a result. Nothing else about them changes. */
+  var EVID = { carry: ['Projected', 'From testing', 'From testing'], optiflow: ['Projected', 'Projected', 'By design'],
+    audit: ['Projected', 'Projected', 'Projected'], specimen: ['Modelled', 'Estimate', 'Estimate', 'Projected', 'Projected'] };
+  function evidence(host) {
+    var E = EVID[route().s.toLowerCase()]; if (!E) return;
+    [].forEach.call(host.querySelectorAll('.bim'), function (bim) {
+      [].forEach.call(bim.querySelectorAll('.bim__item'), function (it, i) {
+        if (!E[i] || it.querySelector('.vf-ev')) return;
+        var s = document.createElement('span'); s.className = 'vf-ev vf-ev--' + E[i].toLowerCase().replace(/\s+/g, '-'); s.textContent = E[i];
+        it.insertBefore(s, it.firstChild);
+      });
+    });
+  }
+
   function fold(host) {
     var KEEP = 'figure, section.ar-demo, section.acc, .ape__deck, .sk-crops, .sk-cfg, .cs-did, .cs-move, .ar-end, .au-rule, ' +
       '.ts-turn, .pair, .cmp, .mount, .pv__embed, .scr, .hero, .lfx, .vf-jr, details';
@@ -880,7 +898,7 @@
       cur = VFDC.mount(docs[0], main);
       vf2Fit(cur.el); gallery(cur); (function (h) { /* the world is measured once the Landing has settled (fonts, entrance) */
         var go = function () { setTimeout(function () { if (h.isConnected) isoWorld(h); }, 1400); };
-        try { document.fonts.ready.then(go); } catch (e) { go(); } })(cur.el); disable(cur.el); if (R.k !== 'about' && R.k !== 'projects') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); fold(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
+        try { document.fonts.ready.then(go); } catch (e) { go(); } })(cur.el); disable(cur.el); if (R.k !== 'about' && R.k !== 'projects') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); evidence(cur.el); fold(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
       /* SCROLL ON ENTRY: history.scrollRestoration is manual (head script), so every entry starts at 0 - fresh visit,
          refresh, Back, the brand or nav link. Only a theme switch (vf-y, same page) or an explicit in-page anchor
          (#projects, #top) places it elsewhere. */

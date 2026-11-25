@@ -241,6 +241,17 @@ html[data-vf-theme="light"] #vf .vf-logos img{filter:grayscale(1) brightness(0);
 #vf .vf-ch p.lead{margin:0;font:400 16.5px/1.6 'Geist','Inter',sans-serif;opacity:.78}
 #vf .vf-ch p.lead .pf{font:inherit}
 #vf .vf-ch a.pc{display:inline-flex;align-items:center;min-height:44px;margin-top:24px}
+/* evidence labels on headline figures (assets/vf/app.js evidence): what kind of number each is, in sentence case on a
+   hairline pill above it; the figures themselves a step smaller so projections never read as results */
+#vf .vf-ev{display:inline-block;margin:0 0 10px;padding:2px 9px;font:500 12px/1.5 'Geist','Inter',sans-serif;letter-spacing:.01em;
+  border:1px solid color-mix(in srgb,currentColor 32%,transparent);border-radius:999px;opacity:.88}
+#vf .vf-ev--from-testing,#vf .vf-ev--by-design{border-style:solid;opacity:1}
+#vf .vf-ev--projected,#vf .vf-ev--modelled,#vf .vf-ev--estimate{border-style:dashed}
+#vf .bim .bim__val{font-size:clamp(24px,2.2vw,30px)!important;line-height:1.15!important}
+/* targets (accessibility pass, 2026-11-24): the header name link reached 21px tall and the SBL masthead's resource links
+   24px; both now meet a comfortable target without moving their text */
+#vf .root header.hd a.idn{display:inline-block;padding:3px 0}
+#vf header.ar-mast p.res a.lk{min-height:44px;display:flex;align-items:center}
 /* case-study folds (assets/vf/app.js fold): the supporting prose behind a quiet, full-width disclosure row; its label is
    the fold's own sub-heading where it has one, at that heading's size, with a chevron that turns when open */
 #vf details.vf-fold{margin:20px 0 28px;border-top:1px solid color-mix(in srgb,currentColor 16%,transparent)}

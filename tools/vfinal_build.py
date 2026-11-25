@@ -780,6 +780,10 @@ def convert(s, name=''):
     s = re.sub(r'href=(["\'])([^"\']*)\1', lambda m: rw_href(m) if not m.group(2).startswith("' +") else m.group(0), s)
     if name.startswith('VF2-') or name.split('-')[0] in STUDIES:
         s = projects_links(s, name)
+    if name.startswith('VF2-'):
+        # ONE CASING (owner, 2026-11-24, consistency pass): controls and links in sentence case, as everywhere else on the
+        # site ("View case study", "Show all 8 projects", "Start here")
+        s = re.sub(r'>(\s*)View Project', r'>\1View project', s).replace('>Start Here<', '>Start here<')
     return s
 
 
