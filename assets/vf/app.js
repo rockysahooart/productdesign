@@ -653,6 +653,34 @@
     requestAnimationFrame(frame);
   }
 
+  /* BACKLIT HEADLINE (owner, 2026-11-24). Light shining through the letters from behind, where the pointer is: two copies of
+     the headline sit exactly over it (aria-hidden, no pointer events), each with a radial light field clipped to the
+     glyphs (background-clip: text), so the light exists only inside the letterforms - cobalt / periwinkle / violet with
+     a near-white source - and the second, lightly blurred, lets a soft halo escape just past the letter edges near the
+     source. Entering blooms the light outward and lets it settle; leaving fades it. One rAF-throttled pointer handler
+     writes two custom properties. Desktop pointers only (hover + fine), never for reduced motion or touch. CSS in
+     index.html (#vf .vf-bl). */
+  function heroLight(host) {
+    if (RG === 'm' || R.k !== 'landing') return;
+    var fine = false, rm = false;
+    try { fine = matchMedia('(hover: hover) and (pointer: fine)').matches; rm = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+    var h = host.querySelector('.lc h1.h1'); if (!fine || rm || !h || h.querySelector('.vf-bl')) return;
+    var root = host.querySelector('.root');
+    ['vf-bl vf-bl--core', 'vf-bl vf-bl--halo'].forEach(function (c) {
+      var s = document.createElement('span'); s.className = c; s.setAttribute('aria-hidden', 'true');
+      s.innerHTML = h.innerHTML.replace(/<span class="vf-bl[\s\S]*$/, ''); h.appendChild(s);
+    });
+    h.classList.add('vf-blh');
+    var G = Element.prototype.__vfRect || Element.prototype.getBoundingClientRect, raf = 0, px = 0, py = 0;
+    function put() { raf = 0; var r = G.call(h), z = (root && root.__vfz) || 1;
+      h.style.setProperty('--mx', ((px - r.left) / z).toFixed(1) + 'px'); h.style.setProperty('--my', ((py - r.top) / z).toFixed(1) + 'px'); }
+    function move(e) { px = e.clientX; py = e.clientY; if (!raf) raf = requestAnimationFrame(put); }
+    h.addEventListener('pointerenter', function (e) { if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return; move(e); put();
+      h.classList.remove('vf-bl-on'); void h.offsetWidth; h.classList.add('vf-bl-on'); });
+    h.addEventListener('pointermove', function (e) { if (e.pointerType === 'mouse' || e.pointerType === 'pen') move(e); });
+    h.addEventListener('pointerleave', function () { h.classList.remove('vf-bl-on'); });
+  }
+
   /* SKIM FIRST, DEPTH ON REQUEST (owner, 2026-11-24, pass 7). Each case study reads in a minute: the short version (above),
      then every section's heading and lede, the evidence (figures, working prototypes, decks, crops), what I did, the
      decisions (moves, rules, notes) and the closing line stay in view. The supporting prose between them - further
@@ -905,7 +933,7 @@
     
     Promise.all(jobs).then(function (docs) {
       cur = VFDC.mount(docs[0], main);
-      vf2Fit(cur.el); gallery(cur); (function (h) { /* the world is measured once the Landing has settled (fonts, entrance) */
+      vf2Fit(cur.el); gallery(cur); heroLight(cur.el); (function (h) { /* the world is measured once the Landing has settled (fonts, entrance) */
         var go = function () { setTimeout(function () { if (h.isConnected) isoWorld(h); }, 1400); };
         try { document.fonts.ready.then(go); } catch (e) { go(); } })(cur.el); disable(cur.el); if (R.k !== 'about' && R.k !== 'projects') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); evidence(cur.el); fold(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
       /* SCROLL ON ENTRY: history.scrollRestoration is manual (head script), so every entry starts at 0 - fresh visit,
