@@ -470,6 +470,13 @@ def vf2_order(s, name):
     for n in VF2_HIDDEN:
         s = re.sub(r'<li data-n="%s">' % n, '<li data-n="%s" hidden>' % n, s)
         s = re.sub(r'<a class="row" data-n="%s"(?![^>]*\bhidden\b)' % n, '<a class="row" data-n="%s" hidden' % n, s)
+    # SCALE PREVIEW (owner, 2026-11-24): the orbit thumbnail (and so the Projects card) shows a still of Scale's own
+    # walkthrough - its Discover results: guitar teachers with ratings, prices and availability - rendered from the
+    # walkthrough itself (assets/vf/shell/6275ec00611caff4a9ab7a6e977173c7.png, transparent, 3x), in place of the three-phone composite that read
+    # poorly at thumbnail size. The live walkthrough on the plinth is unchanged; the composite stays in assets.
+    s, k = re.subn(r'(<button type="button" class="orb" data-n="10"[^>]*>(?:(?!</button>).)*?<img[^>]*src=")assets/vf/shell/5533e819ea283b134d5f637b9e4757f8\.webp',
+                   r'\1assets/vf/shell/6275ec00611caff4a9ab7a6e977173c7.png', s, flags=re.S)
+    assert k == 1 or '-m-' in name, (name, 'scale orb', k)
     for n, title in VF2_TITLES.items():
         s, k = re.subn(r'(<h3 class="pt"[^>]*>)%s(</h3>)' % VF2_NAMES[n], lambda m: m.group(1) + title + m.group(2), s)
         assert k >= 1, (name, 'title', n)
