@@ -388,11 +388,11 @@
     var O = [o[0] - wr.left - L, o[1] - wr.top - T];
     function pt(x, y, z) { return [O[0] + x * ex[0] + y * ey[0] + z * ez[0], O[1] + x * ex[1] + y * ey[1] + z * ez[1]]; }
     function poly(a) { return a.map(function (q) { return q[0].toFixed(1) + ',' + q[1].toFixed(1); }).join(' '); }
-    /* THE GRID, MORE PRESENT (owner, 2026-11-24): the ground's lines at 2x their alpha, on the orbit's own grid and on its
+    /* THE GRID, MORE PRESENT (owner, 2026-11-24): the ground's lines at 1.4x their alpha (pushed back, owner 2026-11-24; was 2x), on the orbit's own grid and on its
        continuation alike, so the spatial system reads at a glance and the two stay one surface; the grid's own fade-in and
        opacity are untouched */
     if (!grd.__vfLine) { grd.__vfLine = 1; var gb = getComputedStyle(grd).backgroundImage;
-      grd.style.backgroundImage = gb.replace(/rgba\(([^,]+),([^,]+),([^,]+),\s*([\d.]+)\)/g, function (m, r, g, b, a) { return 'rgba(' + r + ',' + g + ',' + b + ',' + Math.min(1, a * 2).toFixed(3) + ')'; }); }
+      grd.style.backgroundImage = gb.replace(/rgba\(([^,]+),([^,]+),([^,]+),\s*([\d.]+)\)/g, function (m, r, g, b, a) { return 'rgba(' + r + ',' + g + ',' + b + ',' + Math.min(1, a * 1.4).toFixed(3) + ')'; }); }
     /* colours from the scene itself, so either theme reads true */
     function css(sel, prop) { var e = scene.querySelector(sel); return e ? getComputedStyle(e)[prop] : ''; }
     var line = (getComputedStyle(grd).backgroundImage.match(/rgba?\([^)]*\)/) || ['rgba(230,228,223,.11)'])[0],
@@ -466,7 +466,7 @@
       for (var i = 0; i < els.length; i++) { var c = getComputedStyle(els[i]).backgroundColor, m = c.match(/[\d.]+/g); if (m && (m.length < 4 || +m[3] > 0.5)) return rgb(c); } return [10, 10, 11]; })();
     var inkc = rgb(edge), darkT = (bgc[0] + bgc[1] + bgc[2]) / 3 < 128;
     function mix(k) { return 'rgb(' + bgc.map(function (v, i) { return Math.round(v + (inkc[i] - v) * k); }).join(',') + ')'; }
-    var SH = darkT ? { t: 0.07, l: 0.045, r: 0.028, e: 0.08 } : { t: 0.015, l: 0.05, r: 0.085, e: 0.12 }; /* a quiet backdrop (owner, 2026-11-24): faces a step apart, edges below the streets' */
+    var SH = darkT ? { t: 0.042, l: 0.027, r: 0.015, e: 0.05 } : { t: 0.01, l: 0.03, r: 0.052, e: 0.075 }; /* further back (owner, 2026-11-24, second dimming): faces about 60% of their previous value, still a step apart; edges dimmer still */
     /* FALLOFF BY VALUE (owner, 2026-11-24; replaces the masked veil and the far blur): near the copy, the navigation, the
        controls and the featured display, every surface's shading is pulled towards the ground colour - still opaque,
        still dimensional - reaching full strength only ~220px clear of them. No transparency, blur or overlay. */
@@ -484,7 +484,7 @@
         '<polygon points="' + poly(top) + '" fill="' + mix(SH.t * f + 0.01) + '" stroke-opacity="' + (SH.e * 1.3 * f + 0.03).toFixed(3) + '"/>';
     }
     /* lots carry a faint ground tone of their own, so the streets between them read as continuous channels */
-    var kerbs = lots.map(function (l) { var s = 4 * cell, c1 = pt(l.x + s / 2, l.y + s / 2, 0), f = Math.pow(1 - l.u, 1.6) * near(c1[0], c1[1]); return '<polygon points="' + poly([pt(l.x, l.y, 0), pt(l.x + s, l.y, 0), pt(l.x + s, l.y + s, 0), pt(l.x, l.y + s, 0)]) + '" fill="' + mix((darkT ? 0.022 : 0.03) * f) + '" stroke-opacity="' + (0.3 * (0.8 * f + 0.03)).toFixed(3) + '"/>'; }).join('');
+    var kerbs = lots.map(function (l) { var s = 4 * cell, c1 = pt(l.x + s / 2, l.y + s / 2, 0), f = Math.pow(1 - l.u, 1.6) * near(c1[0], c1[1]); return '<polygon points="' + poly([pt(l.x, l.y, 0), pt(l.x + s, l.y, 0), pt(l.x + s, l.y + s, 0), pt(l.x, l.y + s, 0)]) + '" fill="' + mix((darkT ? 0.014 : 0.02) * f) + '" stroke-opacity="' + (0.2 * (0.8 * f + 0.03)).toFixed(3) + '"/>'; }).join('');
     /* STREETS AS ROUTES (cell units; centre lines at 5k + 4.5, intersections where two meet). A segment is one block long;
        it is drivable where it is not inside the plaza, stands within 2.5 ring radii and is clear of the copy and controls.
        Consecutive drivable segments along one street make a run; the cars and the tram use only runs. */
@@ -559,10 +559,10 @@
       '<rect width="' + W + '" height="' + H + '" fill="url(#vf-iso-m)"/></mask>' +
       '<mask id="vf-iso-k2" maskUnits="userSpaceOnUse" x="0" y="0" width="' + W + '" height="' + H + '"><rect width="' + W + '" height="' + H + '" fill="#fff"/>' + veil + '</mask></defs>' +
       '<rect width="' + W + '" height="' + H + '" fill="url(#vf-iso-g)" opacity="' + (getComputedStyle(grd).opacity || 0.23) + '" mask="url(#vf-iso-k)"/>' +
-      '<g mask="url(#vf-iso-k)"><g stroke="' + edge + '" stroke-width="1">' + kerbs + '</g><g fill="none" stroke="' + edge + '" stroke-opacity=".24" stroke-width="1">' + plaza + '</g>' +
-      '<g stroke="' + edge + '" stroke-opacity=".16" stroke-width="1" stroke-dasharray="3 7">' + lanes + '</g>' +
-      '<g stroke="' + edge + '" stroke-opacity=".2" stroke-width="1.2">' + stops + '</g>' +
-      '<g fill="' + fT + '" fill-opacity=".3" stroke="' + edge + '" stroke-opacity=".24" stroke-width="1">' + rails + '</g></g>' +
+      '<g mask="url(#vf-iso-k)"><g stroke="' + edge + '" stroke-width="1">' + kerbs + '</g><g fill="none" stroke="' + edge + '" stroke-opacity=".16" stroke-width="1">' + plaza + '</g>' +
+      '<g stroke="' + edge + '" stroke-opacity=".1" stroke-width="1" stroke-dasharray="3 7">' + lanes + '</g>' +
+      '<g stroke="' + edge + '" stroke-opacity=".13" stroke-width="1.2">' + stops + '</g>' +
+      '<g fill="' + fT + '" fill-opacity=".2" stroke="' + edge + '" stroke-opacity=".15" stroke-width="1">' + rails + '</g></g>' +
       '</svg>';
     /* the buildings sit above the vehicles (a block hides a car behind it; a car in front never reaches up into the block
        standing behind it), in a second drawing with its own defs: the veil, and the far blocks' softening */
@@ -635,7 +635,7 @@
         if (stations.length > 1) { var nx = t.tgt + (t.fwd === -1 ? -1 : 1); if (nx < 0 || nx >= stations.length) { t.fwd = -(t.fwd || 1); nx = t.tgt + t.fwd; } else t.fwd = t.fwd || 1; t.tgt = nx; t.dir = (stations[nx] - t.s) > 0 ? 1 : -1; } }
     }
     function draw(v) { var q = pos(v), sp = pt(q[0] * cell, q[1] * cell, 0), r = v.r, ends = Math.min((v.s - r.p[0]), (r.p[r.p.length - 1] - v.s));
-      var a = (v.tram ? 0.5 : 0.42) * fade(q[0], q[1]) * Math.max(0, Math.min(1, ends / 1.2));
+      var a = (v.tram ? 0.34 : 0.28) * fade(q[0], q[1]) * Math.max(0, Math.min(1, ends / 1.2));
       v.e.style.transform = 'translate(' + sp[0].toFixed(1) + 'px,' + sp[1].toFixed(1) + 'px)'; v.e.style.opacity = a.toFixed(3); }
     var last = 0;
     function frame(ts) {
