@@ -177,28 +177,28 @@ x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
   font-family:'Newsreader',Georgia,serif!important;font-weight:330!important;font-optical-sizing:auto;letter-spacing:-.01em!important}
 /* HERO PHOTO AND ROLES (owner, 2026-11-23). The profile photo (About's own portrait) sits just above the introduction,
    left-aligned, ~54px on screen at any fit (board px / --vfz), with a small corner radius. The two roles carry a slow
-   gradient clipped to their letters only: pearl silver, ice blue, lavender, steel blue (deeper tones of the same four on
-   the light theme for contrast). No glow, no layout change (background-clip only); still under reduced motion. */
+   gradient clipped to their letters only: cobalt, periwinkle and violet (owner, 2026-11-24; was pearl silver, ice blue,
+   lavender, steel blue), deeper tones of the same three on the light theme for contrast. No glow, no layout change (background-clip only); still under reduced motion. */
 #vf .vf-me{display:block;width:calc(54px / var(--vfz, 1));height:calc(54px / var(--vfz, 1));object-fit:cover;
   border-radius:calc(10px / var(--vfz, 1));margin:0 0 calc(20px / var(--vfz, 1))}
 #vf .top .vf-me{width:52px;height:52px;border-radius:10px;margin:8px 0 0}
 #vf .root h1.h1 .vf-gt{display:inline!important} /* the phone board blocks its h1 spans (its old hand-broken lines) */
-#vf .vf-gt{background-image:linear-gradient(100deg,#D8DCE3 0%,#BFE4F4 22%,#C8B9F2 46%,#7E9CC4 68%,#D8DCE3 86%,#BFE4F4 100%);
+#vf .vf-gt{background-image:linear-gradient(100deg,#6E93FF 0%,#A4B0FF 24%,#B08CFF 48%,#6E93FF 70%,#A4B0FF 86%,#B08CFF 100%);
   background-size:300% 100%;background-position:0% 50%;-webkit-background-clip:text;background-clip:text;
   -webkit-text-fill-color:transparent;color:transparent;animation:vf-gt 18s ease-in-out infinite alternate}
-html[data-vf-theme="light"] #vf .vf-gt{background-image:linear-gradient(100deg,#4E5866 0%,#2F6F91 22%,#5D4AA0 46%,#2C4F7C 68%,#4E5866 86%,#2F6F91 100%)}
+html[data-vf-theme="light"] #vf .vf-gt{background-image:linear-gradient(100deg,#2448C8 0%,#4C58C4 24%,#6A3CC4 48%,#2448C8 70%,#4C58C4 86%,#6A3CC4 100%)}
 @keyframes vf-gt{to{background-position:100% 50%}}
 @media (prefers-reduced-motion: reduce){#vf .vf-gt{animation:none}}
 /* "ROCKY" (owner, 2026-11-24). The name alone in Newsreader Italic (the family's own italic master, same weight and optical
-   size as the headline), with a slow pearl-silver / muted-lavender / ice-blue gradient clipped strictly to its letters:
+   size as the headline), with a slow cobalt / periwinkle / violet gradient (was pearl / lavender / ice) clipped strictly to its letters:
    no glow, shadow or spill. A hair of inline padding (given back by the margin) keeps the italic's overhang inside the
    painted box, so size, spacing and wrapping are the headline's own. Deeper tones of the same three on the light theme
    for contrast; still under reduced motion. */
 #vf .vf-rk{font-style:italic;font-weight:inherit;font-synthesis:none;padding:0 .08em 0 .02em;margin:0 -.08em 0 -.02em;
-  background-image:linear-gradient(105deg,#E6E4E8 0%,#C4BAE6 30%,#B9DCEE 55%,#E6E4E8 78%,#C4BAE6 100%);
+  background-image:linear-gradient(105deg,#7C9BFF 0%,#A9B2FF 30%,#B693FF 55%,#7C9BFF 78%,#A9B2FF 100%);
   background-size:260% 100%;background-position:0% 50%;-webkit-background-clip:text;background-clip:text;
   -webkit-text-fill-color:transparent;color:transparent;animation:vf-rk 24s ease-in-out infinite alternate}
-html[data-vf-theme="light"] #vf .vf-rk{background-image:linear-gradient(105deg,#4F4C57 0%,#5B4C96 30%,#2C6A8A 55%,#4F4C57 78%,#5B4C96 100%)}
+html[data-vf-theme="light"] #vf .vf-rk{background-image:linear-gradient(105deg,#2A4CCB 0%,#4D57C2 30%,#6B3DC6 55%,#2A4CCB 78%,#4D57C2 100%)}
 @keyframes vf-rk{to{background-position:100% 50%}}
 @media (prefers-reduced-motion: reduce){#vf .vf-rk{animation:none}}
 /* TRUSTED BY MARQUEE (owner, 2026-11-24; replaces the four-mark row; tools/vfinal_build.py LOGOS). Eight monochrome masks
