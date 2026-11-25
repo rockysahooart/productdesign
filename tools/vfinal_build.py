@@ -477,6 +477,19 @@ def vf2_order(s, name):
     s, k = re.subn(r'(<button type="button" class="orb" data-n="10"[^>]*>(?:(?!</button>).)*?<img[^>]*src=")assets/vf/shell/5533e819ea283b134d5f637b9e4757f8\.webp',
                    r'\1assets/vf/shell/6275ec00611caff4a9ab7a6e977173c7.png', s, flags=re.S)
     assert k == 1 or '-m-' in name, (name, 'scale orb', k)
+    # DESIGN SYSTEM AUDIT VISUAL (owner, 2026-11-24): a Figma-style canvas of the audit's design system in progress
+    # (tools/dsa_canvas.py; every label, colour, ratio and line is the audit's own) replaces the isometric diagram on the
+    # display, the orbit card and so the Projects card; dark and light canvases. A solid canvas: no lighten blend.
+    import dsa_canvas, base64
+    th = 'l' if '-light' in name else 'd'
+    s, k = re.subn(r'(<!--vf2-dsa:begin--><div class="dsa3" data-theme="[dl]">)<svg.*?</svg>(</div><!--vf2-dsa:end-->)',
+                   lambda m: m.group(1) + dsa_canvas.svg(th) + m.group(2), s, flags=re.S)
+    assert k == 1, (name, 'dsa display', k)
+    uri = 'data:image/svg+xml;base64,' + base64.b64encode(dsa_canvas.svg(th).encode('utf-8')).decode('ascii')
+    s, k = re.subn(r'(<button type="button" class="orb" data-n="06"[^>]*>(?:(?!</button>).)*?<img[^>]*src=")data:image/svg\+xml;base64,[A-Za-z0-9+/=]+',
+                   lambda m: m.group(1) + uri, s, flags=re.S)
+    assert k == 1, (name, 'dsa orb', k)
+    s = s.replace('</style>', '.root .orbs .orb[data-n="06"]>img,.root .art[data-n="06"] .pf-live>img{mix-blend-mode:normal!important}</style>', 1)
     for n, title in VF2_TITLES.items():
         s, k = re.subn(r'(<h3 class="pt"[^>]*>)%s(</h3>)' % VF2_NAMES[n], lambda m: m.group(1) + title + m.group(2), s)
         assert k >= 1, (name, 'title', n)
@@ -822,7 +835,16 @@ def projects_boards():
     its own visual (the PCV the Orbit shows) on a dark plinth-like panel of one proportion, and its display title - no
     descriptions or metadata. The whole card is the link to the project's existing destination. Colours derive from the
     board's text colour (currentColor), so the dark and light boards each read true."""
-    land = open(os.path.join(OUT, 'VF2-2-Landing-uw-r29.html'), encoding='utf-8').read()
+    lands = {th: open(os.path.join(OUT, 'VF2-2-Landing-uw%s-r29.html' % th), encoding='utf-8').read() for th in ('', '-light')}
+    cards_by = {}
+    for th, land in lands.items():
+        cards_by[th] = _cards(land)
+    for src, dst, mob in (('VF2-4-About', 'VF2-5-Projects', 0), ('VF2-4-About-light', 'VF2-5-Projects-light', 0),
+                          ('VF2-4-About-m-r6', 'VF2-5-Projects-m', 1), ('VF2-4-About-m-light-r6', 'VF2-5-Projects-m-light', 1)):
+        _projects_board(src, dst, mob, cards_by['-light' if 'light' in dst else ''])
+
+
+def _cards(land):
     cards = []
     for n in VF2_ORDER:
         if n in VF2_HIDDEN:
@@ -834,7 +856,10 @@ def projects_boards():
         title = re.sub(r'<(?!/?span\b)[^>]+>', '', pn).strip()  # the Landing's no-break spans (Securities-Based) stay
         cards.append('<li><a class="pjc" %s><span class="pjv"><img src="%s" alt="" loading="lazy" decoding="async"></span>'
                      '<h2 class="pjt">%s</h2></a></li>' % (attrs, img, title))
-    grid = '<ol class="pjg" role="list">' + ''.join(cards) + '</ol>'
+    return '<ol class="pjg" role="list">' + ''.join(cards) + '</ol>'
+
+
+def _projects_board(src, dst, mob, grid):
     css = ('<style>.root .pj{padding:var(--pj-top) var(--pj-x) 0}.root .pj h1{margin:0 0 var(--pj-h);font:330 var(--pj-fs)/1.1 \'Newsreader\',Georgia,serif;'
            'letter-spacing:-.01em;color:inherit}.root .pjg{list-style:none;margin:0;padding:0;display:grid;'
            'grid-template-columns:repeat(var(--pj-c),minmax(0,1fr));gap:var(--pj-gy) var(--pj-gx)}.root .pjc{display:block;color:inherit;'
@@ -845,25 +870,23 @@ def projects_boards():
            '.root .pjc:hover .pjv{border-color:color-mix(in srgb,currentColor 40%,transparent)}.root .pjc:hover .pjt{opacity:1}'
            '.root .pjc:focus-visible .pjv{outline:2px solid currentColor;outline-offset:4px}'
            '.root .pjt .vc-nb{white-space:nowrap}@media (prefers-reduced-motion:reduce){.root .pjv{transition:none}}</style>')
-    for src, dst, mob in (('VF2-4-About', 'VF2-5-Projects', 0), ('VF2-4-About-light', 'VF2-5-Projects-light', 0),
-                          ('VF2-4-About-m-r6', 'VF2-5-Projects-m', 1), ('VF2-4-About-m-light-r6', 'VF2-5-Projects-m-light', 1)):
-        s = open(os.path.join(OUT, src + '.html'), encoding='utf-8').read()
-        vars_ = ('--pj-top:48px;--pj-x:var(--gx);--pj-h:40px;--pj-fs:34px;--pj-c:1;--pj-gy:56px;--pj-gx:0;--pj-t:18px;--pj-ts:21px' if mob else
-                 '--pj-top:72px;--pj-x:80px;--pj-h:72px;--pj-fs:52px;--pj-c:3;--pj-gy:88px;--pj-gx:48px;--pj-t:24px;--pj-ts:22px')
-        body = '<section class="pj" aria-labelledby="pj-h" style="%s"><h1 id="pj-h">Projects</h1>%s</section>' % (vars_, grid)
-        if mob:
-            s, k = re.subn(r'<main>.*?</main>', '<main>' + body + '</main>', s, flags=re.S)
-        else:
-            s, k = re.subn(r'<section aria-label="About".*?(?=<section class="inf")', body, s, flags=re.S)
-            s = s.replace('margin-top:140px;padding:90px 80px 100px', 'margin-top:160px;padding:90px 80px 100px', 1)
-        assert k == 1, (dst, 'content')
-        s = re.sub(r'(<div class="root[^"]*" style="[^"]*?)height:\d+px;', r'\1height:auto;', s, count=1)
-        s = s.replace('<a href="#/about" aria-current="page"', '<a href="#/about"').replace('<a class="mni" href="#/about" aria-current="page"', '<a class="mni" href="#/about"')
-        s = s.replace('href="./#/projects" class="g"', 'href="./#/projects" class="g" aria-current="page"', 1)
-        s = s.replace('<a class="mni" href="./#/projects">', '<a class="mni" href="./#/projects" aria-current="page">', 1)
-        s = s.replace('</helmet>', css + '</helmet>', 1)
-        open(os.path.join(OUT, dst + '.html'), 'w', encoding='utf-8').write(s)
-        print('board', dst)
+    s = open(os.path.join(OUT, src + '.html'), encoding='utf-8').read()
+    vars_ = ('--pj-top:48px;--pj-x:var(--gx);--pj-h:40px;--pj-fs:34px;--pj-c:1;--pj-gy:56px;--pj-gx:0;--pj-t:18px;--pj-ts:21px' if mob else
+             '--pj-top:72px;--pj-x:80px;--pj-h:72px;--pj-fs:52px;--pj-c:3;--pj-gy:88px;--pj-gx:48px;--pj-t:24px;--pj-ts:22px')
+    body = '<section class="pj" aria-labelledby="pj-h" style="%s"><h1 id="pj-h">Projects</h1>%s</section>' % (vars_, grid)
+    if mob:
+        s, k = re.subn(r'<main>.*?</main>', '<main>' + body + '</main>', s, flags=re.S)
+    else:
+        s, k = re.subn(r'<section aria-label="About".*?(?=<section class="inf")', body, s, flags=re.S)
+        s = s.replace('margin-top:140px;padding:90px 80px 100px', 'margin-top:160px;padding:90px 80px 100px', 1)
+    assert k == 1, (dst, 'content')
+    s = re.sub(r'(<div class="root[^"]*" style="[^"]*?)height:\d+px;', r'\1height:auto;', s, count=1)
+    s = s.replace('<a href="#/about" aria-current="page"', '<a href="#/about"').replace('<a class="mni" href="#/about" aria-current="page"', '<a class="mni" href="#/about"')
+    s = s.replace('href="./#/projects" class="g"', 'href="./#/projects" class="g" aria-current="page"', 1)
+    s = s.replace('<a class="mni" href="./#/projects">', '<a class="mni" href="./#/projects" aria-current="page">', 1)
+    s = s.replace('</helmet>', css + '</helmet>', 1)
+    open(os.path.join(OUT, dst + '.html'), 'w', encoding='utf-8').write(s)
+    print('board', dst)
 
 
 def main():
