@@ -807,6 +807,15 @@
       stg.style.setProperty('--vf-nx', (pr.left - a.left).toFixed(1) + 'px');
       stg.style.setProperty('--vf-ny', (pr.top - a.top).toFixed(1) + 'px'); /* the board rewrites each arrow's style attribute */
     }
+    /* COUNTER CONTROLS (owner, 2026-11-24): small circular previous / next either side of the counter; they press the
+       board's own previous / next, so navigation logic, keys and announcements stay the board's */
+    var pg0 = root.querySelector('.stage .pg');
+    if (pg0 && !pg0.querySelector('.vf-pgb')) [['pv', 'Previous project', 'M6.5 1.5 3 5l3.5 3.5'], ['nx', 'Next project', 'M3.5 1.5 7 5 3.5 8.5']].forEach(function (d, i) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'vf-pgb vf-pgb--' + d[0]; b.setAttribute('aria-label', d[1]);
+      b.innerHTML = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="' + d[2] + '" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      b.addEventListener('click', function () { var t2 = root.querySelector('.stage .r6nav.' + d[0]) || root.querySelector('.stage button.' + d[0]); if (t2) t2.click(); });
+      if (i === 0) pg0.insertBefore(b, pg0.firstChild); else pg0.appendChild(b);
+    });
     /* the index grows as the active row passes 04: re-measure the column bound on each project change */
     var pns0 = root.querySelector('.pns');
     if (pns0) try { new MutationObserver(function () { f(); }).observe(pns0, { subtree: true, attributes: true, attributeFilter: ['hidden'] }); } catch (e) {}

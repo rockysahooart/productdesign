@@ -329,7 +329,7 @@ VF2_TAGS = ['Mobile marketplace · Paid product design brief', 'Patient experien
             'Two-sided marketplace · Music education']
 VF2_COPY = [
     ('I’ve designed human-centered products in an AI-saturated world.',
-     'I’m Rocky, a product designer and creative technologist. I turn complex ideas into experiences people can understand and use.'),
+     'I’m Rocky, a product designer and creative technologist.'),
     ("I'm Rocky, a product designer connecting people, processes, and technology. I make complex systems easier to understand and use.",
      'Sarthak Sahoo · Product Designer · Austin, TX'),
     ('Sarthak “Rocky” Sahoo', 'Sarthak Sahoo'),
@@ -669,7 +669,10 @@ def convert(s, name=''):
             '<li style="flex-grow:%.3f"><img src="assets/%s" alt="%s" width="%d" height="%d" decoding="async"></li>' % (w / h, f, a, w, h)
             for f, a, w, h in L) + '</ul>'
         # HERO (owner, 2026-11-23): one sentence pair on every board; the phone board's hand-broken lines go (balanced wrap)
-        HERO = 'I’m Rocky, a product designer and creative technologist. I turn complex ideas into experiences people can understand and use.'
+        # HEADLINE AND SUBTITLE (owner, 2026-11-24; replaces the two-sentence hero): one sentence in the headline, the
+        # second idea as a quieter Geist subtitle beneath it (index.html .vf-sub)
+        HERO = 'I’m Rocky, a product designer and creative technologist.'
+        SUB = '<p class="vf-sub">I explore how design and technology can turn complicated ideas into engaging, useful experiences.</p>'
         # the two roles carry the gradient (index.html .vf-gt); the profile photo stands just above the introduction
         HERO_H = HERO.replace('product designer', '<span class="vf-gt">product designer</span>').replace(
             'creative technologist', '<span class="vf-gt">creative technologist</span>')
@@ -690,6 +693,7 @@ def convert(s, name=''):
             m0 = re.search(r'</h1>(<p class="g"[^>]*>)(.*?)</p>', s)
             assert m0, name
             s = s[:m0.start()] + '</h1>' + m0.group(1) + 'Sarthak Sahoo · Product Designer · Austin, TX</p>' + logos + s[m0.end():]
+        s = s.replace(HERO_H + '</h1>', HERO_H + '</h1>' + SUB, 1)
         # ORBIT DEPTH WITHOUT BLACK-OUT (owner, 2026-11-23). vf2-dim dimmed each neighbour with brightness() (down to .13)
         # over its .78 backing plate, so out-of-view cards read as opaque black (light: grey) rectangles. The same
         # position-driven curve f(u) - u is the card's place on the ring, 1 at the front - now drives transparency,
@@ -711,6 +715,19 @@ def convert(s, name=''):
                 'contrast(calc(0.72 + 0.23 * %(f)s)) saturate(calc(0.35 + 0.55 * %(f)s)) blur(calc((1 - %(f)s) * 0.7px))!important}'
                 '</style>') % {'f': F}
         if '-m-' not in name:
+            # INDEX WITHOUT RULES (owner, 2026-11-24): the lines between projects, above the list and above Filter read as a
+            # table laid over the city; they go (kept transparent, so nothing moves). Hierarchy is spacing and contrast:
+            # quieter titles, the active one brighter with its 2px rail; the active marker diamond goes too, so numbers
+            # and titles keep one column. Hover brightens the title; keyboard focus draws a hairline ring; nothing shifts.
+            soft = soft.replace('</style>', '.root .lc .idx{border-top-color:transparent!important}'
+                                '.root .lc .idx>li>button.ix{border-bottom-color:transparent!important}'
+                                '.root .lc .lab{border-top-color:transparent!important}'
+                                '.root .lc .idx .ix[aria-current] .c::before{display:none!important}'
+                                '.root .lc .idx .ix .it{transition:color .2s}'
+                                '.root .lc .idx .ix:not([aria-current]) .it{color:color-mix(in srgb,currentColor 72%%,transparent)}'
+                                '.root .lc .idx .ix:hover .it{color:inherit}'
+                                '.root .lc .idx .ix:focus-visible{outline:1px solid currentColor;outline-offset:3px}'
+                                '.root .lc .idx .ix .c{display:inline-block;min-width:2.6em;font-variant-numeric:tabular-nums}</style>')
             # GROUNDED ON THE PLINTH (owner, 2026-11-24): the featured display casts a soft contact shadow on the plinth's top
             # at its foot - an ellipse in the plane's own proportion (0.577), beneath the frame and the artwork (z -1 inside
             # the display's own stack), so the panel reads as standing on the plinth rather than floating over it. The

@@ -163,7 +163,7 @@ x-dc a,x-dc button,x-dc [role=button]{-webkit-tap-highlight-color:transparent}
 #vf.vf-cont.vf-stage .stage,#vf.vf-cont.vf-stage header.top{opacity:1;translate:none}
 #vf.vf-cont.vf-stage header.top > :not(.city){opacity:0;translate:0 8px}
 #vf.vf-in-1 .vf-iso{opacity:1!important;transition:opacity 1.4s cubic-bezier(.2,.7,.2,1)!important}
-#vf.vf-in-1 :where(h1.hl,.lc>h1),#vf.vf-cont.vf-in-1 header.top>h1.h1,#vf.vf-cont.vf-in-1 header.top>h1.hl,
+#vf.vf-in-1 :where(h1.hl,.lc>h1,.lc>.vf-sub),#vf.vf-cont.vf-in-1 header.top>:is(h1.h1,.vf-sub),#vf.vf-cont.vf-in-1 header.top>h1.hl,
 #vf.vf-in-2 :where(header,.sig,.rl2,.id>:not(h1),.lc>.vf-me,.lc>p.g),#vf.vf-cont.vf-in-2 header.top>:is(.tr,.vf-me),
 #vf.vf-in-3 :where(.lc>.vf-logos),#vf.vf-cont.vf-in-3 header.top>.vf-logos,
 #vf.vf-in-4 :where(.lc>*,.idx,.chips,.vix,#vfmgrp,.pager,.pg,.abt,.stage>:not(.world):not(.r4pool),.vf-gal),#vf.vf-cont.vf-in-4 header.top>a.vps,
@@ -252,6 +252,24 @@ html[data-vf-theme="light"] #vf .vf-logos img{filter:grayscale(1) brightness(0);
    24px; both now meet a comfortable target without moving their text */
 #vf .root header.hd a.idn{display:inline-block;padding:3px 0}
 #vf header.ar-mast p.res a.lk{min-height:44px;display:flex;align-items:center}
+/* HERO SUBTITLE (owner, 2026-11-24): Geist, a step below the identity line in weight of presence - smaller than the
+   headline, quieter in value - with clear air above (from the headline) and below (to the identity line / logos); sizes
+   follow the board's readable floors (board px / --vfz). The column width is the board's own. */
+#vf .root .lc .vf-sub{margin:calc(18px / var(--vfz, 1)) 0 calc(26px / var(--vfz, 1));max-width:30em;
+  font:400 max(21px, calc(14.5px / var(--vfz, 1)))/1.55 'Geist','Inter',sans-serif;opacity:.72;text-wrap:pretty}
+#vf .root .lc .vf-sub + p.g{margin-top:0}
+#vf .top .vf-sub{margin:14px 0 20px;font:400 15.5px/1.55 'Geist','Inter',sans-serif;opacity:.72;text-wrap:pretty}
+/* COUNTER CONTROLS (owner, 2026-11-24): a small circular previous / next either side of the counter, one compact group on
+   its baseline; hairline rings and a light chevron, quieter than the counter, brighter on hover; 24px circles inside
+   30px targets on screen at any fit (board px / --vfz). They drive the board's own previous / next. */
+#vf .root .stage .pg{display:inline-flex!important;align-items:center;gap:calc(10px / var(--vfz, 1))}
+#vf .root .stage .pg .vf-pgb{appearance:none;display:inline-grid;place-items:center;width:calc(30px / var(--vfz, 1))!important;height:calc(30px / var(--vfz, 1))!important;min-width:0!important;min-height:0!important;
+  padding:0!important;margin:0!important;border:0!important;background:none!important;color:inherit;cursor:pointer;opacity:.62;transition:opacity .2s}
+#vf .root .stage .pg .vf-pgb::before{content:"";grid-area:1/1;width:calc(24px / var(--vfz, 1));height:calc(24px / var(--vfz, 1));border-radius:50%;
+  border:1px solid color-mix(in srgb,currentColor 40%,transparent)}
+#vf .root .stage .pg .vf-pgb svg{grid-area:1/1;width:calc(9px / var(--vfz, 1));height:calc(9px / var(--vfz, 1))}
+#vf .root .stage .pg .vf-pgb:hover{opacity:1}
+#vf .root .stage .pg .vf-pgb:focus-visible{outline:1px solid currentColor;outline-offset:1px;border-radius:50%;opacity:1}
 /* case-study folds (assets/vf/app.js fold): the supporting prose behind a quiet, full-width disclosure row; its label is
    the fold's own sub-heading where it has one, at that heading's size, with a chevron that turns when open */
 #vf details.vf-fold{margin:20px 0 28px;border-top:1px solid color-mix(in srgb,currentColor 16%,transparent)}
