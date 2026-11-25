@@ -129,7 +129,7 @@
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   })();
 </script>
-<link rel="stylesheet" href="assets/vf/fonts/fonts.css?v=2a6008a1db">
+<link rel="stylesheet" href="assets/vf/fonts/fonts.css?v=7b2bbf8ed0">
 <style>
 /* VFINAL page ground: the board tokens' --bg, so nothing flashes before the board mounts. */
 html{background:#0A0A0B}html[data-vf-theme="light"]{background:#EEECE7}
@@ -300,6 +300,24 @@ html[data-vf-theme="light"] #vf .vf-bl{mix-blend-mode:normal;
   -webkit-background-clip:text;background-clip:text}
 html[data-vf-theme="light"] #vf .vf-bl--halo{opacity:calc(var(--bl) * .35)}html[data-vf-theme="light"] #vf .vf-bl--far{display:none}
 @media (prefers-reduced-motion: reduce){#vf .vf-bl{display:none}}
+/* CASE-STUDY ACCESSIBILITY PASS (owner, 2026-11-24; axe-core 4.10 + interaction tests). Fixes to the presentation around
+   the artifacts, never to the reconstructed product screens themselves:
+   - OptiFlow mode tabs: the selected tab took the product's dark ink as its fill on the dark board (1.13:1); it is light
+     with dark text, as on the light board.
+   - Audit: the findings card's error line (2.48:1) and the before-flow's upcoming steps (2.46:1) reach 4.5:1; upcoming
+     steps stay dimmer than the current one.
+   - Audit prototype's mock sidebar buttons (out of the tab order, no action) no longer look or act clickable.
+   - Links inside running text are underlined, so they never rely on colour alone.
+   - Scrolling figures (app.js a11yCase) take focus with a visible ring. */
+html:not([data-vf-theme="light"]) #vf .cs5 .ofw__seg > button[aria-selected="true"]{background:#E6E4DF!important;color:#141416!important}
+html:not([data-vf-theme="light"]) #vf .cs5 .wr__err{color:#F0908A!important}
+#vf .cs5 #audit [data-flow="before"] > .ap__fl-n[data-s="next"]{opacity:.78!important}
+html:not([data-vf-theme="light"]) #vf .cs5 #audit [data-flow="before"] > .ap__fl-n[data-s="next"]{color:#BEBEC0!important}
+#vf .cs5 .ap__nav button{pointer-events:none;cursor:default}
+html[data-vf-theme="light"] #vf .cs5 #audit [data-flow="before"] > .ap__fl-n[data-s="next"]{color:#4A4A4A!important}
+html[data-vf-theme="light"] #vf .cs5 .pnav__n{color:#625F59!important;opacity:1!important}
+#vf p.p a.lk,#vf .ar-p a:not([class]){text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+#vf [data-vf-scroll]:focus-visible{outline:2px solid currentColor;outline-offset:4px}
 /* case-study folds (assets/vf/app.js fold): the supporting prose behind a quiet, full-width disclosure row; its label is
    the fold's own sub-heading where it has one, at that heading's size, with a chevron that turns when open */
 #vf details.vf-fold{margin:20px 0 28px;border-top:1px solid color-mix(in srgb,currentColor 16%,transparent)}
@@ -401,9 +419,9 @@ html[data-vf-theme="light"] #vf .vf-bl--halo{opacity:calc(var(--bl) * .35)}html[
 #vf-loading.out{opacity:0;pointer-events:none}
 @media (prefers-reduced-motion: reduce){#vf-loading{transition:none}}
 </style>
-<script src="assets/vf/dc.js?v=2a6008a1db"></script>
-<script src="assets/vf/journeys.js?v=2a6008a1db" defer></script>
-<script src="assets/vf/app.js?v=2a6008a1db" defer></script>
+<script src="assets/vf/dc.js?v=7b2bbf8ed0"></script>
+<script src="assets/vf/journeys.js?v=7b2bbf8ed0" defer></script>
+<script src="assets/vf/app.js?v=7b2bbf8ed0" defer></script>
 </head>
 <body>
 <div id="vf"></div>

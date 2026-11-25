@@ -352,7 +352,12 @@
       var t = document.createElement('h3'); t.className = 'vf-jr-t'; t.textContent = st[0];
       var p = document.createElement('p'); p.className = 'vf-jr-p'; p.textContent = st[1];
       li.appendChild(t);
-      var target = st[2] && host.querySelector(st[2]);
+      /* a target is a selector, or 'text:' + the start of a section's heading (the section itself is the destination);
+         a step with no destination of its own has no button (no two buttons go to the same place) */
+      var target = !st[2] ? null : (st[2].indexOf('text:') === 0 ? (function (q) {
+        var hs = host.querySelectorAll('section.acc > .acc__h, section.pt > .pt__h, .cs-wrap > section h2, section.acc h3, figure');
+        for (var i = 0; i < hs.length; i++) if ((hs[i].textContent || '').replace(/\s+/g, ' ').trim().indexOf(q) === 0) return hs[i].closest('section') || hs[i];
+        return null; })(st[2].slice(5)) : host.querySelector(st[2]));
       if (target) {
         var b = document.createElement('button'); b.type = 'button'; b.className = 'vf-jr-go';
         b.innerHTML = '<span></span><span aria-hidden="true">\u2193</span>'; b.firstChild.textContent = st[3];
@@ -720,6 +725,20 @@
     });
   }
 
+  /* scrolling figures (wide tables, the OptiFlow document walk) are reachable and announced: keyboard users can focus
+     them and scroll with the arrow keys; the name comes from the figure's own caption or heading */
+  function a11yCase(host) {
+    [].forEach.call(host.querySelectorAll('.ar-table__wrap, .ofd-w, .vf-ba-scroll'), function (e) {
+      if (e.hasAttribute('data-vf-scroll')) return;
+      e.setAttribute('data-vf-scroll', ''); if (!e.hasAttribute('tabindex')) e.setAttribute('tabindex', '0');
+      if (!e.getAttribute('role')) e.setAttribute('role', 'region');
+      if (!e.getAttribute('aria-label') && !e.getAttribute('aria-labelledby')) {
+        var f = e.closest('figure'), c = f && f.querySelector('figcaption'), h = !c && e.closest('section') && e.closest('section').querySelector('h2, h3');
+        e.setAttribute('aria-label', ((c || h) ? (c || h).textContent.replace(/\s+/g, ' ').trim().slice(0, 80) : 'Figure') + ' (scrollable)');
+      }
+    });
+  }
+
   function fold(host) {
     var KEEP = 'figure, section.ar-demo, section.acc, .ape__deck, .sk-crops, .sk-cfg, .cs-did, .cs-move, .ar-end, .au-rule, ' +
       '.ts-turn, .pair, .cmp, .mount, .pv__embed, .scr, .hero, .lfx, .vf-jr, details';
@@ -950,7 +969,7 @@
       cur = VFDC.mount(docs[0], main);
       vf2Fit(cur.el); gallery(cur); heroLight(cur.el); (function (h) { /* the world is measured once the Landing has settled (fonts, entrance) */
         var go = function () { setTimeout(function () { if (h.isConnected) isoWorld(h); }, 1400); };
-        try { document.fonts.ready.then(go); } catch (e) { go(); } })(cur.el); disable(cur.el); if (R.k !== 'about' && R.k !== 'projects') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); evidence(cur.el); fold(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
+        try { document.fonts.ready.then(go); } catch (e) { go(); } })(cur.el); disable(cur.el); if (R.k !== 'about' && R.k !== 'projects') motion(cur.el); toggle(cur.el); slotRing(cur.el); wheelCentre(cur.el); phoneGutter(cur.el); accCentre(cur.el); openCards(cur.el); if (R.k === 'case') { journey(cur.el); evidence(cur.el); fold(cur.el); a11yCase(cur.el); chips(cur.el); headings(cur.el); pnavClear(cur.el); } title(cur.el);
       /* SCROLL ON ENTRY: history.scrollRestoration is manual (head script), so every entry starts at 0 - fresh visit,
          refresh, Back, the brand or nav link. Only a theme switch (vf-y, same page) or an explicit in-page anchor
          (#projects, #top) places it elsewhere. */

@@ -820,10 +820,36 @@ def convert(s, name=''):
     s = re.sub(r'href=(["\'])([^"\']*)\1', lambda m: rw_href(m) if not m.group(2).startswith("' +") else m.group(0), s)
     if name.startswith('VF2-') or name.split('-')[0] in STUDIES:
         s = projects_links(s, name)
+    if name.split('-')[0] in STUDIES:
+        s = case_pnav(s, name)
     if name.startswith('VF2-'):
         # ONE CASING (owner, 2026-11-24, consistency pass): controls and links in sentence case, as everywhere else on the
         # site ("View case study", "Show all 8 projects", "Start here")
         s = re.sub(r'>(\s*)View Project', r'>\1View project', s).replace('>Start Here<', '>Start here<')
+    return s
+
+
+CASE_ORDER = ['SBL', 'Craigslist', 'Carry', 'Specimen', 'Audit', 'OptiFlow']  # the shared order, case studies only
+CASE_TITLE = {'SBL': 'How I Modernized Securities-Based Lending Without Disrupting Familiar Workflows',
+              'Craigslist': 'How I Redesigned Used-Car Discovery on Craigslist', 'Carry': 'Carry',
+              'Specimen': 'How I Redesigned Oncology Specimen Kits for Safer Handling',
+              'Audit': 'How I Audited a Healthcare Design System for Consistency and Accessibility', 'OptiFlow': 'OptiFlow'}
+
+
+def case_pnav(s, name):
+    """PROJECT-TO-PROJECT NAVIGATION (owner, 2026-11-24): each case study's Previous / Next follows the shared project
+    order (SBL, Craigslist, Carry, Specimen, Design System Audit, OptiFlow; the two external projects have no case page),
+    wrapping at the ends - it still followed the old order. Titles as the links already showed them."""
+    base = name.split('-')[0]
+    if base not in CASE_ORDER:
+        return s
+    i = CASE_ORDER.index(base)
+    pv, nx = CASE_ORDER[i - 1], CASE_ORDER[(i + 1) % len(CASE_ORDER)]
+    s, k1 = re.subn(r'<a class="pv" href="[^"]*"><span class="l">← Previous</span><span class="t">[^<]*</span></a>',
+                    '<a class="pv" href="%s"><span class="l">← Previous</span><span class="t">%s</span></a>' % (ROUTE[pv], CASE_TITLE[pv]), s)
+    s, k2 = re.subn(r'<a class="nx" href="[^"]*"><span class="l">Next →</span><span class="t">[^<]*</span></a>',
+                    '<a class="nx" href="%s"><span class="l">Next →</span><span class="t">%s</span></a>' % (ROUTE[nx], CASE_TITLE[nx]), s)
+    assert k1 == 1 and k2 == 1, (name, 'pnav', k1, k2)
     return s
 
 

@@ -244,7 +244,7 @@ def motion(b, _):
 
 def links(b, _):
     print('links')
-    ring = ['carry', 'optiflow', 'specimen', 'audit', 'sbl', 'craigslist']
+    ring = ['sbl', 'craigslist', 'carry', 'specimen', 'audit', 'optiflow']  # the shared project order (case studies only), 2026-11-24
     for i, k in enumerate(ring):
         visit(b, 1440, 900, '#/' + k, settle=2)
         pn = b.eval("[...document.querySelectorAll('nav.pn a')].map(a=>a.getAttribute('href'))")
