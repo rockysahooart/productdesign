@@ -201,17 +201,30 @@ html[data-vf-theme="light"] #vf .vf-gt{background-image:linear-gradient(100deg,#
 html[data-vf-theme="light"] #vf .vf-rk{background-image:linear-gradient(105deg,#4F4C57 0%,#5B4C96 30%,#2C6A8A 55%,#4F4C57 78%,#5B4C96 100%)}
 @keyframes vf-rk{to{background-position:100% 50%}}
 @media (prefers-reduced-motion: reduce){#vf .vf-rk{animation:none}}
-/* Trusted By (tools/vfinal_build.py): the original four marks in one row the width of the introduction, at one height,
-   proportions kept. Drawn for white grounds (two carry black), so each renders as a single-tone silhouette at reduced
-   opacity - light on dark, dark on light - one quiet weight for all four; the files are untouched. */
-#vf .vf-logos{display:flex;align-items:center;gap:clamp(18px,4.6vw,36px);margin:44px 0 0;padding:0;list-style:none;max-width:100%}
-#vf .vf-logos li{flex-basis:0;min-width:0;display:flex}
-/* CVS Health is a two-line mark (no transparent padding in its file): at the shared height its letters read about half
-   the size of the one-line wordmarks, so its share of the row is 1.4x its aspect ratio (owner, 2026-11-23). Row width,
-   gaps and left alignment unchanged; the other three give up ~5%. */
-#vf .vf-logos li:first-child{flex-grow:2.765!important}
-#vf .vf-logos img{display:block;width:100%;height:auto;filter:grayscale(1) brightness(0) invert(1);opacity:.62}
-html[data-vf-theme="light"] #vf .vf-logos img{filter:grayscale(1) brightness(0);opacity:.58}
+/* TRUSTED BY MARQUEE (owner, 2026-11-24; replaces the four-mark row; tools/vfinal_build.py LOGOS). Eight monochrome masks
+   in one track, the list then an identical decorative copy (aria-hidden), moving left to right by exactly one set's width
+   (translateX -50% -> 0) so the loop never shows a seam or a reset. Transform only, CSS only. The ends fade through a
+   mask; hover, keyboard focus and the site's motion pause hold it still; reduced motion shows the eight marks once, at
+   rest, wrapping within the column. Each mark keeps its proportions (aspect-ratio) at the height its ink coverage calls
+   for (--h, screen px at any fit). One soft ink per theme. Contained in the introduction column. */
+#vf .vf-mq{--lg-c:#CFCDC8;--lg-g:calc(30px / var(--vfz, 1));position:relative;overflow:hidden;margin:44px 0 0;max-width:100%;outline:none;
+  -webkit-mask:linear-gradient(90deg,transparent 0,#000 13%,#000 87%,transparent 100%);mask:linear-gradient(90deg,transparent 0,#000 13%,#000 87%,transparent 100%)}
+html[data-vf-theme="light"] #vf .vf-mq{--lg-c:#3B3934}
+#vf .vf-mq:focus-visible{outline:1px solid currentColor;outline-offset:6px;-webkit-mask:none;mask:none}
+#vf .vf-mq-t{display:flex;width:max-content;animation:vf-mq 52s linear infinite;will-change:transform}
+#vf .vf-mq:hover .vf-mq-t,#vf .vf-mq:focus-within .vf-mq-t,html.vf-still #vf .vf-mq-t{animation-play-state:paused}
+#vf .vf-mq-s{display:flex;align-items:center;flex:none;margin:0;padding:0;list-style:none}
+#vf .vf-mq-s li{flex:none;margin:0 var(--lg-g) 0 0;display:flex;align-items:center}
+#vf .vf-mq-s span{display:block;height:calc(var(--h) * 1px / var(--vfz, 1));aspect-ratio:var(--ar);background:var(--lg-c);opacity:.86;
+  -webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat}
+#vf .top .vf-mq{--lg-g:26px}
+#vf .top .vf-mq-s span{height:calc(var(--h) * .92px)}
+@keyframes vf-mq{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+@media (prefers-reduced-motion: reduce){
+  #vf .vf-mq{-webkit-mask:none;mask:none}
+  #vf .vf-mq-t{animation:none;width:auto;transform:none}
+  #vf .vf-mq-s[aria-hidden]{display:none}
+  #vf .vf-mq-s{flex:1 1 100%;width:100%;flex-wrap:wrap;row-gap:calc(16px / var(--vfz, 1))}}
 #vf .top .vf-logos{margin:24px 0 4px}
 /* phones: the row sits in the city box's own headroom (open sky above the towers), so the hero's height and its View
    Projects button stay where they were */

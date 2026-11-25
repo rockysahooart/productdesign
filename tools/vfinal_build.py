@@ -672,15 +672,26 @@ def convert(s, name=''):
     if name.startswith('VF2-2-Landing'):
         s = vf2_copy(s, name)
         s = vf2_order(s, name)
-        # TRUSTED BY, BACK (owner, 2026-11-23): the original portfolio's four companies, in its order, from the repo's own
-        # files (unchanged), beneath the name / role / location (phones: beneath the introduction). Each mark's share of
-        # the row is its own aspect ratio (flex-grow), so all four stand at one height across the headline's width.
-        # Rendering treatment in index.html (#vf .vf-logos).
-        L = [('e1f605c00771.png', 'CVS Health', 316, 160), ('1144031febcc.png', 'Natera', 785, 160),
-             ('0faea32528e6.png', 'PNC', 578, 160), ('0dc38d5927ca.png', 'CG Infinity', 309, 63)]
-        logos = '<ul class="vf-logos" aria-label="Trusted by">' + ''.join(
-            '<li style="flex-grow:%.3f"><img src="assets/%s" alt="%s" width="%d" height="%d" decoding="async"></li>' % (w / h, f, a, w, h)
-            for f, a, w, h in L) + '</ul>'
+        # TRUSTED BY, AS A MARQUEE (owner, 2026-11-24; replaces the four-logo row of 2026-11-23). Eight companies in the order
+        # of the owner's history - UNT, Applab Systems, CVS Health, CG Infinity, First United Bank, Cognizant, PNC, Natera -
+        # moving slowly left to right on a seamless loop. Each mark is a monochrome mask made from its original file
+        # (assets/vf/logos: ink to opacity by its own luminance, so shapes and inner details survive and any background
+        # drops out; trimmed to the ink), filled with one soft ink per theme; heights are set by measured ink coverage so
+        # every mark reads at the same visual weight. Behaviour and styling in index.html (#vf .vf-mq).
+        LOGOS = [('unt', 'UNT', 674, 289, 27.0),
+                 ('applab', 'Applab Systems', 430, 298, 36.0),
+                 ('cvs', 'CVS Health', 316, 160, 26.5),
+                 ('cgi', 'CG Infinity', 309, 63, 20.1),
+                 ('fub', 'First United Bank', 1014, 234, 19.3),
+                 ('cognizant', 'Cognizant', 1600, 288, 19.0),
+                 ('pnc', 'PNC', 578, 160, 23.2),
+                 ('natera', 'Natera', 785, 160, 18.6)]
+        def _lset(hidden):
+            return ('<ul class="vf-mq-s"%s>' % (' aria-hidden="true"' if hidden else ' role="list"')) + ''.join(
+                '<li style="--h:%.1f;--ar:%d/%d;--m:url(assets/vf/logos/%s.png)"><span%s></span></li>'
+                % (h, w, hh, k, '' if hidden else ' role="img" aria-label="%s"' % n) for k, n, w, hh, h in LOGOS) + '</ul>'
+        logos = ('<div class="vf-logos vf-mq" role="region" aria-label="Trusted by" tabindex="0"><div class="vf-mq-t">'
+                 + _lset(False) + _lset(True) + '</div></div>')
         # HERO (owner, 2026-11-23): one sentence pair on every board; the phone board's hand-broken lines go (balanced wrap)
         # HEADLINE AND SUBTITLE (owner, 2026-11-24; replaces the two-sentence hero): one sentence in the headline, the
         # second idea as a quieter Geist subtitle beneath it (index.html .vf-sub)
