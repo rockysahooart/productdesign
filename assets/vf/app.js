@@ -7,6 +7,9 @@
            light boards are the approved light design, so a switch reloads into them, keeping the scroll position. */
 (function () {
   'use strict';
+  /* the deploy's content hash (tools/bust.py writes it as ?v= on this script); boards are fetched with it, so a new deploy
+     is never served from an old cache */
+  var VER = (/[?&]v=(\w+)/.exec((document.currentScript && document.currentScript.src) || '') || [])[1] || '';
   var CASES = { carry: 'Carry', optiflow: 'OptiFlow', specimen: 'Specimen', audit: 'Audit', sbl: 'SBL', craigslist: 'Craigslist' };
   /* VFINAL2 (owner, 2026-11-22: the full VFINAL2 design; design-handoff/12-vfinal2-source-manifest.md). Its board
      names put the range before the theme: VF2-2-Landing-uw-light-r29, VF2-1-Loading-m-light-r5, VF2-4-About-light. */
@@ -42,7 +45,7 @@
     return b[0] + (theme === 'light' ? '-light' : '') + (b[1] ? '-' + b[1] : '');
   }
   function load(name) {
-    return fetch('vf/boards/' + name + '.html').then(function (r) {
+    return fetch('vf/boards/' + name + '.html' + (VER ? '?v=' + VER : '')).then(function (r) {
       if (!r.ok) throw new Error('board ' + name + ' ' + r.status);
       return r.text();
     }).then(function (t) { return new DOMParser().parseFromString(t, 'text/html'); });
@@ -666,19 +669,31 @@
     try { fine = matchMedia('(hover: hover) and (pointer: fine)').matches; rm = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
     var h = host.querySelector('.lc h1.h1'); if (!fine || rm || !h || h.querySelector('.vf-bl')) return;
     var root = host.querySelector('.root');
-    ['vf-bl vf-bl--core', 'vf-bl vf-bl--halo'].forEach(function (c) {
+    ['vf-bl vf-bl--far', 'vf-bl vf-bl--halo', 'vf-bl vf-bl--core'].forEach(function (c) { /* far glow, near halo, then the light in the letters on top */
       var s = document.createElement('span'); s.className = c; s.setAttribute('aria-hidden', 'true');
       s.innerHTML = h.innerHTML.replace(/<span class="vf-bl[\s\S]*$/, ''); h.appendChild(s);
     });
     h.classList.add('vf-blh');
-    var G = Element.prototype.__vfRect || Element.prototype.getBoundingClientRect, raf = 0, px = 0, py = 0;
-    function put() { raf = 0; var r = G.call(h), z = (root && root.__vfz) || 1;
-      h.style.setProperty('--mx', ((px - r.left) / z).toFixed(1) + 'px'); h.style.setProperty('--my', ((py - r.top) / z).toFixed(1) + 'px'); }
-    function move(e) { px = e.clientX; py = e.clientY; if (!raf) raf = requestAnimationFrame(put); }
-    h.addEventListener('pointerenter', function (e) { if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return; move(e); put();
-      h.classList.remove('vf-bl-on'); void h.offsetWidth; h.classList.add('vf-bl-on'); });
+    var G = Element.prototype.__vfRect || Element.prototype.getBoundingClientRect, raf = 0, px = 0, py = 0, dirty = false;
+    /* strength (bl) and reach (blr) are eased here, in the same frame loop as the position, so the bloom and the fades work
+       in every browser (no animated custom properties needed) */
+    var bl = 0, blT = 0, blr = 190, t0 = 0, on = false;
+    function ease(x) { return 1 - Math.pow(1 - x, 3); }
+    function frame(now) {
+      raf = 0;
+      if (dirty) { dirty = false; var r = G.call(h), z = (root && root.__vfz) || 1;
+        h.style.setProperty('--mx', ((px - r.left) / z).toFixed(1) + 'px'); h.style.setProperty('--my', ((py - r.top) / z).toFixed(1) + 'px'); }
+      bl += (blT - bl) * (on ? 0.16 : 0.09); if (Math.abs(blT - bl) < 0.004) bl = blT;
+      if (on && t0) { var k = (now - t0) / 1100; blr = k >= 1 ? 190 : (k < 0.45 ? 30 + 270 * ease(k / 0.45) : 300 - 110 * ease((k - 0.45) / 0.55)); }
+      h.style.setProperty('--bl', bl.toFixed(3)); h.style.setProperty('--blr', blr.toFixed(1) + 'px');
+      if (dirty || bl !== blT || (on && t0 && now - t0 < 1100)) raf = requestAnimationFrame(frame);
+    }
+    function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+    function move(e) { px = e.clientX; py = e.clientY; dirty = true; kick(); }
+    h.addEventListener('pointerenter', function (e) { if (e.pointerType !== 'mouse' && e.pointerType !== 'pen') return;
+      on = true; blT = 1; t0 = performance.now(); move(e); });
     h.addEventListener('pointermove', function (e) { if (e.pointerType === 'mouse' || e.pointerType === 'pen') move(e); });
-    h.addEventListener('pointerleave', function () { h.classList.remove('vf-bl-on'); });
+    h.addEventListener('pointerleave', function () { on = false; blT = 0; t0 = 0; kick(); });
   }
 
   /* SKIM FIRST, DEPTH ON REQUEST (owner, 2026-11-24, pass 7). Each case study reads in a minute: the short version (above),
